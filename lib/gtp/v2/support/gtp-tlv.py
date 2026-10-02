@@ -33,6 +33,70 @@ msg_list = {}
 type_list = {}
 group_list = {}
 
+# IEs that may be repeated with the same type and instance inside a message
+# or a grouped IE ("Several IEs with this type and instance values may be
+# included ..."). They are generated as a C array followed by the matching
+# ogs_tlv_desc_moreN descriptor.
+#   (message or grouped IE name, IE value) : C array size macro
+multi_ies = {
+    ('Create Indirect Data Forwarding Tunnel Request', 'Bearer Contexts') : 'OGS_BEARER_PER_UE',
+    ('Create Indirect Data Forwarding Tunnel Response', 'Bearer Contexts') : 'OGS_BEARER_PER_UE',
+    ('Create Session Request', 'Bearer Contexts to be created') : 'OGS_BEARER_PER_UE',
+    ('Create Session Response', 'Bearer Contexts created') : 'OGS_BEARER_PER_UE',
+    ('Modify Bearer Request', 'Bearer Contexts to be modified') : 'OGS_BEARER_PER_UE',
+    ('Modify Bearer Response', 'Bearer Contexts modified') : 'OGS_BEARER_PER_UE',
+
+    # S10 (TS 29.274 clause 7.3)
+    ('Context Response', 'MME/SGSN/AMF UE EPS PDN Connections') : 'OGS_MAX_NUM_OF_SESS',
+    ('Context Acknowledge', 'Bearer Contexts') : 'OGS_BEARER_PER_UE',
+    ('Forward Relocation Request', 'MME/SGSN/AMF UE EPS PDN Connections') : 'OGS_MAX_NUM_OF_SESS',
+    ('Forward Relocation Response', 'List of Set-up Bearers') : 'OGS_BEARER_PER_UE',
+    ('PDN Connection', 'Bearer Contexts') : 'OGS_BEARER_PER_UE',
+}
+multi_size = {
+    'OGS_BEARER_PER_UE' : 8,    # lib/proto/types.h
+    'OGS_MAX_NUM_OF_SESS' : 4,  # lib/proto/types.h
+}
+
+# Explicit C member names for IE values that are too long or ambiguous.
+#   (message or grouped IE name, IE value, instance) : C member name
+member_names = {
+    ('Configuration Transfer Tunnel', 'E-UTRAN Transparent Container / EN-DC Container / Inter-system SON Container', '0') : 'e_utran_transparent_container',
+    ('Configuration Transfer Tunnel', 'Target eNodeB ID / en-gNB ID / gnB ID', '0') : 'target_enodeb_id',
+    # Instance 1 carries the eNB Early Status Transfer Transparent Container
+    ('Forward Access Context Notification', 'E-UTRAN Transparent Container', '1') : 'e_utran_early_status_transparent_container',
+}
+
+def multi_ie_size(container, ie):
+    return multi_ies.get((container, ie["ie_value"]))
+
+def ie_member_names(container, ies):
+    """Return the C member name of each IE of a message or grouped IE.
+
+    Two IEs with the same value and different instances would produce the
+    same member name. Only in that case, the instance is appended.
+    """
+    names = []
+    used = set()
+    for ie in ies:
+        key = (container, ie["ie_value"], ie["instance"])
+        if key in member_names:
+            name = member_names[key]
+        else:
+            name = v_lower(ie["ie_value"])
+            if ie["ie_type"] == "F-TEID" and \
+                    ie["ie_value"] in ["S2b-U ePDG F-TEID", "S2a-U TWAN F-TEID"]:
+                name += "_" + ie["instance"]
+        # A C identifier cannot start with a digit, e.g. "1xIWS S102 IP address"
+        if name[:1].isdigit():
+            name = "_" + name
+        if name in used:
+            name += "_" + ie["instance"]
+        assert name not in used, "Duplicated member %s in %s" % (name, container)
+        used.add(name)
+        names.append(name)
+    return names
+
 verbosity = 0
 filename = ""
 outdir = './'
@@ -168,6 +232,15 @@ def normalize_ie_type(name):
         ie_type = 'Remote UE IP Information'
     elif 'Procedure Transaction ID' in ie_type:
         ie_type = 'PTI'
+    elif ie_type == 'IP-Address':
+        ie_type = 'IP Address'
+
+    # Some rows differ from the IE type table only by case,
+    # e.g. "Timer in seconds" vs "Timer in Seconds".
+    if ie_type not in type_list.keys():
+        for key in type_list.keys():
+            if key.lower() == ie_type.lower():
+                return key
 
     return ie_type
 
@@ -355,7 +428,9 @@ else:
         type = clean_cell_text(cells[0].text)
         if type.isdigit() is False:
             continue
-        if int(type) in range(128, 160):
+        # 128..141 are the S10/S3/S16 mobility management messages used by
+        # the MME on S10 (TS 29.274 clause 7.3). 142..159 are not used yet.
+        if int(type) in range(142, 160):
             continue
         if int(type) in range(231, 240):
             continue
@@ -520,6 +595,22 @@ msg_list["Release Access Bearers Request"]["table"] = 86
 msg_list["Release Access Bearers Response"]["table"] = 87
 msg_list["Modify Access Bearers Request"]["table"] = 91
 msg_list["Modify Access Bearers Response"]["table"] = 94
+
+# S10 mobility management messages (TS 29.274 clause 7.3)
+msg_list["Forward Relocation Request"]["table"] = 103
+msg_list["Forward Relocation Response"]["table"] = 111
+msg_list["Forward Relocation Complete Notification"]["table"] = 113
+msg_list["Forward Relocation Complete Acknowledge"]["table"] = 114
+msg_list["Context Request"]["table"] = 115
+msg_list["Context Response"]["table"] = 116
+msg_list["Context Acknowledge"]["table"] = 122
+msg_list["Identification Request"]["table"] = 124
+msg_list["Identification Response"]["table"] = 125
+msg_list["Forward Access Context Notification"]["table"] = 126
+msg_list["Forward Access Context Acknowledge"]["table"] = 127
+msg_list["Relocation Cancel Request"]["table"] = 132
+msg_list["Relocation Cancel Response"]["table"] = 133
+msg_list["Configuration Transfer Tunnel"]["table"] = 134
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
@@ -693,17 +784,14 @@ f.write("/* Structure for Group Information Element */\n")
 for (k, v) in sorted_group_list:
     f.write("typedef struct ogs_gtp2_tlv_" + v_lower(k) + "_s {\n")
     f.write("    ogs_tlv_presence_t presence;\n")
-    for ies in group_list[k]["ies"]:
-        f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                v_lower(ies["ie_value"]))
+    names = ie_member_names(k, group_list[k]["ies"])
+    for ies, name in zip(group_list[k]["ies"], names):
+        f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + name)
+        size = multi_ie_size(k, ies)
+        if size:
+            f.write("[" + size + "]")
         if ies["ie_type"] == "F-TEID":
-            if ies["ie_value"] == "S2b-U ePDG F-TEID":
-                f.write("_" + ies["instance"] + ";")
-            elif ies["ie_value"] == "S2a-U TWAN F-TEID":
-                f.write("_" + ies["instance"] + ";")
-            else:
-                f.write(";")
-            f.write(" /* Instance : " + ies["instance"] + " */\n")
+            f.write("; /* Instance : " + ies["instance"] + " */\n")
         else:
             f.write(";\n")
     f.write("} ogs_gtp2_tlv_" + v_lower(k) + "_t;\n")
@@ -713,13 +801,13 @@ f.write("/* Structure for Message */\n")
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_gtp2_" + v_lower(k) + "_s {\n")
-        for ies in msg_list[k]["ies"]:
-            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Create Session Request' and ies["ie_value"] == 'Bearer Contexts to be created') or (k == 'Create Session Response' and ies["ie_value"] == 'Bearer Contexts created') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
-                f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                        v_lower(ies["ie_value"]) + "[OGS_BEARER_PER_UE];\n")
-            else:
-                f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                        v_lower(ies["ie_value"]) + ";\n")
+        names = ie_member_names(k, msg_list[k]["ies"])
+        for ies, name in zip(msg_list[k]["ies"], names):
+            size = multi_ie_size(k, ies)
+            f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + name)
+            if size:
+                f.write("[" + size + "]")
+            f.write(";\n")
         f.write("} ogs_gtp2_" + v_lower(k) + "_t;\n")
         f.write("\n")
 
@@ -792,6 +880,9 @@ for (k, v) in sorted_group_list:
         f.write("    {\n")
         for ies in group_list[k]["ies"]:
                 f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+                size = multi_ie_size(k, ies)
+                if size:
+                    f.write("        &ogs_tlv_desc_more%d,\n" % multi_size[size])
         f.write("        NULL,\n")
         f.write("    }\n")
         f.write("};\n\n")
@@ -805,8 +896,9 @@ for (k, v) in sorted_msg_list:
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
             f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Create Session Request' and ies["ie_value"] == 'Bearer Contexts to be created') or (k == 'Create Session Response' and ies["ie_value"] == 'Bearer Contexts created') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
-                f.write("        &ogs_tlv_desc_more8,\n")
+            size = multi_ie_size(k, ies)
+            if size:
+                f.write("        &ogs_tlv_desc_more%d,\n" % multi_size[size])
         f.write("    NULL,\n")
         f.write("}};\n\n")
 f.write("\n")

@@ -1031,3 +1031,780 @@ int16_t ogs_gtp2_build_node_identifier(ogs_tlv_octet_t *octet,
 
     return octet->len;
 }
+
+/*
+ * Bounded reader and writer used by the variable-length IEs below
+ * (S10 mobility management IEs, TS 29.274 clauses 8.38 to 8.51).
+ *
+ * Parse functions return the decoded size, or 0 on error.
+ * Build functions return the encoded size, or 0 on error.
+ */
+typedef struct ie_reader_s {
+    uint8_t *data;
+    int len;
+    int pos;
+} ie_reader_t;
+
+static bool ie_read_end(ie_reader_t *r)
+{
+    return r->pos >= r->len;
+}
+
+static bool ie_read_bytes(ie_reader_t *r, void *dst, int n)
+{
+    if (n < 0 || r->pos + n > r->len)
+        return false;
+    if (n)
+        memcpy(dst, r->data + r->pos, n);
+    r->pos += n;
+    return true;
+}
+
+static bool ie_read_ptr(ie_reader_t *r, uint8_t **dst, int n)
+{
+    if (n < 0 || r->pos + n > r->len)
+        return false;
+    *dst = n ? r->data + r->pos : NULL;
+    r->pos += n;
+    return true;
+}
+
+static bool ie_read_u8(ie_reader_t *r, uint8_t *v)
+{
+    return ie_read_bytes(r, v, 1);
+}
+
+static bool ie_read_u16(ie_reader_t *r, uint16_t *v)
+{
+    uint8_t b[2];
+    if (!ie_read_bytes(r, b, 2))
+        return false;
+    *v = (b[0] << 8) | b[1];
+    return true;
+}
+
+static bool ie_read_u24(ie_reader_t *r, uint32_t *v)
+{
+    uint8_t b[3];
+    if (!ie_read_bytes(r, b, 3))
+        return false;
+    *v = (b[0] << 16) | (b[1] << 8) | b[2];
+    return true;
+}
+
+static bool ie_read_u32(ie_reader_t *r, uint32_t *v)
+{
+    uint8_t b[4];
+    if (!ie_read_bytes(r, b, 4))
+        return false;
+    *v = ((uint32_t)b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
+    return true;
+}
+
+/* Read a one-octet length followed by at most 'max' octets */
+static bool ie_read_lv(ie_reader_t *r, uint8_t *len, uint8_t *dst, int max)
+{
+    if (!ie_read_u8(r, len))
+        return false;
+    if (*len > max)
+        return false;
+    return ie_read_bytes(r, dst, *len);
+}
+
+typedef struct ie_writer_s {
+    uint8_t *data;
+    int len;
+    int pos;
+} ie_writer_t;
+
+static bool ie_write_bytes(ie_writer_t *w, const void *src, int n)
+{
+    if (n < 0 || w->pos + n > w->len)
+        return false;
+    if (n) {
+        ogs_assert(src);
+        memcpy(w->data + w->pos, src, n);
+    }
+    w->pos += n;
+    return true;
+}
+
+static bool ie_write_u8(ie_writer_t *w, uint8_t v)
+{
+    return ie_write_bytes(w, &v, 1);
+}
+
+static bool ie_write_u16(ie_writer_t *w, uint16_t v)
+{
+    uint8_t b[2] = { v >> 8, v };
+    return ie_write_bytes(w, b, 2);
+}
+
+static bool ie_write_u24(ie_writer_t *w, uint32_t v)
+{
+    uint8_t b[3] = { v >> 16, v >> 8, v };
+    return ie_write_bytes(w, b, 3);
+}
+
+static bool ie_write_u32(ie_writer_t *w, uint32_t v)
+{
+    uint8_t b[4] = { v >> 24, v >> 16, v >> 8, v };
+    return ie_write_bytes(w, b, 4);
+}
+
+static bool ie_write_lv(ie_writer_t *w, uint8_t len, const void *src, int max)
+{
+    if (len > max)
+        return false;
+    return ie_write_u8(w, len) && ie_write_bytes(w, src, len);
+}
+
+/* 8.38 MM Context, Figure 8.38-5: EPS Security Context and Quadruplets */
+int16_t ogs_gtp2_parse_mm_context(
+    ogs_gtp2_mm_context_t *mm_context, ogs_tlv_octet_t *octet)
+{
+    ie_reader_t r;
+    uint8_t o5, o6, o7, s, len;
+    bool uambri, sambri, osci;
+    int i;
+
+    ogs_assert(mm_context);
+    ogs_assert(octet);
+
+    memset(mm_context, 0, sizeof(*mm_context));
+    r.data = octet->data;
+    r.len = octet->len;
+    r.pos = 0;
+
+    if (!ie_read_u8(&r, &o5) || !ie_read_u8(&r, &o6) || !ie_read_u8(&r, &o7))
+        goto truncated;
+
+    mm_context->security_mode = o5 >> 5;
+    if (mm_context->security_mode !=
+            OGS_GTP2_MM_CONTEXT_SECURITY_MODE_EPS_SECURITY_CONTEXT_AND_QUADRUPLETS) {
+        ogs_error("Unsupported MM Context security mode [%d]",
+                mm_context->security_mode);
+        return 0;
+    }
+    mm_context->nh_presence = (o5 >> 4) & 1;
+    mm_context->drx_parameter_presence = (o5 >> 3) & 1;
+    mm_context->ksi_asme = o5 & 0x07;
+
+    mm_context->num_of_quintuplets = o6 >> 5;
+    mm_context->num_of_quadruplets = (o6 >> 2) & 0x07;
+    uambri = (o6 >> 1) & 1;
+    osci = o6 & 1;
+
+    sambri = o7 >> 7;
+    mm_context->nas_integrity_algorithm = (o7 >> 4) & 0x07;
+    mm_context->nas_cipher_algorithm = o7 & 0x0f;
+
+    if (mm_context->num_of_quadruplets > OGS_GTP2_MAX_AUTH_VECTORS ||
+        mm_context->num_of_quintuplets > OGS_GTP2_MAX_AUTH_VECTORS) {
+        ogs_error("Too many authentication vectors [quadruplets:%d "
+                "quintuplets:%d]", mm_context->num_of_quadruplets,
+                mm_context->num_of_quintuplets);
+        return 0;
+    }
+
+    if (!ie_read_u24(&r, &mm_context->nas_downlink_count) ||
+        !ie_read_u24(&r, &mm_context->nas_uplink_count) ||
+        !ie_read_bytes(&r, mm_context->kasme, OGS_GTP2_KASME_LEN))
+        goto truncated;
+
+    for (i = 0; i < mm_context->num_of_quadruplets; i++) {
+        ogs_gtp2_auth_quadruplet_t *v = &mm_context->quadruplet[i];
+        if (!ie_read_bytes(&r, v->rand, OGS_GTP2_RAND_LEN) ||
+            !ie_read_lv(&r, &v->xres_len, v->xres, OGS_GTP2_MAX_XRES_LEN) ||
+            !ie_read_lv(&r, &v->autn_len, v->autn, OGS_GTP2_AUTN_LEN) ||
+            !ie_read_bytes(&r, v->kasme, OGS_GTP2_KASME_LEN))
+            goto truncated;
+    }
+    for (i = 0; i < mm_context->num_of_quintuplets; i++) {
+        ogs_gtp2_auth_quintuplet_t *v = &mm_context->quintuplet[i];
+        if (!ie_read_bytes(&r, v->rand, OGS_GTP2_RAND_LEN) ||
+            !ie_read_lv(&r, &v->xres_len, v->xres, OGS_GTP2_MAX_XRES_LEN) ||
+            !ie_read_bytes(&r, v->ck, OGS_GTP2_CK_LEN) ||
+            !ie_read_bytes(&r, v->ik, OGS_GTP2_IK_LEN) ||
+            !ie_read_lv(&r, &v->autn_len, v->autn, OGS_GTP2_AUTN_LEN))
+            goto truncated;
+    }
+
+    if (mm_context->drx_parameter_presence) {
+        if (!ie_read_bytes(&r, mm_context->drx_parameter, 2))
+            goto truncated;
+    }
+    if (mm_context->nh_presence) {
+        if (!ie_read_bytes(&r, mm_context->nh, OGS_GTP2_NH_LEN) ||
+            !ie_read_u8(&r, &mm_context->ncc))
+            goto truncated;
+        mm_context->ncc &= 0x07;
+    }
+    if (sambri) {
+        uint32_t ul, dl;
+        mm_context->subscribed_ue_ambr_presence = true;
+        if (!ie_read_u32(&r, &ul) || !ie_read_u32(&r, &dl))
+            goto truncated;
+        mm_context->subscribed_ue_ambr.uplink = ul;
+        mm_context->subscribed_ue_ambr.downlink = dl;
+    }
+    if (uambri) {
+        uint32_t ul, dl;
+        mm_context->used_ue_ambr_presence = true;
+        if (!ie_read_u32(&r, &ul) || !ie_read_u32(&r, &dl))
+            goto truncated;
+        mm_context->used_ue_ambr.uplink = ul;
+        mm_context->used_ue_ambr.downlink = dl;
+    }
+
+    if (!ie_read_lv(&r, &mm_context->ue_network_capability_len,
+                mm_context->ue_network_capability,
+                OGS_GTP2_MAX_UE_NETWORK_CAPABILITY_LEN) ||
+        !ie_read_lv(&r, &mm_context->ms_network_capability_len,
+                mm_context->ms_network_capability,
+                OGS_GTP2_MAX_MS_NETWORK_CAPABILITY_LEN) ||
+        !ie_read_lv(&r, &mm_context->mei_len,
+                mm_context->mei, OGS_GTP2_MAX_MEI_LEN))
+        goto truncated;
+
+    /* The fields below may be absent when sent by an older release */
+    if (ie_read_end(&r)) {
+        if (osci) {
+            ogs_error("OSCI is set but no Old EPS Security Context");
+            return 0;
+        }
+        goto done;
+    }
+    if (!ie_read_u8(&r, &mm_context->access_restriction_data.octet))
+        goto truncated;
+    mm_context->access_restriction_data_presence = true;
+
+    if (osci) {
+        mm_context->old_security_context_presence = true;
+        if (!ie_read_u8(&r, &s))
+            goto truncated;
+        mm_context->old_nh_presence = s >> 7;
+        mm_context->rlos = (s >> 6) & 1;
+        mm_context->old_ksi_asme = (s >> 3) & 0x07;
+        mm_context->old_ncc = s & 0x07;
+        if (!ie_read_bytes(&r, mm_context->old_kasme, OGS_GTP2_KASME_LEN))
+            goto truncated;
+        if (mm_context->old_nh_presence) {
+            if (!ie_read_bytes(&r, mm_context->old_nh, OGS_GTP2_NH_LEN))
+                goto truncated;
+        }
+    }
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_lv(&r, &mm_context->voice_domain_preference_len,
+                mm_context->voice_domain_preference,
+                OGS_GTP2_MAX_VOICE_DOMAIN_PREFERENCE_LEN))
+        goto truncated;
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_u16(&r, &mm_context->ue_radio_capability_for_paging_len) ||
+        !ie_read_ptr(&r, &mm_context->ue_radio_capability_for_paging,
+                mm_context->ue_radio_capability_for_paging_len))
+        goto truncated;
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_u8(&r, &mm_context->extended_access_restriction_data_len))
+        goto truncated;
+    if (mm_context->extended_access_restriction_data_len) {
+        uint8_t *skip = NULL;
+        if (!ie_read_u8(&r, &mm_context->extended_access_restriction_data) ||
+            !ie_read_ptr(&r, &skip,
+                mm_context->extended_access_restriction_data_len - 1))
+            goto truncated;
+    }
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_lv(&r, &mm_context->ue_additional_security_capability_len,
+                mm_context->ue_additional_security_capability,
+                OGS_GTP2_MAX_UE_ADDITIONAL_SECURITY_CAPABILITY_LEN))
+        goto truncated;
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_lv(&r, &mm_context->ue_nr_security_capability_len,
+                mm_context->ue_nr_security_capability,
+                OGS_GTP2_MAX_UE_NR_SECURITY_CAPABILITY_LEN))
+        goto truncated;
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_u16(&r, &mm_context->apn_rate_control_statuses_len) ||
+        !ie_read_ptr(&r, &mm_context->apn_rate_control_statuses,
+                mm_context->apn_rate_control_statuses_len))
+        goto truncated;
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_lv(&r, &mm_context->core_network_restrictions_len,
+                mm_context->core_network_restrictions,
+                OGS_GTP2_CORE_NETWORK_RESTRICTIONS_LEN))
+        goto truncated;
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_u8(&r, &len) ||
+        !ie_read_ptr(&r, &mm_context->ue_radio_capability_id, len))
+        goto truncated;
+    mm_context->ue_radio_capability_id_len = len;
+
+    if (ie_read_end(&r)) goto done;
+    if (!ie_read_u8(&r, &len))
+        goto truncated;
+    mm_context->octet_a_presence = true;
+    mm_context->tridi = (len >> 2) & 1;
+    mm_context->ensct = len & 0x03;
+
+    /* Octets after 'a' are present only if explicitly specified: ignored */
+
+done:
+    return octet->len;
+
+truncated:
+    ogs_error("Invalid MM Context [len:%d pos:%d]", r.len, r.pos);
+    ogs_log_hexdump(OGS_LOG_ERROR, octet->data, octet->len);
+    return 0;
+}
+
+int16_t ogs_gtp2_build_mm_context(ogs_tlv_octet_t *octet,
+    ogs_gtp2_mm_context_t *mm_context, void *data, int data_len)
+{
+    ie_writer_t w;
+    int i;
+
+    ogs_assert(mm_context);
+    ogs_assert(octet);
+    ogs_assert(data);
+    ogs_assert(data_len);
+
+    w.data = data;
+    w.len = data_len;
+    w.pos = 0;
+
+    if (mm_context->num_of_quadruplets > OGS_GTP2_MAX_AUTH_VECTORS ||
+        mm_context->num_of_quintuplets > OGS_GTP2_MAX_AUTH_VECTORS) {
+        ogs_error("Too many authentication vectors");
+        return 0;
+    }
+
+    if (!ie_write_u8(&w,
+            (OGS_GTP2_MM_CONTEXT_SECURITY_MODE_EPS_SECURITY_CONTEXT_AND_QUADRUPLETS << 5) |
+            ((mm_context->nh_presence ? 1 : 0) << 4) |
+            ((mm_context->drx_parameter_presence ? 1 : 0) << 3) |
+            (mm_context->ksi_asme & 0x07)) ||
+        !ie_write_u8(&w,
+            (mm_context->num_of_quintuplets << 5) |
+            (mm_context->num_of_quadruplets << 2) |
+            ((mm_context->used_ue_ambr_presence ? 1 : 0) << 1) |
+            (mm_context->old_security_context_presence ? 1 : 0)) ||
+        !ie_write_u8(&w,
+            ((mm_context->subscribed_ue_ambr_presence ? 1 : 0) << 7) |
+            ((mm_context->nas_integrity_algorithm & 0x07) << 4) |
+            (mm_context->nas_cipher_algorithm & 0x0f)) ||
+        !ie_write_u24(&w, mm_context->nas_downlink_count & 0xffffff) ||
+        !ie_write_u24(&w, mm_context->nas_uplink_count & 0xffffff) ||
+        !ie_write_bytes(&w, mm_context->kasme, OGS_GTP2_KASME_LEN))
+        goto overflow;
+
+    for (i = 0; i < mm_context->num_of_quadruplets; i++) {
+        ogs_gtp2_auth_quadruplet_t *v = &mm_context->quadruplet[i];
+        if (!ie_write_bytes(&w, v->rand, OGS_GTP2_RAND_LEN) ||
+            !ie_write_lv(&w, v->xres_len, v->xres, OGS_GTP2_MAX_XRES_LEN) ||
+            !ie_write_lv(&w, v->autn_len, v->autn, OGS_GTP2_AUTN_LEN) ||
+            !ie_write_bytes(&w, v->kasme, OGS_GTP2_KASME_LEN))
+            goto overflow;
+    }
+    for (i = 0; i < mm_context->num_of_quintuplets; i++) {
+        ogs_gtp2_auth_quintuplet_t *v = &mm_context->quintuplet[i];
+        if (!ie_write_bytes(&w, v->rand, OGS_GTP2_RAND_LEN) ||
+            !ie_write_lv(&w, v->xres_len, v->xres, OGS_GTP2_MAX_XRES_LEN) ||
+            !ie_write_bytes(&w, v->ck, OGS_GTP2_CK_LEN) ||
+            !ie_write_bytes(&w, v->ik, OGS_GTP2_IK_LEN) ||
+            !ie_write_lv(&w, v->autn_len, v->autn, OGS_GTP2_AUTN_LEN))
+            goto overflow;
+    }
+
+    if (mm_context->drx_parameter_presence) {
+        if (!ie_write_bytes(&w, mm_context->drx_parameter, 2))
+            goto overflow;
+    }
+    if (mm_context->nh_presence) {
+        if (!ie_write_bytes(&w, mm_context->nh, OGS_GTP2_NH_LEN) ||
+            !ie_write_u8(&w, mm_context->ncc & 0x07))
+            goto overflow;
+    }
+    if (mm_context->subscribed_ue_ambr_presence) {
+        if (!ie_write_u32(&w, mm_context->subscribed_ue_ambr.uplink) ||
+            !ie_write_u32(&w, mm_context->subscribed_ue_ambr.downlink))
+            goto overflow;
+    }
+    if (mm_context->used_ue_ambr_presence) {
+        if (!ie_write_u32(&w, mm_context->used_ue_ambr.uplink) ||
+            !ie_write_u32(&w, mm_context->used_ue_ambr.downlink))
+            goto overflow;
+    }
+
+    if (!ie_write_lv(&w, mm_context->ue_network_capability_len,
+                mm_context->ue_network_capability,
+                OGS_GTP2_MAX_UE_NETWORK_CAPABILITY_LEN) ||
+        !ie_write_lv(&w, mm_context->ms_network_capability_len,
+                mm_context->ms_network_capability,
+                OGS_GTP2_MAX_MS_NETWORK_CAPABILITY_LEN) ||
+        !ie_write_lv(&w, mm_context->mei_len,
+                mm_context->mei, OGS_GTP2_MAX_MEI_LEN) ||
+        !ie_write_u8(&w, mm_context->access_restriction_data.octet))
+        goto overflow;
+
+    if (mm_context->old_security_context_presence) {
+        if (!ie_write_u8(&w,
+                ((mm_context->old_nh_presence ? 1 : 0) << 7) |
+                ((mm_context->rlos ? 1 : 0) << 6) |
+                ((mm_context->old_ksi_asme & 0x07) << 3) |
+                (mm_context->old_ncc & 0x07)) ||
+            !ie_write_bytes(&w, mm_context->old_kasme, OGS_GTP2_KASME_LEN))
+            goto overflow;
+        if (mm_context->old_nh_presence) {
+            if (!ie_write_bytes(&w, mm_context->old_nh, OGS_GTP2_NH_LEN))
+                goto overflow;
+        }
+    }
+
+    if (!ie_write_lv(&w, mm_context->voice_domain_preference_len,
+                mm_context->voice_domain_preference,
+                OGS_GTP2_MAX_VOICE_DOMAIN_PREFERENCE_LEN) ||
+        !ie_write_u16(&w, mm_context->ue_radio_capability_for_paging_len) ||
+        !ie_write_bytes(&w, mm_context->ue_radio_capability_for_paging,
+                mm_context->ue_radio_capability_for_paging_len))
+        goto overflow;
+
+    if (mm_context->extended_access_restriction_data_len) {
+        if (!ie_write_u8(&w, 1) ||
+            !ie_write_u8(&w, mm_context->extended_access_restriction_data))
+            goto overflow;
+    } else {
+        if (!ie_write_u8(&w, 0))
+            goto overflow;
+    }
+
+    if (!ie_write_lv(&w, mm_context->ue_additional_security_capability_len,
+                mm_context->ue_additional_security_capability,
+                OGS_GTP2_MAX_UE_ADDITIONAL_SECURITY_CAPABILITY_LEN) ||
+        !ie_write_lv(&w, mm_context->ue_nr_security_capability_len,
+                mm_context->ue_nr_security_capability,
+                OGS_GTP2_MAX_UE_NR_SECURITY_CAPABILITY_LEN) ||
+        !ie_write_u16(&w, mm_context->apn_rate_control_statuses_len) ||
+        !ie_write_bytes(&w, mm_context->apn_rate_control_statuses,
+                mm_context->apn_rate_control_statuses_len) ||
+        !ie_write_lv(&w, mm_context->core_network_restrictions_len,
+                mm_context->core_network_restrictions,
+                OGS_GTP2_CORE_NETWORK_RESTRICTIONS_LEN) ||
+        !ie_write_u8(&w, mm_context->ue_radio_capability_id_len) ||
+        !ie_write_bytes(&w, mm_context->ue_radio_capability_id,
+                mm_context->ue_radio_capability_id_len) ||
+        !ie_write_u8(&w,
+                ((mm_context->tridi ? 1 : 0) << 2) |
+                (mm_context->ensct & 0x03)))
+        goto overflow;
+
+    octet->data = data;
+    octet->len = w.pos;
+    return octet->len;
+
+overflow:
+    ogs_error("MM Context does not fit or has an invalid field "
+            "[data_len:%d pos:%d]", data_len, w.pos);
+    return 0;
+}
+
+/* 8.46 Complete Request Message */
+int16_t ogs_gtp2_parse_complete_request_message(
+    ogs_gtp2_complete_request_message_t *message, ogs_tlv_octet_t *octet)
+{
+    ogs_assert(message);
+    ogs_assert(octet);
+
+    memset(message, 0, sizeof(*message));
+
+    if (octet->len < 1) {
+        ogs_error("Complete Request Message IE too short [%d]", octet->len);
+        return 0;
+    }
+    message->type = ((uint8_t *)octet->data)[0];
+    message->len = octet->len - 1;
+    message->data = message->len ? (uint8_t *)octet->data + 1 : NULL;
+
+    return octet->len;
+}
+
+int16_t ogs_gtp2_build_complete_request_message(ogs_tlv_octet_t *octet,
+    ogs_gtp2_complete_request_message_t *message, void *data, int data_len)
+{
+    ie_writer_t w = { data, data_len, 0 };
+
+    ogs_assert(message);
+    ogs_assert(octet);
+    ogs_assert(data);
+
+    if (!ie_write_u8(&w, message->type) ||
+        !ie_write_bytes(&w, message->data, message->len)) {
+        ogs_error("Complete Request Message does not fit [%d]", data_len);
+        return 0;
+    }
+
+    octet->data = data;
+    octet->len = w.pos;
+    return octet->len;
+}
+
+/* 8.47 GUTI */
+int16_t ogs_gtp2_parse_guti(ogs_gtp2_guti_t *guti, ogs_tlv_octet_t *octet)
+{
+    ie_reader_t r;
+    uint16_t mme_gid;
+    uint8_t mme_code;
+    uint32_t m_tmsi;
+
+    ogs_assert(guti);
+    ogs_assert(octet);
+
+    memset(guti, 0, sizeof(*guti));
+    r.data = octet->data;
+    r.len = octet->len;
+    r.pos = 0;
+
+    if (!ie_read_bytes(&r, &guti->nas_plmn_id, OGS_PLMN_ID_LEN) ||
+        !ie_read_u16(&r, &mme_gid) ||
+        !ie_read_u8(&r, &mme_code) ||
+        !ie_read_u32(&r, &m_tmsi)) {
+        ogs_error("GUTI IE too short [%d]", octet->len);
+        return 0;
+    }
+    guti->mme_gid = mme_gid;
+    guti->mme_code = mme_code;
+    guti->m_tmsi = m_tmsi;
+
+    return octet->len;
+}
+
+int16_t ogs_gtp2_build_guti(ogs_tlv_octet_t *octet,
+    ogs_gtp2_guti_t *guti, void *data, int data_len)
+{
+    ie_writer_t w = { data, data_len, 0 };
+
+    ogs_assert(guti);
+    ogs_assert(octet);
+    ogs_assert(data);
+
+    if (!ie_write_bytes(&w, &guti->nas_plmn_id, OGS_PLMN_ID_LEN) ||
+        !ie_write_u16(&w, guti->mme_gid) ||
+        !ie_write_u8(&w, guti->mme_code) ||
+        !ie_write_u32(&w, guti->m_tmsi)) {
+        ogs_error("GUTI does not fit [%d]", data_len);
+        return 0;
+    }
+
+    octet->data = data;
+    octet->len = w.pos;
+    return octet->len;
+}
+
+/* 8.48 Fully Qualified Container (F-Container) */
+int16_t ogs_gtp2_parse_f_container(
+    ogs_gtp2_f_container_t *f_container, ogs_tlv_octet_t *octet)
+{
+    ogs_assert(f_container);
+    ogs_assert(octet);
+
+    memset(f_container, 0, sizeof(*f_container));
+
+    if (octet->len < 1) {
+        ogs_error("F-Container IE too short [%d]", octet->len);
+        return 0;
+    }
+    f_container->container_type = ((uint8_t *)octet->data)[0] & 0x0f;
+    f_container->len = octet->len - 1;
+    f_container->data =
+        f_container->len ? (uint8_t *)octet->data + 1 : NULL;
+
+    return octet->len;
+}
+
+int16_t ogs_gtp2_build_f_container(ogs_tlv_octet_t *octet,
+    ogs_gtp2_f_container_t *f_container, void *data, int data_len)
+{
+    ie_writer_t w = { data, data_len, 0 };
+
+    ogs_assert(f_container);
+    ogs_assert(octet);
+    ogs_assert(data);
+
+    if (!ie_write_u8(&w, f_container->container_type & 0x0f) ||
+        !ie_write_bytes(&w, f_container->data, f_container->len)) {
+        ogs_error("F-Container does not fit [%d]", data_len);
+        return 0;
+    }
+
+    octet->data = data;
+    octet->len = w.pos;
+    return octet->len;
+}
+
+/* 8.49 Fully Qualified Cause (F-Cause) */
+int16_t ogs_gtp2_parse_f_cause(
+    ogs_gtp2_f_cause_t *f_cause, ogs_tlv_octet_t *octet)
+{
+    uint8_t *p = NULL;
+
+    ogs_assert(f_cause);
+    ogs_assert(octet);
+
+    memset(f_cause, 0, sizeof(*f_cause));
+    p = octet->data;
+
+    if (octet->len == 2) {
+        f_cause->value_len = 1;
+        f_cause->value = p[1];
+    } else if (octet->len == 3) {
+        f_cause->value_len = 2;
+        f_cause->value = (p[1] << 8) | p[2];
+    } else {
+        ogs_error("Invalid F-Cause IE length [%d]", octet->len);
+        return 0;
+    }
+    f_cause->cause_type = p[0] & 0x0f;
+
+    return octet->len;
+}
+
+int16_t ogs_gtp2_build_f_cause(ogs_tlv_octet_t *octet,
+    ogs_gtp2_f_cause_t *f_cause, void *data, int data_len)
+{
+    ie_writer_t w = { data, data_len, 0 };
+    bool ok;
+
+    ogs_assert(f_cause);
+    ogs_assert(octet);
+    ogs_assert(data);
+
+    ok = ie_write_u8(&w, f_cause->cause_type & 0x0f);
+    if (f_cause->value_len == 2)
+        ok = ok && ie_write_u16(&w, f_cause->value);
+    else if (f_cause->value_len <= 1 && f_cause->value <= 0xff)
+        ok = ok && ie_write_u8(&w, f_cause->value);
+    else
+        ok = false;
+
+    if (!ok) {
+        ogs_error("Invalid F-Cause [len:%d value:%d]",
+                f_cause->value_len, f_cause->value);
+        return 0;
+    }
+
+    octet->data = data;
+    octet->len = w.pos;
+    return octet->len;
+}
+
+/* 8.51 Target Identification */
+int16_t ogs_gtp2_parse_target_identification(
+    ogs_gtp2_target_identification_t *target, ogs_tlv_octet_t *octet)
+{
+    ie_reader_t r;
+    uint8_t b[4];
+
+    ogs_assert(target);
+    ogs_assert(octet);
+
+    memset(target, 0, sizeof(*target));
+    r.data = octet->data;
+    r.len = octet->len;
+    r.pos = 0;
+
+    if (!ie_read_u8(&r, &target->target_type))
+        goto truncated;
+
+    switch (target->target_type) {
+    case OGS_GTP2_TARGET_TYPE_MACRO_ENODEB_ID:
+    case OGS_GTP2_TARGET_TYPE_EXTENDED_MACRO_ENODEB_ID:
+        /* Figure 8.51-2 and Figure 8.51-4 */
+        if (!ie_read_bytes(&r, &target->nas_plmn_id, OGS_PLMN_ID_LEN) ||
+            !ie_read_bytes(&r, b, 3) ||
+            !ie_read_u16(&r, &target->tac))
+            goto truncated;
+        if (target->target_type == OGS_GTP2_TARGET_TYPE_MACRO_ENODEB_ID) {
+            target->enodeb_id = ((b[0] & 0x0f) << 16) | (b[1] << 8) | b[2];
+        } else {
+            target->smenb = b[0] >> 7;
+            if (target->smenb)
+                target->enodeb_id =
+                    ((b[0] & 0x03) << 16) | (b[1] << 8) | b[2];
+            else
+                target->enodeb_id =
+                    ((b[0] & 0x1f) << 16) | (b[1] << 8) | b[2];
+        }
+        break;
+    case OGS_GTP2_TARGET_TYPE_HOME_ENODEB_ID:
+        /* Figure 8.51-3 */
+        if (!ie_read_bytes(&r, &target->nas_plmn_id, OGS_PLMN_ID_LEN) ||
+            !ie_read_bytes(&r, b, 4) ||
+            !ie_read_u16(&r, &target->tac))
+            goto truncated;
+        target->enodeb_id = ((uint32_t)(b[0] & 0x0f) << 24) |
+            (b[1] << 16) | (b[2] << 8) | b[3];
+        break;
+    default:
+        /* Not an E-UTRAN target: only the Target Type is decoded */
+        break;
+    }
+
+    return octet->len;
+
+truncated:
+    ogs_error("Invalid Target Identification [len:%d]", octet->len);
+    ogs_log_hexdump(OGS_LOG_ERROR, octet->data, octet->len);
+    return 0;
+}
+
+int16_t ogs_gtp2_build_target_identification(ogs_tlv_octet_t *octet,
+    ogs_gtp2_target_identification_t *target, void *data, int data_len)
+{
+    ie_writer_t w = { data, data_len, 0 };
+    uint32_t id = target ? target->enodeb_id : 0;
+    bool ok;
+
+    ogs_assert(target);
+    ogs_assert(octet);
+    ogs_assert(data);
+
+    ok = ie_write_u8(&w, target->target_type) &&
+        ie_write_bytes(&w, &target->nas_plmn_id, OGS_PLMN_ID_LEN);
+
+    switch (target->target_type) {
+    case OGS_GTP2_TARGET_TYPE_MACRO_ENODEB_ID:
+        ok = ok && id <= 0xfffff && ie_write_u24(&w, id);
+        break;
+    case OGS_GTP2_TARGET_TYPE_EXTENDED_MACRO_ENODEB_ID:
+        if (target->smenb)
+            ok = ok && id <= 0x3ffff && ie_write_u24(&w, 0x800000 | id);
+        else
+            ok = ok && id <= 0x1fffff && ie_write_u24(&w, id);
+        break;
+    case OGS_GTP2_TARGET_TYPE_HOME_ENODEB_ID:
+        ok = ok && id <= 0xfffffff && ie_write_u32(&w, id);
+        break;
+    default:
+        ogs_error("Unsupported Target Type [%d]", target->target_type);
+        return 0;
+    }
+    ok = ok && ie_write_u16(&w, target->tac);
+
+    if (!ok) {
+        ogs_error("Invalid Target Identification [type:%d id:0x%x]",
+                target->target_type, id);
+        return 0;
+    }
+
+    octet->data = data;
+    octet->len = w.pos;
+    return octet->len;
+}

@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-06-17 10:33:02.236292 by acetcom
+ * Created on: 2026-10-02 14:21:58.240338 by debian
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -187,6 +187,17 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_msisdn_0 =
     OGS_GTP2_MSISDN_TYPE,
     0,
     0,
+    sizeof(ogs_gtp2_tlv_msisdn_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_msisdn_1 =
+{
+    OGS_TLV_VAR_STR,
+    "MSISDN",
+    OGS_GTP2_MSISDN_TYPE,
+    0,
+    1,
     sizeof(ogs_gtp2_tlv_msisdn_t),
     { NULL }
 };
@@ -675,6 +686,28 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_container_0 =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_container_1 =
+{
+    OGS_TLV_VAR_STR,
+    "F-Container",
+    OGS_GTP2_F_CONTAINER_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp2_tlv_f_container_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_container_2 =
+{
+    OGS_TLV_VAR_STR,
+    "F-Container",
+    OGS_GTP2_F_CONTAINER_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp2_tlv_f_container_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_cause_0 =
 {
     OGS_TLV_VAR_STR,
@@ -682,6 +715,28 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_cause_0 =
     OGS_GTP2_F_CAUSE_TYPE,
     0,
     0,
+    sizeof(ogs_gtp2_tlv_f_cause_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_cause_1 =
+{
+    OGS_TLV_VAR_STR,
+    "F-Cause",
+    OGS_GTP2_F_CAUSE_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp2_tlv_f_cause_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_cause_2 =
+{
+    OGS_TLV_VAR_STR,
+    "F-Cause",
+    OGS_GTP2_F_CAUSE_TYPE,
+    0,
+    2,
     sizeof(ogs_gtp2_tlv_f_cause_t),
     { NULL }
 };
@@ -697,6 +752,17 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_plmn_id_0 =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_plmn_id_1 =
+{
+    OGS_TLV_VAR_STR,
+    "PLMN ID",
+    OGS_GTP2_PLMN_ID_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp2_tlv_plmn_id_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_target_identification_0 =
 {
     OGS_TLV_VAR_STR,
@@ -704,6 +770,17 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_target_identification_0 =
     OGS_GTP2_TARGET_IDENTIFICATION_TYPE,
     0,
     0,
+    sizeof(ogs_gtp2_tlv_target_identification_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_target_identification_1 =
+{
+    OGS_TLV_VAR_STR,
+    "Target Identification",
+    OGS_GTP2_TARGET_IDENTIFICATION_TYPE,
+    0,
+    1,
     sizeof(ogs_gtp2_tlv_target_identification_t),
     { NULL }
 };
@@ -1023,6 +1100,17 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_rfsp_index_0 =
     OGS_GTP2_RFSP_INDEX_TYPE,
     0,
     0,
+    sizeof(ogs_gtp2_tlv_rfsp_index_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_rfsp_index_1 =
+{
+    OGS_TLV_VAR_STR,
+    "RFSP Index",
+    OGS_GTP2_RFSP_INDEX_TYPE,
+    0,
+    1,
     sizeof(ogs_gtp2_tlv_rfsp_index_t),
     { NULL }
 };
@@ -1401,6 +1489,28 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_number_0 =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_number_1 =
+{
+    OGS_TLV_VAR_STR,
+    "Node Number",
+    OGS_GTP2_NODE_NUMBER_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp2_tlv_node_number_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_number_2 =
+{
+    OGS_TLV_VAR_STR,
+    "Node Number",
+    OGS_GTP2_NODE_NUMBER_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp2_tlv_node_number_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_0 =
 {
     OGS_TLV_VAR_STR,
@@ -1408,6 +1518,39 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_0 =
     OGS_GTP2_NODE_IDENTIFIER_TYPE,
     0,
     0,
+    sizeof(ogs_gtp2_tlv_node_identifier_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_1 =
+{
+    OGS_TLV_VAR_STR,
+    "Node Identifier",
+    OGS_GTP2_NODE_IDENTIFIER_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp2_tlv_node_identifier_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_2 =
+{
+    OGS_TLV_VAR_STR,
+    "Node Identifier",
+    OGS_GTP2_NODE_IDENTIFIER_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp2_tlv_node_identifier_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_3 =
+{
+    OGS_TLV_VAR_STR,
+    "Node Identifier",
+    OGS_GTP2_NODE_IDENTIFIER_TYPE,
+    0,
+    3,
     sizeof(ogs_gtp2_tlv_node_identifier_t),
     { NULL }
 };
@@ -1518,6 +1661,17 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_integer_number_0 =
     OGS_GTP2_INTEGER_NUMBER_TYPE,
     0,
     0,
+    sizeof(ogs_gtp2_tlv_integer_number_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_integer_number_1 =
+{
+    OGS_TLV_VAR_STR,
+    "Integer Number",
+    OGS_GTP2_INTEGER_NUMBER_TYPE,
+    0,
+    1,
     sizeof(ogs_gtp2_tlv_integer_number_t),
     { NULL }
 };
@@ -1654,6 +1808,17 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0 =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_1 =
+{
+    OGS_TLV_VAR_STR,
+    "Secondary RAT Usage Data Report",
+    OGS_GTP2_SECONDARY_RAT_USAGE_DATA_REPORT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp2_tlv_secondary_rat_usage_data_report_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_up_function_selection_indication_flags_0 =
 {
     OGS_TLV_VAR_STR,
@@ -1716,6 +1881,17 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_additional_rrm_policy_index_0 =
     OGS_GTP2_ADDITIONAL_RRM_POLICY_INDEX_TYPE,
     0,
     0,
+    sizeof(ogs_gtp2_tlv_additional_rrm_policy_index_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_additional_rrm_policy_index_1 =
+{
+    OGS_TLV_VAR_STR,
+    "Additional RRM Policy Index",
+    OGS_GTP2_ADDITIONAL_RRM_POLICY_INDEX_TYPE,
+    0,
+    1,
     sizeof(ogs_gtp2_tlv_additional_rrm_policy_index_t),
     { NULL }
 };
@@ -2055,6 +2231,84 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_1 =
     }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_2 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP2_BEARER_CONTEXT_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp2_tlv_bearer_context_t),
+    {
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_bearer_tft_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_f_teid_2,
+        &ogs_gtp2_tlv_desc_f_teid_3,
+        &ogs_gtp2_tlv_desc_f_teid_4,
+        &ogs_gtp2_tlv_desc_f_teid_5,
+        &ogs_gtp2_tlv_desc_f_teid_6,
+        &ogs_gtp2_tlv_desc_bearer_qos_0,
+        &ogs_gtp2_tlv_desc_f_teid_7,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_charging_id_0,
+        &ogs_gtp2_tlv_desc_bearer_flags_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_maximum_packet_loss_rate_0,
+        &ogs_gtp2_tlv_desc_f_teid_8,
+        &ogs_gtp2_tlv_desc_f_teid_9,
+        &ogs_gtp2_tlv_desc_f_teid_10,
+        &ogs_gtp2_tlv_desc_f_teid_11,
+        &ogs_gtp2_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp2_tlv_desc_apco_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_ti_0,
+        &ogs_gtp2_tlv_desc_packet_flow_id_0,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_3 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP2_BEARER_CONTEXT_TYPE,
+    0,
+    3,
+    sizeof(ogs_gtp2_tlv_bearer_context_t),
+    {
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_bearer_tft_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_f_teid_2,
+        &ogs_gtp2_tlv_desc_f_teid_3,
+        &ogs_gtp2_tlv_desc_f_teid_4,
+        &ogs_gtp2_tlv_desc_f_teid_5,
+        &ogs_gtp2_tlv_desc_f_teid_6,
+        &ogs_gtp2_tlv_desc_bearer_qos_0,
+        &ogs_gtp2_tlv_desc_f_teid_7,
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_charging_id_0,
+        &ogs_gtp2_tlv_desc_bearer_flags_0,
+        &ogs_gtp2_tlv_desc_pco_0,
+        &ogs_gtp2_tlv_desc_epco_0,
+        &ogs_gtp2_tlv_desc_maximum_packet_loss_rate_0,
+        &ogs_gtp2_tlv_desc_f_teid_8,
+        &ogs_gtp2_tlv_desc_f_teid_9,
+        &ogs_gtp2_tlv_desc_f_teid_10,
+        &ogs_gtp2_tlv_desc_f_teid_11,
+        &ogs_gtp2_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp2_tlv_desc_apco_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_ti_0,
+        &ogs_gtp2_tlv_desc_packet_flow_id_0,
+        NULL,
+    }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0 =
 {
     OGS_TLV_COMPOUND,
@@ -2073,6 +2327,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0 =
         &ogs_gtp2_tlv_desc_f_teid_0,
         &ogs_gtp2_tlv_desc_fqdn_0,
         &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_tlv_desc_more8,
         &ogs_gtp2_tlv_desc_ambr_0,
         &ogs_gtp2_tlv_desc_charging_characteristics_0,
         &ogs_gtp2_tlv_desc_change_reporting_action_0,
@@ -2769,6 +3024,300 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_response =
     NULL,
 }};
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_identification_request =
+{
+    OGS_TLV_MESSAGE,
+    "Identification Request",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_guti_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_p_tmsi_0,
+        &ogs_gtp2_tlv_desc_p_tmsi_signature_0,
+        &ogs_gtp2_tlv_desc_complete_request_message_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_hop_counter_0,
+        &ogs_gtp2_tlv_desc_serving_network_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_identification_response =
+{
+    OGS_TLV_MESSAGE,
+    "Identification Response",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_mm_context_0,
+        &ogs_gtp2_tlv_desc_trace_information_0,
+        &ogs_gtp2_tlv_desc_integer_number_0,
+        &ogs_gtp2_tlv_desc_monitoring_event_information_0,
+        &ogs_gtp2_tlv_desc_monitoring_event_extension_information_0,
+        &ogs_gtp2_tlv_desc_extended_trace_information_0,
+        &ogs_gtp2_tlv_desc_uri_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_context_request =
+{
+    OGS_TLV_MESSAGE,
+    "Context Request",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_guti_0,
+        &ogs_gtp2_tlv_desc_uli_0,
+        &ogs_gtp2_tlv_desc_p_tmsi_0,
+        &ogs_gtp2_tlv_desc_p_tmsi_signature_0,
+        &ogs_gtp2_tlv_desc_complete_request_message_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_rat_type_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_hop_counter_0,
+        &ogs_gtp2_tlv_desc_serving_network_0,
+        &ogs_gtp2_tlv_desc_ldn_0,
+        &ogs_gtp2_tlv_desc_fqdn_0,
+        &ogs_gtp2_tlv_desc_fqdn_1,
+        &ogs_gtp2_tlv_desc_node_number_0,
+        &ogs_gtp2_tlv_desc_node_identifier_0,
+        &ogs_gtp2_tlv_desc_node_identifier_1,
+        &ogs_gtp2_tlv_desc_ciot_optimizations_support_indication_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_context_response =
+{
+    OGS_TLV_MESSAGE,
+    "Context Response",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_mm_context_0,
+        &ogs_gtp2_tlv_desc_pdn_connection_0,
+        &ogs_tlv_desc_more4,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_fqdn_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_trace_information_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_ip_address_1,
+        &ogs_gtp2_tlv_desc_rfsp_index_0,
+        &ogs_gtp2_tlv_desc_rfsp_index_1,
+        &ogs_gtp2_tlv_desc_timer_in_seconds_0,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_ldn_0,
+        &ogs_gtp2_tlv_desc_mdt_configuration_0,
+        &ogs_gtp2_tlv_desc_fqdn_1,
+        &ogs_gtp2_tlv_desc_fqdn_2,
+        &ogs_gtp2_tlv_desc_uci_0,
+        &ogs_gtp2_tlv_desc_monitoring_event_information_0,
+        &ogs_gtp2_tlv_desc_monitoring_event_extension_information_0,
+        &ogs_gtp2_tlv_desc_integer_number_0,
+        &ogs_gtp2_tlv_desc_scef_pdn_connection_0,
+        &ogs_gtp2_tlv_desc_rat_type_0,
+        &ogs_gtp2_tlv_desc_serving_plmn_rate_control_0,
+        &ogs_gtp2_tlv_desc_counter_0,
+        &ogs_gtp2_tlv_desc_integer_number_1,
+        &ogs_gtp2_tlv_desc_extended_trace_information_0,
+        &ogs_gtp2_tlv_desc_additional_rrm_policy_index_0,
+        &ogs_gtp2_tlv_desc_additional_rrm_policy_index_1,
+        &ogs_gtp2_tlv_desc_node_identifier_0,
+        &ogs_gtp2_tlv_desc_alternative_imsi_0,
+        &ogs_gtp2_tlv_desc_msisdn_0,
+        &ogs_gtp2_tlv_desc_mdt_configuration_nr_0,
+        &ogs_gtp2_tlv_desc_uri_0,
+        &ogs_gtp2_tlv_desc_plmn_id_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_context_acknowledge =
+{
+    OGS_TLV_MESSAGE,
+    "Context Acknowledge",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_tlv_desc_more8,
+        &ogs_gtp2_tlv_desc_node_number_0,
+        &ogs_gtp2_tlv_desc_node_number_1,
+        &ogs_gtp2_tlv_desc_node_identifier_0,
+        &ogs_gtp2_tlv_desc_node_identifier_1,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_request =
+{
+    OGS_TLV_MESSAGE,
+    "Forward Relocation Request",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_pdn_connection_0,
+        &ogs_tlv_desc_more4,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_fqdn_0,
+        &ogs_gtp2_tlv_desc_mm_context_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_f_container_1,
+        &ogs_gtp2_tlv_desc_f_container_2,
+        &ogs_gtp2_tlv_desc_target_identification_0,
+        &ogs_gtp2_tlv_desc_ip_address_0,
+        &ogs_gtp2_tlv_desc_ip_address_1,
+        &ogs_gtp2_tlv_desc_f_cause_0,
+        &ogs_gtp2_tlv_desc_f_cause_1,
+        &ogs_gtp2_tlv_desc_f_cause_2,
+        &ogs_gtp2_tlv_desc_source_identification_0,
+        &ogs_gtp2_tlv_desc_plmn_id_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_trace_information_0,
+        &ogs_gtp2_tlv_desc_rfsp_index_0,
+        &ogs_gtp2_tlv_desc_rfsp_index_1,
+        &ogs_gtp2_tlv_desc_timer_in_seconds_0,
+        &ogs_gtp2_tlv_desc_csg_id_0,
+        &ogs_gtp2_tlv_desc_cmi_0,
+        &ogs_gtp2_tlv_desc_ue_time_zone_0,
+        &ogs_gtp2_tlv_desc_serving_network_0,
+        &ogs_gtp2_tlv_desc_ldn_0,
+        &ogs_gtp2_tlv_desc_additional_mm_context_for_srvcc_0,
+        &ogs_gtp2_tlv_desc_additional_flags_for_srvcc_0,
+        &ogs_gtp2_tlv_desc_stn_sr_0,
+        &ogs_gtp2_tlv_desc_msisdn_0,
+        &ogs_gtp2_tlv_desc_mdt_configuration_0,
+        &ogs_gtp2_tlv_desc_fqdn_1,
+        &ogs_gtp2_tlv_desc_fqdn_2,
+        &ogs_gtp2_tlv_desc_uci_0,
+        &ogs_gtp2_tlv_desc_monitoring_event_information_0,
+        &ogs_gtp2_tlv_desc_monitoring_event_extension_information_0,
+        &ogs_gtp2_tlv_desc_integer_number_0,
+        &ogs_gtp2_tlv_desc_scef_pdn_connection_0,
+        &ogs_gtp2_tlv_desc_msisdn_1,
+        &ogs_gtp2_tlv_desc_port_number_0,
+        &ogs_gtp2_tlv_desc_serving_plmn_rate_control_0,
+        &ogs_gtp2_tlv_desc_extended_trace_information_0,
+        &ogs_gtp2_tlv_desc_additional_rrm_policy_index_0,
+        &ogs_gtp2_tlv_desc_additional_rrm_policy_index_1,
+        &ogs_gtp2_tlv_desc_v2x_context_0,
+        &ogs_gtp2_tlv_desc_node_identifier_0,
+        &ogs_gtp2_tlv_desc_alternative_imsi_0,
+        &ogs_gtp2_tlv_desc_mdt_configuration_nr_0,
+        &ogs_gtp2_tlv_desc_uri_0,
+        &ogs_gtp2_tlv_desc_plmn_id_1,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_response =
+{
+    OGS_TLV_MESSAGE,
+    "Forward Relocation Response",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_tlv_desc_more8,
+        &ogs_gtp2_tlv_desc_bearer_context_1,
+        &ogs_gtp2_tlv_desc_bearer_context_2,
+        &ogs_gtp2_tlv_desc_f_cause_0,
+        &ogs_gtp2_tlv_desc_f_cause_1,
+        &ogs_gtp2_tlv_desc_f_cause_2,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_f_container_1,
+        &ogs_gtp2_tlv_desc_f_container_2,
+        &ogs_gtp2_tlv_desc_ldn_0,
+        &ogs_gtp2_tlv_desc_fqdn_0,
+        &ogs_gtp2_tlv_desc_fqdn_1,
+        &ogs_gtp2_tlv_desc_node_number_0,
+        &ogs_gtp2_tlv_desc_node_identifier_0,
+        &ogs_gtp2_tlv_desc_node_identifier_1,
+        &ogs_gtp2_tlv_desc_node_number_1,
+        &ogs_gtp2_tlv_desc_node_identifier_2,
+        &ogs_gtp2_tlv_desc_node_identifier_3,
+        &ogs_gtp2_tlv_desc_bearer_context_3,
+        &ogs_gtp2_tlv_desc_srvcc_cause_0,
+        &ogs_gtp2_tlv_desc_node_number_2,
+        &ogs_gtp2_tlv_desc_nf_instance_id_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_complete_notification =
+{
+    OGS_TLV_MESSAGE,
+    "Forward Relocation Complete Notification",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_indication_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_complete_acknowledge =
+{
+    OGS_TLV_MESSAGE,
+    "Forward Relocation Complete Acknowledge",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_cause_0,
+        &ogs_gtp2_tlv_desc_recovery_0,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
+        &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_1,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_access_context_notification =
+{
+    OGS_TLV_MESSAGE,
+    "Forward Access Context Notification",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_rab_context_0,
+        &ogs_gtp2_tlv_desc_source_rnc_pdcp_context_info_0,
+        &ogs_gtp2_tlv_desc_pdu_numbers_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_f_container_1,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_access_context_acknowledge =
+{
+    OGS_TLV_MESSAGE,
+    "Forward Access Context Acknowledge",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_cause_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_relocation_cancel_request =
+{
+    OGS_TLV_MESSAGE,
+    "Relocation Cancel Request",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_imsi_0,
+        &ogs_gtp2_tlv_desc_mei_0,
+        &ogs_gtp2_tlv_desc_indication_0,
+        &ogs_gtp2_tlv_desc_f_cause_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_relocation_cancel_response =
+{
+    OGS_TLV_MESSAGE,
+    "Relocation Cancel Response",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_cause_0,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_configuration_transfer_tunnel =
+{
+    OGS_TLV_MESSAGE,
+    "Configuration Transfer Tunnel",
+    0, 0, 0, 0, {
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_target_identification_0,
+        &ogs_gtp2_tlv_desc_target_identification_1,
+    NULL,
+}};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_request =
 {
     OGS_TLV_MESSAGE,
@@ -3025,6 +3574,62 @@ int ogs_gtp2_parse_msg(ogs_gtp2_message_t *gtp2_message, ogs_pkbuf_t *pkbuf)
         rv = ogs_tlv_parse_msg(&gtp2_message->delete_bearer_response,
                 &ogs_gtp2_tlv_desc_delete_bearer_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
+    case OGS_GTP2_IDENTIFICATION_REQUEST_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->identification_request,
+                &ogs_gtp2_tlv_desc_identification_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_IDENTIFICATION_RESPONSE_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->identification_response,
+                &ogs_gtp2_tlv_desc_identification_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_CONTEXT_REQUEST_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->context_request,
+                &ogs_gtp2_tlv_desc_context_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_CONTEXT_RESPONSE_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->context_response,
+                &ogs_gtp2_tlv_desc_context_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_CONTEXT_ACKNOWLEDGE_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->context_acknowledge,
+                &ogs_gtp2_tlv_desc_context_acknowledge, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_RELOCATION_REQUEST_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->forward_relocation_request,
+                &ogs_gtp2_tlv_desc_forward_relocation_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_RELOCATION_RESPONSE_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->forward_relocation_response,
+                &ogs_gtp2_tlv_desc_forward_relocation_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_NOTIFICATION_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->forward_relocation_complete_notification,
+                &ogs_gtp2_tlv_desc_forward_relocation_complete_notification, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_ACKNOWLEDGE_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->forward_relocation_complete_acknowledge,
+                &ogs_gtp2_tlv_desc_forward_relocation_complete_acknowledge, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_ACCESS_CONTEXT_NOTIFICATION_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->forward_access_context_notification,
+                &ogs_gtp2_tlv_desc_forward_access_context_notification, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_ACCESS_CONTEXT_ACKNOWLEDGE_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->forward_access_context_acknowledge,
+                &ogs_gtp2_tlv_desc_forward_access_context_acknowledge, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_RELOCATION_CANCEL_REQUEST_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->relocation_cancel_request,
+                &ogs_gtp2_tlv_desc_relocation_cancel_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_RELOCATION_CANCEL_RESPONSE_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->relocation_cancel_response,
+                &ogs_gtp2_tlv_desc_relocation_cancel_response, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_CONFIGURATION_TRANSFER_TUNNEL_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp2_message->configuration_transfer_tunnel,
+                &ogs_gtp2_tlv_desc_configuration_transfer_tunnel, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
     case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg(&gtp2_message->create_indirect_data_forwarding_tunnel_request,
                 &ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_request, pkbuf, OGS_TLV_MODE_T1_L2_I1);
@@ -3162,6 +3767,62 @@ ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp2_message)
     case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_delete_bearer_response,
                 &gtp2_message->delete_bearer_response, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_IDENTIFICATION_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_identification_request,
+                &gtp2_message->identification_request, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_IDENTIFICATION_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_identification_response,
+                &gtp2_message->identification_response, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_CONTEXT_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_context_request,
+                &gtp2_message->context_request, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_CONTEXT_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_context_response,
+                &gtp2_message->context_response, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_CONTEXT_ACKNOWLEDGE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_context_acknowledge,
+                &gtp2_message->context_acknowledge, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_RELOCATION_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_forward_relocation_request,
+                &gtp2_message->forward_relocation_request, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_RELOCATION_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_forward_relocation_response,
+                &gtp2_message->forward_relocation_response, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_NOTIFICATION_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_forward_relocation_complete_notification,
+                &gtp2_message->forward_relocation_complete_notification, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_ACKNOWLEDGE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_forward_relocation_complete_acknowledge,
+                &gtp2_message->forward_relocation_complete_acknowledge, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_ACCESS_CONTEXT_NOTIFICATION_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_forward_access_context_notification,
+                &gtp2_message->forward_access_context_notification, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_FORWARD_ACCESS_CONTEXT_ACKNOWLEDGE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_forward_access_context_acknowledge,
+                &gtp2_message->forward_access_context_acknowledge, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_RELOCATION_CANCEL_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_relocation_cancel_request,
+                &gtp2_message->relocation_cancel_request, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_RELOCATION_CANCEL_RESPONSE_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_relocation_cancel_response,
+                &gtp2_message->relocation_cancel_response, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP2_CONFIGURATION_TRANSFER_TUNNEL_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_configuration_transfer_tunnel,
+                &gtp2_message->configuration_transfer_tunnel, OGS_TLV_MODE_T1_L2_I1);
         break;
     case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_create_indirect_data_forwarding_tunnel_request,

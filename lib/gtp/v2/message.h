@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-06-17 10:33:02.228966 by acetcom
+ * Created on: 2026-10-02 14:21:58.234919 by debian
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -113,6 +113,20 @@ typedef struct ogs_gtp2_header_s {
 #define OGS_GTP2_DELETE_PDN_CONNECTION_SET_RESPONSE_TYPE 102
 #define OGS_GTP2_PGW_DOWNLINK_TRIGGERING_NOTIFICATION_TYPE 103
 #define OGS_GTP2_PGW_DOWNLINK_TRIGGERING_ACKNOWLEDGE_TYPE 104
+#define OGS_GTP2_IDENTIFICATION_REQUEST_TYPE 128
+#define OGS_GTP2_IDENTIFICATION_RESPONSE_TYPE 129
+#define OGS_GTP2_CONTEXT_REQUEST_TYPE 130
+#define OGS_GTP2_CONTEXT_RESPONSE_TYPE 131
+#define OGS_GTP2_CONTEXT_ACKNOWLEDGE_TYPE 132
+#define OGS_GTP2_FORWARD_RELOCATION_REQUEST_TYPE 133
+#define OGS_GTP2_FORWARD_RELOCATION_RESPONSE_TYPE 134
+#define OGS_GTP2_FORWARD_RELOCATION_COMPLETE_NOTIFICATION_TYPE 135
+#define OGS_GTP2_FORWARD_RELOCATION_COMPLETE_ACKNOWLEDGE_TYPE 136
+#define OGS_GTP2_FORWARD_ACCESS_CONTEXT_NOTIFICATION_TYPE 137
+#define OGS_GTP2_FORWARD_ACCESS_CONTEXT_ACKNOWLEDGE_TYPE 138
+#define OGS_GTP2_RELOCATION_CANCEL_REQUEST_TYPE 139
+#define OGS_GTP2_RELOCATION_CANCEL_RESPONSE_TYPE 140
+#define OGS_GTP2_CONFIGURATION_TRANSFER_TUNNEL_TYPE 141
 #define OGS_GTP2_CREATE_FORWARDING_TUNNEL_REQUEST_TYPE 160
 #define OGS_GTP2_CREATE_FORWARDING_TUNNEL_RESPONSE_TYPE 161
 #define OGS_GTP2_SUSPEND_NOTIFICATION_TYPE 162
@@ -298,6 +312,7 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_ip_address_2;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_ip_address_3;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_mei_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_msisdn_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_msisdn_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_indication_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pco_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_paa_0;
@@ -342,9 +357,15 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_trace_reference_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_complete_request_message_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_guti_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_container_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_container_1;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_container_2;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_cause_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_cause_1;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_f_cause_2;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_plmn_id_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_plmn_id_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_target_identification_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_target_identification_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_packet_flow_id_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_rab_context_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_source_rnc_pdcp_context_info_0;
@@ -374,6 +395,7 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_flow_identifier_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_ip_multicast_distribution_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_mbms_distribution_acknowledge_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_rfsp_index_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_rfsp_index_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_uci_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_csg_information_reporting_action_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_csg_id_0;
@@ -408,7 +430,12 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_ran_nas_cause_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_cn_operator_selection_entity_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_twmi_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_number_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_number_1;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_number_2;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_1;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_2;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_node_identifier_3;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_presence_reporting_area_action_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_presence_reporting_area_information_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_twan_identifier_timestamp_0;
@@ -419,6 +446,7 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_apn_and_relative_capacity_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_wlan_offloadability_indication_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_paging_and_service_information_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_integer_number_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_integer_number_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_millisecond_time_stamp_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_monitoring_event_information_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_ecgi_list_0;
@@ -431,12 +459,14 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_serving_plmn_rate_control_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_counter_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_mapped_ue_usage_type_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_up_function_selection_indication_flags_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_maximum_packet_loss_rate_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_apn_rate_control_status_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_extended_trace_information_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_monitoring_event_extension_information_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_additional_rrm_policy_index_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_additional_rrm_policy_index_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_services_authorized_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_services_authorized_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bit_rate_0;
@@ -462,6 +492,8 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pgw_change_info_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_v2x_context_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_1;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_2;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_3;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_overload_control_information_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_overload_control_information_1;
@@ -505,6 +537,20 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_pdn_connection_set_request;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_pdn_connection_set_response;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pgw_downlink_triggering_notification;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pgw_downlink_triggering_acknowledge;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_identification_request;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_identification_response;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_context_request;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_context_response;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_context_acknowledge;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_request;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_response;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_complete_notification;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_complete_acknowledge;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_access_context_notification;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_access_context_acknowledge;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_relocation_cancel_request;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_relocation_cancel_response;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_configuration_transfer_tunnel;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_forwarding_tunnel_request;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_forwarding_tunnel_response;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_suspend_notification;
@@ -741,7 +787,7 @@ typedef struct ogs_gtp2_tlv_pdn_connection_s {
     ogs_gtp2_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp2_tlv_f_teid_t pgw_s5_s8_ip_address_for_control_plane_or_pmip; /* Instance : 0 */
     ogs_gtp2_tlv_fqdn_t pgw_node_name;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts;
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp2_tlv_charging_characteristics_t charging_characteristics;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;
@@ -1235,6 +1281,226 @@ typedef struct ogs_gtp2_delete_bearer_response_s {
     ogs_gtp2_tlv_pscell_id_t pscell_id;
 } ogs_gtp2_delete_bearer_response_t;
 
+typedef struct ogs_gtp2_identification_request_s {
+    ogs_gtp2_tlv_guti_t guti;
+    ogs_gtp2_tlv_uli_t routeing_area_identity;
+    ogs_gtp2_tlv_p_tmsi_t packet_tmsi;
+    ogs_gtp2_tlv_p_tmsi_signature_t p_tmsi_signature;
+    ogs_gtp2_tlv_complete_request_message_t complete_attach_request_message;
+    ogs_gtp2_tlv_ip_address_t address_for_control_plane;
+    ogs_gtp2_tlv_port_number_t udp_source_port_number;
+    ogs_gtp2_tlv_hop_counter_t hop_counter;
+    ogs_gtp2_tlv_serving_network_t target_plmn_id;
+} ogs_gtp2_identification_request_t;
+
+typedef struct ogs_gtp2_identification_response_s {
+    ogs_gtp2_tlv_cause_t cause;
+    ogs_gtp2_tlv_imsi_t imsi;
+    ogs_gtp2_tlv_mm_context_t mme_sgsn_ue_mm_context;
+    ogs_gtp2_tlv_trace_information_t trace_information;
+    ogs_gtp2_tlv_integer_number_t ue_usage_type;
+    ogs_gtp2_tlv_monitoring_event_information_t monitoring_event_information;
+    ogs_gtp2_tlv_monitoring_event_extension_information_t monitoring_event_extension_information;
+    ogs_gtp2_tlv_extended_trace_information_t extended_trace_information;
+    ogs_gtp2_tlv_uri_t trace_collection_entity_uri;
+} ogs_gtp2_identification_response_t;
+
+typedef struct ogs_gtp2_context_request_s {
+    ogs_gtp2_tlv_imsi_t imsi;
+    ogs_gtp2_tlv_guti_t guti;
+    ogs_gtp2_tlv_uli_t routeing_area_identity;
+    ogs_gtp2_tlv_p_tmsi_t packet_tmsi;
+    ogs_gtp2_tlv_p_tmsi_signature_t p_tmsi_signature;
+    ogs_gtp2_tlv_complete_request_message_t complete_tau_request_message;
+    ogs_gtp2_tlv_f_teid_t s3_s16_s10_n26_address_and_teid_for_control_plane;
+    ogs_gtp2_tlv_port_number_t udp_source_port_number;
+    ogs_gtp2_tlv_rat_type_t rat_type;
+    ogs_gtp2_tlv_indication_t indication;
+    ogs_gtp2_tlv_hop_counter_t hop_counter;
+    ogs_gtp2_tlv_serving_network_t target_plmn_id;
+    ogs_gtp2_tlv_ldn_t mme_s4_sgsn_ldn;
+    ogs_gtp2_tlv_fqdn_t sgsn_node_name;
+    ogs_gtp2_tlv_fqdn_t mme_node_name;
+    ogs_gtp2_tlv_node_number_t sgsn_number;
+    ogs_gtp2_tlv_node_identifier_t sgsn_identifier;
+    ogs_gtp2_tlv_node_identifier_t mme_identifier;
+    ogs_gtp2_tlv_ciot_optimizations_support_indication_t ciot_optimizations_support_indication;
+} ogs_gtp2_context_request_t;
+
+typedef struct ogs_gtp2_context_response_s {
+    ogs_gtp2_tlv_cause_t cause;
+    ogs_gtp2_tlv_imsi_t imsi;
+    ogs_gtp2_tlv_mm_context_t mme_sgsn_amf_ue_mm_context;
+    ogs_gtp2_tlv_pdn_connection_t mme_sgsn_amf_ue_eps_pdn_connections[OGS_MAX_NUM_OF_SESS];
+    ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
+    ogs_gtp2_tlv_f_teid_t sgw_s11_s4_ip_address_and_teid_for_control_plane;
+    ogs_gtp2_tlv_fqdn_t sgw_node_name;
+    ogs_gtp2_tlv_indication_t indication_flags;
+    ogs_gtp2_tlv_trace_information_t trace_information;
+    ogs_gtp2_tlv_ip_address_t hrpd_access_node_s101_ip_address;
+    ogs_gtp2_tlv_ip_address_t _1xiws_s102_ip_address;
+    ogs_gtp2_tlv_rfsp_index_t subscribed_rfsp_index;
+    ogs_gtp2_tlv_rfsp_index_t rfsp_index_in_use;
+    ogs_gtp2_tlv_timer_in_seconds_t rfsp_index_in_use_validity_time;
+    ogs_gtp2_tlv_ue_time_zone_t ue_time_zone;
+    ogs_gtp2_tlv_ldn_t mme_s4_sgsn_ldn;
+    ogs_gtp2_tlv_mdt_configuration_t mdt_configuration;
+    ogs_gtp2_tlv_fqdn_t sgsn_node_name;
+    ogs_gtp2_tlv_fqdn_t mme_node_name;
+    ogs_gtp2_tlv_uci_t user_csg_information;
+    ogs_gtp2_tlv_monitoring_event_information_t monitoring_event_information;
+    ogs_gtp2_tlv_monitoring_event_extension_information_t monitoring_event_extension_information;
+    ogs_gtp2_tlv_integer_number_t ue_usage_type;
+    ogs_gtp2_tlv_scef_pdn_connection_t mme_sgsn_ue_scef_pdn_connections;
+    ogs_gtp2_tlv_rat_type_t rat_type;
+    ogs_gtp2_tlv_serving_plmn_rate_control_t serving_plmn_rate_control;
+    ogs_gtp2_tlv_counter_t mo_exception_data_counter;
+    ogs_gtp2_tlv_integer_number_t remaining_running_service_gap_timer;
+    ogs_gtp2_tlv_extended_trace_information_t extended_trace_information;
+    ogs_gtp2_tlv_additional_rrm_policy_index_t subscribed_additional_rrm_policy_index;
+    ogs_gtp2_tlv_additional_rrm_policy_index_t additional_rrm_policy_index_in_use;
+    ogs_gtp2_tlv_node_identifier_t iwk_scef_id_for_monitoring_event;
+    ogs_gtp2_tlv_alternative_imsi_t alternative_imsi;
+    ogs_gtp2_tlv_msisdn_t msisdn;
+    ogs_gtp2_tlv_mdt_configuration_nr_t mdt_configuration_nr;
+    ogs_gtp2_tlv_uri_t trace_collection_entity_uri;
+    ogs_gtp2_tlv_plmn_id_t disaster_plmn;
+} ogs_gtp2_context_response_t;
+
+typedef struct ogs_gtp2_context_acknowledge_s {
+    ogs_gtp2_tlv_cause_t cause;
+    ogs_gtp2_tlv_indication_t indication_flags;
+    ogs_gtp2_tlv_f_teid_t forwarding_f_teid;
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts[OGS_BEARER_PER_UE];
+    ogs_gtp2_tlv_node_number_t sgsn_number;
+    ogs_gtp2_tlv_node_number_t mme_number_for_mt_sms;
+    ogs_gtp2_tlv_node_identifier_t sgsn_identifier_for_mt_sms;
+    ogs_gtp2_tlv_node_identifier_t mme_identifier_for_mt_sms;
+} ogs_gtp2_context_acknowledge_t;
+
+typedef struct ogs_gtp2_forward_relocation_request_s {
+    ogs_gtp2_tlv_imsi_t imsi;
+    ogs_gtp2_tlv_f_teid_t sender_s_f_teid_for_control_plane;
+    ogs_gtp2_tlv_pdn_connection_t mme_sgsn_amf_ue_eps_pdn_connections[OGS_MAX_NUM_OF_SESS];
+    ogs_gtp2_tlv_f_teid_t sgw_s11_s4_ip_address_and_teid_for_control_plane;
+    ogs_gtp2_tlv_fqdn_t sgw_node_name;
+    ogs_gtp2_tlv_mm_context_t mme_sgsn_amf_ue_mm_context;
+    ogs_gtp2_tlv_indication_t indication_flags;
+    ogs_gtp2_tlv_f_container_t e_utran_transparent_container;
+    ogs_gtp2_tlv_f_container_t utran_transparent_container;
+    ogs_gtp2_tlv_f_container_t bss_container;
+    ogs_gtp2_tlv_target_identification_t target_identification;
+    ogs_gtp2_tlv_ip_address_t hrpd_access_node_s101_ip_address;
+    ogs_gtp2_tlv_ip_address_t _1xiws_s102_ip_address;
+    ogs_gtp2_tlv_f_cause_t s1_ap_cause;
+    ogs_gtp2_tlv_f_cause_t ranap_cause;
+    ogs_gtp2_tlv_f_cause_t bssgp_cause;
+    ogs_gtp2_tlv_source_identification_t source_identification;
+    ogs_gtp2_tlv_plmn_id_t selected_plmn_id;
+    ogs_gtp2_tlv_recovery_t recovery;
+    ogs_gtp2_tlv_trace_information_t trace_information;
+    ogs_gtp2_tlv_rfsp_index_t subscribed_rfsp_index;
+    ogs_gtp2_tlv_rfsp_index_t rfsp_index_in_use;
+    ogs_gtp2_tlv_timer_in_seconds_t rfsp_index_in_use_validity_time;
+    ogs_gtp2_tlv_csg_id_t csg_id;
+    ogs_gtp2_tlv_cmi_t csg_membership_indication;
+    ogs_gtp2_tlv_ue_time_zone_t ue_time_zone;
+    ogs_gtp2_tlv_serving_network_t serving_network;
+    ogs_gtp2_tlv_ldn_t mme_s4_sgsn_ldn;
+    ogs_gtp2_tlv_additional_mm_context_for_srvcc_t additional_mm_context_for_srvcc;
+    ogs_gtp2_tlv_additional_flags_for_srvcc_t additional_flags_for_srvcc;
+    ogs_gtp2_tlv_stn_sr_t stn_sr;
+    ogs_gtp2_tlv_msisdn_t c_msisdn;
+    ogs_gtp2_tlv_mdt_configuration_t mdt_configuration;
+    ogs_gtp2_tlv_fqdn_t sgsn_node_name;
+    ogs_gtp2_tlv_fqdn_t mme_node_name;
+    ogs_gtp2_tlv_uci_t user_csg_information;
+    ogs_gtp2_tlv_monitoring_event_information_t monitoring_event_information;
+    ogs_gtp2_tlv_monitoring_event_extension_information_t monitoring_event_extension_information;
+    ogs_gtp2_tlv_integer_number_t ue_usage_type;
+    ogs_gtp2_tlv_scef_pdn_connection_t mme_sgsn_ue_scef_pdn_connections;
+    ogs_gtp2_tlv_msisdn_t msisdn;
+    ogs_gtp2_tlv_port_number_t source_udp_port_number;
+    ogs_gtp2_tlv_serving_plmn_rate_control_t serving_plmn_rate_control;
+    ogs_gtp2_tlv_extended_trace_information_t extended_trace_information;
+    ogs_gtp2_tlv_additional_rrm_policy_index_t subscribed_additional_rrm_policy_index;
+    ogs_gtp2_tlv_additional_rrm_policy_index_t additional_rrm_policy_index_in_use;
+    ogs_gtp2_tlv_v2x_context_t subscribed_v2x_information;
+    ogs_gtp2_tlv_node_identifier_t iwk_scef_id_for_monitoring_event;
+    ogs_gtp2_tlv_alternative_imsi_t alternative_imsi;
+    ogs_gtp2_tlv_mdt_configuration_nr_t mdt_configuration_nr;
+    ogs_gtp2_tlv_uri_t trace_collection_entity_uri;
+    ogs_gtp2_tlv_plmn_id_t disaster_plmn;
+} ogs_gtp2_forward_relocation_request_t;
+
+typedef struct ogs_gtp2_forward_relocation_response_s {
+    ogs_gtp2_tlv_cause_t cause;
+    ogs_gtp2_tlv_f_teid_t sender_s_f_teid_for_control_plane;
+    ogs_gtp2_tlv_indication_t indication_flags;
+    ogs_gtp2_tlv_bearer_context_t list_of_set_up_bearers[OGS_BEARER_PER_UE];
+    ogs_gtp2_tlv_bearer_context_t list_of_set_up_rabs;
+    ogs_gtp2_tlv_bearer_context_t list_of_set_up_pfcs;
+    ogs_gtp2_tlv_f_cause_t s1_ap_cause;
+    ogs_gtp2_tlv_f_cause_t ranap_cause;
+    ogs_gtp2_tlv_f_cause_t bssgp_cause;
+    ogs_gtp2_tlv_f_container_t e_utran_transparent_container;
+    ogs_gtp2_tlv_f_container_t utran_transparent_container;
+    ogs_gtp2_tlv_f_container_t bss_container;
+    ogs_gtp2_tlv_ldn_t mme_s4_sgsn_ldn;
+    ogs_gtp2_tlv_fqdn_t sgsn_node_name;
+    ogs_gtp2_tlv_fqdn_t mme_node_name;
+    ogs_gtp2_tlv_node_number_t sgsn_number;
+    ogs_gtp2_tlv_node_identifier_t sgsn_identifier;
+    ogs_gtp2_tlv_node_identifier_t mme_identifier;
+    ogs_gtp2_tlv_node_number_t mme_number_for_mt_sms;
+    ogs_gtp2_tlv_node_identifier_t sgsn_identifier_for_mt_sms;
+    ogs_gtp2_tlv_node_identifier_t mme_identifier_for_mt_sms;
+    ogs_gtp2_tlv_bearer_context_t list_of_set_up_bearers_for_scef_pdn_connections;
+    ogs_gtp2_tlv_srvcc_cause_t v_srvcc_rejected_cause;
+    ogs_gtp2_tlv_node_number_t msc_number;
+    ogs_gtp2_tlv_nf_instance_id_t amf_identifier;
+} ogs_gtp2_forward_relocation_response_t;
+
+typedef struct ogs_gtp2_forward_relocation_complete_notification_s {
+    ogs_gtp2_tlv_indication_t indication_flags;
+} ogs_gtp2_forward_relocation_complete_notification_t;
+
+typedef struct ogs_gtp2_forward_relocation_complete_acknowledge_s {
+    ogs_gtp2_tlv_cause_t cause;
+    ogs_gtp2_tlv_recovery_t recovery;
+    ogs_gtp2_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
+    ogs_gtp2_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report_from_ng_ran;
+} ogs_gtp2_forward_relocation_complete_acknowledge_t;
+
+typedef struct ogs_gtp2_forward_access_context_notification_s {
+    ogs_gtp2_tlv_rab_context_t rab_contexts;
+    ogs_gtp2_tlv_source_rnc_pdcp_context_info_t source_rnc_pdcp_context_info;
+    ogs_gtp2_tlv_pdu_numbers_t pdu_numbers;
+    ogs_gtp2_tlv_f_container_t e_utran_transparent_container;
+    ogs_gtp2_tlv_f_container_t e_utran_early_status_transparent_container;
+} ogs_gtp2_forward_access_context_notification_t;
+
+typedef struct ogs_gtp2_forward_access_context_acknowledge_s {
+    ogs_gtp2_tlv_cause_t cause;
+} ogs_gtp2_forward_access_context_acknowledge_t;
+
+typedef struct ogs_gtp2_relocation_cancel_request_s {
+    ogs_gtp2_tlv_imsi_t imsi;
+    ogs_gtp2_tlv_mei_t me_identity;
+    ogs_gtp2_tlv_indication_t indication_flags;
+    ogs_gtp2_tlv_f_cause_t ranap_cause;
+} ogs_gtp2_relocation_cancel_request_t;
+
+typedef struct ogs_gtp2_relocation_cancel_response_s {
+    ogs_gtp2_tlv_cause_t cause;
+} ogs_gtp2_relocation_cancel_response_t;
+
+typedef struct ogs_gtp2_configuration_transfer_tunnel_s {
+    ogs_gtp2_tlv_f_container_t e_utran_transparent_container;
+    ogs_gtp2_tlv_target_identification_t target_enodeb_id;
+    ogs_gtp2_tlv_target_identification_t connected_target_enodeb_id;
+} ogs_gtp2_configuration_transfer_tunnel_t;
+
 typedef struct ogs_gtp2_create_indirect_data_forwarding_tunnel_request_s {
     ogs_gtp2_tlv_imsi_t imsi;
     ogs_gtp2_tlv_mei_t me_identity;
@@ -1343,6 +1609,20 @@ typedef struct ogs_gtp2_message_s {
         ogs_gtp2_update_bearer_response_t update_bearer_response;
         ogs_gtp2_delete_bearer_request_t delete_bearer_request;
         ogs_gtp2_delete_bearer_response_t delete_bearer_response;
+        ogs_gtp2_identification_request_t identification_request;
+        ogs_gtp2_identification_response_t identification_response;
+        ogs_gtp2_context_request_t context_request;
+        ogs_gtp2_context_response_t context_response;
+        ogs_gtp2_context_acknowledge_t context_acknowledge;
+        ogs_gtp2_forward_relocation_request_t forward_relocation_request;
+        ogs_gtp2_forward_relocation_response_t forward_relocation_response;
+        ogs_gtp2_forward_relocation_complete_notification_t forward_relocation_complete_notification;
+        ogs_gtp2_forward_relocation_complete_acknowledge_t forward_relocation_complete_acknowledge;
+        ogs_gtp2_forward_access_context_notification_t forward_access_context_notification;
+        ogs_gtp2_forward_access_context_acknowledge_t forward_access_context_acknowledge;
+        ogs_gtp2_relocation_cancel_request_t relocation_cancel_request;
+        ogs_gtp2_relocation_cancel_response_t relocation_cancel_response;
+        ogs_gtp2_configuration_transfer_tunnel_t configuration_transfer_tunnel;
         ogs_gtp2_create_indirect_data_forwarding_tunnel_request_t create_indirect_data_forwarding_tunnel_request;
         ogs_gtp2_create_indirect_data_forwarding_tunnel_response_t create_indirect_data_forwarding_tunnel_response;
         ogs_gtp2_delete_indirect_data_forwarding_tunnel_request_t delete_indirect_data_forwarding_tunnel_request;

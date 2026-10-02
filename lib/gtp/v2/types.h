@@ -525,6 +525,176 @@ ED3(uint8_t       ipv4:1;,
     };
 } __attribute__ ((packed)) ogs_gtp2_f_teid_t;
 
+/*
+ * 8.38 MM Context
+ *
+ * Only the "EPS Security Context and Quadruplets" variant (IE type 107,
+ * Figure 8.38-5) is supported. It is the one used between MMEs on S10.
+ */
+#define OGS_GTP2_MM_CONTEXT_SECURITY_MODE_GSM_KEY_AND_TRIPLETS          0
+#define OGS_GTP2_MM_CONTEXT_SECURITY_MODE_UMTS_KEY_USED_CIPHER_AND_QUINTUPLETS 1
+#define OGS_GTP2_MM_CONTEXT_SECURITY_MODE_GSM_KEY_USED_CIPHER_AND_QUINTUPLETS 2
+#define OGS_GTP2_MM_CONTEXT_SECURITY_MODE_UMTS_KEY_AND_QUINTUPLETS      3
+#define OGS_GTP2_MM_CONTEXT_SECURITY_MODE_EPS_SECURITY_CONTEXT_AND_QUADRUPLETS 4
+#define OGS_GTP2_MM_CONTEXT_SECURITY_MODE_UMTS_KEY_QUADRUPLETS_AND_QUINTUPLETS 5
+
+/* Table 8.38-6: EPS NAS Security Context Type (ENSCT) */
+#define OGS_GTP2_MM_CONTEXT_ENSCT_NOT_SUPPORTED                         0
+#define OGS_GTP2_MM_CONTEXT_ENSCT_NATIVE                                1
+#define OGS_GTP2_MM_CONTEXT_ENSCT_MAPPED                                2
+
+#define OGS_GTP2_RAND_LEN                   16
+#define OGS_GTP2_AUTN_LEN                   16
+#define OGS_GTP2_MAX_XRES_LEN               16
+#define OGS_GTP2_CK_LEN                     16
+#define OGS_GTP2_IK_LEN                     16
+#define OGS_GTP2_KASME_LEN                  32
+#define OGS_GTP2_NH_LEN                     32
+#define OGS_GTP2_MAX_AUTH_VECTORS           5
+#define OGS_GTP2_MAX_UE_NETWORK_CAPABILITY_LEN  13  /* TS 24.301 9.9.3.34 */
+#define OGS_GTP2_MAX_MS_NETWORK_CAPABILITY_LEN  8   /* TS 24.008 10.5.5.12 */
+#define OGS_GTP2_MAX_MEI_LEN                8       /* 8.10 */
+#define OGS_GTP2_MAX_VOICE_DOMAIN_PREFERENCE_LEN 1  /* TS 24.008 10.5.5.28 */
+#define OGS_GTP2_MAX_UE_ADDITIONAL_SECURITY_CAPABILITY_LEN 4 /* 9.9.3.53 */
+#define OGS_GTP2_MAX_UE_NR_SECURITY_CAPABILITY_LEN 8 /* TS 24.501 9.11.3.54 */
+#define OGS_GTP2_CORE_NETWORK_RESTRICTIONS_LEN 4    /* TS 29.272 7.3.230 */
+
+/* Figure 8.38-9: Authentication Quadruplet */
+typedef struct ogs_gtp2_auth_quadruplet_s {
+    uint8_t rand[OGS_GTP2_RAND_LEN];
+    uint8_t xres_len;
+    uint8_t xres[OGS_GTP2_MAX_XRES_LEN];
+    uint8_t autn_len;
+    uint8_t autn[OGS_GTP2_AUTN_LEN];
+    uint8_t kasme[OGS_GTP2_KASME_LEN];
+} ogs_gtp2_auth_quadruplet_t;
+
+/* Figure 8.38-8: Authentication Quintuplet */
+typedef struct ogs_gtp2_auth_quintuplet_s {
+    uint8_t rand[OGS_GTP2_RAND_LEN];
+    uint8_t xres_len;
+    uint8_t xres[OGS_GTP2_MAX_XRES_LEN];
+    uint8_t ck[OGS_GTP2_CK_LEN];
+    uint8_t ik[OGS_GTP2_IK_LEN];
+    uint8_t autn_len;
+    uint8_t autn[OGS_GTP2_AUTN_LEN];
+} ogs_gtp2_auth_quintuplet_t;
+
+/* Access restriction data, octet (r+1) of Figure 8.38-5 */
+typedef struct ogs_gtp2_access_restriction_data_s {
+    union {
+        struct {
+        ED8(uint8_t ecna:1;,
+            uint8_t nbna:1;,
+            uint8_t hnna:1;,
+            uint8_t ena:1;,
+            uint8_t ina:1;,
+            uint8_t gana:1;,
+            uint8_t gena:1;,
+            uint8_t una:1;)
+        };
+        uint8_t octet;
+    };
+} ogs_gtp2_access_restriction_data_t;
+
+typedef struct ogs_gtp2_mm_context_s {
+    /* Octet 5 */
+    uint8_t security_mode;          /* Table 8.38-1 */
+    uint8_t ksi_asme;               /* KSIASME, 3 bits */
+
+    /* Octet 7 */
+    uint8_t nas_integrity_algorithm;    /* Table 8.38-4 */
+    uint8_t nas_cipher_algorithm;       /* Table 8.38-2 */
+
+    /* NAS COUNT, 24 bits each (overflow:16 | SQN:8) */
+    uint32_t nas_downlink_count;
+    uint32_t nas_uplink_count;
+
+    uint8_t kasme[OGS_GTP2_KASME_LEN];
+
+    uint8_t num_of_quadruplets;
+    ogs_gtp2_auth_quadruplet_t quadruplet[OGS_GTP2_MAX_AUTH_VECTORS];
+    uint8_t num_of_quintuplets;
+    ogs_gtp2_auth_quintuplet_t quintuplet[OGS_GTP2_MAX_AUTH_VECTORS];
+
+    bool drx_parameter_presence;            /* DRXI */
+    uint8_t drx_parameter[2];               /* TS 24.008 10.5.5.6 */
+
+    bool nh_presence;                       /* NHI */
+    uint8_t nh[OGS_GTP2_NH_LEN];
+    uint8_t ncc;                            /* 3 bits */
+
+    bool subscribed_ue_ambr_presence;       /* SAMBRI */
+    ogs_gtp2_ambr_t subscribed_ue_ambr;     /* kbps */
+
+    bool used_ue_ambr_presence;             /* UAMBRI */
+    ogs_gtp2_ambr_t used_ue_ambr;           /* kbps */
+
+    uint8_t ue_network_capability_len;
+    uint8_t ue_network_capability[OGS_GTP2_MAX_UE_NETWORK_CAPABILITY_LEN];
+
+    uint8_t ms_network_capability_len;
+    uint8_t ms_network_capability[OGS_GTP2_MAX_MS_NETWORK_CAPABILITY_LEN];
+
+    uint8_t mei_len;
+    uint8_t mei[OGS_GTP2_MAX_MEI_LEN];
+
+    /*
+     * The fields below were added in later releases. On receive, a field
+     * is considered absent when the IE ends before it. On transmit, all of
+     * them are encoded, with a zero length when the value is absent.
+     */
+    bool access_restriction_data_presence;
+    ogs_gtp2_access_restriction_data_t access_restriction_data;
+
+    /* Old EPS Security Context, only in Forward Relocation Request */
+    bool old_security_context_presence;     /* OSCI */
+    bool rlos;
+    uint8_t old_ksi_asme;
+    uint8_t old_ncc;
+    uint8_t old_kasme[OGS_GTP2_KASME_LEN];
+    bool old_nh_presence;                   /* NHI_old */
+    uint8_t old_nh[OGS_GTP2_NH_LEN];
+
+    uint8_t voice_domain_preference_len;
+    uint8_t voice_domain_preference[OGS_GTP2_MAX_VOICE_DOMAIN_PREFERENCE_LEN];
+
+    /* TS 36.413 9.2.1.98. Points into the parsed or built buffer. */
+    uint16_t ue_radio_capability_for_paging_len;
+    uint8_t *ue_radio_capability_for_paging;
+
+    uint8_t extended_access_restriction_data_len;
+    uint8_t extended_access_restriction_data;
+
+    uint8_t ue_additional_security_capability_len;
+    uint8_t ue_additional_security_capability[
+        OGS_GTP2_MAX_UE_ADDITIONAL_SECURITY_CAPABILITY_LEN];
+
+    uint8_t ue_nr_security_capability_len;
+    uint8_t ue_nr_security_capability[
+        OGS_GTP2_MAX_UE_NR_SECURITY_CAPABILITY_LEN];
+
+    /* Figure 8.38-10, kept encoded. Points into the parsed buffer. */
+    uint16_t apn_rate_control_statuses_len;
+    uint8_t *apn_rate_control_statuses;
+
+    uint8_t core_network_restrictions_len;
+    uint8_t core_network_restrictions[OGS_GTP2_CORE_NETWORK_RESTRICTIONS_LEN];
+
+    /* TS 24.301 9.9.3.60. Points into the parsed or built buffer. */
+    uint8_t ue_radio_capability_id_len;
+    uint8_t *ue_radio_capability_id;
+
+    bool octet_a_presence;
+    uint8_t ensct;                          /* Table 8.38-6 */
+    bool tridi;
+} ogs_gtp2_mm_context_t;
+
+int16_t ogs_gtp2_parse_mm_context(
+    ogs_gtp2_mm_context_t *mm_context, ogs_tlv_octet_t *octet);
+int16_t ogs_gtp2_build_mm_context(ogs_tlv_octet_t *octet,
+    ogs_gtp2_mm_context_t *mm_context, void *data, int data_len);
+
 /* 8.44 UE Time Zone */
 #define OGS_GTP2_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME 0
 #define OGS_GTP2_UE_TIME_ZONE_1_HOUR_FOR_DAYLIGHT_SAVING_TIME        1
@@ -544,6 +714,105 @@ typedef struct ogs_gtp2_ue_timezone_s {
 ED2(uint8_t spare:6;,
     uint8_t daylight_saving_time:2;)
 } __attribute__ ((packed)) ogs_gtp2_ue_timezone_t;
+
+/* 8.46 Complete Request Message */
+#define OGS_GTP2_COMPLETE_REQUEST_MESSAGE_TYPE_ATTACH_REQUEST   0
+#define OGS_GTP2_COMPLETE_REQUEST_MESSAGE_TYPE_TAU_REQUEST      1
+typedef struct ogs_gtp2_complete_request_message_s {
+    uint8_t type;
+    /* NAS message, points into the parsed or built buffer */
+    uint16_t len;
+    uint8_t *data;
+} ogs_gtp2_complete_request_message_t;
+
+int16_t ogs_gtp2_parse_complete_request_message(
+    ogs_gtp2_complete_request_message_t *message, ogs_tlv_octet_t *octet);
+int16_t ogs_gtp2_build_complete_request_message(ogs_tlv_octet_t *octet,
+    ogs_gtp2_complete_request_message_t *message, void *data, int data_len);
+
+/* 8.47 GUTI */
+#define OGS_GTP2_GUTI_LEN 10
+typedef struct ogs_gtp2_guti_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    uint16_t mme_gid;
+    uint8_t mme_code;
+    uint32_t m_tmsi;
+} __attribute__ ((packed)) ogs_gtp2_guti_t;
+
+int16_t ogs_gtp2_parse_guti(ogs_gtp2_guti_t *guti, ogs_tlv_octet_t *octet);
+int16_t ogs_gtp2_build_guti(ogs_tlv_octet_t *octet,
+    ogs_gtp2_guti_t *guti, void *data, int data_len);
+
+/* 8.48 Fully Qualified Container (F-Container) */
+#define OGS_GTP2_F_CONTAINER_TYPE_UTRAN_TRANSPARENT_CONTAINER   1
+#define OGS_GTP2_F_CONTAINER_TYPE_BSS_CONTAINER                 2
+#define OGS_GTP2_F_CONTAINER_TYPE_E_UTRAN_TRANSPARENT_CONTAINER 3
+#define OGS_GTP2_F_CONTAINER_TYPE_NBIFOM_CONTAINER              4
+#define OGS_GTP2_F_CONTAINER_TYPE_EN_DC_CONTAINER               5
+#define OGS_GTP2_F_CONTAINER_TYPE_INTER_SYSTEM_SON_CONTAINER    6
+typedef struct ogs_gtp2_f_container_s {
+    uint8_t container_type;     /* 4 bits */
+    /* Container, points into the parsed or built buffer */
+    uint16_t len;
+    uint8_t *data;
+} ogs_gtp2_f_container_t;
+
+int16_t ogs_gtp2_parse_f_container(
+    ogs_gtp2_f_container_t *f_container, ogs_tlv_octet_t *octet);
+int16_t ogs_gtp2_build_f_container(ogs_tlv_octet_t *octet,
+    ogs_gtp2_f_container_t *f_container, void *data, int data_len);
+
+/* 8.49 Fully Qualified Cause (F-Cause) */
+#define OGS_GTP2_F_CAUSE_TYPE_RADIO_NETWORK_LAYER   0
+#define OGS_GTP2_F_CAUSE_TYPE_TRANSPORT_LAYER       1
+#define OGS_GTP2_F_CAUSE_TYPE_NAS                   2
+#define OGS_GTP2_F_CAUSE_TYPE_PROTOCOL              3
+#define OGS_GTP2_F_CAUSE_TYPE_MISCELLANEOUS         4
+typedef struct ogs_gtp2_f_cause_s {
+    /*
+     * S1-AP cause (instance 0): cause_type is the RAN cause subcategory
+     * and value is one octet. RANAP cause (instance 1): value is two
+     * octets. BSSGP cause (instance 2): value is one octet.
+     */
+    uint8_t cause_type;         /* 4 bits */
+    uint8_t value_len;          /* 1 or 2. 0 is encoded as 1 */
+    uint16_t value;
+} ogs_gtp2_f_cause_t;
+
+int16_t ogs_gtp2_parse_f_cause(
+    ogs_gtp2_f_cause_t *f_cause, ogs_tlv_octet_t *octet);
+int16_t ogs_gtp2_build_f_cause(ogs_tlv_octet_t *octet,
+    ogs_gtp2_f_cause_t *f_cause, void *data, int data_len);
+
+/* 8.51 Target Identification */
+#define OGS_GTP2_TARGET_TYPE_RNC_ID                     0
+#define OGS_GTP2_TARGET_TYPE_MACRO_ENODEB_ID            1
+#define OGS_GTP2_TARGET_TYPE_CELL_IDENTIFIER            2
+#define OGS_GTP2_TARGET_TYPE_HOME_ENODEB_ID             3
+#define OGS_GTP2_TARGET_TYPE_EXTENDED_MACRO_ENODEB_ID   4
+#define OGS_GTP2_TARGET_TYPE_GNODEB_ID                  5
+#define OGS_GTP2_TARGET_TYPE_MACRO_NG_ENODEB_ID         6
+#define OGS_GTP2_TARGET_TYPE_EXTENDED_NG_ENODEB_ID      7
+#define OGS_GTP2_TARGET_TYPE_EN_GNB_ID                  8
+typedef struct ogs_gtp2_target_identification_s {
+    uint8_t target_type;
+    /*
+     * Decoded for the E-UTRAN target types only
+     * (Macro, Home and Extended Macro eNodeB ID).
+     *   Macro eNodeB ID : 20 bits
+     *   Home eNodeB ID : 28 bits
+     *   Extended Macro eNodeB ID : 21 bits, or 18 bits if smenb is set
+     */
+    ogs_nas_plmn_id_t nas_plmn_id;
+    uint32_t enodeb_id;
+    bool smenb;
+    uint16_t tac;
+} ogs_gtp2_target_identification_t;
+
+int16_t ogs_gtp2_parse_target_identification(
+    ogs_gtp2_target_identification_t *target, ogs_tlv_octet_t *octet);
+int16_t ogs_gtp2_build_target_identification(ogs_tlv_octet_t *octet,
+    ogs_gtp2_target_identification_t *target, void *data, int data_len);
 
 /* 8.57 APN Restriction */
 #define OGS_GTP2_APN_NO_RESTRICTION                              0

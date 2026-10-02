@@ -130,6 +130,63 @@ msg_list["Modify Access Bearers Request"]["table"] = 91
 msg_list["Modify Access Bearers Response"]["table"] = 94
 ```
 
+S10 messages
+============
+
+The S10 mobility management messages (TS 29.274 clause 7.3, message
+types 128 to 141) are generated for the MME. Message types 142 to 159
+are still skipped. For TS 29.274 V19.6.0 their tables are:
+
+```python
+msg_list["Forward Relocation Request"]["table"] = 103
+msg_list["Forward Relocation Response"]["table"] = 111
+msg_list["Forward Relocation Complete Notification"]["table"] = 113
+msg_list["Forward Relocation Complete Acknowledge"]["table"] = 114
+msg_list["Context Request"]["table"] = 115
+msg_list["Context Response"]["table"] = 116
+msg_list["Context Acknowledge"]["table"] = 122
+msg_list["Identification Request"]["table"] = 124
+msg_list["Identification Response"]["table"] = 125
+msg_list["Forward Access Context Notification"]["table"] = 126
+msg_list["Forward Access Context Acknowledge"]["table"] = 127
+msg_list["Relocation Cancel Request"]["table"] = 132
+msg_list["Relocation Cancel Response"]["table"] = 133
+msg_list["Configuration Transfer Tunnel"]["table"] = 134
+```
+
+The MM Context IE is generated as a single octet IE with type 107
+("EPS Security Context and Quadruplets"). Its content is encoded and
+decoded by `ogs_gtp2_build_mm_context()` and `ogs_gtp2_parse_mm_context()`
+in `types.c`, like the other S10 IEs that are not TLV grouped IEs
+(Complete Request Message, GUTI, F-Container, F-Cause and
+Target Identification).
+
+Repeated IEs
+============
+
+An IE that may be repeated with the same type and instance ("Several IEs
+with this type and instance values may be included ...") must be listed
+in `multi_ies` in `gtp-tlv.py`, with the C array size macro. It is then
+generated as a C array followed by the matching `ogs_tlv_desc_moreN`
+descriptor, inside a message or inside a grouped IE:
+
+```python
+multi_ies = {
+    ('Create Session Request', 'Bearer Contexts to be created') : 'OGS_BEARER_PER_UE',
+    ('Context Response', 'MME/SGSN/AMF UE EPS PDN Connections') : 'OGS_MAX_NUM_OF_SESS',
+    ('PDN Connection', 'Bearer Contexts') : 'OGS_BEARER_PER_UE',
+    ...
+}
+```
+
+Member names
+============
+
+The C member name is derived from the IE value. When two IEs of the same
+message share the same value with different instances, the instance is
+appended to the second name. A long or ambiguous name can be replaced
+through `member_names` in `gtp-tlv.py`.
+
 Grouped IE tables
 =================
 
