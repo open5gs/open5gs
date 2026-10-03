@@ -149,3 +149,52 @@ end:
 
     return request;
 }
+
+ogs_sbi_request_t *amf_nausf_auth_build_authenticate_eap_session(
+        amf_ue_t *amf_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    char *eap_payload = NULL;
+    int b64_len;
+
+    OpenAPI_eap_session_t *EapSession = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(amf_ue->confirmation_for_5g_aka.resource_uri);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.uri = amf_ue->confirmation_for_5g_aka.resource_uri;
+
+    EapSession = ogs_calloc(1, sizeof(*EapSession));
+    if (!EapSession) {
+        ogs_error("No EapSession");
+        goto end;
+    }
+
+    b64_len = ogs_base64_encoded_size(amf_ue->eap_len);
+    eap_payload = ogs_calloc(1, b64_len + 1);
+    if (!eap_payload) {
+        ogs_error("No eap_payload");
+        goto end;
+    }
+    ogs_base64_encode_from_buffer(eap_payload, b64_len + 1,
+            amf_ue->eap, amf_ue->eap_len);
+
+    EapSession->eap_payload = eap_payload;
+
+    message.EapSession = EapSession;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+    if (eap_payload)
+        ogs_free(eap_payload);
+    if (EapSession)
+        ogs_free(EapSession);
+
+    return request;
+}

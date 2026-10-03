@@ -974,6 +974,62 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
 
     ogs_debug("[%s] Authentication response", amf_ue->suci);
 
+    if (amf_ue->auth_type == OpenAPI_auth_type_EAP_AKA_PRIME) {
+        /* EAP-AKA' : relay the EAP-Response from the UE to the AUSF */
+        ogs_nas_eap_message_t *eap_message =
+            &authentication_response->eap_message;
+        uint8_t *eap = NULL;
+        uint16_t eap_len = 0;
+        size_t hdr_len = 0;
+
+        if (!(authentication_response->presencemask &
+                OGS_NAS_5GS_AUTHENTICATION_RESPONSE_EAP_MESSAGE_PRESENT) ||
+            !eap_message->length || !eap_message->buffer) {
+            ogs_error("[%s] No EAP message in Authentication Response",
+                    amf_ue->suci);
+            return OGS_ERROR;
+        }
+        if (eap_message->length > sizeof(amf_ue->eap)) {
+            ogs_error("[%s] EAP message too long [%d]",
+                    amf_ue->suci, eap_message->length);
+            return OGS_ERROR;
+        }
+        eap = eap_message->buffer;
+        eap_len = eap_message->length;
+
+        /*
+         * RFC 3748 2.3 / 4.1 : the AMF is a pass-through authenticator. Check
+         * the Code, Identifier and Length and silently discard a response that
+         * does not match the outstanding Request, leaving T3560 running and the
+         * Request outstanding (e.g. a late retransmission that arrives after a
+         * new Challenge has been sent for resynchronization).
+         */
+        if (eap_len >= 4)
+            hdr_len = ((size_t)eap[2] << 8) | eap[3];
+        if (eap_len < 4 || eap[0] != 2 /* EAP Response */ ||
+                hdr_len < 4 || hdr_len > eap_len ||
+                eap[1] != amf_ue->eap_id) {
+            ogs_warn("[%s] Discarding unexpected EAP-Response "
+                    "[id %d, outstanding %d]", amf_ue->suci,
+                    eap_len >= 2 ? eap[1] : -1, amf_ue->eap_id);
+            return OGS_OK;
+        }
+
+        CLEAR_AMF_UE_TIMER(amf_ue->t3560);
+
+        memcpy(amf_ue->eap, eap, eap_len);
+        amf_ue->eap_len = eap_len;
+
+        r = amf_ue_sbi_discover_and_send(
+                OpenAPI_service_name_nausf_auth, NULL,
+                amf_nausf_auth_build_authenticate_eap_session,
+                amf_ue, 0, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+
+        return OGS_OK;
+    }
+
     CLEAR_AMF_UE_TIMER(amf_ue->t3560);
 
     if (authentication_response_parameter->length != OGS_MAX_RES_LEN) {
