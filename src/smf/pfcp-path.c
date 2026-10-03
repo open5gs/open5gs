@@ -342,11 +342,21 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
                 trigger == OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT ||
                 trigger == OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
 
-            ogs_assert(stream);
-            ogs_assert(true ==
-                ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror,
-                    NULL, NULL));
+            /* The associated SBI stream may already have been released while
+             * the PFCP transaction was still pending (e.g. the AMF gave up,
+             * or the UE context was cleaned up during churn). Do not abort
+             * the whole SMF in that case: report the timeout only when the
+             * stream is still alive, and let the SMF_EVT_N4_TIMER below
+             * remove the session through the pfcp-sm state machine. */
+            if (stream) {
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror,
+                        NULL, NULL));
+            } else {
+                ogs_warn("No SBI stream for PFCP deletion timeout [%d]",
+                        trigger);
+            }
         } else {
             ogs_fatal("Unknown trigger [%d]", trigger);
             ogs_assert_if_reached();
