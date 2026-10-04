@@ -230,32 +230,32 @@ int16_t ogs_gtp1_parse_qos_profile(
 
     /* Calculate resulting MBRs in kbps: */
     if (decoded->data_octet6_to_13_present) {
-        decoded->dec_transfer_delay = dec_transfer_delay_ms(source->data.transfer_delay);
+        decoded->dec_transfer_delay = dec_transfer_delay_ms(decoded->qos_profile.data.transfer_delay);
         decoded->dec_mbr_kbps_dl = dec_mbr_kbps(
-                                        source->data.max_bit_rate_downlink,
+                                        decoded->qos_profile.data.max_bit_rate_downlink,
                                         decoded->bit_rate_downlink_extended_present ?
-                                            &source->data.extended.max_bit_rate_downlink : NULL,
+                                            &decoded->qos_profile.data.extended.max_bit_rate_downlink : NULL,
                                         decoded->bit_rate_downlink_extended2_present ?
-                                           &source->data.extended2.max_bit_rate_downlink : NULL);
+                                           &decoded->qos_profile.data.extended2.max_bit_rate_downlink : NULL);
         decoded->dec_mbr_kbps_ul = dec_mbr_kbps(
-                                        source->data.max_bit_rate_uplink,
+                                        decoded->qos_profile.data.max_bit_rate_uplink,
                                         decoded->bit_rate_uplink_extended_present ?
-                                           &source->data.extended.max_bit_rate_uplink : NULL,
+                                           &decoded->qos_profile.data.extended.max_bit_rate_uplink : NULL,
                                         decoded->bit_rate_uplink_extended2_present ?
-                                          &source->data.extended2.max_bit_rate_uplink : NULL);
+                                          &decoded->qos_profile.data.extended2.max_bit_rate_uplink : NULL);
       /* GBR is encoded the same way as MBR: */
       decoded->dec_gbr_kbps_dl = dec_mbr_kbps(
-                                      source->data.guaranteed_bit_rate_downlink,
+                                      decoded->qos_profile.data.guaranteed_bit_rate_downlink,
                                       decoded->bit_rate_downlink_extended_present ?
-                                          &source->data.extended.guaranteed_bit_rate_downlink : NULL,
+                                          &decoded->qos_profile.data.extended.guaranteed_bit_rate_downlink : NULL,
                                       decoded->bit_rate_downlink_extended2_present ?
-                                         &source->data.extended2.guaranteed_bit_rate_downlink : NULL);
+                                         &decoded->qos_profile.data.extended2.guaranteed_bit_rate_downlink : NULL);
       decoded->dec_gbr_kbps_ul = dec_mbr_kbps(
-                                      source->data.guaranteed_bit_rate_uplink,
+                                      decoded->qos_profile.data.guaranteed_bit_rate_uplink,
                                       decoded->bit_rate_uplink_extended_present ?
-                                         &source->data.extended.guaranteed_bit_rate_uplink : NULL,
+                                         &decoded->qos_profile.data.extended.guaranteed_bit_rate_uplink : NULL,
                                       decoded->bit_rate_uplink_extended2_present ?
-                                        &source->data.extended2.guaranteed_bit_rate_uplink : NULL);
+                                        &decoded->qos_profile.data.extended2.guaranteed_bit_rate_uplink : NULL);
     }
 
     return octet->len;
