@@ -540,6 +540,17 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 ul_pdr = qos_flow->ul_pdr;
                 ogs_assert(ul_pdr);
 
+                if (ogs_global_conf()->parameter.use_upg_vpp == true) {
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
+                            &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
+                    dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
+
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
+                            &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
+                }
+
                 /* Precedence is derived from PCC Rule Precedence */
                 dl_pdr->precedence = pcc_rule->precedence;
                 ul_pdr->precedence = pcc_rule->precedence;
