@@ -988,13 +988,16 @@ int ogs_ipv6addr_from_string(uint8_t *addr6, const char *string)
 
 int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, const char *string)
 {
-    int rv;
+    int rv = OGS_ERROR;
     ogs_sockaddr_t tmp;
     char *v = NULL, *pv = NULL, *ipstr = NULL, *mask_or_numbits = NULL;
+    char *endptr = NULL;
+    long bits;
 
     ogs_assert(addr6);
     ogs_assert(prefixlen);
     ogs_assert(string);
+
     pv = v = ogs_strdup(string);
     if (!v) {
         ogs_error("ogs_strdup() failed");
@@ -1002,26 +1005,35 @@ int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, const char *s
     }
 
     ipstr = strsep(&v, "/");
-    if (ipstr)
-        mask_or_numbits = v;
+    mask_or_numbits = v;
 
     if (!ipstr || !mask_or_numbits) {
-        ogs_error("Invalid IPv6 Prefix string = %s", v);
-        ogs_free(v);
-        return OGS_ERROR;
+        ogs_error("Invalid IPv6 Prefix string = %s", string);
+        goto cleanup;
     }
 
-    rv = ogs_inet_pton(AF_INET6, ipstr, &tmp);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_inet_pton() failed");
-        return rv;
+    if (ogs_inet_pton(AF_INET6, ipstr, &tmp) != OGS_OK) {
+        ogs_error("ogs_inet_pton() failed [%s]", string);
+        goto cleanup;
+    }
+
+    /* The prefix length is narrowed into a uint8_t, so out-of-range values
+     * from a peer would wrap (e.g. /384 -> /128) and slip past callers that
+     * gate on an exact length. Parse and range-check it like ogs_ipsubnet(). */
+    bits = strtol(mask_or_numbits, &endptr, 10);
+    if (*mask_or_numbits == '\0' || *endptr != '\0' ||
+            bits < 0 || bits > OGS_IPV6_128_PREFIX_LEN) {
+        ogs_error("Invalid IPv6 prefix length [%s]", string);
+        goto cleanup;
     }
 
     memcpy(addr6, tmp.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-    *prefixlen = atoi(mask_or_numbits);
+    *prefixlen = (uint8_t)bits;
+    rv = OGS_OK;
 
+cleanup:
     ogs_free(pv);
-    return OGS_OK;
+    return rv;
 }
 
 int ogs_check_br_conf(ogs_bitrate_t *br)
