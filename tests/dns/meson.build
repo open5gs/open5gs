@@ -29,6 +29,6 @@ testapp_dns_exe = executable('dns',
     c_args : testunit_core_cc_flags,
     dependencies : libtestepc_dep)
 
-test('dns', testapp_dns_exe, is_parallel : false, suite: 'epc')
+test('dns', testapp_dns_exe, is_parallel : false, suite: ['dns', 'epc'])
 
 endif

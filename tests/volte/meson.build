@@ -36,4 +36,4 @@ testapp_volte_exe = executable('volte',
         '-DFD_EXT_DIR="@0@"'.format(build_subprojects_freeDiameter_extensions_dir)],
     dependencies : libtestepc_dep)
 
-test('volte', testapp_volte_exe, is_parallel : false, suite: 'epc')
+test('volte', testapp_volte_exe, is_parallel : false, suite: ['volte', 'epc'])

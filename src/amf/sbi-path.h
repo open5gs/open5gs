@@ -81,6 +81,7 @@ bool amf_sbi_send_request(
 #define AMF_RELEASE_SM_CONTEXT_NO_STATE                 31
 #define AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT      33
 #define AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT           34
+#define AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION 35
 #define AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED         51
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL              52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL          53
@@ -125,6 +126,9 @@ void amf_sbi_send_deactivate_stale_user_plane(ran_ue_t *ran_ue);
 
 void amf_sbi_send_release_session(
         ran_ue_t *ran_ue, amf_sess_t *sess, int state, void *data);
+void amf_sbi_cancel_registration_session_release(amf_ue_t *amf_ue);
+void amf_sbi_fail_registration_session_release(
+        amf_ue_t *amf_ue, ran_ue_t *ran_ue, int status);
 void amf_sbi_send_release_all_sessions(
         ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state, void *data);
 

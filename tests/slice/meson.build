@@ -32,4 +32,4 @@ test5gc_slice_exe = executable('slice',
 test('slice',
     test5gc_slice_exe,
     is_parallel : false,
-    suite: '5gc')
+    suite: ['slice', '5gc'])

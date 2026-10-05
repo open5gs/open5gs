@@ -32,4 +32,4 @@ test5gc_vonr_exe = executable('vonr',
 test('vonr',
     test5gc_vonr_exe,
     is_parallel : false,
-    suite: '5gc')
+    suite: ['vonr', '5gc'])

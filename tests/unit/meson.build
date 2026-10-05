@@ -31,6 +31,7 @@ testunit_unit_sources = files('''
     mme-attach-test.c
     mme-enb-id-test.c
     amf-eir-test.c
+    amf-registration-test.c
     amf-gnb-id-test.c
     eir-config-test.c
     ipfw-test.c

@@ -35,4 +35,4 @@ testapp_attach_exe = executable('attach',
     c_args : testunit_core_cc_flags,
     dependencies : libtestepc_dep)
 
-test('attach', testapp_attach_exe, is_parallel : false, suite: 'epc')
+test('attach', testapp_attach_exe, is_parallel : false, suite: ['attach', 'epc'])

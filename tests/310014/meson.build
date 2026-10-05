@@ -25,4 +25,4 @@ testapp_310014_exe = executable('310014',
     c_args : testunit_core_cc_flags,
     dependencies : libtestapp_dep)
 
-test('310014', testapp_310014_exe, is_parallel : false, suite: 'app')
+test('310014', testapp_310014_exe, is_parallel : false, suite: ['310014', 'epc'])

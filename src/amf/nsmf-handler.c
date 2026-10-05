@@ -1239,6 +1239,38 @@ int amf_nsmf_pdusession_handle_release_sm_context(
         return OGS_ERROR;
     }
 
+    if (state == AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION) {
+        bool continue_registration =
+            amf_ue->registration_session_release_pending &&
+            amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST &&
+            OGS_FSM_CHECK(&amf_ue->sm, gmm_state_initial_context_setup);
+
+        AMF_SESS_CLEAR(sess);
+        if (!continue_registration) {
+            ogs_error("[%s] Ignore stale registration session release result",
+                    amf_ue->supi);
+            return OGS_OK;
+        }
+
+        if (!ran_ue || !RAN_UE_IS_SERVING(amf_ue, ran_ue)) {
+            amf_sbi_cancel_registration_session_release(amf_ue);
+            ogs_error("[%s] No serving NG context after registration session "
+                    "release", amf_ue->supi);
+            return OGS_OK;
+        }
+
+        if (AMF_SESSION_SYNC_DONE(amf_ue,
+                    AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION)) {
+            amf_ue->registration_session_release_pending = false;
+            r = amf_ue_sbi_discover_and_send(
+                    OpenAPI_service_name_nudm_uecm, NULL,
+                    amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
+        return OGS_OK;
+    }
+
     /*
      * To check if Reactivation Request has been used.
      *
@@ -1493,12 +1525,16 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                             gmm_state_authentication)) {
 
-                    r = amf_ue_sbi_discover_and_send(
-                            OpenAPI_service_name_nausf_auth, NULL,
-                            amf_nausf_auth_build_authenticate,
-                            amf_ue, 0, NULL);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+                    /* A new registration may already have started AKA
+                     * while this older session release was pending. */
+                    if (!amf_ue->registration_session_release_after_authentication) {
+                        r = amf_ue_sbi_discover_and_send(
+                                OpenAPI_service_name_nausf_auth, NULL,
+                                amf_nausf_auth_build_authenticate,
+                                amf_ue, 0, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
 
                 } else if (OGS_FSM_CHECK(
                             &amf_ue->sm, gmm_state_security_mode)) {
