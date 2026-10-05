@@ -622,6 +622,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 } else {
                     ogs_error("[%s:%d] HTTP response error [%d]",
                             amf_ue->supi, sess->psi, sbi_message.res_status);
+                    if (state ==
+                            AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION) {
+                        amf_sbi_fail_registration_session_release(
+                                amf_ue, ran_ue, sbi_message.res_status);
+                        break;
+                    }
                 }
                 amf_nsmf_pdusession_handle_release_sm_context(
                         amf_ue, ran_ue, sess, state);
@@ -972,6 +978,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
+        if (amf_ue && amf_ue->registration_session_release_pending) {
+            ogs_error("[%s] Ignore NAS message while registration session "
+                    "release is pending", amf_ue->supi);
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
+
         /*
          * REGISTRATION REQUEST on an NG context that already belongs to
          * someone else. The 5GS counterpart of the same defect in the
@@ -1104,6 +1117,17 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
                 ogs_assert(CM_IDLE(amf_ue));
             } else {
+                if (amf_ue->registration_session_release_pending) {
+                    ogs_error("[%s] Ignore new NG context while registration "
+                            "session release is pending", amf_ue->supi);
+                    r = ngap_send_ran_ue_context_release_command(ran_ue,
+                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    ogs_pkbuf_free(pkbuf);
+                    break;
+                }
                 /* Here, if the AMF_UE Context is found,
                  * the integrity check is not performed
                  * For example, REGISTRATION_REQUEST, SERVICE_REQUEST message

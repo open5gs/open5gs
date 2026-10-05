@@ -8,6 +8,7 @@ static char *eir_uri;
 static char *nrf_uri;
 static bool allow_policy;
 static bool epc_guti;
+static bool amf_guti;
 
 bool test_eir_allow_policy(void)
 {
@@ -129,7 +130,7 @@ static void initialize(const char *const argv[])
     ogs_assert(rv == OGS_OK);
     test_app_init();
 
-    if (!epc_guti) {
+    if (!epc_guti && !amf_guti) {
         eir_uri = config_sbi_uri("eir");
         nrf_uri = config_sbi_uri("nrf");
         ogs_assert(eir_uri && nrf_uri);
@@ -152,6 +153,8 @@ int main(int argc, const char *const argv[])
     if (mode) {
         if (!strcmp(mode, "epc-guti"))
             epc_guti = true;
+        else if (!strcmp(mode, "amf-guti"))
+            amf_guti = true;
         else if (strcmp(mode, "integration")) {
             fprintf(stderr, "Invalid EIR test mode: %s\n", mode);
             return EXIT_FAILURE;
@@ -175,13 +178,15 @@ int main(int argc, const char *const argv[])
     }
 
     atexit(terminate);
-    config = epc_guti ? "attach.yaml" :
+    config = epc_guti ? "attach.yaml" : amf_guti ? "sample.yaml" :
         allow_policy ? "eir-allow.yaml" : "eir.yaml";
     test_app_run(argc, argv, config, initialize);
 
     /* EPC regressions also run without EIR, so do not require SBI discovery. */
     if (epc_guti)
         return abts_report(test_guti_epc(suite));
+    if (amf_guti)
+        return abts_report(test_guti_amf(suite));
 
     /* Discovery confirms that EIR registered its SBI service with the NRF. */
     if (!test_eir_wait_ready()) {

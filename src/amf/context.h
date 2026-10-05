@@ -280,6 +280,8 @@ struct ran_ue_s {
 }; 
 
 typedef struct amf_ue_memento_s {
+    uint8_t ue_ksi, ue_tsc, amf_ksi, amf_tsc;
+
     /* UE security capability info: supported security features. */
     ogs_nas_ue_security_capability_t ue_security_capability;
     /* UE network capability info: supported network features. */
@@ -481,6 +483,10 @@ struct amf_ue_s {
 
     /* flag: 1 = allow restoration of context, 0 = disallow */
     bool            can_restore_context;
+
+    /* Same-AMF re-registration release waits for SMC and optional EIR. */
+    bool            registration_session_release_after_authentication;
+    bool            registration_session_release_pending;
 
     /* Memento of context fields */
     amf_ue_memento_t memento;

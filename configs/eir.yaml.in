@@ -16,7 +16,6 @@ global:
   parameter:
     no_scp: true
     no_sepp: true
-    no_bsf: true
 
 mme:
   freeDiameter:
@@ -94,6 +93,13 @@ sgwc:
         - address: 127.0.0.6
 
 smf:
+  sbi:
+    server:
+      - address: 127.0.0.4
+        port: 7777
+    client:
+      nrf:
+        - uri: http://127.0.0.10:7777
   pfcp:
     server:
       - address: 127.0.0.4
@@ -292,6 +298,15 @@ nssf:
         - uri: http://127.0.0.10:7777
           s_nssai:
             sst: 1
+
+bsf:
+  sbi:
+    server:
+      - address: 127.0.0.15
+        port: 7777
+    client:
+      nrf:
+        - uri: http://127.0.0.10:7777
 
 udr:
   sbi:

@@ -916,6 +916,56 @@ void amf_sbi_send_release_session(
     }
 }
 
+void amf_sbi_cancel_registration_session_release(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+    ogs_sbi_xact_t *xact = NULL, *next_xact = NULL;
+
+    ogs_assert(amf_ue);
+
+    amf_ue->registration_session_release_after_authentication = false;
+    amf_ue->registration_session_release_pending = false;
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        ogs_list_for_each_safe(&sess->sbi.xact_list, next_xact, xact) {
+            if (xact->state ==
+                    AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION)
+                ogs_sbi_xact_remove(xact);
+        }
+    }
+}
+
+void amf_sbi_fail_registration_session_release(
+        amf_ue_t *amf_ue, ran_ue_t *ran_ue, int status)
+{
+    int r;
+
+    ogs_assert(amf_ue);
+
+    if (!amf_ue->registration_session_release_pending ||
+            amf_ue->nas.message_type != OGS_NAS_5GS_REGISTRATION_REQUEST ||
+            !OGS_FSM_CHECK(&amf_ue->sm, gmm_state_initial_context_setup)) {
+        ogs_error("[%s] Ignore stale registration session release failure",
+                amf_ue->supi);
+        return;
+    }
+
+    amf_sbi_cancel_registration_session_release(amf_ue);
+    if (!ran_ue || !RAN_UE_IS_SERVING(amf_ue, ran_ue)) {
+        ogs_error("[%s] No serving NG context after registration session "
+                "release failure", amf_ue->supi);
+        return;
+    }
+
+    r = nas_5gs_send_gmm_reject_from_sbi(amf_ue, status);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+    r = ngap_send_ran_ue_context_release_command(ran_ue,
+            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+            NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+}
+
 void amf_sbi_send_release_all_sessions(
         ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state, void *data)
 {

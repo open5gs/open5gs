@@ -9,31 +9,53 @@ testapp_eir_exe = executable('eir',
         registration-test.c
         attach-test.c
         epc-guti-test.c
+        amf-guti-test.c
     '''.split()),
     c_args : testunit_core_cc_flags,
     dependencies : [libtestapp_dep, libcurl_dep])
 
-test('eir', testapp_eir_exe,
+test('eir-4g', testapp_eir_exe,
     env : ['OPEN5GS_EIR_TEST_MODE=integration', 'OPEN5GS_EIR_TEST_POLICY=reject'],
+    args : ['attach-test'],
     is_parallel : false,
-    timeout : 180,
-    suite : ['eir', 'app'])
+    suite : ['eir', 'epc'])
 
-test('eir-allow', testapp_eir_exe,
+test('eir-4g-allow', testapp_eir_exe,
     env : ['OPEN5GS_EIR_TEST_MODE=integration', 'OPEN5GS_EIR_TEST_POLICY=allow'],
+    args : ['attach-test'],
     is_parallel : false,
-    timeout : 180,
-    suite : ['eir', 'app'])
+    suite : ['eir', 'epc'])
 
-test('eir-epc-guti', testapp_eir_exe,
+test('eir-5g', testapp_eir_exe,
+    env : ['OPEN5GS_EIR_TEST_MODE=integration', 'OPEN5GS_EIR_TEST_POLICY=reject'],
+    args : ['dbi-test', 'service-test', 'registration-test'],
+    is_parallel : false,
+    suite : ['eir', '5gc'])
+
+test('eir-5g-allow', testapp_eir_exe,
+    env : ['OPEN5GS_EIR_TEST_MODE=integration', 'OPEN5GS_EIR_TEST_POLICY=allow'],
+    args : ['registration-test'],
+    is_parallel : false,
+    suite : ['eir', '5gc'])
+
+test('eir-epc', testapp_eir_exe,
     env : ['OPEN5GS_EIR_TEST_MODE=epc-guti'],
     is_parallel : false,
-    timeout : 180,
-    suite : ['epc', 'eir'])
+    suite : ['eir', 'epc'])
 
-test('eir-epc-guti-s13', testapp_eir_exe,
+test('eir-s13', testapp_eir_exe,
     env : ['OPEN5GS_EIR_TEST_MODE=epc-guti'],
     args : ['-c', join_paths(build_configs_dir, 'eir.yaml')],
     is_parallel : false,
-    timeout : 180,
-    suite : ['epc', 'eir'])
+    suite : ['eir', 'epc'])
+
+test('eir-amf', testapp_eir_exe,
+    env : ['OPEN5GS_EIR_TEST_MODE=amf-guti'],
+    is_parallel : false,
+    suite : ['eir', '5gc'])
+
+test('eir-n5g', testapp_eir_exe,
+    env : ['OPEN5GS_EIR_TEST_MODE=amf-guti'],
+    args : ['-c', join_paths(build_configs_dir, 'eir.yaml')],
+    is_parallel : false,
+    suite : ['eir', '5gc'])

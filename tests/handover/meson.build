@@ -28,4 +28,12 @@ testapp_handover_exe = executable('handover',
     c_args : testunit_core_cc_flags,
     dependencies : libtestapp_dep)
 
-test('handover', testapp_handover_exe, is_parallel : false, suite: 'app')
+test('handover-epc', testapp_handover_exe,
+    args : ['epc-x2-test', 'epc-s1-test'],
+    is_parallel : false,
+    suite : ['handover', 'epc'])
+
+test('handover-5gc', testapp_handover_exe,
+    args : ['5gc-xn-test', '5gc-n2-test'],
+    is_parallel : false,
+    suite : ['handover', '5gc'])

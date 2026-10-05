@@ -32,4 +32,4 @@ testapp_csfb_exe = executable('csfb',
     c_args : testunit_core_cc_flags,
     dependencies : libtestepc_dep)
 
-test('csfb', testapp_csfb_exe, is_parallel : false, suite: 'epc')
+test('csfb', testapp_csfb_exe, is_parallel : false, suite: ['csfb', 'epc'])

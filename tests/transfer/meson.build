@@ -35,5 +35,5 @@ testapp_transfer_error_exe = executable('transfer-error',
     c_args : testunit_core_cc_flags,
     dependencies : libtest5gc_dep)
 
-test('transfer', testapp_transfer_exe, is_parallel : false, suite: '5gc')
-test('transfer-error', testapp_transfer_error_exe, is_parallel : false, suite: '5gc')
+test('transfer', testapp_transfer_exe, is_parallel : false, suite: ['transfer', '5gc'])
+test('transfer-error', testapp_transfer_error_exe, is_parallel : false, suite: ['transfer', '5gc'])

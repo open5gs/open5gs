@@ -35,4 +35,4 @@ testapp_non3gpp_exe = executable('non3gpp',
         '-DFD_EXT_DIR="@0@"'.format(build_subprojects_freeDiameter_extensions_dir)],
     dependencies : libtestepc_dep)
 
-test('non3gpp', testapp_non3gpp_exe, is_parallel : false, suite: 'epc')
+test('non3gpp', testapp_non3gpp_exe, is_parallel : false, suite: ['non3gpp', 'epc'])

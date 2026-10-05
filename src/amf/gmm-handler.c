@@ -503,18 +503,20 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(
         psimask |= pdu_session_status->psi << 8;
         psimask |= pdu_session_status->psi >> 8;
 
-        ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if ((psimask & (1 << sess->psi)) == 0) {
-                if (SESSION_CONTEXT_IN_SMF(sess)) {
-                    amf_nsmf_pdusession_sm_context_param_t param;
+        if (!amf_ue->registration_session_release_after_authentication) {
+            ogs_list_for_each(&amf_ue->sess_list, sess) {
+                if ((psimask & (1 << sess->psi)) == 0) {
+                    if (SESSION_CONTEXT_IN_SMF(sess)) {
+                        amf_nsmf_pdusession_sm_context_param_t param;
 
-                    memset(&param, 0, sizeof(param));
-                    param.ue_location = true;
-                    param.ue_timezone = true;
+                        memset(&param, 0, sizeof(param));
+                        param.ue_location = true;
+                        param.ue_timezone = true;
 
-                    amf_sbi_send_release_session(
-                        ran_ue, sess,
-                        AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT, &param);
+                        amf_sbi_send_release_session(
+                            ran_ue, sess,
+                            AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT, &param);
+                    }
                 }
             }
         }
@@ -530,12 +532,14 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(
         psimask |= uplink_data_status->psi << 8;
         psimask |= uplink_data_status->psi >> 8;
 
-        ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
-                if (SESSION_CONTEXT_IN_SMF(sess))
-                    amf_sbi_send_activating_session(
-                            ran_ue, sess,
-                            AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST);
+        if (!amf_ue->registration_session_release_after_authentication) {
+            ogs_list_for_each(&amf_ue->sess_list, sess) {
+                if (psimask & (1 << sess->psi)) {
+                    if (SESSION_CONTEXT_IN_SMF(sess))
+                        amf_sbi_send_activating_session(
+                                ran_ue, sess,
+                                AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST);
+                }
             }
         }
     }
@@ -986,12 +990,12 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
             amf_ue->rand, authentication_response_parameter->res, hxres_star);
 
     if (memcmp(hxres_star, amf_ue->hxres_star, OGS_MAX_RES_LEN) != 0) {
-        ogs_error("[%s] MAC failure", amf_ue->suci);
-        ogs_log_hexdump(OGS_LOG_ERROR,
+        ogs_warn("[%s] MAC failure", amf_ue->suci);
+        ogs_log_hexdump(OGS_LOG_WARN,
                 authentication_response_parameter->res,
                 authentication_response_parameter->length);
-        ogs_log_hexdump(OGS_LOG_ERROR, hxres_star, OGS_MAX_RES_LEN);
-        ogs_log_hexdump(OGS_LOG_ERROR,
+        ogs_log_hexdump(OGS_LOG_WARN, hxres_star, OGS_MAX_RES_LEN);
+        ogs_log_hexdump(OGS_LOG_WARN,
                 amf_ue->hxres_star, OGS_MAX_RES_LEN);
         return OGS_ERROR;
     }

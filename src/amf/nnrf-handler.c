@@ -120,7 +120,7 @@ static void amf_nnrf_send_session_failure_to_ran(
 void amf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
-    int r;
+    int r, state;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
@@ -142,6 +142,7 @@ void amf_nnrf_handle_nf_discover(
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
+    state = xact->state;
     service_name = xact->service_name;
     ogs_assert(service_name);
     target_nf_type = ogs_sbi_service_name_to_nf_type(service_name);
@@ -241,6 +242,12 @@ void amf_nnrf_handle_nf_discover(
             ogs_assert(r != OGS_ERROR);
             break;
         case OGS_SBI_OBJ_SESS_TYPE:
+            if (state == AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION) {
+                amf_sbi_fail_registration_session_release(amf_ue,
+                        ran_ue_find_by_id(ran_ue_id),
+                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+                break;
+            }
             ogs_warn("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
                         OpenAPI_service_name_ToString(service_name));
 
@@ -361,6 +368,13 @@ void amf_nnrf_handle_failed_amf_discovery(
 
         ogs_error("[%s:%s:%d:%d] Cannot receive SBI message",
                 amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
+
+        if (state == AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION) {
+            amf_sbi_fail_registration_session_release(amf_ue,
+                    ran_ue_find_by_id(ran_ue_id),
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+            break;
+        }
 
         if (state == AMF_UPDATE_SM_CONTEXT_STALE_USER_PLANE) {
             /*
