@@ -688,6 +688,19 @@ struct amf_ue_s {
     } while(0)
     ogs_pool_id_t   ran_ue_holding_id;
 
+    /*
+     * N2 handovers this UE has been through, counted where the AMF is certain.
+     *
+     * A handover that is commanded and then simply never completes is not
+     * counted anywhere: the AMF has no guard timer for one, and the UE
+     * re-attaching afterwards is indistinguishable from an ordinary power
+     * cycle. attempted less completed less rejected is therefore the number
+     * that failed silently, which is the number worth looking at.
+     */
+    uint32_t        ho_attempted;
+    uint32_t        ho_completed;
+    uint32_t        ho_rejected;
+
 #define CLEAR_AMF_UE_ALL_TIMERS(__aMF) \
     do { \
         CLEAR_AMF_UE_TIMER((__aMF)->t3513); \
