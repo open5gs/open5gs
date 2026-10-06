@@ -19,11 +19,11 @@
 
 /*
  * Connected AMF UEs JSON dumper for the Prometheus HTTP server (/ue-info).
- * - supi, suci, pei, cm_state, guti,m_tmsi, gnb_info, location, security, ambr, slices, am_policy
+ * - supi, suci, pei, cm_state, guti,m_tmsi, gnb_info, handover, location, security, ambr, slices, am_policy
  * - pager: /ue-info?page=0&page_size=100 (0-based, page=-1 without paging) Default: page=0 page_size=100=MAXSIZE
  *
  * path: http://AMF_IP:9090/ue-info
- * curl -s "http://127.0.0.5:9090/ue-info" |jq . 
+ * curl -s "http://127.0.0.5:9090/ue-info" |jq .
  * {
  *   "items": [
  *     {
@@ -54,6 +54,11 @@
  *           "cell_id": 1
  *         },
  *         "last_visited_plmn_id": "000000"
+ *       },
+ *      "handover": {
+ *        "attempted": 1,
+ *        "completed": 1,
+ *        "rejected": 0
  *       },
  *       "msisdn": [],
  *       "security": {
@@ -255,6 +260,41 @@ static int add_basic_identity(cJSON *o, const amf_ue_t *ue)
         if (!m) return -1;
         cJSON_AddItemToObjectCS(o, "m_tmsi", m);
     }
+    return 0;
+}
+
+/*
+ * What this UE's N2 handovers have done.
+ *
+ * attempted less completed less rejected is the number that were commanded and
+ * then never resolved: the AMF has no guard timer for a handover, so nothing
+ * else counts those, and they are the ones worth noticing. A UE that
+ * re-attaches after one is indistinguishable from an ordinary power cycle,
+ * which is why they are left to arithmetic rather than counted directly.
+ */
+static int add_handover(cJSON *parent, const amf_ue_t *ue)
+{
+    cJSON *ho = cJSON_CreateObject();
+    cJSON *a, *c, *r;
+
+    if (!ho) return -1;
+
+    a = cJSON_CreateNumber((double)ue->ho_attempted);
+    c = cJSON_CreateNumber((double)ue->ho_completed);
+    r = cJSON_CreateNumber((double)ue->ho_rejected);
+    if (!a || !c || !r) {
+        if (a) cJSON_Delete(a);
+        if (c) cJSON_Delete(c);
+        if (r) cJSON_Delete(r);
+        cJSON_Delete(ho);
+        return -1;
+    }
+
+    cJSON_AddItemToObjectCS(ho, "attempted", a);
+    cJSON_AddItemToObjectCS(ho, "completed", c);
+    cJSON_AddItemToObjectCS(ho, "rejected",  r);
+
+    cJSON_AddItemToObjectCS(parent, "handover", ho);
     return 0;
 }
 
@@ -606,6 +646,7 @@ static cJSON *amf_ue_to_json(const amf_ue_t *ue)
     if (add_basic_identity(o, ue)            < 0) goto fail;
     if (add_gnb(o, ue)                       < 0) goto fail;
     if (add_location(o, ue)                  < 0) goto fail;
+    if (add_handover(o, ue)                  < 0) goto fail;
     if (add_msisdn_array(o, ue)              < 0) goto fail;
     if (add_security(o, ue)                  < 0) goto fail;
     if (add_ambr(o, ue)                      < 0) goto fail;

@@ -148,6 +148,15 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
         OGS_ASN_CLEAR_DATA(&amf_ue->ueRadioCapability);
         break;
     case OGS_FSM_EXIT_SIG:
+        /*
+         * The UE context survives a de-registration and is found again by
+         * 5G-S-TMSI on the next attach, so the handover counters have to be
+         * cleared by hand here. Leaving them would report handovers from a
+         * previous registration against the current one.
+         */
+        amf_ue->ho_attempted = 0;
+        amf_ue->ho_completed = 0;
+        amf_ue->ho_rejected = 0;
         break;
 
     case AMF_EVENT_5GMM_MESSAGE:
