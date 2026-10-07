@@ -506,7 +506,6 @@ static void test_amf_case(abts_case *tc, void *data)
     const unsigned int index = *(const unsigned int *)data;
     scenario_t scenario = cases[index].scenario;
     unsigned int sessions = cases[index].sessions, i;
-    bool eir = ogs_global_conf()->parameter.eir_count > 0;
     bool subscriber = false, equipment = false;
     test_ue_t *victim = NULL, *peer = NULL, *cleanup_ue;
     test_bearer_t *old_flows[2] = { NULL, NULL }, *new_flow;
@@ -526,14 +525,12 @@ static void test_amf_case(abts_case *tc, void *data)
         goto cleanup;
     }
     subscriber = true;
-    if (eir) {
-        if (!equipment_begin(tc))
-            goto cleanup;
-        bson_oid_init(&equipment_id, NULL);
-        equipment = true;
-        if (!equipment_record(tc, &equipment_id, "WHITELISTED"))
-            goto cleanup;
-    }
+    if (!equipment_begin(tc))
+        goto cleanup;
+    bson_oid_init(&equipment_id, NULL);
+    equipment = true;
+    if (!equipment_record(tc, &equipment_id, "WHITELISTED"))
+        goto cleanup;
     ngap = testngap_client(1, AF_INET);
     gtpu = test_gtpu_server(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
@@ -700,9 +697,6 @@ abts_suite *test_guti_amf(abts_suite *suite)
 
     suite = ADD_SUITE(suite);
     for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
-        if (cases[i].scenario == EIR_REJECT &&
-            !ogs_global_conf()->parameter.eir_count)
-            continue;
         indexes[i] = i;
         abts_run_test(suite, test_amf_case, &indexes[i]);
     }

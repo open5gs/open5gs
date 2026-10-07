@@ -39,26 +39,25 @@ typedef struct attach_case_s {
     const char *generic_status;     /* eir record for the PEI only */
     const char *specific_status;    /* eir record for the PEI and a SUPI */
     bool specific_other_supi;       /* ...of another subscriber */
-    ogs_nas_emm_cause_t reject_policy_cause; /* 0: attach accepted */
-    ogs_nas_emm_cause_t allow_policy_cause;
+    ogs_nas_emm_cause_t expected_cause; /* 0: attach accepted */
 } attach_case_t;
 
 static const attach_case_t cases[] = {
-    { "whitelisted equipment attaches", "WHITELISTED", NULL, false, 0, 0 },
-    { "greylisted equipment attaches", "GREYLISTED", NULL, false, 0, 0 },
+    { "whitelisted equipment attaches", "WHITELISTED", NULL, false, 0 },
+    { "greylisted equipment attaches", "GREYLISTED", NULL, false, 0 },
     { "blacklisted equipment is rejected", "BLACKLISTED", NULL, false,
-        OGS_NAS_EMM_CAUSE_ILLEGAL_ME, OGS_NAS_EMM_CAUSE_ILLEGAL_ME },
-    { "unknown equipment follows policy", NULL, NULL, false,
-        OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED, 0 },
+        OGS_NAS_EMM_CAUSE_ILLEGAL_ME },
+    { "unknown equipment is rejected", NULL, NULL, false,
+        OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED },
     { "subscriber blacklist overrides generic whitelist",
         "WHITELISTED", "BLACKLISTED", false,
-        OGS_NAS_EMM_CAUSE_ILLEGAL_ME, OGS_NAS_EMM_CAUSE_ILLEGAL_ME },
+        OGS_NAS_EMM_CAUSE_ILLEGAL_ME },
     { "subscriber whitelist overrides generic blacklist",
-        "BLACKLISTED", "WHITELISTED", false, 0, 0 },
+        "BLACKLISTED", "WHITELISTED", false, 0 },
     { "record of another subscriber does not apply",
-        "WHITELISTED", "BLACKLISTED", true, 0, 0 },
-    { "EIR server failure follows policy", "INVALID", NULL, false,
-        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, 0 },
+        "WHITELISTED", "BLACKLISTED", true, 0 },
+    { "EIR server failure is rejected", "INVALID", NULL, false,
+        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE },
 };
 
 typedef struct fixture_s {
@@ -134,8 +133,7 @@ static void fixture_remove(abts_case *tc, fixture_t *fixture)
 static void attach_case(abts_case *tc, void *data)
 {
     const attach_case_t *test = data;
-    ogs_nas_emm_cause_t expected_cause = test_eir_allow_policy() ?
-        test->allow_policy_cause : test->reject_policy_cause;
+    ogs_nas_emm_cause_t expected_cause = test->expected_cause;
     int rv;
     ogs_socknode_t *s1ap = NULL;
     ogs_socknode_t *gtpu = NULL;

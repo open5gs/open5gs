@@ -6,12 +6,6 @@
 
 #include "test-app.h"
 
-/* Addresses come from the same configuration passed to every child NF. */
-const char *test_eir_sbi_uri(void);
-const char *test_eir_nrf_uri(void);
-bool test_eir_wait_ready(void);
-bool test_eir_allow_policy(void);
-
 abts_suite *test_eir_dbi(abts_suite *suite);
 abts_suite *test_eir_service(abts_suite *suite);
 abts_suite *test_eir_registration(abts_suite *suite);

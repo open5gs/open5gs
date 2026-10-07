@@ -12,6 +12,90 @@
 #define DISCOVERY_PATH "/nnrf-disc/v1/nf-instances?target-nf-type=5G_EIR" \
     "&requester-nf-type=AMF&service-names=n5g-eir-eic"
 
+static char *eir_uri;
+static char *nrf_uri;
+
+static bool config_member(ogs_yaml_iter_t *parent,
+        const char *name, ogs_yaml_iter_t *child)
+{
+    ogs_yaml_iter_t iter = *parent;
+
+    if (ogs_yaml_iter_type(&iter) != YAML_MAPPING_NODE)
+        return false;
+
+    while (ogs_yaml_iter_next(&iter)) {
+        if (!strcmp(ogs_yaml_iter_key(&iter), name)) {
+            ogs_yaml_iter_recurse(&iter, child);
+            return true;
+        }
+    }
+    return false;
+}
+
+static char *config_sbi_uri(const char *nf)
+{
+    ogs_yaml_iter_t node, server, address, port;
+    const char *host, *value;
+    const char *field = "section";
+    const char *reason = "missing or invalid mapping";
+    char *end = NULL, *uri;
+    unsigned long number;
+
+    ogs_yaml_iter_init(&node, ogs_app()->document);
+    if (!config_member(&node, nf, &node))
+        goto invalid;
+    field = "sbi";
+    if (!config_member(&node, "sbi", &node))
+        goto invalid;
+    field = "sbi.server";
+    if (!config_member(&node, "server", &node))
+        goto invalid;
+
+    if (ogs_yaml_iter_type(&node) == YAML_SEQUENCE_NODE) {
+        reason = "empty server list";
+        if (!ogs_yaml_iter_next(&node))
+            goto invalid;
+        ogs_yaml_iter_recurse(&node, &server);
+        reason = "multiple servers are not supported by this test";
+        if (ogs_yaml_iter_next(&node))
+            goto invalid;
+        node = server;
+    }
+
+    field = "sbi.server.address";
+    reason = "missing or non-scalar value";
+    if (!config_member(&node, "address", &address) ||
+            ogs_yaml_iter_type(&address) != YAML_SCALAR_NODE)
+        goto invalid;
+    host = ogs_yaml_iter_value(&address);
+    reason = "empty address";
+    if (!*host)
+        goto invalid;
+
+    field = "sbi.server.port";
+    reason = "missing or non-scalar value";
+    if (!config_member(&node, "port", &port) ||
+            ogs_yaml_iter_type(&port) != YAML_SCALAR_NODE)
+        goto invalid;
+    value = ogs_yaml_iter_value(&port);
+    number = strtoul(value, &end, 10);
+    reason = "port must be an integer between 1 and 65535";
+    if (!*value || !end || *end || !number || number > 65535)
+        goto invalid;
+
+    uri = strchr(host, ':') ?
+        ogs_msprintf("http://[%s]:%lu", host, number) :
+        ogs_msprintf("http://%s:%lu", host, number);
+    if (!uri)
+        ogs_error("Cannot allocate EIR integration SBI URI for %s", nf);
+    return uri;
+
+invalid:
+    ogs_error("Invalid EIR integration config [%s.%s]: %s",
+            nf, field, reason);
+    return NULL;
+}
+
 typedef struct http_result_s {
     char body[65536];
     size_t length;
@@ -151,15 +235,15 @@ static bool eir_registered(const http_result_t *result)
     return found;
 }
 
-bool test_eir_wait_ready(void)
+static bool wait_ready(void)
 {
     http_result_t result;
     ogs_time_t deadline = ogs_get_monotonic_time() + ogs_time_from_sec(20);
 
     do {
-        if (http_request(test_eir_nrf_uri(), DISCOVERY_PATH, "GET", &result) &&
+        if (http_request(nrf_uri, DISCOVERY_PATH, "GET", &result) &&
                 eir_registered(&result) &&
-                http_request(test_eir_sbi_uri(),
+                http_request(eir_uri,
                     EQUIPMENT_PATH "?pei=" SERVICE_PEI, "GET", &result) &&
                 (result.status == 200 || result.status == 404))
             return true;
@@ -168,10 +252,28 @@ bool test_eir_wait_ready(void)
     return false;
 }
 
+/* Direct SBI checks belong only to the selected service test. */
+static void service_setup(abts_case *tc, void *data)
+{
+    bool *ready = data;
+
+    eir_uri = config_sbi_uri("eir");
+    nrf_uri = config_sbi_uri("nrf");
+    ABTS_PTR_NOTNULL(tc, eir_uri);
+    ABTS_PTR_NOTNULL(tc, nrf_uri);
+    if (!eir_uri || !nrf_uri)
+        return;
+
+    *ready = wait_ready();
+    if (!*ready)
+        ogs_error("EIR did not become ready before the service test timeout");
+    ABTS_TRUE(tc, *ready);
+}
+
 static void discovery(abts_case *tc, void *data)
 {
     http_result_t result;
-    bool received = http_request(test_eir_nrf_uri(),
+    bool received = http_request(nrf_uri,
             DISCOVERY_PATH, "GET", &result);
     bool registered;
 
@@ -278,7 +380,7 @@ static void service_request(abts_case *tc, void *data)
         }
     }
 
-    received = http_request(test_eir_sbi_uri(),
+    received = http_request(eir_uri,
             test->path, test->method, &result);
     ABTS_TRUE(tc, received);
     if (!received) {
@@ -330,10 +432,18 @@ cleanup:
 abts_suite *test_eir_service(abts_suite *suite)
 {
     size_t i;
+    bool ready = false;
 
     suite = ADD_SUITE(suite)
-    abts_run_test(suite, discovery, NULL);
-    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); i++)
-        abts_run_test(suite, service_request, (void *)&cases[i]);
+    abts_run_test(suite, service_setup, &ready);
+    if (ready) {
+        abts_run_test(suite, discovery, NULL);
+        for (i = 0; i < sizeof(cases) / sizeof(cases[0]); i++)
+            abts_run_test(suite, service_request, (void *)&cases[i]);
+    }
+
+    if (eir_uri) ogs_free(eir_uri);
+    if (nrf_uri) ogs_free(nrf_uri);
+    eir_uri = nrf_uri = NULL;
     return suite;
 }

@@ -300,10 +300,39 @@ eligible attach with a usable IMEISV queries the EIR; the MME keeps no cache
 of verdicts. An answer is used only if it still matches the pending attach
 and its serving S1 context. `tests/eir` exercises this path end to end.
 
-The Meson tests `eir` and `eir-allow` run the AMF and MME cases with matching
-`reject` and `allow` policies, respectively. Both runs reject blacklisted
-equipment; unknown equipment and EIR failures follow the selected policy.
-When running the test binary directly, set `OPEN5GS_EIR_TEST_POLICY=allow`
-to select the allow configuration and its expected results; the default is
-`reject`. The unit tests separately cover eligibility for registration and
-attach, including emergency procedures.
+From the build directory, run `meson test -v --suite eir` to execute the EIR
+integration and state-machine tests. All integration tests default to
+`configs/eir.yaml`, with EIR enabled in the AMF and MME and fixed `reject`
+policies. They populate the EIR collection with PEI/SUPI records to exercise
+accepted and rejected equipment, subscriber-specific overrides, unknown
+equipment and EIR errors without changing the configuration.
+
+The test binary uses the usual ABTS positional test names; no mode or policy
+environment variable is needed. Meson selects the following groups:
+
+| Meson test | ABTS test names |
+|---|---|
+| `eir-4g` | `attach-test` |
+| `eir-5g` | `dbi-test`, `service-test`, `registration-test` |
+| `eir-s13` | `epc-guti-test` |
+| `eir-n5g` | `amf-guti-test` |
+
+For example, run the registration and AMF GUTI cases directly with:
+
+```bash
+./tests/eir/eir registration-test amf-guti-test
+```
+
+A user-supplied `-c` replaces the default configuration and is passed to child
+NFs. For an external core, use the matching `no_*` flags, including `no_eir`,
+to prevent starting those NFs locally. The configuration must identify the
+external endpoints required by the selected tests, and the serving AMF/MME
+must have EIR enabled with the same fixed policies.
+
+The GUTI integration tests always run with EIR enabled, including the equipment
+rejection cases. EIR-disabled behavior and `allow` policies are covered by
+`eir-fsm`, which exercises policy decisions and the production AMF/MME state
+machines with peer messages replaced by test fixtures. It also checks EIR
+eligibility and session preservation and release during registration or attach.
+These FSM tests do not provide equivalent end-to-end SBI or Diameter coverage
+for EIR-disabled or allow-policy configurations.

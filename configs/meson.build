@@ -29,7 +29,6 @@ build_subprojects_freeDiameter_extensions_dir = join_paths(
         open5gs_build_dir, 'subprojects', 'freeDiameter', 'extensions')
 conf_data.set('build_subprojects_freeDiameter_extensions_dir',
         build_subprojects_freeDiameter_extensions_dir)
-conf_data.set('eir_test_action', 'reject')
 
 example_conf = '''
     sample.yaml
@@ -53,17 +52,6 @@ foreach file : example_conf
             output : file,
             configuration : conf_data)
 endforeach
-
-eir_allow_conf = configuration_data()
-foreach key : ['bindir', 'sysconfdir', 'libdir', 'localstatedir',
-               'build_configs_dir', 'build_subprojects_freeDiameter_extensions_dir']
-    eir_allow_conf.set(key, conf_data.get(key))
-endforeach
-eir_allow_conf.set('eir_test_action', 'allow')
-configure_file(
-    input : 'eir.yaml.in',
-    output : 'eir-allow.yaml',
-    configuration : eir_allow_conf)
 
 subdir('open5gs')
 subdir('freeDiameter')

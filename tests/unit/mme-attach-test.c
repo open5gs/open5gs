@@ -36,6 +36,7 @@ static struct {
     ogs_timer_mgr_t *timers;
     int air, deletes, continuation, eir, smc, rejects, delete_action, releases;
     int xacts;
+    uint8_t reject_cause;
     uint32_t m_tmsi;
 } *f;
 
@@ -98,7 +99,7 @@ static int attach_auth_reject(mme_ue_t *ue)
 { f->rejects++; return OGS_OK; }
 static int attach_reject(enb_ue_t *enb, mme_ue_t *ue,
         uint8_t emm_cause, uint8_t esm_cause)
-{ f->rejects++; return OGS_OK; }
+{ f->rejects++; f->reject_cause = emm_cause; return OGS_OK; }
 static int attach_service_reject(enb_ue_t *enb, mme_ue_t *ue, uint8_t cause)
 { f->rejects++; return OGS_OK; }
 void attach_continue(enb_ue_t *, mme_ue_t *);
@@ -596,6 +597,98 @@ static void last_delete_continues_attach(abts_case *tc, void *data)
     mme_self()->eir.enabled = false;
 }
 
+/* Exercise policy decisions after the real authenticated Attach/SMC path.
+ * The ECA and missing-PEI handlers are real; Diameter delivery is not simulated.
+ * In particular, UNABLE_TO_COMPLY is the result synthesized by the ECR timeout.
+ */
+static void eir_policy_completes_attach(abts_case *tc, void *data)
+{
+    enum { UNKNOWN, FAILURE, MALFORMED, MISSING_PEI, BLACKLIST } scenario;
+    mme_eir_t saved = mme_self()->eir;
+    int reject;
+
+    for (scenario = UNKNOWN; scenario <= BLACKLIST; scenario++) {
+        for (reject = 0; reject < 2; reject++) {
+            ogs_diam_s13_message_t answer = {0};
+            ogs_eir_action_e action = reject ?
+                OGS_EIR_ACTION_REJECT : OGS_EIR_ACTION_ALLOW;
+            bool rejected = reject || scenario == BLACKLIST;
+            ogs_nas_emm_cause_t expected = !rejected ?
+                OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED :
+                scenario == BLACKLIST ? OGS_NAS_EMM_CAUSE_ILLEGAL_ME :
+                scenario == UNKNOWN || scenario == MISSING_PEI ?
+                OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED :
+                OGS_NAS_EMM_CAUSE_NETWORK_FAILURE;
+
+            /* Opposing settings catch use of the wrong policy field. */
+            mme_self()->eir.enabled = true;
+            mme_self()->eir.unknown_action =
+                mme_self()->eir.failure_action =
+                mme_self()->eir.missing_pei_action = reject ?
+                    OGS_EIR_ACTION_ALLOW : OGS_EIR_ACTION_REJECT;
+            if (scenario == UNKNOWN)
+                mme_self()->eir.unknown_action = action;
+            else if (scenario == MISSING_PEI)
+                mme_self()->eir.missing_pei_action = action;
+            else
+                mme_self()->eir.failure_action = action;
+
+            fixture_init(true);
+            dispatch(OGS_NAS_EPS_ATTACH_REQUEST, 0, false);
+            authenticate();
+            dispatch(OGS_NAS_EPS_SECURITY_MODE_COMPLETE, 1, false);
+            ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm,
+                        emm_state_initial_context_setup));
+            ABTS_INT_EQUAL(tc, 1, f->eir);
+            assert_sessions(tc);
+
+            if (scenario == MISSING_PEI) {
+                ABTS_TRUE(tc, !f->ue.imeisv_bcd[0]);
+                mme_s13_start_check(&f->enb, &f->ue);
+            } else {
+                ogs_nas_emm_cause_t cause;
+
+                answer.cmd_code = OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK;
+                answer.result_code = ER_DIAMETER_SUCCESS;
+                if (scenario == UNKNOWN) {
+                    answer.result_code = OGS_DIAM_S13_ERROR_EQUIPMENT_UNKNOWN;
+                    answer.exp_err = &answer.result_code;
+                } else if (scenario == FAILURE) {
+                    answer.result_code = ER_DIAMETER_UNABLE_TO_COMPLY;
+                    answer.err = &answer.result_code;
+                } else {
+                    answer.eca_message.equipment_status_code =
+                        scenario == BLACKLIST ?
+                        OGS_DIAM_S13_EQUIPMENT_BLACKLIST : 3;
+                }
+                cause = mme_s13_handle_eca(&f->ue, &answer);
+                ABTS_INT_EQUAL(tc, expected, cause);
+                mme_s13_complete_check(&f->enb, &f->ue, cause);
+            }
+
+            ABTS_INT_EQUAL(tc, rejected, f->rejects);
+            ABTS_INT_EQUAL(tc, rejected ? expected : 0, f->reject_cause);
+            ABTS_INT_EQUAL(tc, 1, f->deletes);
+            ABTS_INT_EQUAL(tc, rejected ?
+                    OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE :
+                    OGS_GTP_DELETE_SEND_UPDATE_LOCATION_REQUEST,
+                    f->delete_action);
+            ABTS_INT_EQUAL(tc, 0, f->continuation);
+            ABTS_INT_EQUAL(tc, !rejected, f->ue.attach_session_delete_pending);
+            if (!rejected) {
+                delete_response(1);
+                ABTS_INT_EQUAL(tc, 0, f->continuation);
+                delete_response(0);
+                ABTS_INT_EQUAL(tc, 1, f->continuation);
+                ABTS_INT_EQUAL(tc, 0, mme_sess_count(&f->ue));
+                ABTS_TRUE(tc, !f->ue.attach_session_delete_pending);
+            }
+            fixture_final();
+        }
+    }
+    mme_self()->eir = saved;
+}
+
 /* Exercise timeout cancellation and the release send boundary. Release
  * Complete/S1 holding expiry and their UE removal/FSM fini are not simulated. */
 static void delete_timeout_cancels_attach(abts_case *tc, void *data)
@@ -698,6 +791,7 @@ abts_suite *test_mme_attach(abts_suite *suite)
     abts_run_test(suite, verified_attach, NULL);
     abts_run_test(suite, unverified_detach_during_attach, NULL);
     abts_run_test(suite, last_delete_continues_attach, NULL);
+    abts_run_test(suite, eir_policy_completes_attach, NULL);
     abts_run_test(suite, delete_timeout_cancels_attach, NULL);
     *mme_self() = *saved;
     ogs_free(saved);
