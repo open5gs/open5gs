@@ -37,15 +37,15 @@ mme:
         address: 127.0.0.8
       - identity: eir.localdomain
         address: 127.0.0.21
-  # Exercise the same policy in the MME and AMF in each test run.
+  # Equipment records select accepted and rejected integration cases.
   eir:
     enabled: true
     realm: localdomain
     host: eir.localdomain
     timeout: 3
-    unknown_action: @eir_test_action@
-    failure_action: @eir_test_action@
-    missing_pei_action: @eir_test_action@
+    unknown_action: reject
+    failure_action: reject
+    missing_pei_action: reject
   s1ap:
     server:
       - address: 127.0.0.2
@@ -183,12 +183,12 @@ amf:
   time:
     t3512:
       value: 540
-  # eir.yaml uses reject; eir-allow.yaml uses allow.
+  # Policy variations are covered by the EIR state-machine tests.
   eir:
     enabled: true
-    unknown_action: @eir_test_action@
-    failure_action: @eir_test_action@
-    missing_pei_action: @eir_test_action@
+    unknown_action: reject
+    failure_action: reject
+    missing_pei_action: reject
 
 sgwu:
   pfcp:

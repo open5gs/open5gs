@@ -407,7 +407,6 @@ static void test_epc_case(abts_case *tc, void *data)
     scenario_t scenario = cases[index].scenario;
     const unsigned int pdns = cases[index].pdns;
     unsigned int i;
-    bool eir = ogs_global_conf()->parameter.eir_count > 0;
     bool subscriber = false, equipment = false;
     test_ue_t *victim = NULL, *peer = NULL, *cleanup_ue;
     test_bearer_t *old_bearers[2] = { NULL, NULL }, *new_bearer;
@@ -428,12 +427,10 @@ static void test_epc_case(abts_case *tc, void *data)
         goto cleanup;
     }
     subscriber = true;
-    if (eir) {
-        bson_oid_init(&equipment_id, NULL);
-        if (!equipment_record(tc, &equipment_id, "WHITELISTED"))
-            goto cleanup;
-        equipment = true;
-    }
+    bson_oid_init(&equipment_id, NULL);
+    if (!equipment_record(tc, &equipment_id, "WHITELISTED"))
+        goto cleanup;
+    equipment = true;
     s1ap = tests1ap_client(AF_INET);
     gtpu = test_gtpu_server(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -598,9 +595,6 @@ abts_suite *test_guti_epc(abts_suite *suite)
 
     suite = ADD_SUITE(suite);
     for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
-        if (cases[i].scenario == EIR_REJECT &&
-            !ogs_global_conf()->parameter.eir_count)
-            continue;
         indexes[i] = i;
         abts_run_test(suite, test_epc_case, &indexes[i]);
     }

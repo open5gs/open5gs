@@ -35,9 +35,12 @@ static struct {
     ogs_timer_mgr_t *timers;
     amf_m_tmsi_t m_tmsi;
     int auth, releases, continuation, eir, rejects, smc, ran_releases;
+    int eir_result;
+    ogs_nas_5gmm_cause_t reject_cause;
     int num_of_integrity_order;
     uint8_t integrity_order;
     bool eir_enabled;
+    ogs_eir_action_e unknown_action, failure_action, missing_pei_action;
     bool ran_removed;
 } *f;
 
@@ -78,7 +81,7 @@ static int registration_send(OpenAPI_service_name_e service,
     return OGS_OK;
 }
 static int registration_eir(amf_ue_t *ue)
-{ f->eir++; return OGS_OK; }
+{ f->eir++; return f->eir_result; }
 static void registration_release(ran_ue_t *ran, amf_ue_t *ue,
         int state, void *data)
 {
@@ -101,7 +104,7 @@ static int registration_reject(amf_ue_t *ue)
 { f->rejects++; return OGS_OK; }
 static int registration_gmm_reject(ran_ue_t *ran, amf_ue_t *ue,
         ogs_nas_5gmm_cause_t cause)
-{ f->rejects++; return OGS_OK; }
+{ f->rejects++; f->reject_cause = cause; return OGS_OK; }
 static int registration_smc(amf_ue_t *ue)
 {
     f->smc++;
@@ -236,6 +239,10 @@ static void fixture_init(int sessions)
     f->num_of_integrity_order = amf_self()->num_of_integrity_order;
     f->integrity_order = amf_self()->integrity_order[0];
     f->eir_enabled = amf_self()->eir.enabled;
+    f->unknown_action = amf_self()->eir.unknown_action;
+    f->failure_action = amf_self()->eir.failure_action;
+    f->missing_pei_action = amf_self()->eir.missing_pei_action;
+    f->eir_result = OGS_OK;
     amf_self()->num_of_integrity_order = 1;
     amf_self()->integrity_order[0] = OGS_NAS_SECURITY_ALGORITHMS_128_NIA2;
     amf_self()->eir.enabled = false;
@@ -288,6 +295,9 @@ static void fixture_final(void)
     amf_self()->num_of_integrity_order = f->num_of_integrity_order;
     amf_self()->integrity_order[0] = f->integrity_order;
     amf_self()->eir.enabled = f->eir_enabled;
+    amf_self()->eir.unknown_action = f->unknown_action;
+    amf_self()->eir.failure_action = f->failure_action;
+    amf_self()->eir.missing_pei_action = f->missing_pei_action;
     ogs_free(f);
     f = NULL;
 }
@@ -437,7 +447,7 @@ static void release_response(int i)
         }
     }
     amf_nsmf_pdusession_handle_release_sm_context(&f->ue, &f->ran, sess,
-            AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION);
+            f->xact[i].state);
 }
 
 static void start_security_mode(void)
@@ -447,20 +457,112 @@ static void start_security_mode(void)
     f->ue.security_context_available = 1;
 }
 
-static void equipment_status(OpenAPI_equipment_status_e status)
+static void equipment_response(int http_status, const char *problem_cause,
+        OpenAPI_equipment_status_e status)
 {
     amf_event_t event = {0};
     ogs_sbi_message_t message = {0};
     OpenAPI_eir_response_data_t response = {0};
+    OpenAPI_problem_details_t problem = {0};
     event.h.id = OGS_EVENT_SBI_CLIENT;
     event.h.sbi.message = &message;
     event.amf_ue_id = f->ue.id;
     message.h.service.name = "n5g-eir-eic";
     message.h.resource.component[0] = OGS_SBI_RESOURCE_NAME_EQUIPMENT_STATUS;
-    message.res_status = OGS_SBI_HTTP_STATUS_OK;
+    message.res_status = http_status;
     response.status = status;
-    message.EirResponseData = &response;
+    if (http_status == OGS_SBI_HTTP_STATUS_OK)
+        message.EirResponseData = &response;
+    if (problem_cause) {
+        problem.cause = (char *)problem_cause;
+        message.ProblemDetails = &problem;
+    }
     ogs_fsm_dispatch(&f->ue.sm, &event);
+}
+
+static void equipment_status(OpenAPI_equipment_status_e status)
+{
+    equipment_response(OGS_SBI_HTTP_STATUS_OK, NULL, status);
+}
+
+static void eir_policy_completes_registration(abts_case *tc, void *data)
+{
+    enum { UNKNOWN, HTTP_FAILURE, SEND_FAILURE, ASYNC_FAILURE, MISSING_PEI };
+    int scenario, reject, i, sessions = *(int *)data;
+
+    for (scenario = UNKNOWN; scenario <= MISSING_PEI; scenario++) {
+        for (reject = 0; reject < 2; reject++) {
+            amf_event_t event = {0};
+            ogs_eir_action_e action = reject ?
+                OGS_EIR_ACTION_REJECT : OGS_EIR_ACTION_ALLOW;
+
+            fixture_init(sessions);
+            start_security_mode();
+            amf_self()->eir.enabled = true;
+            amf_self()->eir.unknown_action = action;
+            amf_self()->eir.failure_action = action;
+            amf_self()->eir.missing_pei_action = action;
+            if (scenario == SEND_FAILURE)
+                f->eir_result = OGS_ERROR;
+            else if (scenario == MISSING_PEI)
+                f->ue.pei = NULL;
+
+            assert_preserved(tc, sessions);
+            ABTS_TRUE(tc, f->ue.registration_session_release_after_authentication);
+            dispatch(OGS_NAS_5GS_SECURITY_MODE_COMPLETE, true, false);
+            ABTS_INT_EQUAL(tc, scenario != MISSING_PEI, f->eir);
+            ABTS_TRUE(tc, !f->ue.can_restore_context);
+
+            if (scenario == UNKNOWN || scenario == HTTP_FAILURE ||
+                    scenario == ASYNC_FAILURE) {
+                assert_preserved(tc, sessions);
+                ABTS_TRUE(tc, f->ue.eir_check_pending);
+                ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, gmm_state_security_mode));
+                if (scenario == UNKNOWN)
+                    equipment_response(OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                            "ERROR_EQUIPMENT_UNKNOWN", OpenAPI_equipment_status_NULL);
+                else if (scenario == HTTP_FAILURE)
+                    equipment_response(OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                            NULL, OpenAPI_equipment_status_NULL);
+                else {
+                    /* The timeout/discovery-failure event enters the real FSM;
+                     * transport and wall-clock timers remain outside this fixture. */
+                    event.h.id = AMF_EVENT_5GMM_EIR_FAILURE;
+                    event.amf_ue_id = f->ue.id;
+                    ogs_fsm_dispatch(&f->ue.sm, &event);
+                }
+            }
+
+            ABTS_TRUE(tc, !f->ue.eir_check_pending);
+            ABTS_INT_EQUAL(tc, 1, f->releases);
+            ABTS_INT_EQUAL(tc, 0, f->continuation);
+            ABTS_INT_EQUAL(tc, reject, f->rejects);
+            ABTS_INT_EQUAL(tc, !reject, f->ue.registration_session_release_pending);
+            ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, (reject ?
+                        gmm_state_exception : gmm_state_initial_context_setup)));
+            if (reject)
+                ABTS_INT_EQUAL(tc, scenario == UNKNOWN || scenario == MISSING_PEI ?
+                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED :
+                        OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, f->reject_cause);
+
+            for (i = sessions - 1; i >= 0; i--) {
+                ABTS_INT_EQUAL(tc, reject ? AMF_RELEASE_SM_CONTEXT_NO_STATE :
+                        AMF_RELEASE_SM_CONTEXT_AUTHENTICATED_REGISTRATION,
+                        f->xact[i].state);
+                release_response(i);
+                ABTS_INT_EQUAL(tc, i, ogs_list_count(&f->ue.sess_list));
+                ABTS_INT_EQUAL(tc, i, amf_sess_xact_count(&f->ue));
+                ABTS_INT_EQUAL(tc, !reject && i == 0, f->continuation);
+            }
+            ABTS_TRUE(tc, !f->ue.registration_session_release_pending);
+            ABTS_INT_EQUAL(tc, reject, f->ran_releases);
+            ABTS_INT_EQUAL(tc, 1, f->auth);
+            if (reject)
+                ABTS_INT_EQUAL(tc, NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE,
+                        f->ran.ue_ctx_rel_action);
+            fixture_final();
+        }
+    }
 }
 
 static void eir_and_last_release(abts_case *tc, void *data)
@@ -743,6 +845,7 @@ abts_suite *test_amf_registration(abts_suite *suite)
         abts_run_test(suite, failures_preserve_sessions, &sessions[i]);
         abts_run_test(suite, unverified_nas_is_discarded, &sessions[i]);
         abts_run_test(suite, eir_and_last_release, &sessions[i]);
+        abts_run_test(suite, eir_policy_completes_registration, &sessions[i]);
         abts_run_test(suite, cancelled_release_does_not_resume, &sessions[i]);
         abts_run_test(suite, other_procedures_keep_sessions, &sessions[i]);
         abts_run_test(suite, eir_rejection_releases_sessions, &sessions[i]);

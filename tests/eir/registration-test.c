@@ -24,26 +24,25 @@ typedef struct registration_case_s {
     const char *generic_status;
     const char *specific_status;
     bool other_supi;
-    uint8_t reject_policy_cause; /* 0: registration accepted */
-    uint8_t allow_policy_cause;
+    uint8_t expected_cause; /* 0: registration accepted */
 } registration_case_t;
 
 static const registration_case_t registration_cases[] = {
-    { "whitelist registration", "WHITELISTED", NULL, false, 0, 0 },
-    { "greylist registration", "GREYLISTED", NULL, false, 0, 0 },
+    { "whitelist registration", "WHITELISTED", NULL, false, 0 },
+    { "greylist registration", "GREYLISTED", NULL, false, 0 },
     { "blacklist rejects registration", "BLACKLISTED", NULL, false,
-        OGS_5GMM_CAUSE_ILLEGAL_ME, OGS_5GMM_CAUSE_ILLEGAL_ME },
-    { "unknown equipment follows policy", NULL, NULL, false,
-        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED, 0 },
+        OGS_5GMM_CAUSE_ILLEGAL_ME },
+    { "unknown equipment is rejected", NULL, NULL, false,
+        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED },
     { "specific blacklist overrides generic whitelist",
         "WHITELISTED", "BLACKLISTED", false,
-        OGS_5GMM_CAUSE_ILLEGAL_ME, OGS_5GMM_CAUSE_ILLEGAL_ME },
+        OGS_5GMM_CAUSE_ILLEGAL_ME },
     { "specific whitelist overrides generic blacklist",
-        "BLACKLISTED", "WHITELISTED", false, 0, 0 },
+        "BLACKLISTED", "WHITELISTED", false, 0 },
     { "different SUPI falls back to generic whitelist",
-        "WHITELISTED", "BLACKLISTED", true, 0, 0 },
-    { "EIR server failure follows policy", "INVALID", NULL, false,
-        OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, 0 },
+        "WHITELISTED", "BLACKLISTED", true, 0 },
+    { "EIR server failure is rejected", "INVALID", NULL, false,
+        OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED },
 };
 
 typedef struct registration_fixture_s {
@@ -193,8 +192,7 @@ static bool receive_ngap(abts_case *tc, ogs_socknode_t *ngap,
 static void registration_case(abts_case *tc, void *data)
 {
     const registration_case_t *test = data;
-    uint8_t expected_cause = test_eir_allow_policy() ?
-        test->allow_policy_cause : test->reject_policy_cause;
+    uint8_t expected_cause = test->expected_cause;
     unsigned int index = test - registration_cases;
     registration_fixture_t fixture = {0};
     ogs_nas_5gs_mobile_identity_suci_t suci;

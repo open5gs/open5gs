@@ -53,3 +53,10 @@ testunit_unit_exe = executable('unit',
                     libamf_dep])
 
 test('unit', testunit_unit_exe, is_parallel : false, suite: 'unit')
+
+# Exercise policy decisions and the real AMF/MME FSMs without peer processes.
+test('eir-fsm', testunit_unit_exe,
+    args : ['mme-s13-test', 'mme-attach-test',
+            'amf-eir-test', 'amf-registration-test', 'eir-config-test'],
+    is_parallel : false,
+    suite : 'eir')
