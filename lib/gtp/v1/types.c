@@ -533,9 +533,16 @@ int ogs_gtp1_parse_mm_context(
     CHECK_SPACE_ERR(1);
     decoded->ms_network_capability_len = *ptr++;
     CHECK_SPACE_ERR(decoded->ms_network_capability_len);
+    if (decoded->ms_network_capability_len >
+            sizeof(decoded->ms_network_capability)) {
+        ogs_error("[Gn] MM Context IE: MS Network Capability too long "
+                "[%u > %zu]", decoded->ms_network_capability_len,
+                sizeof(decoded->ms_network_capability));
+        return OGS_ERROR;
+    }
     if (decoded->ms_network_capability_len > 0) {
         memcpy(&decoded->ms_network_capability[0], ptr,
-             ogs_min(decoded->ms_network_capability_len, sizeof(decoded->ms_network_capability)));
+                decoded->ms_network_capability_len);
     }
     ptr += decoded->ms_network_capability_len;
 
@@ -554,8 +561,12 @@ int ogs_gtp1_parse_mm_context(
             return OGS_ERROR;
         decoded->imeisv_len = ptr[1];
         CHECK_SPACE_ERR(2 + decoded->imeisv_len);
-        memcpy(&decoded->imeisv[0], &ptr[2],
-               ogs_min(decoded->imeisv_len, sizeof(decoded->imeisv)));
+        if (decoded->imeisv_len > sizeof(decoded->imeisv)) {
+            ogs_error("[Gn] MM Context IE: IMEISV too long [%u > %zu]",
+                    decoded->imeisv_len, sizeof(decoded->imeisv));
+            return OGS_ERROR;
+        }
+        memcpy(&decoded->imeisv[0], &ptr[2], decoded->imeisv_len);
     }
     ptr += val16;
 
@@ -644,6 +655,9 @@ int ogs_gtp1_build_mm_context(ogs_gtp1_tlv_mm_context_t *octet,
     ptr += sizeof(decoded->drx_param);
 
     if (decoded->ms_network_capability_len != 0) {
+        if (decoded->ms_network_capability_len >
+                sizeof(decoded->ms_network_capability))
+            return OGS_ERROR;
         /* MS Network Capability Length */
         CHECK_SPACE_ERR(1 + decoded->ms_network_capability_len);
         *ptr++ = decoded->ms_network_capability_len;
@@ -655,6 +669,8 @@ int ogs_gtp1_build_mm_context(ogs_gtp1_tlv_mm_context_t *octet,
     }
 
     if (decoded->imeisv_len != 0) {
+        if (decoded->imeisv_len > sizeof(decoded->imeisv))
+            return OGS_ERROR;
         /* Container Len */
         CHECK_SPACE_ERR(2);
         val16 = htobe16(2 + decoded->imeisv_len);

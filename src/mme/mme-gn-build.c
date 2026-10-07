@@ -49,8 +49,11 @@ static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_de
     mmctx_dec->imeisv_len = sizeof(mme_ue->nas_mobile_identity_imeisv);
     memcpy(&mmctx_dec->imeisv[0], &mme_ue->nas_mobile_identity_imeisv, sizeof(mme_ue->nas_mobile_identity_imeisv));
 
-    mmctx_dec->ms_network_capability_len = mme_ue->ms_network_capability.length;
-    memcpy(&mmctx_dec->ms_network_capability[0], ((uint8_t*)&mme_ue->ms_network_capability)+1, sizeof(mme_ue->ms_network_capability) - 1);
+    mmctx_dec->ms_network_capability_len =
+        ogs_min(mme_ue->ms_network_capability.length,
+                sizeof(mmctx_dec->ms_network_capability));
+    memcpy(&mmctx_dec->ms_network_capability[0], ((uint8_t*)&mme_ue->ms_network_capability)+1,
+           mmctx_dec->ms_network_capability_len);
 
     return OGS_OK;
 }

@@ -372,7 +372,9 @@ typedef struct ogs_gtp1_mm_context_decoded_s {
     ogs_gtp1_auth_quintuplet_t auth_quintuplets[5];
     ogs_gtp1_drx_param_val_t drx_param;
     uint8_t ms_network_capability_len;
-    uint8_t ms_network_capability[6]; /* ogs_nas_ms_network_capability_t */
+    /* TS 24.008 10.5.5.12: the value part is at most 8 octets, which is also
+     * the size of the value part of ogs_nas_ms_network_capability_t. */
+    uint8_t ms_network_capability[8]; /* ogs_nas_ms_network_capability_t */
     uint8_t imeisv_len;
     uint8_t imeisv[10]; /* ogs_nas_mobile_identity_imeisv_t */
     uint8_t nrsrna;
