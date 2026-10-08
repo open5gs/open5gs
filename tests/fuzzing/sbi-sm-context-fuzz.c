@@ -31,7 +31,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {
     ogs_sbi_message_t message;
     ogs_sbi_response_t *response = NULL;
-    int rv;
 
     if (Size < kMinInputLength || Size > kMaxInputLength) {
         return 1;
@@ -64,12 +63,11 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     ogs_sbi_header_set(response->http.headers,
             OGS_SBI_CONTENT_TYPE, OGS_SBI_CONTENT_JSON_TYPE);
 
-    rv = ogs_sbi_parse_response(&message, response);
+    memset(&message, 0, sizeof(message));
+    ogs_sbi_parse_response(&message, response);
+    ogs_sbi_message_free(&message);
 
     ogs_sbi_response_free(response);
-    if (rv == OGS_OK) {
-        ogs_sbi_message_free(&message);
-    }
 
     return 0;
 }
