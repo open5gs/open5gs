@@ -4398,6 +4398,7 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
     uint16_t target_bitmap_before = 0;
     bool target_had_imsi = false;
     char target_imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    int i;
     ogs_assert(mme_ue && imsi_bcd);
 
     /*
@@ -4552,6 +4553,23 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
 
             /* Phase-2 : Move Session Context from OLD to NEW MME-UE Context */
             ogs_assert(ogs_list_empty(&mme_ue->sess_list));
+
+            /* The retained PDNs still reference the old UE's subscription
+             * entries. Transfer their ownership and rebind those references
+             * before removing the old UE, including when the target has a
+             * previous subscription but no PDNs of its own. */
+            ogs_assert(old_mme_ue->num_of_session <= OGS_MAX_NUM_OF_SESS);
+            mme_session_remove_all(mme_ue);
+            mme_ue->num_of_session = old_mme_ue->num_of_session;
+            mme_ue->context_identifier = old_mme_ue->context_identifier;
+            for (i = 0; i < mme_ue->num_of_session; i++) {
+                mme_ue->session[i] = old_mme_ue->session[i];
+                ogs_list_for_each(&old_mme_ue->sess_list, old_sess) {
+                    if (old_sess->session == &old_mme_ue->session[i])
+                        old_sess->session = &mme_ue->session[i];
+                }
+            }
+            old_mme_ue->num_of_session = 0;
 
             memcpy(&mme_ue->sess_list,
                     &old_mme_ue->sess_list, sizeof(mme_ue->sess_list));
