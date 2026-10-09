@@ -1407,7 +1407,11 @@ void smf_epc_n4_handle_session_modification_response(
     }
 
     if (flags & OGS_PFCP_MODIFY_REMOVE) {
-        ogs_assert(bearer);
+        /* A previous REMOVE response may have already removed this bearer. */
+        if (!bearer) {
+            ogs_error("Bearer has already been removed");
+            return;
+        }
         smf_bearer_remove(bearer);
 
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
