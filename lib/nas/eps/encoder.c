@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-06-27 11:33:08.010257 by acetcom
+ * Created on: 2026-10-09 20:35:15.128281 by acetcom
  * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
@@ -60,8 +60,8 @@ int ogs_nas_eps_encode_emm_information(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t
 int ogs_nas_eps_encode_downlink_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
 int ogs_nas_eps_encode_uplink_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
 int ogs_nas_eps_encode_cs_service_notification(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
-int ogs_nas_eps_encode_uplink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
 int ogs_nas_eps_encode_downlink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
+int ogs_nas_eps_encode_uplink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
 int ogs_nas_eps_encode_activate_default_eps_bearer_context_request(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
 int ogs_nas_eps_encode_activate_default_eps_bearer_context_accept(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
 int ogs_nas_eps_encode_activate_default_eps_bearer_context_reject(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message);
@@ -2491,35 +2491,6 @@ int ogs_nas_eps_encode_cs_service_notification(ogs_pkbuf_t *pkbuf, ogs_nas_eps_m
     return encoded;
 }
 
-int ogs_nas_eps_encode_uplink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message)
-{
-    ogs_nas_eps_uplink_generic_nas_transport_t *uplink_generic_nas_transport = &message->emm.uplink_generic_nas_transport;
-    int encoded = 0;
-    int size = 0;
-
-    ogs_trace("[NAS] Encode UPLINK_GENERIC_NAS_TRANSPORT");
-
-    size = ogs_nas_eps_encode_generic_message_container_type(pkbuf, &uplink_generic_nas_transport->generic_message_container_type);
-    ogs_assert(size >= 0);
-    encoded += size;
-
-    size = ogs_nas_eps_encode_generic_message_container(pkbuf, &uplink_generic_nas_transport->generic_message_container);
-    ogs_assert(size >= 0);
-    encoded += size;
-
-    if (uplink_generic_nas_transport->presencemask & OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT) {
-        size = ogs_nas_eps_encode_optional_type(pkbuf, OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE);
-        ogs_assert(size >= 0);
-        encoded += size;
-
-        size = ogs_nas_eps_encode_additional_information(pkbuf, &uplink_generic_nas_transport->additional_information);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    return encoded;
-}
-
 int ogs_nas_eps_encode_downlink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message)
 {
     ogs_nas_eps_downlink_generic_nas_transport_t *downlink_generic_nas_transport = &message->emm.downlink_generic_nas_transport;
@@ -2542,6 +2513,35 @@ int ogs_nas_eps_encode_downlink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_na
         encoded += size;
 
         size = ogs_nas_eps_encode_additional_information(pkbuf, &downlink_generic_nas_transport->additional_information);
+        ogs_assert(size >= 0);
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+int ogs_nas_eps_encode_uplink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_eps_message_t *message)
+{
+    ogs_nas_eps_uplink_generic_nas_transport_t *uplink_generic_nas_transport = &message->emm.uplink_generic_nas_transport;
+    int encoded = 0;
+    int size = 0;
+
+    ogs_trace("[NAS] Encode UPLINK_GENERIC_NAS_TRANSPORT");
+
+    size = ogs_nas_eps_encode_generic_message_container_type(pkbuf, &uplink_generic_nas_transport->generic_message_container_type);
+    ogs_assert(size >= 0);
+    encoded += size;
+
+    size = ogs_nas_eps_encode_generic_message_container(pkbuf, &uplink_generic_nas_transport->generic_message_container);
+    ogs_assert(size >= 0);
+    encoded += size;
+
+    if (uplink_generic_nas_transport->presencemask & OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT) {
+        size = ogs_nas_eps_encode_optional_type(pkbuf, OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE);
+        ogs_assert(size >= 0);
+        encoded += size;
+
+        size = ogs_nas_eps_encode_additional_information(pkbuf, &uplink_generic_nas_transport->additional_information);
         ogs_assert(size >= 0);
         encoded += size;
     }
@@ -4056,13 +4056,13 @@ ogs_pkbuf_t *ogs_nas_emm_encode(ogs_nas_eps_message_t *message)
         ogs_assert(size >= 0);
         encoded += size;
         break;
-    case OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT:
-        size = ogs_nas_eps_encode_uplink_generic_nas_transport(pkbuf, message);
+    case OGS_NAS_EPS_DOWNLINK_GENERIC_NAS_TRANSPORT:
+        size = ogs_nas_eps_encode_downlink_generic_nas_transport(pkbuf, message);
         ogs_assert(size >= 0);
         encoded += size;
         break;
-    case OGS_NAS_EPS_DOWNLINK_GENERIC_NAS_TRANSPORT:
-        size = ogs_nas_eps_encode_downlink_generic_nas_transport(pkbuf, message);
+    case OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT:
+        size = ogs_nas_eps_encode_uplink_generic_nas_transport(pkbuf, message);
         ogs_assert(size >= 0);
         encoded += size;
         break;

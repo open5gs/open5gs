@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-06-27 11:33:07.983342 by acetcom
+ * Created on: 2026-10-09 20:35:15.104797 by acetcom
  * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
@@ -96,8 +96,8 @@ ED2(uint8_t security_header_type:4;,
 #define OGS_NAS_EPS_DOWNLINK_NAS_TRANSPORT 98
 #define OGS_NAS_EPS_UPLINK_NAS_TRANSPORT 99
 #define OGS_NAS_EPS_CS_SERVICE_NOTIFICATION 100
-#define OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT 101
 #define OGS_NAS_EPS_DOWNLINK_GENERIC_NAS_TRANSPORT 104
+#define OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT 105
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST 193
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT 194
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT 195
@@ -1047,23 +1047,6 @@ typedef struct ogs_nas_eps_cs_service_notification_s {
 
 
 /*******************************************************
- * UPLINK GENERIC NAS TRANSPORT
- ******************************************************/
-#define OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT ((uint64_t)1<<0)
-#define OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE 0x65
-
-typedef struct ogs_nas_eps_uplink_generic_nas_transport_s {
-    /* Mandatory fields */
-    ogs_nas_generic_message_container_type_t generic_message_container_type;
-    ogs_nas_generic_message_container_t generic_message_container;
-
-    /* Optional fields */
-    uint64_t presencemask;
-    ogs_nas_additional_information_t additional_information;
-} ogs_nas_eps_uplink_generic_nas_transport_t;
-
-
-/*******************************************************
  * DOWNLINK GENERIC NAS TRANSPORT
  ******************************************************/
 #define OGS_NAS_EPS_DOWNLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT ((uint64_t)1<<0)
@@ -1078,6 +1061,23 @@ typedef struct ogs_nas_eps_downlink_generic_nas_transport_s {
     uint64_t presencemask;
     ogs_nas_additional_information_t additional_information;
 } ogs_nas_eps_downlink_generic_nas_transport_t;
+
+
+/*******************************************************
+ * UPLINK GENERIC NAS TRANSPORT
+ ******************************************************/
+#define OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT ((uint64_t)1<<0)
+#define OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE 0x65
+
+typedef struct ogs_nas_eps_uplink_generic_nas_transport_s {
+    /* Mandatory fields */
+    ogs_nas_generic_message_container_type_t generic_message_container_type;
+    ogs_nas_generic_message_container_t generic_message_container;
+
+    /* Optional fields */
+    uint64_t presencemask;
+    ogs_nas_additional_information_t additional_information;
+} ogs_nas_eps_uplink_generic_nas_transport_t;
 
 
 /*******************************************************
@@ -1689,8 +1689,8 @@ typedef struct ogs_nas_emm_message_s {
         ogs_nas_eps_downlink_nas_transport_t downlink_nas_transport;
         ogs_nas_eps_uplink_nas_transport_t uplink_nas_transport;
         ogs_nas_eps_cs_service_notification_t cs_service_notification;
-        ogs_nas_eps_uplink_generic_nas_transport_t uplink_generic_nas_transport;
         ogs_nas_eps_downlink_generic_nas_transport_t downlink_generic_nas_transport;
+        ogs_nas_eps_uplink_generic_nas_transport_t uplink_generic_nas_transport;
     };
 } ogs_nas_emm_message_t;
 

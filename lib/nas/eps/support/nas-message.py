@@ -198,7 +198,7 @@ msg_list["DOWNLINK NAS TRANSPORT"] = { "type" : "98" }
 msg_list["UPLINK NAS TRANSPORT"] = { "type" : "99" }
 msg_list["CS SERVICE NOTIFICATION"] = { "type" : "100" }
 msg_list["DOWNLINK GENERIC NAS TRANSPORT"] = { "type" : "104" }
-msg_list["UPLINK GENERIC NAS TRANSPORT"] = { "type" : "101" }
+msg_list["UPLINK GENERIC NAS TRANSPORT"] = { "type" : "105" }
 
 msg_list["ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST"] = { "type" : "193" }
 msg_list["ACTIVATE DEFAULT EPS BEARER CONTEXT ACCEPT"] = { "type" : "194" }
