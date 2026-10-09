@@ -354,6 +354,42 @@ static void framed_route_bounds(abts_case *tc, void *data)
     ogs_free(s);
 }
 
+static void ipv6prefix_format(abts_case *tc, void *data)
+{
+    uint8_t addr6[OGS_IPV6_LEN];
+    uint8_t prefixlen;
+    size_t i;
+
+    static const struct {
+        const char *string;
+        uint8_t prefixlen;
+    } valid[] = {
+        { "2001:db8::/128", 128 },
+        { "2001:db8::/64", 64 },
+        { "::/0", 0 },
+    };
+
+    /* A length past the end of the dotted range must not wrap into a
+     * valid-looking one; these all returned OGS_OK before the range check,
+     * with /384 narrowing to 128 and slipping past an exact-length caller. */
+    static const char *invalid[] = {
+        "2001:db8::/384", "2001:db8::/300", "2001:db8::/256",
+        "2001:db8::/-1", "2001:db8::/64junk", "2001:db8::/",
+        "2001:db8::", "notanip/64",
+    };
+
+    for (i = 0; i < OGS_ARRAY_SIZE(valid); i++) {
+        prefixlen = 0xff;
+        ABTS_INT_EQUAL(tc, OGS_OK,
+                ogs_ipv6prefix_from_string(addr6, &prefixlen, valid[i].string));
+        ABTS_INT_EQUAL(tc, valid[i].prefixlen, prefixlen);
+    }
+
+    for (i = 0; i < OGS_ARRAY_SIZE(invalid); i++)
+        ABTS_INT_EQUAL(tc, OGS_ERROR,
+                ogs_ipv6prefix_from_string(addr6, &prefixlen, invalid[i]));
+}
+
 abts_suite *test_proto_message(abts_suite *suite)
 {
     size_t i;
@@ -371,6 +407,7 @@ abts_suite *test_proto_message(abts_suite *suite)
     abts_run_test(suite, framed_route_classful, NULL);
     abts_run_test(suite, framed_route_invalid, NULL);
     abts_run_test(suite, framed_route_bounds, NULL);
+    abts_run_test(suite, ipv6prefix_format, NULL);
 
     return suite;
 }
