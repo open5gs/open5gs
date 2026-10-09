@@ -3742,6 +3742,8 @@ void ngap_handle_handover_required(
         return;
     }
 
+    amf_ue->ho_attempted++;
+
     target_ue = ran_ue_find_by_id(source_ue->target_ue_id);
     if (target_ue) {
     /*
@@ -4313,6 +4315,11 @@ void ngap_handle_handover_failure(
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
+    if (source_ue->amf_ue_id != OGS_INVALID_POOL_ID) {
+        amf_ue_t *failed_ue = amf_ue_find_by_id(source_ue->amf_ue_id);
+        if (failed_ue) failed_ue->ho_rejected++;
+    }
+
     r = ngap_send_handover_preparation_failure(source_ue, Cause);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
@@ -4444,6 +4451,7 @@ void ngap_handle_handover_cancel(
         return;
     }
     amf_ue = amf_ue_find_by_id(source_ue->amf_ue_id);
+    if (amf_ue) amf_ue->ho_rejected++;
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4840,6 +4848,8 @@ void ngap_handle_handover_notification(
     ogs_debug("    Target : TAC[%d] CellID[0x%llx]",
         target_ue->saved.nr_tai.tac.v,
         (long long)target_ue->saved.nr_cgi.cell_id);
+
+    amf_ue->ho_completed++;
 
     /* Copy Stream-No/TAI/ECGI from ran_ue */
     amf_ue->gnb_ostream_id = target_ue->gnb_ostream_id;
