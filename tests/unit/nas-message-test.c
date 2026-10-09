@@ -533,6 +533,57 @@ static void imeisv_conversion_test(abts_case *tc, void *data)
     ogs_log_set_domain_level(__ogs_nas_domain, level);
 }
 
+/* Uplink Generic NAS Transport (TS 24.301 8.2.31) is message type 0x69: carries LPP from the UE to the MME.
+ * 07 69 | container type 01 (LPP) | LV-E 0005 + 5 bytes LPP | Additional information 65 04 + routing id */
+static void ogs_nas_eps_message_test10(abts_case *tc, void *data)
+{
+    const char *payload = "0769010005921022000065040f7810f3";
+    uint8_t lpp[5] = { 0x92, 0x10, 0x22, 0x00, 0x00 };
+    uint8_t routing[4] = { 0x0f, 0x78, 0x10, 0xf3 };
+    char buffer[16];
+    ogs_nas_eps_message_t message;
+    ogs_nas_eps_uplink_generic_nas_transport_t *ul = &message.emm.uplink_generic_nas_transport;
+    ogs_pkbuf_t *pkbuf;
+    int rv;
+    char hexbuf[OGS_HUGE_LEN];
+
+    ABTS_INT_EQUAL(tc, 0x69, OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT);
+    ABTS_INT_EQUAL(tc, 0x68, OGS_NAS_EPS_DOWNLINK_GENERIC_NAS_TRANSPORT);
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_trim(pkbuf, 16);
+    memcpy(pkbuf->data, ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), pkbuf->len);
+
+    rv = ogs_nas_emm_decode(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT, message.emm.h.message_type);
+    ABTS_INT_EQUAL(tc, 1, ul->generic_message_container_type);
+    ABTS_INT_EQUAL(tc, 5, ul->generic_message_container.length);
+    ABTS_TRUE(tc, memcmp(ul->generic_message_container.buffer, lpp, 5) == 0);
+    ABTS_TRUE(tc, ul->presencemask & OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT);
+    ABTS_INT_EQUAL(tc, 4, ul->additional_information.length);
+    ABTS_TRUE(tc, memcmp(ul->additional_information.buffer, routing, 4) == 0);
+    ogs_pkbuf_free(pkbuf);
+
+    memset(&message, 0, sizeof(message));
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT;
+    ul->generic_message_container_type = 1;
+    ul->generic_message_container.length = 5;
+    ul->generic_message_container.buffer = lpp;
+    ul->presencemask |= OGS_NAS_EPS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT;
+    ul->additional_information.length = 4;
+    memcpy(ul->additional_information.buffer, routing, 4);
+
+    pkbuf = ogs_nas_eps_plain_encode(&message);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    ABTS_INT_EQUAL(tc, 16, pkbuf->len);
+    ABTS_TRUE(tc, memcmp(ogs_hex_from_string(payload, buffer, sizeof(buffer)), pkbuf->data, pkbuf->len) == 0);
+    ogs_pkbuf_free(pkbuf);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -551,6 +602,7 @@ abts_suite *test_nas_message(abts_suite *suite)
     abts_run_test(suite, ogs_nas_eps_message_test7, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test8, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test9, NULL);
+    abts_run_test(suite, ogs_nas_eps_message_test10, NULL);
 
     return suite;
 }
