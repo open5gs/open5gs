@@ -28,6 +28,8 @@ static OGS_POOL(test_bearer_pool, test_bearer_t);
 
 static int context_initialized = 0;
 
+static int test_db_remove_eir_fixture(test_ue_t *test_ue);
+
 void test_context_init(void)
 {
     int rv;
@@ -1027,6 +1029,26 @@ static void test_ue_set_mobile_identity(test_ue_t *test_ue,
             scheme_output, scheme_output_size);
     ogs_assert(scheme_output_size);
 
+    /* Ordinary test identities use a zero-padded ten-digit MSIN. A three-
+     * digit MNC leaves room for only nine digits in a 15-digit IMSI. Adapt
+     * that padding without changing encrypted or intentionally invalid IDs. */
+    if (mobile_identity_suci->h.type == OGS_NAS_5GS_MOBILE_IDENTITY_SUCI &&
+            mobile_identity_suci->h.supi_format == OGS_NAS_5GS_SUPI_FORMAT_IMSI &&
+            mobile_identity_suci->protection_scheme_id ==
+                OGS_PROTECTION_SCHEME_NULL && scheme_output_size == 5) {
+        ogs_plmn_id_t plmn_id;
+        char msin[11];
+        int encoded_size;
+
+        ogs_nas_to_plmn_id(&plmn_id, &mobile_identity_suci->nas_plmn_id);
+        ogs_buffer_to_bcd(scheme_output, scheme_output_size, msin, sizeof(msin));
+        if (ogs_plmn_id_mnc_len(&plmn_id) == 3 && strlen(msin) == 10 &&
+                msin[0] == '0' && ogs_bcd_string_is_valid(msin, 10)) {
+            ogs_bcd_to_buffer(msin + 1, scheme_output, &encoded_size);
+            ogs_assert(encoded_size == scheme_output_size);
+        }
+    }
+
     mobile_identity = &test_ue->mobile_identity;
 
     mobile_identity->length =
@@ -1199,6 +1221,7 @@ void test_ue_remove(test_ue_t *test_ue)
 {
     ogs_assert(test_ue);
 
+    ogs_assert(test_db_remove_eir_fixture(test_ue) == OGS_OK);
     ogs_list_remove(&self.test_ue_list, test_ue);
 
     if (test_ue->mobile_identity.buffer)
@@ -1461,12 +1484,145 @@ test_bearer_t *test_qos_flow_find_by_qfi(test_sess_t *sess, uint8_t qfi)
     return NULL;
 }
 
-int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc)
+static int64_t test_db_count(mongoc_collection_t *collection,
+        const bson_t *query, bson_error_t *error)
+{
+#if MONGOC_CHECK_VERSION(1, 11, 0)
+    return mongoc_collection_count_documents(
+            collection, query, NULL, NULL, NULL, error);
+#else
+    return mongoc_collection_count(
+            collection, MONGOC_QUERY_NONE, query, 0, 0, NULL, error);
+#endif
+}
+
+static int test_db_remove_eir_fixture(test_ue_t *test_ue)
+{
+    test_ue_t *other;
+    bson_t *query;
+    bson_error_t error;
+
+    if (!test_ue->eir_fixture_id)
+        return OGS_OK;
+
+    /* Two local UE contexts can refer to the same subscriber/equipment pair.
+     * Keep its record until the last owning context is removed. */
+    ogs_list_for_each(&self.test_ue_list, other) {
+        if (other != test_ue && other->eir_fixture_id &&
+                !strcmp(other->eir_fixture_id, test_ue->eir_fixture_id)) {
+            ogs_free(test_ue->eir_fixture_id);
+            test_ue->eir_fixture_id = NULL;
+            return OGS_OK;
+        }
+    }
+
+    query = BCON_NEW("_id", BCON_UTF8(test_ue->eir_fixture_id));
+    if (!mongoc_collection_delete_one(ogs_mongoc()->collection.eir,
+                query, NULL, NULL, &error)) {
+        ogs_error("Cannot remove test EIR fixture: %s", error.message);
+        bson_destroy(query);
+        return OGS_ERROR;
+    }
+    bson_destroy(query);
+    ogs_free(test_ue->eir_fixture_id);
+    test_ue->eir_fixture_id = NULL;
+    return OGS_OK;
+}
+
+int test_db_cleanup_eir(void)
+{
+    test_ue_t *test_ue;
+    int rv = OGS_OK;
+
+    if (!context_initialized)
+        return OGS_OK;
+    ogs_list_for_each(&self.test_ue_list, test_ue) {
+        if (test_db_remove_eir_fixture(test_ue) != OGS_OK)
+            rv = OGS_ERROR;
+    }
+    return rv;
+}
+
+static int test_db_insert_eir_fixture(test_ue_t *test_ue)
+{
+    char imeisv[OGS_MAX_IMEISV_BCD_LEN + 1];
+    char *pei, *id;
+    bson_t *query, *update, *opts;
+    bson_error_t error;
+    int64_t count;
+    bool inserted;
+
+    if (!test_ue->supi || ogs_nas_imeisv_to_bcd(
+                &test_ue->mobile_identity_imeisv,
+                sizeof(test_ue->mobile_identity_imeisv), imeisv) != OGS_OK ||
+            !ogs_bcd_string_is_valid(imeisv, OGS_MAX_IMEISV_BCD_LEN)) {
+        ogs_error("Cannot provision equipment for an invalid test UE identity");
+        return OGS_ERROR;
+    }
+
+    pei = ogs_msprintf("imeisv-%s", imeisv);
+    ogs_assert(pei);
+    /* Stable ownership lets an interrupted run recover only its own pair. */
+    id = ogs_msprintf("open5gs-test-eir:%s:%s", pei, test_ue->supi);
+    ogs_assert(id);
+    if (test_ue->eir_fixture_id && strcmp(test_ue->eir_fixture_id, id)) {
+        ogs_error("Remove the previous test EIR fixture before changing identity");
+        ogs_free(id);
+        ogs_free(pei);
+        return OGS_ERROR;
+    }
+
+    /* Never replace another fixture or an operator's subscriber-specific
+     * record, even when the collection has no unique index yet. */
+    query = BCON_NEW("pei", BCON_UTF8(pei),
+            "supi", BCON_UTF8(test_ue->supi),
+            "_id", "{", "$ne", BCON_UTF8(id), "}");
+    count = test_db_count(ogs_mongoc()->collection.eir, query, &error);
+    bson_destroy(query);
+    if (count != 0) {
+        if (count < 0)
+            ogs_error("Cannot inspect test EIR fixture: %s", error.message);
+        else
+            ogs_warn("An unowned EIR record already exists for [%s,%s]",
+                    pei, test_ue->supi);
+        ogs_free(id);
+        ogs_free(pei);
+        return OGS_ERROR;
+    }
+
+    query = BCON_NEW("_id", BCON_UTF8(id));
+    update = BCON_NEW("$set", "{", "pei", BCON_UTF8(pei),
+            "supi", BCON_UTF8(test_ue->supi),
+            "status", BCON_UTF8("WHITELISTED"), "}");
+    opts = BCON_NEW("upsert", BCON_BOOL(true));
+    /* Track ownership before writing: an uncertain write is cleaned up too. */
+    if (!test_ue->eir_fixture_id)
+        test_ue->eir_fixture_id = id;
+    else
+        ogs_free(id);
+    inserted = mongoc_collection_update_one(ogs_mongoc()->collection.eir,
+            query, update, opts, NULL, &error);
+    bson_destroy(opts);
+    bson_destroy(update);
+    bson_destroy(query);
+    ogs_free(pei);
+    if (!inserted) {
+        ogs_error("Cannot provision test EIR fixture: %s", error.message);
+        return OGS_ERROR;
+    }
+
+    /* EPS Security Mode Complete carries IMEISV only when explicitly set. */
+    test_ue->mobile_identity_imeisv_presence = true;
+    return OGS_OK;
+}
+
+int test_db_insert_subscriber(test_ue_t *test_ue, bson_t *doc)
 {
     mongoc_collection_t *collection = NULL;
     bson_t *key = NULL;
-    int64_t count = 0;
+    int64_t count;
     bson_error_t error;
+    int rv = OGS_ERROR;
 
     ogs_assert(test_ue);
     ogs_assert(doc);
@@ -1480,74 +1636,48 @@ int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc)
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     if (!collection) {
         ogs_error("mongoc_client_get_collection() failed");
-        return OGS_ERROR;
+        goto cleanup;
     }
     key = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
     ogs_assert(key);
 
-#if MONGOC_CHECK_VERSION(1, 11, 0)
-    count = mongoc_collection_count_documents(
-            collection,
-            key,
-            NULL,
-            NULL,
-            NULL,
-            &error);
-#else
-    count = mongoc_collection_count(
-            collection,
-            MONGOC_QUERY_NONE,
-            key,
-            0,
-            0,
-            NULL,
-            &error);
-#endif
-    if (count) {
-        if (mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, key, NULL, &error) != true) {
-            ogs_error("mongoc_collection_remove() failed");
-            bson_destroy(key);
-            return OGS_ERROR;
-        }
+    count = test_db_count(collection, key, &error);
+    if (count < 0) {
+        ogs_error("Cannot inspect test subscriber: %s", error.message);
+        goto cleanup;
     }
-    bson_destroy(key);
+    if (count && !mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, key, NULL, &error)) {
+        ogs_error("Cannot remove previous test subscriber: %s", error.message);
+        goto cleanup;
+    }
+    if (!mongoc_collection_insert(collection,
+                MONGOC_INSERT_NONE, doc, NULL, &error)) {
+        ogs_error("Cannot insert test subscriber: %s", error.message);
+        goto cleanup;
+    }
+    /* An acknowledged insert is visible; do not busy-wait on a count query. */
+    rv = OGS_OK;
 
-    if (mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error) != true) {
-        ogs_error("mongoc_collection_insert() failed");
-        bson_destroy(doc);
-        return OGS_ERROR;
-    }
+cleanup:
+    if (key) bson_destroy(key);
+    if (collection) mongoc_collection_destroy(collection);
     bson_destroy(doc);
+    return rv;
+}
 
-    key = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ogs_assert(key);
-    do {
-#if MONGOC_CHECK_VERSION(1, 11, 0)
-        count = mongoc_collection_count_documents(
-                collection,
-                key,
-                NULL,
-                NULL,
-                NULL,
-                &error);
-#else
-        count = mongoc_collection_count(
-                collection,
-                MONGOC_QUERY_NONE,
-                key,
-                0,
-                0,
-                NULL,
-                &error);
-#endif
-    } while (count == 0);
-    bson_destroy(key);
+int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc)
+{
+    int rv = test_db_insert_subscriber(test_ue, doc);
 
-    mongoc_collection_destroy(collection);
-
-    return OGS_OK;
+    /* no_eir controls process startup, including external EIR deployments.
+     * The configured EIR endpoint is what makes this equipment fixture useful. */
+    if (rv == OGS_OK && ogs_global_conf()->parameter.eir_count > 0) {
+        rv = test_db_insert_eir_fixture(test_ue);
+        if (rv != OGS_OK && test_db_remove_ue(test_ue) != OGS_OK)
+            ogs_error("Cannot roll back the failed test UE fixture");
+    }
+    return rv;
 }
 
 int test_db_remove_ue(test_ue_t *test_ue)
@@ -1555,8 +1685,10 @@ int test_db_remove_ue(test_ue_t *test_ue)
     mongoc_collection_t *collection = NULL;
     bson_t *key = NULL;
     bson_error_t error;
+    int rv;
 
     ogs_assert(test_ue);
+    rv = test_db_remove_eir_fixture(test_ue);
 
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
@@ -1567,17 +1699,14 @@ int test_db_remove_ue(test_ue_t *test_ue)
 
     key = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
     ogs_assert(key);
-    if (mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, key, NULL, &error) != true) {
-        ogs_error("mongoc_collection_remove() failed");
-        bson_destroy(key);
-        return OGS_ERROR;
+    if (!mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, key, NULL, &error)) {
+        ogs_error("Cannot remove test subscriber: %s", error.message);
+        rv = OGS_ERROR;
     }
     bson_destroy(key);
-
     mongoc_collection_destroy(collection);
-
-    return OGS_OK;
+    return rv;
 }
 
 bson_t *test_db_new_simple(test_ue_t *test_ue)

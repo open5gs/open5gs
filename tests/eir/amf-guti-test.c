@@ -519,7 +519,7 @@ static void test_amf_case(abts_case *tc, void *data)
 
     ogs_snprintf(msin, sizeof(msin), "00004577%02u", index);
     victim = new_ue(msin);
-    if (test_db_insert_ue(victim, sessions == 2 ?
+    if (test_db_insert_subscriber(victim, sessions == 2 ?
                 test_db_new_ims(victim) : test_db_new_simple(victim)) != OGS_OK) {
         ABTS_FAIL(tc, "Cannot insert AMF GUTI test subscriber");
         goto cleanup;

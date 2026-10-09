@@ -39,7 +39,7 @@ static char *config_sbi_uri(const char *nf)
     const char *field = "section";
     const char *reason = "missing or invalid mapping";
     char *end = NULL, *uri;
-    unsigned long number;
+    unsigned long number = OGS_SBI_HTTP_PORT;
 
     ogs_yaml_iter_init(&node, ogs_app()->document);
     if (!config_member(&node, nf, &node))
@@ -72,16 +72,17 @@ static char *config_sbi_uri(const char *nf)
     if (!*host)
         goto invalid;
 
-    field = "sbi.server.port";
-    reason = "missing or non-scalar value";
-    if (!config_member(&node, "port", &port) ||
-            ogs_yaml_iter_type(&port) != YAML_SCALAR_NODE)
-        goto invalid;
-    value = ogs_yaml_iter_value(&port);
-    number = strtoul(value, &end, 10);
-    reason = "port must be an integer between 1 and 65535";
-    if (!*value || !end || *end || !number || number > 65535)
-        goto invalid;
+    if (config_member(&node, "port", &port)) {
+        field = "sbi.server.port";
+        reason = "non-scalar value";
+        if (ogs_yaml_iter_type(&port) != YAML_SCALAR_NODE)
+            goto invalid;
+        value = ogs_yaml_iter_value(&port);
+        number = strtoul(value, &end, 10);
+        reason = "port must be an integer between 1 and 65535";
+        if (!*value || !end || *end || !number || number > 65535)
+            goto invalid;
+    }
 
     uri = strchr(host, ':') ?
         ogs_msprintf("http://[%s]:%lu", host, number) :

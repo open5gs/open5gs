@@ -454,12 +454,10 @@ int ogs_dbi_eir_check_equipment(
         rv = eir_find_one(query, record);
         bson_destroy(query);
 
-        if (rv != OGS_NOTFOUND) {
-            ogs_warn("No EIR record matches the equipment query");
+        if (rv != OGS_NOTFOUND)
             return rv;
-        }
 
-        ogs_debug("No EIR PEI/SUPI record; trying generic equipment record");
+        ogs_info("No EIR PEI/SUPI record; trying generic equipment record");
     }
 
     /*

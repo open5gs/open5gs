@@ -54,7 +54,7 @@ int main(int argc, const char *const argv[])
     }
 
     atexit(terminate);
-    test_app_run(argc, argv, "eir.yaml", initialize);
+    test_app_run(argc, argv, "sample.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

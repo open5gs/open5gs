@@ -20,7 +20,7 @@
 /*
  * ME Identity Check over S13 against the Open5GS EIR (open5gs-eird).
  *
- * The MME runs with eir.enabled (configs/eir.yaml) and the EIR serves S13
+ * The MME runs with eir.enabled (configs/sample.yaml) and the EIR serves S13
  * next to N5g-eir out of the same eir collection. Each case provisions
  * records for the test UE IMEISV, runs an EPS attach, and checks what
  * follows Security Mode Complete: ESM Information Request when the
@@ -195,7 +195,7 @@ static void attach_case(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, doc);
     if (!doc)
         goto cleanup;
-    rv = test_db_insert_ue(test_ue, doc);
+    rv = test_db_insert_subscriber(test_ue, doc);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     if (rv != OGS_OK)
         goto cleanup;

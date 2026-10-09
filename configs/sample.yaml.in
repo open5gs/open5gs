@@ -47,7 +47,17 @@ mme:
     connect:
       - identity: hss.localdomain
         address: 127.0.0.8
+      - identity: eir.localdomain
+        address: 127.0.0.21
 
+  eir:
+    enabled: true
+    realm: localdomain
+    host: eir.localdomain
+    timeout: 3
+    unknown_action: reject
+    failure_action: reject
+    missing_pei_action: reject
   s1ap:
     server:
       - address: 127.0.0.2
@@ -148,6 +158,11 @@ smf:
         address: 127.0.0.9
 
 amf:
+  eir:
+    enabled: true
+    unknown_action: reject
+    failure_action: reject
+    missing_pei_action: reject
   sbi:
     server:
       - address: 127.0.0.5
@@ -334,3 +349,29 @@ udr:
     client:
       scp:
         - uri: http://127.0.0.200:7777
+
+eir:
+  sbi:
+    server:
+      - address: 127.0.0.21
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+  freeDiameter:
+    identity: eir.localdomain
+    realm: localdomain
+    listen_on: 127.0.0.21
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: mme.localdomain
+        address: 127.0.0.2

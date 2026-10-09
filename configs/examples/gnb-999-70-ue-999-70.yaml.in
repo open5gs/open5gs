@@ -22,6 +22,7 @@ global:
     no_nssf: true
     no_bsf: true
     no_udr: true
+    no_eir: true
     no_mme: true
     no_sgwc: true
     no_sgwu: true
@@ -247,9 +248,15 @@ pcrf:
         address: 127.0.0.4
 
 nrf:
+  # Direct service checks use the visited core's existing NRF listener.
   sbi:
     server:
-      - address: 127.0.0.10
+      - address: nrf.5gc.mnc070.mcc999.3gppnetwork.org
+
+eir:
+  sbi:
+    server:
+      - address: 127.0.1.21
         port: 7777
 
 scp:

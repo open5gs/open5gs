@@ -155,6 +155,7 @@ void test_app_init(void)
 
 void test_app_final(void)
 {
+    ogs_assert(test_db_cleanup_eir() == OGS_OK);
     ogs_dbi_final();
     ogs_sctp_final();
 
