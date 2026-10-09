@@ -1030,7 +1030,7 @@ static void test_cx_send_lir(struct sess_state *sess_data)
     /* Set the Public-Identity AVP */
     ret = fd_msg_avp_new(ogs_diam_cx_public_identity, 0, &avp);
     ogs_assert(ret == 0);
-    public_identity = ogs_msprintf("tel:%s", TEST_ADDITIONAL_MSISDN);
+    public_identity = ogs_msprintf("tel:+%s", TEST_ADDITIONAL_MSISDN);
     ogs_assert(public_identity);
     val.os.data = (uint8_t *)public_identity;
     val.os.len = strlen(public_identity);
