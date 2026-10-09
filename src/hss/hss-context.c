@@ -939,7 +939,7 @@ char *hss_cx_download_user_data(
         hss_cx_associate_identity(user_name, public_identity);
         ogs_free(public_identity);
 
-        public_identity = ogs_msprintf("tel:%s", ims_data->msisdn[i].bcd);
+        public_identity = ogs_msprintf("tel:+%s", ims_data->msisdn[i].bcd);
         ogs_assert(public_identity);
         hss_cx_associate_identity(user_name, public_identity);
         ogs_free(public_identity);
