@@ -526,6 +526,23 @@ To add subscriber information, you can do WebUI operations in the following orde
 **Note:** Subscribers added with this tool immediately register in the Open5GS HSS/UDR without the need to restart any daemon. However, if you use the WebUI to change subscriber profile, you must restart the Open5GS AMF/MME daemon for the changes to take effect.
 {: .notice--warning}
 
+#### IPv6 addressing for UEs and DHCPv6 Prefix Delegation limitation {#UEIPv6}
+
+Open5GS currently assigns each UE a single /64 IPv6 prefix per bearer via
+Router Advertisement (see the `session: - subnet: 2001:db8:cafe::1/48` setting
+in upf.yaml). This model works for handsets, but it does not support DHCPv6
+Prefix Delegation (IA_PD) as described in TS 23.401 section 5.3.1.2.6 and
+RFC 6459 section 5.3.
+
+**Note:** If your UE is a routed CPE with a customer LAN behind it (common in
+fixed wireless deployments), the LAN side cannot receive global IPv6 addresses
+today, because the SMF does not yet answer DHCPv6 Solicit messages containing
+an IA_PD option with a delegated prefix from a configurable per-APN pool, and
+the UPF does not install a route for the delegated prefix toward that session.
+IA_PD support is a known open feature request (see GitHub issue #4694); there
+is no configuration workaround available at this time.
+{: .notice--warning}
+
 #### Adding a route for the UE to have WAN connectivity {#UEInternet}
 ---
 
