@@ -23,14 +23,15 @@
 #include "fuzzing.h"
 #include "ogs-nas-eps.h"
 
-#define kMinInputLength 5
+/* ESM accepts and ESM Information Request are only the 3-byte header */
+#define kMinInputLength 3
 #define kMaxInputLength 1024
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
 { /* open5gs/tests/unit/nas-message-test.c */
 
     if (Size < kMinInputLength || Size > kMaxInputLength) {
-        return 1;
+        return 0;
     }
 
     if (!initialized) {
@@ -38,20 +39,23 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_NONE);
     }
 
-    int result;
     ogs_pkbuf_t *pkbuf;
     ogs_nas_eps_message_t message;
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     if (pkbuf == NULL) {
-        return 1;
+        return 0;
     }
 
     ogs_pkbuf_put_data(pkbuf, Data, Size);
 
-    result = ogs_nas_emm_decode(&message, pkbuf);
+    /* The MME picks the sublayer from the protocol discriminator too */
+    if ((Data[0] & 0x0f) == OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM)
+        ogs_nas_esm_decode(&message, pkbuf);
+    else
+        ogs_nas_emm_decode(&message, pkbuf);
 
     ogs_pkbuf_free(pkbuf);
 
-    return result;
+    return 0;
 }
