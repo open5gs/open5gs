@@ -730,13 +730,15 @@ void smf_s5c_handle_modify_bearer_request(
 
         /* Need to modify SGW-S5U */
         pfcp_xact = ogs_pfcp_xact_local_create(
-                        sess->pfcp_node, pfcp_sess_timeout, sess);
+                        sess->pfcp_node, pfcp_sess_timeout,
+                        OGS_UINT_TO_POINTER(sess->id));
         ogs_assert(pfcp_xact);
 
         pfcp_xact->epc = true; /* EPC PFCP transaction */
         pfcp_xact->assoc_xact_id = gtp_xact->id;
         pfcp_xact->modify_flags =
-            flags|OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
+            flags|OGS_PFCP_MODIFY_SESSION|
+            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
 
         pfcp_xact->gtp_pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
         pfcp_xact->gtp_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
