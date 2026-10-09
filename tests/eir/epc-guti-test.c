@@ -421,7 +421,7 @@ static void test_epc_case(abts_case *tc, void *data)
 
     ogs_snprintf(imsi, sizeof(imsi), "374600009%u", index);
     victim = new_ue(imsi);
-    if (test_db_insert_ue(victim, pdns == 2 ?
+    if (test_db_insert_subscriber(victim, pdns == 2 ?
                 test_db_new_ims(victim) : test_db_new_simple(victim)) != OGS_OK) {
         ABTS_FAIL(tc, "Cannot insert GUTI test subscriber");
         goto cleanup;

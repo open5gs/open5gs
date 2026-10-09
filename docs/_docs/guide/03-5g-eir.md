@@ -302,10 +302,24 @@ and its serving S1 context. `tests/eir` exercises this path end to end.
 
 From the build directory, run `meson test -v --suite eir` to execute the EIR
 integration and state-machine tests. All integration tests default to
-`configs/eir.yaml`, with EIR enabled in the AMF and MME and fixed `reject`
-policies. They populate the EIR collection with PEI/SUPI records to exercise
-accepted and rejected equipment, subscriber-specific overrides, unknown
+`configs/sample.yaml`, which enables EIR in the AMF and MME with fixed `reject`
+policies, uses the SCP for N5g-eir and enables S13. The EIR tests populate the
+EIR collection with PEI/SUPI records to exercise accepted and rejected
+equipment, subscriber-specific overrides, unknown
 equipment and EIR errors without changing the configuration.
+
+When the selected test configuration includes EIR endpoint metadata, the common
+subscriber fixture also creates a SUPI-specific `WHITELISTED` equipment record
+for ordinary tests and removes its own record during cleanup. EIR tests manage
+their equipment records themselves, so their blacklist, unknown-equipment and
+failure cases keep their expected rejection behavior. Configurations without
+EIR metadata retain the existing subscriber-only fixture behavior.
+
+This makes the EIR-enabled sample and roaming examples usable by ordinary
+tests without changing the AMF policy between runs. Those runs now exercise
+registration with an accepted EIR record; they are no longer EIR-disabled
+baseline runs. Other test defaults, including `vonr.yaml` and `slice.yaml`,
+remain unchanged.
 
 The test binary uses the usual ABTS positional test names; no mode or policy
 environment variable is needed. Meson selects the following groups:
@@ -336,3 +350,92 @@ machines with peer messages replaced by test fixtures. It also checks EIR
 eligibility and session preservation and release during registration or attach.
 These FSM tests do not provide equivalent end-to-end SBI or Diameter coverage
 for EIR-disabled or allow-policy configurations.
+
+### Roaming integration tests
+
+All nine SEPP core examples for PLMNs `999/70`, `001/01` and `315/010` enable
+EIR in the AMF with the same fixed `reject` policies as `sample.yaml`. Each core
+starts its own N5g-eir service. All nine gNB configurations use `no_eir: true`
+to keep that service external and identify the serving core's EIR and NRF for
+the direct SBI tests, including the configurations for non-roaming UEs.
+
+The `5gc-sepp*` and `5gc-tls-sepp*` examples register EIR through the local SCP.
+The `5gc-no-scp-sepp*` examples register it directly with the local NRF. TLS
+examples protect the SEPP N32/N32-f links; their local EIR and NRF SBI listeners
+remain HTTP, so the same gNB configurations apply to all three core variants.
+
+Complete the DNS and network setup in the [roaming tutorial]({{ site.baseurl }}/docs/tutorial/05-roaming/)
+first, including the selected home PLMNs' TUN subnets and routes. The GUTI
+tunnel probes target `10.45.0.1`; keep that address configured and reachable
+from the UE subnets even when testing only `001/01` and `315/010`.
+Rebuild the examples with `ninja -C build`, then run the following from
+the build directory. Start the required cores in separate terminals:
+
+```bash
+sudo ./tests/app/5gc -c ./configs/examples/5gc-sepp1-999-70.yaml
+sudo ./tests/app/5gc -c ./configs/examples/5gc-sepp2-001-01.yaml
+sudo ./tests/app/5gc -c ./configs/examples/5gc-sepp3-315-010.yaml
+```
+
+For no-SCP or TLS tests, use the corresponding `5gc-no-scp-sepp*` or
+`5gc-tls-sepp*` core files. Stop the previous cores before switching variants;
+they use the same addresses. Start only the cores needed for the selected
+home and visited PLMNs.
+
+With a subscriber from `001/01` visiting `999/70`, run the following commands
+sequentially against the same running cores. The first two select basic
+registration and VoNR cases, handover selects the 5G Xn and N2 groups, and
+slice selects only `holding-test`:
+
+```bash
+meson test -v -t 3 registration \
+  --test-args="-c ./configs/examples/gnb-999-70-ue-001-01.yaml simple-test"
+meson test -v -t 3 vonr \
+  --test-args="-c ./configs/examples/gnb-999-70-ue-001-01.yaml simple-test"
+meson test -v -t 3 handover-5gc \
+  --test-args="-c ./configs/examples/gnb-999-70-ue-001-01.yaml"
+meson test -v -t 3 eir-5g eir-n5g \
+  --test-args="-c ./configs/examples/gnb-999-70-ue-001-01.yaml"
+meson test -v -t 3 slice \
+  --test-args="-c ./configs/examples/gnb-999-70-ue-001-01.yaml holding-test"
+```
+
+To run the complete registration and VoNR groups, omit the positional
+`simple-test` selection:
+
+```bash
+meson test -v -t 3 registration vonr \
+  --test-args="-c ./configs/examples/gnb-999-70-ue-001-01.yaml"
+```
+
+The common equipment fixtures address EIR prerequisites; they do not establish
+that every registration, VoNR or handover case supports every home-routed
+roaming topology. Each selected case retains its protocol assertions.
+
+For the reverse direction, select `gnb-001-01-ue-999-70.yaml`. For example:
+
+```bash
+meson test -v -t 3 eir-5g eir-n5g \
+  --test-args="-c ./configs/examples/gnb-001-01-ue-999-70.yaml"
+```
+
+Any of the nine `gnb-<serving-PLMN>-ue-<home-PLMN>.yaml` files can be selected
+the same way. For example, `gnb-999-70-ue-315-010.yaml` uses a subscriber from
+`315/010` visiting `999/70`. The common UE fixture trims the leading padding
+zero from ordinary ten-digit MSINs when the MNC has three digits, keeping
+the IMSI at 15 digits without changing encrypted SUCI vectors.
+
+Select `eir-5g eir-n5g` instead of `--suite eir`, which also includes
+4G and FSM tests. Run the configurations sequentially because their equipment
+fixtures share records. The test runner and both cores must use the same
+MongoDB database, as configured in these examples.
+
+Equipment checks use the serving EIR. When the home and serving PLMNs differ,
+home-network authentication and the GUTI tests' home-routed PDU sessions
+exercise the SEPP roaming paths. The existing cases cover registration
+verdicts and session preservation or
+release during GUTI re-registration, including two-session cases.
+
+Keep the same EIR-enabled core configurations for all the commands above.
+Ordinary tests obtain their accepted equipment records through the common
+subscriber fixture, while EIR tests create the verdicts required by each case.

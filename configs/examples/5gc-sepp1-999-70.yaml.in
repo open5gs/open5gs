@@ -16,6 +16,7 @@ global:
 #    no_nssf: true
 #    no_bsf: true
 #    no_udr: true
+#    no_eir: true
     no_mme: true
     no_sgwc: true
     no_sgwu: true
@@ -142,6 +143,12 @@ smf:
         address: 127.0.1.9
 
 amf:
+  # Tests provision accepted or rejected equipment for this fixed policy.
+  eir:
+    enabled: true
+    unknown_action: reject
+    failure_action: reject
+    missing_pei_action: reject
   sbi:
     server:
       - address: 127.0.1.5
@@ -266,6 +273,16 @@ nrf:
 #      - address: 127.0.1.10
 #        port: 7777
       - address: nrf.5gc.mnc070.mcc999.3gppnetwork.org
+
+eir:
+  # The local NRF assigns its serving PLMN to this EIR's NF profile.
+  sbi:
+    server:
+      - address: 127.0.1.21
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.1.200:7777
 
 scp:
   sbi:

@@ -2806,7 +2806,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         if (amf_ue->eir_check_pending &&
                 nas_message->gmm.h.message_type !=
                     OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE) {
-            ogs_error("[%s] Ignore NAS message while 5G-EIR check is pending",
+            ogs_warn("[%s] Ignore NAS message while 5G-EIR check is pending",
                     amf_ue->supi);
             break;
         }

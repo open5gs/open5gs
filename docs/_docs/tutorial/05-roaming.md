@@ -69,6 +69,13 @@ For routing to the Home PLMN, the NRF, AUSF, and UDM addresses in H-PLMN must us
 
 5G Core requires root privileges as it uses reserved ports such as http(80) or https(443).
 
+All `5gc-sepp*`, `5gc-no-scp-sepp*` and `5gc-tls-sepp*` examples enable EIR
+with reject policies for the [EIR roaming tests]({{ site.baseurl }}/docs/guide/03-5g-eir/#roaming-integration-tests).
+The common subscriber fixture supplies SUPI-specific whitelisted equipment
+records for ordinary tests when their configuration includes EIR metadata.
+EIR tests manage their own equipment records. The same running cores can be
+used for both without changing the AMF policies.
+
 ```
 $ sudo ./build/tests/app/5gc -c ./build/configs/examples/5gc-sepp1-999-70.yaml
 $ sudo ./build/tests/app/5gc -c ./build/configs/examples/5gc-sepp2-001-01.yaml
@@ -76,6 +83,7 @@ $ sudo ./build/tests/app/5gc -c ./build/configs/examples/5gc-sepp3-315-010.yaml
 ```
 
 Test UE access while roaming with UEs subscribed to different H-PLMNs. The same test commands work for both LBO and HR roaming scenarios - the roaming type is determined by the network configuration and policies:
+
 ```
 $ ./build/tests/registration/registration -c ./build/configs/examples/gnb-999-70-ue-001-01.yaml simple-test
 $ ./build/tests/registration/registration -c ./build/configs/examples/gnb-999-70-ue-315-010.yaml simple-test
