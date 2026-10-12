@@ -25,6 +25,7 @@ nas_message_source = files('nas-message-fuzz.c')
 ngap_message_source = files('ngap-message-fuzz.c')
 s1ap_message_source = files('s1ap-message-fuzz.c')
 pfcp_message_source = files('pfcp-message-fuzz.c')
+pfcp_packet_match_source = files('pfcp-packet-match-fuzz.c')
 nas_5gs_message_source = files('nas-5gs-message-fuzz.c')
 sbi_nf_profile_source = files('sbi-nf-profile-fuzz.c')
 sbi_sm_context_source = files('sbi-sm-context-fuzz.c')
@@ -68,6 +69,14 @@ executable(
 executable(
     'pfcp_message_fuzz',
     sources : pfcp_message_source,
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libpfcp_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
+
+executable(
+    'pfcp_packet_match_fuzz',
+    sources : pfcp_packet_match_source,
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
     dependencies : [libpfcp_dep, libcore_dep],
     link_args: lib_fuzzing_engine
