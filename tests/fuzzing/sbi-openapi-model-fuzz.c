@@ -25,6 +25,9 @@
 #include "ogs-sbi.h"
 
 #include "model/access_and_mobility_subscription_data.h"
+#include "model/authentication_info.h"
+#include "model/authentication_info_request.h"
+#include "model/authentication_info_result.h"
 #include "model/dnn_configuration.h"
 #include "model/event_notification.h"
 #include "model/event_subscription.h"
@@ -33,6 +36,8 @@
 #include "model/mdt_configuration.h"
 #include "model/media_component.h"
 #include "model/media_component_rm.h"
+#include "model/n1_n2_message_transfer_req_data.h"
+#include "model/n1_n2_message_transfer_rsp_data.h"
 #include "model/pcc_rule.h"
 #include "model/pdu_session_create_data.h"
 #include "model/pdu_session_created_data.h"
@@ -41,7 +46,10 @@
 #include "model/sm_policy_context_data.h"
 #include "model/sm_policy_decision.h"
 #include "model/subscr_cond.h"
+#include "model/ue_authentication_ctx.h"
 #include "model/ue_context.h"
+#include "model/ue_context_transfer_req_data.h"
+#include "model/ue_context_transfer_rsp_data.h"
 #include "model/vsmf_update_data.h"
 
 #define kMinInputLength 2
@@ -49,23 +57,20 @@
 
 #define TRY_MODEL(name)                                                     \
     do {                                                                    \
-        cJSON *json = cJSON_Parse(text);                                    \
-        if (json) {                                                         \
-            OpenAPI_##name##_t *model =                                     \
-                OpenAPI_##name##_parseFromJSON(json);                       \
-            if (model) {                                                    \
-                OpenAPI_##name##_free(model);                               \
-            }                                                               \
-            cJSON_Delete(json);                                             \
+        OpenAPI_##name##_t *model =                                         \
+            OpenAPI_##name##_parseFromJSON(json);                           \
+        if (model) {                                                        \
+            OpenAPI_##name##_free(model);                                   \
         }                                                                   \
     } while (0)
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {
     char *text;
+    cJSON *json;
 
     if (Size < kMinInputLength || Size > kMaxInputLength) {
-        return 1;
+        return 0;
     }
 
     if (!initialized) {
@@ -81,7 +86,22 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     memcpy(text, Data, Size);
     text[Size] = '\0';
 
+    json = cJSON_Parse(text);
+    ogs_free(text);
+    if (json == NULL) {
+        return 0;
+    }
+
+    TRY_MODEL(authentication_info);
+    TRY_MODEL(authentication_info_request);
+    TRY_MODEL(authentication_info_result);
+    TRY_MODEL(ue_authentication_ctx);
+
     /* AMF and SMF context transfer */
+    TRY_MODEL(ue_context_transfer_req_data);
+    TRY_MODEL(ue_context_transfer_rsp_data);
+    TRY_MODEL(n1_n2_message_transfer_req_data);
+    TRY_MODEL(n1_n2_message_transfer_rsp_data);
     TRY_MODEL(ue_context);
     TRY_MODEL(sm_context_update_data);
     TRY_MODEL(pdu_session_create_data);
@@ -108,7 +128,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     TRY_MODEL(media_component);
     TRY_MODEL(media_component_rm);
 
-    ogs_free(text);
+    cJSON_Delete(json);
 
     return 0;
 }
