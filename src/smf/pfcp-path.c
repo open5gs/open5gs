@@ -602,7 +602,7 @@ int smf_5gc_pfcp_send_session_establishment_request(
  *   over N4 towards another SMF or another PFCP entity in the SMF
  *   as specified in clause 5.22.2 and clause 5.22.3.
  */
-    h.seid = sess->upf_n4_seid;
+    h.seid = 0;
 
     n4buf = smf_n4_build_session_establishment_request(h.type, sess, xact);
     if (!n4buf) {
@@ -845,7 +845,7 @@ int smf_epc_pfcp_send_session_establishment_request(
  *   over N4 towards another SMF or another PFCP entity in the SMF
  *   as specified in clause 5.22.2 and clause 5.22.3.
  */
-    h.seid = sess->upf_n4_seid;
+    h.seid = 0;
 
     n4buf = smf_n4_build_session_establishment_request(h.type, sess, xact);
     if (!n4buf) {
