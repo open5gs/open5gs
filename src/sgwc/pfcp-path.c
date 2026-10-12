@@ -382,7 +382,7 @@ int sgwc_pfcp_send_session_establishment_request(
  *   over N4 towards another SMF or another PFCP entity in the SMF
  *   as specified in clause 5.22.2 and clause 5.22.3.
  */
-    h.seid = sess->sgwu_sxa_seid;
+    h.seid = 0;
 
     sxabuf = sgwc_sxa_build_session_establishment_request(h.type, sess);
     if (!sxabuf) {
