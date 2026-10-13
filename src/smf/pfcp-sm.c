@@ -20,7 +20,7 @@
 #include "sbi-path.h"
 #include "pfcp-path.h"
 #include "local-path.h"
-
+#include "gtp-path.h"
 #include "n4-handler.h"
 
 static void pfcp_restoration(ogs_pfcp_node_t *node);
@@ -524,10 +524,8 @@ static void reselect_upf(ogs_pfcp_node_t *node)
             break;
     }
 
-    if (iter == NULL) {
-        ogs_error("No UPF available");
-        return;
-    }
+    if (iter == NULL)
+        ogs_warn("No UPF available");
 
     ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
         smf_sess_t *sess = NULL, *next_sess = NULL;
@@ -536,9 +534,34 @@ static void reselect_upf(ogs_pfcp_node_t *node)
 
             if (node == sess->pfcp_node) {
                 if (sess->epc) {
-                    ogs_error("[%s:%s] EPC restoration is not implemented",
+                    if (iter) {
+                        ogs_error("[%s:%s] EPC sess restoration is not implemented, releasing bearer",
                             smf_ue->imsi_bcd, sess->session.name);
+                    }
+                    smf_bearer_t *linked_bearer = smf_default_bearer_in_sess(sess);
+                    ogs_assert(linked_bearer);
+                    switch (sess->gtp.version) {
+                    case 1:
+                        /* smf_gtp1_send_delete_pdp_context_request(
+                            sess,
+                            OGS_GTP1_CAUSE_REACTIACTION_REQUESTED,
+                            teardown_ind = true); */
+                        ogs_error(
+                            "[%s:%s] Tx GTPv1C Delete PDP Context Request (cause=Reactivation Requested, teardown_ind=1) not implemented!",
+                            smf_ue->imsi_bcd, sess->session.name);
+                        break;
+                    case 2:
+                        smf_gtp2_send_delete_bearer_request(
+                            linked_bearer,
+                            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                            OGS_GTP2_CAUSE_REACTIVATION_REQUESTED);
+                        break;
+                    }
                 } else {
+                    if (iter) {
+                        ogs_error("[%s:%s] AMF sess restoration is not implemented, releasing session",
+                            smf_ue->imsi_bcd, sess->session.name);
+                    }
                     smf_trigger_session_release(
                             sess, NULL,
                             OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED);
