@@ -564,6 +564,139 @@ cleanup:
     return rv;
 }
 
+int ngap_handle_pdu_session_resource_notify_transfer(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_bearer_t *qos_flow = NULL;
+    int rv, i;
+
+    NGAP_PDUSessionResourceNotifyTransfer_t message;
+
+    NGAP_QosFlowListWithCause_t *qosFlowReleasedList = NULL;
+    NGAP_QosFlowWithCauseItem_t *qosFlowWithCauseItem = NULL;
+    NGAP_Cause_t *Cause = NULL;
+
+    ogs_assert(pkbuf);
+    ogs_assert(stream);
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    ogs_debug("PDUSessionResourceNotifyTransfer");
+
+    rv = ogs_asn_decode(
+            &asn_DEF_NGAP_PDUSessionResourceNotifyTransfer,
+            &message, sizeof(message), pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%d] Cannot decode NGAP message",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error_log(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No N2 SM Info Type", smf_ue->supi);
+        goto cleanup;
+    }
+
+    rv = OGS_OK;
+
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_warn("[%s:%d] PDUSessionResourceNotifyTransfer is not "
+                "implemented in Home Routed Roaming",
+                smf_ue->supi, sess->psi);
+        ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+        goto cleanup;
+    }
+
+    /*
+     * TS23.502
+     * 4.3.3.2 UE or network requested PDU Session Modification
+     *
+     * 1e. (AN initiated modification) (R)AN shall indicate to the SMF
+     * when the AN resources onto which a QoS Flow is mapped are released
+     *
+     * 3a. For UE or AN initiated modification or AMF initiated
+     * modification, the SMF responds to the AMF through
+     * Nsmf_PDUSession_UpdateSMContext
+     *
+     * The released QoS flows are removed in the same way as
+     * the UE requested QoS flow removal, so the UE deletes the QoS rules
+     * and the traffic falls back to the default QoS rule.
+     */
+    ogs_list_init(&sess->qos_flow_to_modify_list);
+
+    qosFlowReleasedList = message.qosFlowReleasedList;
+    if (qosFlowReleasedList) {
+        for (i = 0; i < qosFlowReleasedList->list.count; i++) {
+            qosFlowWithCauseItem = (NGAP_QosFlowWithCauseItem_t *)
+                qosFlowReleasedList->list.array[i];
+            if (!qosFlowWithCauseItem) {
+                ogs_error("[%s:%d] No QosFlowWithCauseItem",
+                        smf_ue->supi, sess->psi);
+                continue;
+            }
+
+            Cause = qosFlowWithCauseItem->cause;
+            if (Cause)
+                ogs_warn("[%s:%d] QoS flow released [QFI:%d] "
+                        "Cause[Group:%d Cause:%d]",
+                        smf_ue->supi, sess->psi,
+                        (int)qosFlowWithCauseItem->qosFlowIdentifier,
+                        Cause->present, (int)Cause->choice.radioNetwork);
+
+            qos_flow = smf_qos_flow_find_by_qfi(
+                    sess, qosFlowWithCauseItem->qosFlowIdentifier);
+            if (!qos_flow) {
+                ogs_error("[%s:%d] No QoS flow [QFI:%d]",
+                        smf_ue->supi, sess->psi,
+                        (int)qosFlowWithCauseItem->qosFlowIdentifier);
+                continue;
+            }
+
+            if (qos_flow == smf_default_bearer_in_sess(sess)) {
+                ogs_error("[%s:%d] Default QoS flow cannot be removed "
+                        "[QFI:%d]", smf_ue->supi, sess->psi,
+                        (int)qosFlowWithCauseItem->qosFlowIdentifier);
+                continue;
+            }
+
+            if (ogs_list_exists(&sess->qos_flow_to_modify_list,
+                        &qos_flow->to_modify_node))
+                continue;
+
+            ogs_list_add(&sess->qos_flow_to_modify_list,
+                    &qos_flow->to_modify_node);
+        }
+    }
+
+    if (!ogs_list_count(&sess->qos_flow_to_modify_list)) {
+        ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+        goto cleanup;
+    }
+
+    /*
+     * TS24.501
+     * 6.2 General on elementary 5GSM procedures
+     * 6.2.1 Principles of PTI handling for 5GSM procedures
+     *
+     * If a command message is not sent as result of
+     * a received request message, the sending entity shall
+     * include in the command message the PTI value set to
+     * "no procedure transaction identity assigned"
+     * (see examples in figure 6.2.1.4).
+     */
+    sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+
+    ogs_assert(OGS_OK ==
+            smf_5gc_pfcp_send_qos_flow_list_modification_request(
+                sess, stream,
+                OGS_PFCP_MODIFY_UE_REQUESTED|OGS_PFCP_MODIFY_REMOVE, 0));
+
+cleanup:
+    ogs_asn_free(&asn_DEF_NGAP_PDUSessionResourceNotifyTransfer, &message);
+    return rv;
+}
+
 int ngap_handle_path_switch_request_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {

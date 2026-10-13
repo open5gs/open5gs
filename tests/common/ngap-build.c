@@ -27,6 +27,8 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response_trasfer(
         test_sess_t *sess);
 static ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response_trasfer(
         test_bearer_t *qos_flow);
+static ogs_pkbuf_t *testngap_build_qos_flow_resource_notify_trasfer(
+        test_bearer_t *qos_flow, NGAP_Cause_PR group, long cause);
 static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
         test_sess_t *sess);
 static ogs_pkbuf_t *testngap_build_handover_required_transfer(
@@ -1636,6 +1638,110 @@ ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response(
     return ogs_ngap_encode(&pdu);
 }
 
+ogs_pkbuf_t *testngap_build_qos_flow_resource_notify(
+        test_bearer_t *qos_flow, NGAP_Cause_PR group, long cause)
+{
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+
+    ogs_pkbuf_t *n2smbuf = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_PDUSessionResourceNotify_t *PDUSessionResourceNotify = NULL;
+
+    NGAP_PDUSessionResourceNotifyIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_PDUSessionResourceNotifyList_t *PDUSessionList = NULL;
+    NGAP_PDUSessionResourceNotifyItem_t *PDUSessionItem = NULL;
+    OCTET_STRING_t *transfer = NULL;
+
+    ogs_assert(qos_flow);
+    sess = qos_flow->sess;
+    ogs_assert(sess);
+    test_ue = sess->test_ue;
+    ogs_assert(test_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_PDUSessionResourceNotify;
+    initiatingMessage->criticality = NGAP_Criticality_ignore;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_PDUSessionResourceNotify;
+
+    PDUSessionResourceNotify = CALLOC(1, sizeof(*PDUSessionResourceNotify));
+    ogs_assert(PDUSessionResourceNotify);
+    initiatingMessage->value.choice.PDUSessionResourceNotify =
+        PDUSessionResourceNotify;
+
+    PDUSessionResourceNotify->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_NGAP_PDUSessionResourceNotify);
+    ogs_assert(PDUSessionResourceNotify->protocolIEs);
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceNotifyIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PDUSessionResourceNotify->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PDUSessionResourceNotifyIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = CALLOC(1, sizeof(*AMF_UE_NGAP_ID));
+    ogs_assert(AMF_UE_NGAP_ID);
+    ie->value.choice.AMF_UE_NGAP_ID = AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceNotifyIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PDUSessionResourceNotify->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PDUSessionResourceNotifyIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = CALLOC(1, sizeof(*RAN_UE_NGAP_ID));
+    ogs_assert(RAN_UE_NGAP_ID);
+    ie->value.choice.RAN_UE_NGAP_ID = RAN_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceNotifyIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PDUSessionResourceNotify->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceNotifyList;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PDUSessionResourceNotifyIEs__value_PR_PDUSessionResourceNotifyList;
+
+    PDUSessionList = CALLOC(1, sizeof(*PDUSessionList));
+    ogs_assert(PDUSessionList);
+    ie->value.choice.PDUSessionResourceNotifyList = PDUSessionList;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    PDUSessionItem = CALLOC(1, sizeof(struct NGAP_PDUSessionResourceNotifyItem));
+    ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
+
+    PDUSessionItem->pDUSessionID = sess->psi;
+
+    n2smbuf = testngap_build_qos_flow_resource_notify_trasfer(
+            qos_flow, group, cause);
+    ogs_assert(n2smbuf);
+    transfer = &PDUSessionItem->pDUSessionResourceNotifyTransfer;
+
+    transfer->size = n2smbuf->len;
+    transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+    memcpy(transfer->buf, n2smbuf->data, transfer->size);
+    ogs_pkbuf_free(n2smbuf);
+
+    return ogs_ngap_encode(&pdu);
+}
+
 ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
         test_sess_t *sess)
 {
@@ -2882,6 +2988,38 @@ static ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response_trasfer(
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceModifyResponseTransfer, &message);
+}
+
+static ogs_pkbuf_t *testngap_build_qos_flow_resource_notify_trasfer(
+        test_bearer_t *qos_flow, NGAP_Cause_PR group, long cause)
+{
+    ogs_assert(qos_flow);
+
+    NGAP_PDUSessionResourceNotifyTransfer_t message;
+    NGAP_QosFlowListWithCause_t *qosFlowReleasedList = NULL;
+    NGAP_QosFlowWithCauseItem_t *qosFlowWithCauseItem = NULL;
+    NGAP_Cause_t *Cause = NULL;
+
+    memset(&message, 0, sizeof(message));
+
+    message.qosFlowReleasedList = qosFlowReleasedList =
+        CALLOC(1, sizeof(*qosFlowReleasedList));
+    ogs_assert(qosFlowReleasedList);
+
+    qosFlowWithCauseItem = CALLOC(1, sizeof(*qosFlowWithCauseItem));
+    ogs_assert(qosFlowWithCauseItem);
+    ASN_SEQUENCE_ADD(&qosFlowReleasedList->list, qosFlowWithCauseItem);
+
+    qosFlowWithCauseItem->qosFlowIdentifier = qos_flow->qfi;
+
+    qosFlowWithCauseItem->cause = Cause = CALLOC(1, sizeof(*Cause));
+    ogs_assert(Cause);
+
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    return ogs_asn_encode(
+            &asn_DEF_NGAP_PDUSessionResourceNotifyTransfer, &message);
 }
 
 static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
