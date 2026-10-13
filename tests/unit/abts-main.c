@@ -21,6 +21,7 @@
 #include "core/abts.h"
 
 extern int __ogs_s1ap_domain;
+extern int __ogs_sbcap_domain;
 extern int __ogs_ngap_domain;
 extern int __ogs_nas_domain;
 extern int __ogs_gtp_domain;
@@ -31,6 +32,7 @@ void ogs_sbi_message_final(void);
 
 abts_suite *test_proto_message(abts_suite *suite);
 abts_suite *test_s1ap_message(abts_suite *suite);
+abts_suite *test_sbcap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
 abts_suite *test_gtp_message(abts_suite *suite);
 abts_suite *test_ngap_message(abts_suite *suite);
@@ -54,6 +56,7 @@ const struct testlist {
 } alltests[] = {
     {test_proto_message},
     {test_s1ap_message},
+    {test_sbcap_message},
     {test_nas_message},
     {test_gtp_message},
     {test_ngap_message},
@@ -125,6 +128,7 @@ int main(int argc, const char *const argv[])
     ogs_sbi_message_init(32, 32);
 
     ogs_log_install_domain(&__ogs_s1ap_domain, "s1ap", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_sbcap_domain, "sbcap", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_ngap_domain, "ngap", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_gtp_domain, "gtp", OGS_LOG_ERROR);
