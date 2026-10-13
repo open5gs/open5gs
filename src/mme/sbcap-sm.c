@@ -97,6 +97,9 @@ void sbcap_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 sbcap_handle_write_replace_warning_request(sbc,pdu);
                 ogs_info("Write_Replace_Warning_Request");
                 break;
+            case SBCAP_id_Stop_Warning:
+                sbcap_handle_stop_warning_request(sbc, pdu);
+                break;
             default:
                 ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)initiatingMessage->procedureCode);

@@ -28,6 +28,8 @@ extern "C" {
 
 void sbcap_handle_write_replace_warning_response(
         mme_sbcap_t *enb, ogs_sbcap_message_t *message);
+void sbcap_handle_stop_warning_request(
+        mme_sbcap_t *sbc, ogs_sbcap_message_t *message);
 void sbcap_handle_write_replace_warning_request(
         mme_sbcap_t *enb, ogs_sbcap_message_t *message);
         ///s1ap_handle_initial_context_setup_response

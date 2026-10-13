@@ -36,6 +36,193 @@
 
 
 
+/* Target area requested by the CBC (List-of-TAIs, TS 29.168) */
+static void sbcap_parse_list_of_tais(
+        const SBCAP_List_of_TAIs_t *list, sbc_pws_data_t *sbc_pws)
+{
+    int k;
+    for (k = 0; k < list->list.count &&
+            sbc_pws->no_of_tai < OGS_ARRAY_SIZE(sbc_pws->tai); k++) {
+        SBCAP_TAI_t *tai = &list->list.array[k]->tai;
+        ogs_eps_tai_t *dst = &sbc_pws->tai[sbc_pws->no_of_tai];
+        uint16_t tac = 0;
+
+        memcpy(&dst->plmn_id, tai->pLMNidentity.buf, sizeof(ogs_plmn_id_t));
+        ogs_asn_OCTET_STRING_to_uint16(&tai->tAC, &tac);
+        dst->tac = tac;
+        ogs_info("    target TAC[%d]", dst->tac);
+        sbc_pws->no_of_tai++;
+    }
+}
+
+/* No List-of-TAIs: every TA served by a connected eNB.
+ * Union of all eNB TAIs, without duplicates (each eNB used to overwrite the
+ * previous one, so only the last connected eNB received the warning). */
+static void sbcap_fill_tais_from_enbs(sbc_pws_data_t *sbc_pws)
+{
+    mme_enb_t *enb = NULL;
+    int i, k;
+
+    ogs_list_for_each(&mme_self()->enb_list, enb) {
+        for (i = 0; i < enb->num_of_supported_ta_list; i++) {
+            int dup = 0;
+            for (k = 0; k < sbc_pws->no_of_tai; k++) {
+                if (!memcmp(&sbc_pws->tai[k], &enb->supported_ta_list[i],
+                            sizeof(ogs_eps_tai_t))) {
+                    dup = 1;
+                    break;
+                }
+            }
+            if (dup) continue;
+            if (sbc_pws->no_of_tai >= OGS_ARRAY_SIZE(sbc_pws->tai)) {
+                ogs_warn("SBc-AP: more than %d TAs, extra TAs ignored",
+                        (int)OGS_ARRAY_SIZE(sbc_pws->tai));
+                return;
+            }
+            sbc_pws->tai[sbc_pws->no_of_tai++] = enb->supported_ta_list[i];
+        }
+    }
+}
+
+static uint16_t sbcap_bitstring16(const BIT_STRING_t *bs)
+{
+    /* BIT STRING (16), network byte order (TS 23.041 9.4.1.2) */
+    return (bs && bs->size >= 2) ? (uint16_t)((bs->buf[0] << 8) | bs->buf[1]) : 0;
+}
+
+/*
+ * Build and send SBc-AP Stop-Warning-Response (TS 29.168 4.3.4.2)
+ *   Message Identifier / Serial Number echoed, Cause.
+ */
+static int sbcap_send_stop_warning_response(mme_sbcap_t *sbc,
+        const BIT_STRING_t *message_identifier,
+        const BIT_STRING_t *serial_number, SBCAP_Cause_t cause)
+{
+    ogs_sbcap_message_t pdu;
+    SBCAP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    SBCAP_Stop_Warning_Response_t *Response = NULL;
+    SBCAP_Stop_Warning_Response_IEs_t *ie = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    memset(&pdu, 0, sizeof(pdu));
+    pdu.present = SBCAP_SBC_AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(SBCAP_SuccessfulOutcome_t));
+    ogs_assert(pdu.choice.successfulOutcome);
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode = SBCAP_id_Stop_Warning;
+    successfulOutcome->criticality = SBCAP_Criticality_reject;
+    successfulOutcome->value.present =
+        SBCAP_SuccessfulOutcome__value_PR_Stop_Warning_Response;
+    Response = &successfulOutcome->value.choice.Stop_Warning_Response;
+
+    ie = CALLOC(1, sizeof(SBCAP_Stop_Warning_Response_IEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&Response->protocolIEs, ie);
+    ie->id = SBCAP_id_Message_Identifier;
+    ie->criticality = SBCAP_Criticality_reject;
+    ie->value.present = SBCAP_Stop_Warning_Response_IEs__value_PR_Message_Identifier;
+    ie->value.choice.Message_Identifier.size = message_identifier->size;
+    ie->value.choice.Message_Identifier.bits_unused = message_identifier->bits_unused;
+    ie->value.choice.Message_Identifier.buf = CALLOC(message_identifier->size, 1);
+    ogs_assert(ie->value.choice.Message_Identifier.buf);
+    memcpy(ie->value.choice.Message_Identifier.buf,
+            message_identifier->buf, message_identifier->size);
+
+    ie = CALLOC(1, sizeof(SBCAP_Stop_Warning_Response_IEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&Response->protocolIEs, ie);
+    ie->id = SBCAP_id_Serial_Number;
+    ie->criticality = SBCAP_Criticality_reject;
+    ie->value.present = SBCAP_Stop_Warning_Response_IEs__value_PR_Serial_Number;
+    ie->value.choice.Serial_Number.size = serial_number->size;
+    ie->value.choice.Serial_Number.bits_unused = serial_number->bits_unused;
+    ie->value.choice.Serial_Number.buf = CALLOC(serial_number->size, 1);
+    ogs_assert(ie->value.choice.Serial_Number.buf);
+    memcpy(ie->value.choice.Serial_Number.buf,
+            serial_number->buf, serial_number->size);
+
+    ie = CALLOC(1, sizeof(SBCAP_Stop_Warning_Response_IEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&Response->protocolIEs, ie);
+    ie->id = SBCAP_id_Cause;
+    ie->criticality = SBCAP_Criticality_reject;
+    ie->value.present = SBCAP_Stop_Warning_Response_IEs__value_PR_Cause;
+    ie->value.choice.Cause = cause;
+
+    /* ogs_sbcap_encode() frees the PDU contents (see ogs_asn_encode) */
+    pkbuf = ogs_sbcap_encode(&pdu);
+    if (!pkbuf) {
+        ogs_error("Stop-Warning-Response encode failed");
+        return OGS_ERROR;
+    }
+
+    ogs_info("[SBc-AP] Tx Stop-Warning-Response (cause=%ld)", (long)cause);
+    return sbcap_send_to_sbc(sbc, pkbuf, 0);
+}
+
+void sbcap_handle_stop_warning_request(
+        mme_sbcap_t *sbc, ogs_sbcap_message_t *message)
+{
+    int i;
+    bool target_area = false;
+    SBCAP_InitiatingMessage_t *initiatingMessage = NULL;
+    SBCAP_Stop_Warning_Request_t *Request = NULL;
+    SBCAP_Message_Identifier_t *message_identifier = NULL;
+    SBCAP_Serial_Number_t *serial_number = NULL;
+    sbc_pws_data_t *sbc_pws = NULL;
+
+    ogs_assert(sbc);
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    Request = &initiatingMessage->value.choice.Stop_Warning_Request;
+
+    sbc_pws = ogs_calloc(1, sizeof(sbc_pws_data_t));
+    ogs_assert(sbc_pws);
+
+    for (i = 0; i < Request->protocolIEs.list.count; i++) {
+        SBCAP_Stop_Warning_Request_IEs_t *ie = Request->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case SBCAP_id_Message_Identifier:
+            message_identifier = &ie->value.choice.Message_Identifier;
+            break;
+        case SBCAP_id_Serial_Number:
+            serial_number = &ie->value.choice.Serial_Number;
+            break;
+        case SBCAP_id_List_of_TAIs:
+            sbcap_parse_list_of_tais(&ie->value.choice.List_of_TAIs, sbc_pws);
+            target_area = true;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (!message_identifier || !serial_number) {
+        ogs_error("Stop-Warning-Request without Message-Identifier or Serial-Number");
+        ogs_free(sbc_pws);
+        return;
+    }
+
+    sbc_pws->message_id = sbcap_bitstring16(message_identifier);
+    sbc_pws->serial_number = sbcap_bitstring16(serial_number);
+    if (!target_area)
+        sbcap_fill_tais_from_enbs(sbc_pws);
+
+    ogs_info("[SBc-AP] Stop-Warning msg_id[%d] serial[0x%04x] for %d TA(s)",
+            sbc_pws->message_id, sbc_pws->serial_number, sbc_pws->no_of_tai);
+
+    /* Forward to the eNBs (S1AP Kill Request, TS 36.413 8.12.2) */
+    sbc_handle_stop_warning_request(sbc_pws);
+
+    /* Acknowledge to the CBC */
+    sbcap_send_stop_warning_response(sbc, message_identifier, serial_number,
+            (sbc_pws->no_of_tai > 0) ? SBCAP_Cause_message_accepted
+                                     : SBCAP_Cause_tracking_area_not_valid);
+    ogs_free(sbc_pws);
+}
+
 /*
  * Build and send SBc-AP Write-Replace-Warning-Response (TS 29.168 4.3.4.1.2)
  *   Message Identifier  (M, reject) - echoed from the request
@@ -167,6 +354,7 @@ void sbcap_handle_write_replace_warning_request(
     sbc_pws_data_t *sbc_pws = NULL; 
     //ogs_debug("Test3");
     //memset(sbc_pws, 0, sizeof(sbc_pws_data_t)); 
+    bool target_area = false;
     sbc_pws = ogs_calloc(1, sizeof(sbc_pws_data_t));
     //ogs_debug("Test1");
     ogs_assert(sbc_pws);
@@ -209,6 +397,10 @@ void sbcap_handle_write_replace_warning_request(
                    sbc_pws ->serial_number = serial_number_i;
 
                 break;
+                case SBCAP_id_List_of_TAIs :
+                   sbcap_parse_list_of_tais(&ie->value.choice.List_of_TAIs, sbc_pws);
+                   target_area = true;
+                break;
                 case SBCAP_ProtocolIE_ID_id_Repetition_Period :
                    repetition_period = &ie->value.choice.Repetition_Period;
                    ogs_info("repetition_period: %ld",*repetition_period);
@@ -243,20 +435,11 @@ void sbcap_handle_write_replace_warning_request(
         
     }
 
-    mme_enb_t *enb = NULL;
-    
-    ogs_list_for_each(&mme_self()->enb_list, enb) {
-      for (i = 0; i < enb->num_of_supported_ta_list; i++) {
-         ogs_debug("eNB Tac =  %d",enb->supported_ta_list[i].tac);
-         sbc_pws -> tai[i] = enb->supported_ta_list[i];
-         sbc_pws -> no_of_tai = i + 1;
-         ogs_debug("SBcAP Tac =  %d",sbc_pws -> tai[i].tac);
-         ogs_debug("SBcAP no_of_tai =  %d",sbc_pws -> no_of_tai);
-         if(i>15){
-            break;
-         }
-      }
-    }
+    if (!target_area)
+        sbcap_fill_tais_from_enbs(sbc_pws);
+    ogs_info("SBc-AP: warning for %d TA(s)%s", sbc_pws->no_of_tai,
+            target_area ? " (List-of-TAIs from CBC)" : " (all eNBs)");
+
     ogs_debug("    IP[%s]",
             OGS_ADDR(sbc->sctp.addr, buf));
 
