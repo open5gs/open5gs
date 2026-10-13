@@ -6178,12 +6178,13 @@ int mme_sbc_remove(mme_sbcap_t *sbc)
     ogs_hash_set(self.sbcap_addr_hash,
             sbc->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
 
-    if (sbc->sctp.type == SOCK_STREAM) {
-        ogs_pollset_remove(sbc->sctp.poll.read);
-        ogs_sctp_flush_and_destroy(&sbc->sctp);
-    }
-
-    ogs_sctp_destroy(sbc->sctp.sock);
+    /*
+     * Same teardown as mme_enb_remove(): ogs_sctp_flush_and_destroy() already
+     * removes poll.read/poll.write, destroys the socket and frees the address.
+     * Removing poll.read here and destroying the socket again crashed the MME
+     * (epoll_remove assertion) whenever a CBC closed its association.
+     */
+    ogs_sctp_flush_and_destroy(&sbc->sctp);
 
     ogs_pool_free(&mme_sbc_pool, sbc);
 
