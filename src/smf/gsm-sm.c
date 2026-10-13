@@ -1127,7 +1127,16 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             release = smf_s5c_handle_delete_bearer_response(
                 sess, gtp_xact, &e->gtp2_message->delete_bearer_response);
             if (release) {
-                OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                if (OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
+                    OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                } else {
+                    /* Node is not associated so session cannot exist there anymore,
+                     * hence release this session immediately */
+                    if (send_ccr_termination_req_gx_gy_s6b(sess, NULL) == true)
+                        OGS_FSM_TRAN(s, smf_gsm_state_wait_epc_auth_release);
+                    else
+                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+                    }
             }
             break;
 
