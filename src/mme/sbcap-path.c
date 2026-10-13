@@ -884,3 +884,31 @@ int s1ap_send_s1_reset_ack(
     return rv;
 }
 */
+
+/* Send an SBc-AP PDU to the CBC (TS 29.168, SCTP PPID 24) */
+int sbcap_send_to_sbc(mme_sbcap_t *sbc, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
+{
+    char buf[OGS_ADDRSTRLEN];
+
+    ogs_assert(pkbuf);
+    ogs_assert(sbc);
+    ogs_assert(sbc->sctp.sock);
+
+    if (sbc->sctp.sock->fd == INVALID_SOCKET) {
+        ogs_error("CBC SCTP socket has already been destroyed");
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
+
+    ogs_debug("    SBc-AP send to CBC IP[%s]", OGS_ADDR(sbc->sctp.addr, buf));
+
+    ogs_sctp_ppid_in_pkbuf(pkbuf) = OGS_SCTP_SBCAP_PPID;
+    ogs_sctp_stream_no_in_pkbuf(pkbuf) = stream_no;
+
+    if (sbc->sctp.type == SOCK_STREAM) {
+        ogs_sctp_write_to_buffer(&sbc->sctp, pkbuf);
+        return OGS_OK;
+    }
+
+    return ogs_sctp_senddata(sbc->sctp.sock, pkbuf, sbc->sctp.addr);
+}

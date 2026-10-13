@@ -85,6 +85,7 @@ void mme_context_init(void)
 
     ogs_log_install_domain(&__ogs_sctp_domain, "sctp", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_s1ap_domain, "s1ap", ogs_core()->log.level);
+    ogs_log_install_domain(&__ogs_sbcap_domain, "sbcap", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_nas_domain, "nas", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_diam_domain, "diam", ogs_core()->log.level);
     ogs_log_install_domain(&__mme_log_domain, "mme", ogs_core()->log.level);
@@ -147,6 +148,11 @@ void mme_context_init(void)
     self.mme_gn_teid_hash = ogs_hash_make();
     ogs_assert(self.mme_gn_teid_hash);
 
+    self.sbcap_addr_hash = ogs_hash_make();
+    ogs_assert(self.sbcap_addr_hash);
+    self.sbcap_id_hash = ogs_hash_make();
+    ogs_assert(self.sbcap_id_hash);
+
     ogs_list_init(&self.mme_ue_list);
 
     context_initialized = 1;
@@ -181,6 +187,10 @@ void mme_context_final(void)
     ogs_hash_destroy(self.mme_s11_teid_hash);
     ogs_assert(self.mme_gn_teid_hash);
     ogs_hash_destroy(self.mme_gn_teid_hash);
+    ogs_assert(self.sbcap_addr_hash);
+    ogs_hash_destroy(self.sbcap_addr_hash);
+    ogs_assert(self.sbcap_id_hash);
+    ogs_hash_destroy(self.sbcap_id_hash);
 
     ogs_pool_final(&m_tmsi_pool);
     ogs_pool_final(&mme_emerg_pool);

@@ -35,6 +35,94 @@
 
 
 
+
+/*
+ * Build and send SBc-AP Write-Replace-Warning-Response (TS 29.168 4.3.4.1.2)
+ *   Message Identifier  (M, reject) - echoed from the request
+ *   Serial Number       (M, reject) - echoed from the request
+ *   Cause               (M, reject)
+ * Optional IEs (Unknown TAI list, Criticality Diagnostics) are omitted.
+ */
+static int sbcap_send_write_replace_warning_response(mme_sbcap_t *sbc,
+        const BIT_STRING_t *message_identifier,
+        const BIT_STRING_t *serial_number, SBCAP_Cause_t cause)
+{
+    ogs_sbcap_message_t pdu;
+    SBCAP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    SBCAP_Write_Replace_Warning_Response_t *Response = NULL;
+    SBCAP_Write_Replace_Warning_Response_IEs_t *ie = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(sbc);
+    ogs_assert(message_identifier);
+    ogs_assert(serial_number);
+
+    memset(&pdu, 0, sizeof(pdu));
+    pdu.present = SBCAP_SBC_AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(SBCAP_SuccessfulOutcome_t));
+    ogs_assert(pdu.choice.successfulOutcome);
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode = SBCAP_id_Write_Replace_Warning;
+    successfulOutcome->criticality = SBCAP_Criticality_reject;
+    successfulOutcome->value.present =
+        SBCAP_SuccessfulOutcome__value_PR_Write_Replace_Warning_Response;
+    Response = &successfulOutcome->value.choice.Write_Replace_Warning_Response;
+
+    /* Message Identifier */
+    ie = CALLOC(1, sizeof(SBCAP_Write_Replace_Warning_Response_IEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&Response->protocolIEs, ie);
+    ie->id = SBCAP_id_Message_Identifier;
+    ie->criticality = SBCAP_Criticality_reject;
+    ie->value.present =
+        SBCAP_Write_Replace_Warning_Response_IEs__value_PR_Message_Identifier;
+    ie->value.choice.Message_Identifier.size = message_identifier->size;
+    ie->value.choice.Message_Identifier.bits_unused =
+        message_identifier->bits_unused;
+    ie->value.choice.Message_Identifier.buf =
+        CALLOC(message_identifier->size, sizeof(uint8_t));
+    ogs_assert(ie->value.choice.Message_Identifier.buf);
+    memcpy(ie->value.choice.Message_Identifier.buf,
+            message_identifier->buf, message_identifier->size);
+
+    /* Serial Number */
+    ie = CALLOC(1, sizeof(SBCAP_Write_Replace_Warning_Response_IEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&Response->protocolIEs, ie);
+    ie->id = SBCAP_id_Serial_Number;
+    ie->criticality = SBCAP_Criticality_reject;
+    ie->value.present =
+        SBCAP_Write_Replace_Warning_Response_IEs__value_PR_Serial_Number;
+    ie->value.choice.Serial_Number.size = serial_number->size;
+    ie->value.choice.Serial_Number.bits_unused = serial_number->bits_unused;
+    ie->value.choice.Serial_Number.buf =
+        CALLOC(serial_number->size, sizeof(uint8_t));
+    ogs_assert(ie->value.choice.Serial_Number.buf);
+    memcpy(ie->value.choice.Serial_Number.buf,
+            serial_number->buf, serial_number->size);
+
+    /* Cause */
+    ie = CALLOC(1, sizeof(SBCAP_Write_Replace_Warning_Response_IEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&Response->protocolIEs, ie);
+    ie->id = SBCAP_id_Cause;
+    ie->criticality = SBCAP_Criticality_reject;
+    ie->value.present = SBCAP_Write_Replace_Warning_Response_IEs__value_PR_Cause;
+    ie->value.choice.Cause = cause;
+
+    /* ogs_sbcap_encode() frees the PDU contents (see ogs_asn_encode) */
+    pkbuf = ogs_sbcap_encode(&pdu);
+    if (!pkbuf) {
+        ogs_error("Write-Replace-Warning-Response encode failed");
+        return OGS_ERROR;
+    }
+
+    ogs_info("[SBc-AP] Tx Write-Replace-Warning-Response (cause=%ld)",
+            (long)cause);
+    return sbcap_send_to_sbc(sbc, pkbuf, 0);
+}
+
 void sbcap_handle_write_replace_warning_response(
         mme_sbcap_t *sbc, ogs_sbcap_message_t *message)
 {
@@ -79,7 +167,7 @@ void sbcap_handle_write_replace_warning_request(
     sbc_pws_data_t *sbc_pws = NULL; 
     //ogs_debug("Test3");
     //memset(sbc_pws, 0, sizeof(sbc_pws_data_t)); 
-    sbc_pws = (sbc_pws_data_t*)malloc(sizeof(sbc_pws_data_t)); 
+    sbc_pws = ogs_calloc(1, sizeof(sbc_pws_data_t));
     //ogs_debug("Test1");
     ogs_assert(sbc_pws);
     //ogs_debug("Test2");
@@ -102,8 +190,9 @@ void sbcap_handle_write_replace_warning_request(
             switch(ie->id){
                 case SBCAP_ProtocolIE_ID_id_Message_Identifier :
                    message_identifier = &ie->value.choice.Message_Identifier;
-                   int message = 0;
-                   memcpy(&message,message_identifier->buf, sizeof(uint16_t));  //Obrce redosled Bytova
+                   /* BIT STRING (16), network byte order (TS 23.041 9.4.1.2.2) */
+                   int message = (message_identifier->buf[0] << 8) |
+                                 message_identifier->buf[1];
 
                    ogs_debug("message_identifier: %ld",message_identifier->size);
                    ogs_info("message_identifier: %d",message);
@@ -114,8 +203,9 @@ void sbcap_handle_write_replace_warning_request(
                 case SBCAP_ProtocolIE_ID_id_Serial_Number :
                    serial_number = &ie->value.choice.Serial_Number;
                    ogs_debug("serial_number: %s",serial_number->buf);
-                   uint16_t serial_number_i = 0;
-                   memcpy(&serial_number_i,serial_number->buf, sizeof(uint16_t));  //Obrce redosled Bytova
+                   /* BIT STRING (16), network byte order (TS 23.041 9.4.1.2.1) */
+                   uint16_t serial_number_i = (serial_number->buf[0] << 8) |
+                                              serial_number->buf[1];
                    sbc_pws ->serial_number = serial_number_i;
 
                 break;
@@ -132,8 +222,11 @@ void sbcap_handle_write_replace_warning_request(
                 break;
                 case SBCAP_ProtocolIE_ID_id_Data_Coding_Scheme :
                    data_coding_scheme = &ie->value.choice.Data_Coding_Scheme;
-                   ogs_debug("data_coding_scheme: %s",data_coding_scheme->buf);
-                   sbc_pws->data_coding_scheme = 0xFF & 0xFF;
+                   /* BIT STRING (8), TS 23.038 CBS Data Coding Scheme: pass it through */
+                   sbc_pws->data_coding_scheme = data_coding_scheme->size ?
+                       data_coding_scheme->buf[0] : 0x0F;
+                   ogs_info("data_coding_scheme: 0x%02x",
+                           sbc_pws->data_coding_scheme);
                 break;
                case SBCAP_ProtocolIE_ID_id_Warning_Message_Content :
                    warning_message_content = &ie->value.choice.Warning_Message_Content;
@@ -164,10 +257,27 @@ void sbcap_handle_write_replace_warning_request(
          }
       }
     }
-    sbc_handle_write_replace_warning_request(sbc_pws);
-    sbc_handle_stop_warning_request(sbc_pws);
     ogs_debug("    IP[%s]",
             OGS_ADDR(sbc->sctp.addr, buf));
+
+    if (!message_identifier || !serial_number) {
+        /* Mandatory IEs missing: response cannot be correlated by the CBC */
+        ogs_error("Write-Replace-Warning-Request without Message-Identifier "
+                "or Serial-Number");
+        ogs_free(sbc_pws);
+        return;
+    }
+
+    /* Forward to the eNBs (S1AP Write-Replace-Warning-Request) */
+    sbc_handle_write_replace_warning_request(sbc_pws);
+
+    /* Acknowledge to the CBC (TS 29.168 4.3.4.1.2) */
+    sbcap_send_write_replace_warning_response(sbc,
+            message_identifier, serial_number,
+            (sbc_pws->no_of_tai > 0) ? SBCAP_Cause_message_accepted
+                                     : SBCAP_Cause_tracking_area_not_valid);
+
+    ogs_free(sbc_pws);
 
 }
 

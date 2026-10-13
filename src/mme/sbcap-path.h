@@ -41,8 +41,7 @@ void sbcap_recv_upcall(short when, ogs_socket_t fd, void *data);
 //ogs_sock_t *sbcap_client(mme_sbc_t *sbc);
 
 
-int sbcap_send(ogs_sock_t *sock,
-        ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);
+int sbcap_send_to_sbc(mme_sbcap_t *sbc, ogs_pkbuf_t *pkbuf, uint16_t stream_no);
 
 
 #ifdef __cplusplus
