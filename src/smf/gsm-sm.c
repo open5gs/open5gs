@@ -160,6 +160,7 @@ static bool send_ccr_termination_req_gx_gy_s6b(
         /* Gy is available,
          * set up session for the bearer before accepting it towards the UE */
         sess->sm_data.gy_ccr_term_in_flight = true;
+        sess->gy.reporting_reason = OGS_DIAM_GY_REPORTING_REASON_FINAL;
         smf_gy_send_ccr(
                 sess, gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID,
                 OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST);
