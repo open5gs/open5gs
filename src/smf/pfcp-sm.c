@@ -534,11 +534,21 @@ static void reselect_upf(ogs_pfcp_node_t *node)
 
             if (node == sess->pfcp_node) {
                 if (sess->epc) {
+                    smf_bearer_t *linked_bearer = NULL;
+
+                    if (!OGS_FSM_CHECK(&sess->sm,
+                            smf_gsm_state_operational)) {
+                        ogs_info("[%s:%s] Skip EPC session release: "
+                                "not operational",
+                                smf_ue->imsi_bcd, sess->session.name);
+                        continue;
+                    }
+
                     if (iter) {
                         ogs_error("[%s:%s] EPC sess restoration is not implemented, releasing bearer",
                             smf_ue->imsi_bcd, sess->session.name);
                     }
-                    smf_bearer_t *linked_bearer = smf_default_bearer_in_sess(sess);
+                    linked_bearer = smf_default_bearer_in_sess(sess);
                     ogs_assert(linked_bearer);
                     switch (sess->gtp.version) {
                     case 1:
