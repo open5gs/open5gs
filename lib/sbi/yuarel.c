@@ -25,18 +25,30 @@
 #include "yuarel.h"
 
 /**
- * Parse a non null terminated string into an integer.
+ * Parse a null terminated port string.
  *
- * str: the string containing the number.
- * len: Number of characters to parse.
+ * Returns the port on success, otherwise -1.
  */
 static inline int
-natoi(const char *str, size_t len)
+parse_port(const char *str)
 {
-	int i, r = 0;
-	for (i = 0; i < len; i++) {
-		r *= 10;
-		r += str[i] - '0';
+	int r = 0;
+
+	if ('\0' == *str) {
+		return -1;
+	}
+
+	while (*str) {
+		int digit;
+
+		if (*str < '0' || *str > '9') {
+			return -1;
+		}
+		digit = *str++ - '0';
+		if (r > (65535 - digit) / 10) {
+			return -1;
+		}
+		r = r * 10 + digit;
 	}
 
 	return r;
@@ -217,14 +229,9 @@ yuarel_parse(struct yuarel *url, char *u)
 		}
 		if (NULL != u && (NULL == url->path || u < url->path)) {
 			*(u++) = '\0';
-			if ('\0' == *u) {
+			url->port = parse_port(u);
+			if (url->port < 0) {
 				return -1;
-			}
-
-			if (url->path) {
-				url->port = natoi(u, url->path - u - 1);
-			} else {
-				url->port = atoi(u);
 			}
 		}
 
