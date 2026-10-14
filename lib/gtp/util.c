@@ -72,6 +72,13 @@ int ogs_gtpu_parse_header(
          * in a variable length of 4 octets, i.e. m+1 = n*4 octets,
          * where n is a positive integer.
          */
+            /* The Extension Header Length octet must be in the packet */
+            if (pkbuf->len < len + 1) {
+                ogs_error("the length of the packet is insufficient[%d:%d]",
+                        pkbuf->len, len + 1);
+                return -1;
+            }
+
             len += (*(++ext_h)) * 4;
             if (*ext_h == 0) {
                 ogs_error("No length in the Extension header");
