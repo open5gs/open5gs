@@ -1177,23 +1177,23 @@ static void sbi_message_test12(abts_case *tc, void *data)
     cJSON_Delete(item);
     OpenAPI_provisioned_data_sets_free(sets);
 
-    /*
-     * Malformed input and misuse are rejected with a diagnostic. Only
-     * the return value matters here, so silence the domain meanwhile.
-     */
-    ogs_log_set_domain_level(id, OGS_LOG_NONE);
-
     /* a wrong item after a valid one */
     item = cJSON_Parse(sm_bad_item);
     ABTS_PTR_NOTNULL(tc, item);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     sets = OpenAPI_provisioned_data_sets_parseFromJSON(item);
+    ogs_log_set_domain_level(id, level);
     cJSON_Delete(item);
     ABTS_TRUE(tc, sets == NULL);
 
     /* exactly one alternative must be set: none ... */
     sm_data = OpenAPI_sm_subs_data_create(NULL, NULL);
     ABTS_PTR_NOTNULL(tc, sm_data);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     ABTS_TRUE(tc, OpenAPI_sm_subs_data_convertToJSON(sm_data) == NULL);
+    ogs_log_set_domain_level(id, level);
     OpenAPI_sm_subs_data_free(sm_data);
 
     /* ... or both, each valid on its own so that only the check fails */
@@ -1211,11 +1211,12 @@ static void sbi_message_test12(abts_case *tc, void *data)
     sm_data = sets->sm_data;
     sm_data->extended_sm_subs_data = copy->sm_data->extended_sm_subs_data;
     copy->sm_data->extended_sm_subs_data = NULL;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     ABTS_TRUE(tc, OpenAPI_sm_subs_data_convertToJSON(sm_data) == NULL);
+    ogs_log_set_domain_level(id, level);
     OpenAPI_provisioned_data_sets_free(sets);
     OpenAPI_provisioned_data_sets_free(copy);
-
-    ogs_log_set_domain_level(id, level);
 }
 
 /* 5gAuthData preserves the selected object, string or explicit null value. */
@@ -1267,11 +1268,13 @@ static void sbi_message_test13(abts_case *tc, void *data)
         cJSON_Delete(item);
     }
 
-    ogs_log_set_domain_level(id, OGS_LOG_NONE);
     memset(&auth_data, 0, sizeof(auth_data));
 
     /* No alternative selected. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     item = OpenAPI_ue_authentication_ctx_5g_auth_data_convertToJSON(&auth_data);
+    ogs_log_set_domain_level(id, level);
     ABTS_TRUE(tc, item == NULL);
     cJSON_Delete(item);
 
@@ -1279,17 +1282,22 @@ static void sbi_message_test13(abts_case *tc, void *data)
     av.rand = av.hxres_star = av.autn = (char *)"00112233445566778899aabbccddeeff";
     auth_data.av5g_aka = &av;
     auth_data.eap_payload = (char *)"cGF5bG9hZA==";
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     item = OpenAPI_ue_authentication_ctx_5g_auth_data_convertToJSON(&auth_data);
+    ogs_log_set_domain_level(id, level);
     ABTS_TRUE(tc, item == NULL);
     cJSON_Delete(item);
 
     /* Explicit null and a string value cannot both be selected. */
     auth_data.av5g_aka = NULL;
     auth_data.is_eap_payload_null = true;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     item = OpenAPI_ue_authentication_ctx_5g_auth_data_convertToJSON(&auth_data);
+    ogs_log_set_domain_level(id, level);
     ABTS_TRUE(tc, item == NULL);
     cJSON_Delete(item);
-    ogs_log_set_domain_level(id, level);
 }
 
 static void sbi_message_test14(abts_case *tc, void *data)
@@ -1325,7 +1333,6 @@ static void sbi_message_test14(abts_case *tc, void *data)
     int rv;
     size_t i;
 
-    ogs_log_set_domain_level(id, OGS_LOG_NONE);
     for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
         memset(&header, 0, sizeof(header));
         header.method = ogs_strdup(OGS_SBI_HTTP_METHOD_GET);
@@ -1333,7 +1340,11 @@ static void sbi_message_test14(abts_case *tc, void *data)
         ABTS_PTR_NOTNULL(tc, header.method);
         ABTS_PTR_NOTNULL(tc, header.uri);
 
+        if (cases[i].expected == OGS_ERROR &&
+                level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(id, OGS_LOG_FATAL);
         rv = ogs_sbi_parse_header(&message, &header);
+        ogs_log_set_domain_level(id, level);
         ABTS_INT_EQUAL(tc, cases[i].expected, rv);
         if (rv == OGS_OK) {
             ABTS_STR_EQUAL(tc, "nnrf-nfm", message.h.service.name);
@@ -1346,7 +1357,6 @@ static void sbi_message_test14(abts_case *tc, void *data)
         ogs_sbi_header_free(&header);
         ogs_free(header.uri);
     }
-    ogs_log_set_domain_level(id, level);
 }
 
 abts_suite *test_sbi_message(abts_suite *suite)

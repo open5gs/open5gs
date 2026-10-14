@@ -405,8 +405,6 @@ abts_suite *test_ngap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    ogs_log_install_domain(&__ogs_ngap_domain, "ngap", OGS_LOG_ERROR);
-
     abts_run_test(suite, ngap_message_test1, NULL);
     abts_run_test(suite, ngap_message_test2, NULL);
     abts_run_test(suite, ngap_message_test3, NULL);

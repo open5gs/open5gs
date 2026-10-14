@@ -73,6 +73,7 @@ static void eir_config_parse_action(abts_case *tc, void *data)
     yaml_document_t document;
     ogs_yaml_iter_t iter;
     ogs_eir_action_e action = test->initial_action;
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_app_domain);
     int rv;
 
     rv = yaml_parser_initialize(&parser);
@@ -91,8 +92,12 @@ static void eir_config_parse_action(abts_case *tc, void *data)
     rv = ogs_yaml_iter_next(&iter);
     ABTS_TRUE(tc, rv);
     if (rv) {
+        if (test->result == OGS_ERROR &&
+                level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__ogs_app_domain, OGS_LOG_FATAL);
         rv = ogs_app_parse_eir_action(
                 &iter, ogs_yaml_iter_key(&iter), &action);
+        ogs_log_set_domain_level(__ogs_app_domain, level);
         ABTS_INT_EQUAL(tc, test->result, rv);
         ABTS_INT_EQUAL(tc, test->expected_action, action);
     }
@@ -102,20 +107,12 @@ static void eir_config_parse_action(abts_case *tc, void *data)
 
 abts_suite *test_eir_config(abts_suite *suite)
 {
-    ogs_log_level_e saved_log_level;
     unsigned int i;
 
     suite = ADD_SUITE(suite)
 
-    if (!ogs_log_find_domain("app"))
-        ogs_log_install_domain(
-                &__ogs_app_domain, "app", ogs_core()->log.level);
-    saved_log_level = ogs_log_get_domain_level(__ogs_app_domain);
-    ogs_log_set_domain_level(__ogs_app_domain, OGS_LOG_NONE);
-
     for (i = 0; i < OGS_ARRAY_SIZE(cases); i++)
         abts_run_test(suite, eir_config_parse_action, (void *)&cases[i]);
 
-    ogs_log_set_domain_level(__ogs_app_domain, saved_log_level);
     return suite;
 }

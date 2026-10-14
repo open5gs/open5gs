@@ -359,6 +359,8 @@ static void ipv6prefix_format(abts_case *tc, void *data)
     uint8_t addr6[OGS_IPV6_LEN];
     uint8_t prefixlen;
     size_t i;
+    int id = ogs_log_get_domain_id("core");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
 
     static const struct {
         const char *string;
@@ -385,9 +387,13 @@ static void ipv6prefix_format(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, valid[i].prefixlen, prefixlen);
     }
 
+    /* Keep expected errors quiet unless debug/trace logging is requested. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     for (i = 0; i < OGS_ARRAY_SIZE(invalid); i++)
         ABTS_INT_EQUAL(tc, OGS_ERROR,
                 ogs_ipv6prefix_from_string(addr6, &prefixlen, invalid[i]));
+    ogs_log_set_domain_level(id, level);
 }
 
 abts_suite *test_proto_message(abts_suite *suite)

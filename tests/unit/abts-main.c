@@ -25,6 +25,13 @@ extern int __ogs_ngap_domain;
 extern int __ogs_nas_domain;
 extern int __ogs_gtp_domain;
 extern int __ogs_sbi_domain;
+extern int __ogs_app_domain;
+extern int __ogs_diam_domain;
+extern int __ogs_pfcp_domain;
+extern int __mme_log_domain;
+extern int __emm_log_domain;
+extern int __amf_log_domain;
+extern int __gmm_log_domain;
 
 void ogs_sbi_message_init(int num_of_request_pool, int num_of_response_pool);
 void ogs_sbi_message_final(void);
@@ -129,6 +136,13 @@ int main(int argc, const char *const argv[])
     ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_gtp_domain, "gtp", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_sbi_domain, "sbi", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_app_domain, "app", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_diam_domain, "diam", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__mme_log_domain, "mme", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__emm_log_domain, "emm", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__amf_log_domain, "amf", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__gmm_log_domain, "gmm", OGS_LOG_ERROR);
 
     atexit(terminate);
 

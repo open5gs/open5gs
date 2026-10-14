@@ -331,36 +331,47 @@ static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
 {
     ogs_nas_gprs_timer_t gprs_timer;
     int rv;
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_nas_domain);
 
-    ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_FATAL);
-
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_2_SS,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 1, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 3);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_2_SS,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 2, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 63);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 64);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*2-1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 2, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*2+1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*30);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM,
@@ -371,50 +382,68 @@ static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*32);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*8);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 8, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*8+1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*31);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*32);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
 
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 1, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 3);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 2, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 63);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 64);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*2-1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_30_SS,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 4, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*2+1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*30);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM,
@@ -425,22 +454,31 @@ static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*32);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 4, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*4+1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*31);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*32);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*36);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH,
@@ -451,8 +489,11 @@ static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*32);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*40);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_HH,
@@ -473,10 +514,11 @@ static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_320_HH,
             gprs_timer.unit);
     ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*10*32*32);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
-
-    ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
 }
 
 static void imeisv_conversion_test(abts_case *tc, void *data)
@@ -505,7 +547,8 @@ static void imeisv_conversion_test(abts_case *tc, void *data)
     saved = output;
 
     /* Suppress only the errors deliberately triggered by this test. */
-    ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_NONE);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     identity.odd_even = 1;
     ABTS_INT_EQUAL(tc, OGS_ERROR,
             ogs_nas_imeisv_to_bcd(&identity, sizeof(identity), output.bcd));
@@ -518,10 +561,15 @@ static void imeisv_conversion_test(abts_case *tc, void *data)
         ABTS_TRUE(tc, !memcmp(&saved, &output, sizeof(output)));
     }
 
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
+
     /* Filler and digit validity keep the previous acceptance policy. */
     identity.digit17 = 0;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
     ABTS_INT_EQUAL(tc, OGS_OK,
             ogs_nas_imeisv_to_bcd(&identity, sizeof(identity), output.bcd));
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
     ABTS_TRUE(tc, !memcmp(&saved, &output, sizeof(output)));
     identity.digit17 = 0xf;
     identity.digit1 = 0xa;
@@ -530,14 +578,11 @@ static void imeisv_conversion_test(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, ':', output.bcd[0]);
     ABTS_INT_EQUAL(tc, 0, output.bcd[OGS_MAX_IMEISV_BCD_LEN]);
     ABTS_INT_EQUAL(tc, 0xa5, output.guard);
-    ogs_log_set_domain_level(__ogs_nas_domain, level);
 }
 
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
-
-    ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
 
     abts_run_test(suite, imeisv_conversion_test, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test1, NULL);

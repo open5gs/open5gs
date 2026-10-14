@@ -379,6 +379,7 @@ static void assert_restored(abts_case *tc, int sessions)
 
 static void failures_preserve_sessions(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
     int sessions = *(int *)data;
     int i;
     uint8_t failures[] = {
@@ -402,7 +403,11 @@ static void failures_preserve_sessions(abts_case *tc, void *data)
             OGS_FSM_TRAN(&f->ue.sm, gmm_state_security_mode);
             f->ue.security_context_available = 1;
         }
+        if (failures[i] == OGS_NAS_5GS_SECURITY_MODE_COMPLETE &&
+                level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
         dispatch(failures[i], i >= 2, true);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
         assert_restored(tc, sessions);
         fixture_final();
     }
@@ -410,6 +415,7 @@ static void failures_preserve_sessions(abts_case *tc, void *data)
 
 static void unverified_nas_is_discarded(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
     int i, sessions = *(int *)data;
     for (i = 0; i < 2; i++) {
         fixture_init(sessions);
@@ -418,10 +424,16 @@ static void unverified_nas_is_discarded(abts_case *tc, void *data)
             OGS_FSM_TRAN(&f->ue.sm, gmm_state_security_mode);
             f->ue.security_context_available = 1;
             ogs_timer_start(f->ue.t3560.timer, ogs_time_from_sec(1));
+            if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
             dispatch(OGS_NAS_5GS_SECURITY_MODE_COMPLETE, false, false);
+            ogs_log_set_domain_level(__gmm_log_domain, level);
             ABTS_TRUE(tc, f->ue.t3560.timer->running);
             f->ue.mac_failed = 1;
+            if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
             dispatch(OGS_NAS_5GS_SECURITY_MODE_COMPLETE, true, false);
+            ogs_log_set_domain_level(__gmm_log_domain, level);
             ABTS_TRUE(tc, f->ue.t3560.timer->running);
             f->ue.mac_failed = 0;
         }
@@ -488,6 +500,7 @@ static void equipment_status(OpenAPI_equipment_status_e status)
 static void eir_policy_completes_registration(abts_case *tc, void *data)
 {
     enum { UNKNOWN, HTTP_FAILURE, SEND_FAILURE, ASYNC_FAILURE, MISSING_PEI };
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
     int scenario, reject, i, sessions = *(int *)data;
 
     for (scenario = UNKNOWN; scenario <= MISSING_PEI; scenario++) {
@@ -509,7 +522,11 @@ static void eir_policy_completes_registration(abts_case *tc, void *data)
 
             assert_preserved(tc, sessions);
             ABTS_TRUE(tc, f->ue.registration_session_release_after_authentication);
+            if (scenario == MISSING_PEI &&
+                    level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
             dispatch(OGS_NAS_5GS_SECURITY_MODE_COMPLETE, true, false);
+            ogs_log_set_domain_level(__gmm_log_domain, level);
             ABTS_INT_EQUAL(tc, scenario != MISSING_PEI, f->eir);
             ABTS_TRUE(tc, !f->ue.can_restore_context);
 
@@ -567,6 +584,7 @@ static void eir_policy_completes_registration(abts_case *tc, void *data)
 
 static void eir_and_last_release(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
     int enabled, sessions = *(int *)data;
     for (enabled = 0; enabled < 2; enabled++) {
         fixture_init(sessions);
@@ -583,7 +601,10 @@ static void eir_and_last_release(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, 1, f->releases);
         ABTS_INT_EQUAL(tc, 0, f->continuation);
         ABTS_TRUE(tc, f->ue.registration_session_release_pending);
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
         dispatch(OGS_NAS_5GS_REGISTRATION_REQUEST, false, false);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
         ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, gmm_state_initial_context_setup));
         ABTS_TRUE(tc, f->ue.registration_session_release_pending);
         ABTS_INT_EQUAL(tc, 1, f->auth);
@@ -601,7 +622,10 @@ static void eir_and_last_release(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, 1, f->continuation);
         ABTS_TRUE(tc, !f->ue.registration_session_release_pending);
         ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, gmm_state_initial_context_setup));
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
         release_response(0);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
         ABTS_INT_EQUAL(tc, 1, f->continuation);
         fixture_final();
     }
@@ -609,6 +633,7 @@ static void eir_and_last_release(abts_case *tc, void *data)
 
 static void cancelled_release_does_not_resume(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
     int sessions = *(int *)data, reason, i;
     for (reason = 0; reason < 4; reason++) {
         fixture_init(sessions);
@@ -622,8 +647,11 @@ static void cancelled_release_does_not_resume(abts_case *tc, void *data)
             f->ue.ran_ue_id = OGS_INVALID_POOL_ID;
         else
             OGS_FSM_TRAN(&f->ue.sm, gmm_state_authentication);
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
         for (i = sessions - 1; i >= 0; i--)
             release_response(i);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
         ABTS_INT_EQUAL(tc, 0, f->continuation);
         ABTS_INT_EQUAL(tc, 0, ogs_list_count(&f->ue.sess_list));
         fixture_final();
@@ -671,6 +699,7 @@ static void eir_rejection_releases_sessions(abts_case *tc, void *data)
 
 static void cancel_removes_only_registration_transactions(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
     int i, sessions = *(int *)data;
     fixture_init(sessions);
     start_security_mode();
@@ -686,8 +715,11 @@ static void cancel_removes_only_registration_transactions(abts_case *tc, void *d
     ABTS_PTR_EQUAL(tc, &f->unrelated_xact,
             ogs_list_first(&f->sess[0].sbi.xact_list));
     ogs_list_remove(&f->sess[0].sbi.xact_list, &f->unrelated_xact);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
     for (i = sessions - 1; i >= 0; i--)
         release_response(i);
+    ogs_log_set_domain_level(__gmm_log_domain, level);
     ABTS_INT_EQUAL(tc, 0, f->continuation);
     ABTS_INT_EQUAL(tc, 0, ogs_list_count(&f->ue.sess_list));
     fixture_final();
@@ -695,6 +727,7 @@ static void cancel_removes_only_registration_transactions(abts_case *tc, void *d
 
 static void release_timeout_cancels_registration(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
     int present, i, sessions = *(int *)data;
     for (present = 0; present < 3; present++) {
         fixture_init(sessions);
@@ -706,7 +739,10 @@ static void release_timeout_cancels_registration(abts_case *tc, void *data)
             f->ue.ran_ue_id = OGS_INVALID_POOL_ID;
         /* This is the production timeout/discovery failure handler invoked
          * synchronously; no peer timeout or artificial timer ENTRY is used. */
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
         amf_nnrf_handle_failed_amf_discovery(&f->xact[0]);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
         ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, gmm_state_initial_context_setup));
         ABTS_INT_EQUAL(tc, sessions, ogs_list_count(&f->ue.sess_list));
         ABTS_INT_EQUAL(tc, present == 1, f->ran_releases);
@@ -717,8 +753,11 @@ static void release_timeout_cancels_registration(abts_case *tc, void *data)
             ABTS_INT_EQUAL(tc, NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE,
                     f->ran.ue_ctx_rel_action);
         }
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
         for (i = sessions - 1; i >= 0; i--)
             release_response(i);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
         ABTS_INT_EQUAL(tc, 0, f->continuation);
         fixture_final();
     }
@@ -831,16 +870,7 @@ abts_suite *test_amf_registration(abts_suite *suite)
 {
     int sessions[] = { 1, 2 };
     int i;
-    ogs_log_level_e saved, saved_amf, saved_core;
     suite = ADD_SUITE(suite)
-    if (!ogs_log_find_domain("gmm"))
-        ogs_log_install_domain(&__gmm_log_domain, "gmm", OGS_LOG_NONE);
-    saved = ogs_log_get_domain_level(__gmm_log_domain);
-    saved_amf = ogs_log_get_domain_level(__amf_log_domain);
-    saved_core = ogs_log_get_domain_level(ogs_log_get_domain_id("core"));
-    ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_NONE);
-    ogs_log_set_domain_level(__amf_log_domain, OGS_LOG_NONE);
-    ogs_log_set_domain_level(ogs_log_get_domain_id("core"), OGS_LOG_NONE);
     for (i = 0; i < OGS_ARRAY_SIZE(sessions); i++) {
         abts_run_test(suite, failures_preserve_sessions, &sessions[i]);
         abts_run_test(suite, unverified_nas_is_discarded, &sessions[i]);
@@ -855,8 +885,5 @@ abts_suite *test_amf_registration(abts_suite *suite)
         abts_run_test(suite, pending_activation_allows_registration, &sessions[i]);
         abts_run_test(suite, late_release_does_not_restart_authentication, &sessions[i]);
     }
-    ogs_log_set_domain_level(__gmm_log_domain, saved);
-    ogs_log_set_domain_level(__amf_log_domain, saved_amf);
-    ogs_log_set_domain_level(ogs_log_get_domain_id("core"), saved_core);
     return suite;
 }

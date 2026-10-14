@@ -449,13 +449,17 @@ static void attach_failure(abts_case *tc, void *data)
 
 static void invalid_security_complete(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
     int invalid_mac;
     for (invalid_mac = 0; invalid_mac < 2; invalid_mac++) {
         fixture_init(true);
         dispatch(OGS_NAS_EPS_ATTACH_REQUEST, 0, false);
         authenticate();
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
         dispatch(OGS_NAS_EPS_SECURITY_MODE_COMPLETE, invalid_mac ? 1 : 0,
                 invalid_mac);
+        ogs_log_set_domain_level(__emm_log_domain, level);
         ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, emm_state_security_mode));
         ABTS_TRUE(tc, f->ue.t3460.timer->running);
         assert_sessions(tc);
@@ -465,6 +469,7 @@ static void invalid_security_complete(abts_case *tc, void *data)
 
 static void authenticated_session_delete(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
     int sessions;
     for (sessions = 0; sessions < 2; sessions++) {
         fixture_init(sessions);
@@ -481,7 +486,10 @@ static void authenticated_session_delete(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, !sessions, f->continuation);
         if (sessions) {
             /* Pending deletion must not allow another Attach to restart AKA. */
+            if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
             dispatch(OGS_NAS_EPS_ATTACH_REQUEST, 0, false);
+            ogs_log_set_domain_level(__emm_log_domain, level);
             ABTS_INT_EQUAL(tc, 1, f->air);
             ABTS_INT_EQUAL(tc, 1, f->deletes);
             ABTS_INT_EQUAL(tc, 0, f->continuation);
@@ -535,6 +543,7 @@ static void delete_response(int session)
 
 static void last_delete_continues_attach(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
     int eir;
     for (eir = 0; eir < 2; eir++) {
         mme_self()->eir.enabled = eir;
@@ -558,7 +567,10 @@ static void last_delete_continues_attach(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, 1, f->continuation);
         ABTS_INT_EQUAL(tc, eir, f->eir);
         ABTS_TRUE(tc, !f->ue.attach_session_delete_pending);
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
         delete_response(0); /* A duplicate response cannot resume twice. */
+        ogs_log_set_domain_level(__emm_log_domain, level);
         ABTS_INT_EQUAL(tc, 1, f->continuation);
         fixture_final();
     }
@@ -604,6 +616,7 @@ static void last_delete_continues_attach(abts_case *tc, void *data)
 static void eir_policy_completes_attach(abts_case *tc, void *data)
 {
     enum { UNKNOWN, FAILURE, MALFORMED, MISSING_PEI, BLACKLIST } scenario;
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
     mme_eir_t saved = mme_self()->eir;
     int reject;
 
@@ -644,7 +657,10 @@ static void eir_policy_completes_attach(abts_case *tc, void *data)
 
             if (scenario == MISSING_PEI) {
                 ABTS_TRUE(tc, !f->ue.imeisv_bcd[0]);
+                if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                    ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
                 mme_s13_start_check(&f->enb, &f->ue);
+                ogs_log_set_domain_level(__emm_log_domain, level);
             } else {
                 ogs_nas_emm_cause_t cause;
 
@@ -661,7 +677,11 @@ static void eir_policy_completes_attach(abts_case *tc, void *data)
                         scenario == BLACKLIST ?
                         OGS_DIAM_S13_EQUIPMENT_BLACKLIST : 3;
                 }
+                if (scenario == MALFORMED &&
+                        level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                    ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
                 cause = mme_s13_handle_eca(&f->ue, &answer);
+                ogs_log_set_domain_level(__emm_log_domain, level);
                 ABTS_INT_EQUAL(tc, expected, cause);
                 mme_s13_complete_check(&f->enb, &f->ue, cause);
             }
@@ -693,6 +713,7 @@ static void eir_policy_completes_attach(abts_case *tc, void *data)
  * Complete/S1 holding expiry and their UE removal/FSM fini are not simulated. */
 static void delete_timeout_cancels_attach(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
     int pdns, connected, update_location, i;
 
     for (pdns = 1; pdns <= 2; pdns++) {
@@ -714,7 +735,10 @@ static void delete_timeout_cancels_attach(abts_case *tc, void *data)
                 xact.delete_action = update_location ?
                     OGS_GTP_DELETE_SEND_UPDATE_LOCATION_REQUEST :
                     OGS_GTP_DELETE_SEND_DETACH_ACCEPT;
+                if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                    ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
                 attach_gtp_timeout(&xact, OGS_UINT_TO_POINTER(f->sess[0].id));
+                ogs_log_set_domain_level(__emm_log_domain, level);
 
                 ABTS_INT_EQUAL(tc, 0, f->sgw.sgw_s11_teid);
                 ABTS_INT_EQUAL(tc, connected, f->releases);
@@ -753,7 +777,10 @@ static void delete_timeout_cancels_attach(abts_case *tc, void *data)
                 emm_state_authentication : emm_state_initial_context_setup);
         xact.seq[0].type = OGS_GTP2_DELETE_SESSION_REQUEST_TYPE;
         xact.delete_action = OGS_GTP_DELETE_SEND_UPDATE_LOCATION_REQUEST;
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
         attach_gtp_timeout(&xact, OGS_UINT_TO_POINTER(f->sess[0].id));
+        ogs_log_set_domain_level(__emm_log_domain, level);
         ABTS_TRUE(tc, !f->ue.attach_session_delete_pending);
         ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, (update_location ?
                     emm_state_authentication : emm_state_initial_context_setup)));
@@ -767,12 +794,7 @@ abts_suite *test_mme_attach(abts_suite *suite)
 {
     int i;
     mme_context_t *saved = ogs_memdup(mme_self(), sizeof(*saved));
-    ogs_log_level_e saved_log;
     suite = ADD_SUITE(suite)
-    if (!ogs_log_find_domain("emm"))
-        ogs_log_install_domain(&__emm_log_domain, "emm", OGS_LOG_ERROR);
-    saved_log = ogs_log_get_domain_level(__emm_log_domain);
-    ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_NONE);
     mme_self()->num_of_integrity_order = 1;
     mme_self()->integrity_order[0] = OGS_NAS_SECURITY_ALGORITHMS_128_EIA2;
     mme_self()->num_of_ciphering_order = 1;
@@ -795,6 +817,5 @@ abts_suite *test_mme_attach(abts_suite *suite)
     abts_run_test(suite, delete_timeout_cancels_attach, NULL);
     *mme_self() = *saved;
     ogs_free(saved);
-    ogs_log_set_domain_level(__emm_log_domain, saved_log);
     return suite;
 }

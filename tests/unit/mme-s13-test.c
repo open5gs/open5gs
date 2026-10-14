@@ -87,6 +87,7 @@ static void s13_test_check_wanted(abts_case *tc, void *data)
 static void s13_test_equipment_status(abts_case *tc, void *data)
 {
     mme_eir_t cfg;
+    ogs_log_level_e level = ogs_log_get_domain_level(__mme_log_domain);
     memset(&cfg, 0, sizeof(cfg));
 
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
@@ -101,11 +102,14 @@ static void s13_test_equipment_status(abts_case *tc, void *data)
 
     /* Unrecognized status is not a verdict: failure_action decides */
     cfg.failure_action = OGS_EIR_ACTION_ALLOW;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__mme_log_domain, OGS_LOG_FATAL);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_equipment_status_cause(3, &cfg));
     cfg.failure_action = OGS_EIR_ACTION_REJECT;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
             mme_s13_equipment_status_cause(0xffffffff, &cfg));
+    ogs_log_set_domain_level(__mme_log_domain, level);
 }
 
 /* Result-Code / Experimental-Result -> cause, through the three policies */
@@ -113,6 +117,7 @@ static void s13_test_diameter_result_mapping(abts_case *tc, void *data)
 {
     ogs_diam_s13_message_t m;
     mme_eir_t cfg;
+    ogs_log_level_e level = ogs_log_get_domain_level(__mme_log_domain);
     memset(&cfg, 0, sizeof(cfg));
 
     /* 2001: the verdict is in Equipment-Status */
@@ -172,11 +177,14 @@ static void s13_test_diameter_result_mapping(abts_case *tc, void *data)
 
     /* Missing IMEISV: missing_pei_action, #7 when rejecting */
     cfg.missing_pei_action = OGS_EIR_ACTION_ALLOW;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__mme_log_domain, OGS_LOG_FATAL);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_missing_pei_cause(&cfg));
     cfg.missing_pei_action = OGS_EIR_ACTION_REJECT;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED,
             mme_s13_missing_pei_cause(&cfg));
+    ogs_log_set_domain_level(__mme_log_domain, level);
 }
 
 /* Full handler, on mme_self()->eir: Result-Code gate first, then the list */
@@ -284,6 +292,7 @@ static void s13_test_imeisv_is_usable(abts_case *tc, void *data)
 static void s13_test_pei_from_terminal_info(abts_case *tc, void *data)
 {
     char pei[OGS_DIAM_S13_MAX_PEI_LEN+1];
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_diam_domain);
 
     /* IMEI + SVN: the IMEISV form the AMF also sends over N5g-eir */
     ABTS_INT_EQUAL(tc, OGS_OK, ogs_diam_s13_pei_from_terminal_info(
@@ -299,6 +308,8 @@ static void s13_test_pei_from_terminal_info(abts_case *tc, void *data)
     ABTS_STR_EQUAL(tc, "imei-866507040040534", pei);
 
     /* Unusable input */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_diam_domain, OGS_LOG_FATAL);
     ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_diam_s13_pei_from_terminal_info(
             "4901542032375", 13, "86", 2, pei, sizeof(pei)));
     ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_diam_s13_pei_from_terminal_info(
@@ -313,40 +324,20 @@ static void s13_test_pei_from_terminal_info(abts_case *tc, void *data)
             NULL, 0, NULL, 0, pei, sizeof(pei)));
     ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_diam_s13_pei_from_terminal_info(
             "49015420323751", 14, "86", 2, pei, 10));
+    ogs_log_set_domain_level(__ogs_diam_domain, level);
     ABTS_STR_EQUAL(tc, "", pei);
 }
 
-/* The decision tests need log domains and EIR policy, but no MME pools. */
+/* The decision tests need EIR policy, but no MME pools. */
 static mme_eir_t saved_eir;
-
-static struct {
-    ogs_log_level_e mme, diam;
-} saved_log;
 
 static void s13_context_setup(void)
 {
     saved_eir = mme_self()->eir;
-
-    if (!ogs_log_find_domain("mme"))
-        ogs_log_install_domain(
-                &__mme_log_domain, "mme", ogs_core()->log.level);
-    if (!ogs_log_find_domain("diam"))
-        ogs_log_install_domain(
-                &__ogs_diam_domain, "diam", ogs_core()->log.level);
-
-    /* Every case below deliberately drives the warn/error paths of
-     * mme-s13-handler.c and lib/diameter/s13: silence both domains for
-     * the suite, as the other unit suites do, and restore them after. */
-    saved_log.mme = ogs_log_get_domain_level(__mme_log_domain);
-    saved_log.diam = ogs_log_get_domain_level(__ogs_diam_domain);
-    ogs_log_set_domain_level(__mme_log_domain, OGS_LOG_NONE);
-    ogs_log_set_domain_level(__ogs_diam_domain, OGS_LOG_NONE);
 }
 
 static void s13_context_teardown(void)
 {
-    ogs_log_set_domain_level(__mme_log_domain, saved_log.mme);
-    ogs_log_set_domain_level(__ogs_diam_domain, saved_log.diam);
     mme_self()->eir = saved_eir;
 }
 
@@ -359,6 +350,7 @@ static void s13_test_eca_is_current(abts_case *tc, void *data)
 {
     mme_ue_t *mme_ue;
     enb_ue_t enb_ue;
+    ogs_log_level_e level = ogs_log_get_domain_level(__mme_log_domain);
 
     mme_ue = ogs_calloc(1, sizeof(*mme_ue));
     ABTS_PTR_NOTNULL(tc, mme_ue);
@@ -377,6 +369,8 @@ static void s13_test_eca_is_current(abts_case *tc, void *data)
     ABTS_TRUE(tc, mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
 
     /* Answer to an earlier ECR, replaced by a new attach */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__mme_log_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 6));
     ABTS_TRUE(tc, mme_ue->eir_check_pending);
 
@@ -404,11 +398,14 @@ static void s13_test_eca_is_current(abts_case *tc, void *data)
     /* Clearing pending invalidates the answer even if other fields match */
     mme_ue->eir_check_pending = false;
     ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
+    ogs_log_set_domain_level(__mme_log_domain, level);
     mme_ue->eir_check_pending = true;
     ABTS_TRUE(tc, mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
 
     /* The attach left emm_state_initial_context_setup */
     OGS_FSM_STATE(&mme_ue->sm) = (ogs_fsm_handler_t)emm_state_exception;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__mme_log_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
     OGS_FSM_STATE(&mme_ue->sm) =
         (ogs_fsm_handler_t)emm_state_initial_context_setup;
@@ -416,6 +413,7 @@ static void s13_test_eca_is_current(abts_case *tc, void *data)
     /* No check pending: already answered, or the procedure was cancelled */
     mme_ue->eir_check_pending = false;
     ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
+    ogs_log_set_domain_level(__mme_log_domain, level);
 
     ogs_free(mme_ue);
 }

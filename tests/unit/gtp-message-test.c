@@ -342,6 +342,8 @@ static void gtp1_mm_context_test(abts_case *tc, void *data)
     uint8_t ie[1024];
     uint8_t buf[512];
     unsigned int i, n;
+    int id = ogs_log_get_domain_id("gtp");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
 
     /* MS Network Capability longer than the decoded buffer is rejected. */
     n = mm_context_head(ie);
@@ -354,6 +356,9 @@ static void gtp1_mm_context_test(abts_case *tc, void *data)
     ie[n++] = 0x00; /* Length of Access Restriction Data */
     octet.data = ie;
     octet.len = n;
+    /* Keep expected errors quiet unless debug/trace logging is requested. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_gtp1_parse_mm_context(&dec, &octet));
 
     /* IMEISV longer than the decoded buffer is rejected. */
@@ -373,6 +378,7 @@ static void gtp1_mm_context_test(abts_case *tc, void *data)
     octet.data = ie;
     octet.len = n;
     ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_gtp1_parse_mm_context(&dec, &octet));
+    ogs_log_set_domain_level(id, level);
 
     /* The largest MS Network Capability and IMEISV a peer may send survive
      * a parse/build round trip unchanged. */

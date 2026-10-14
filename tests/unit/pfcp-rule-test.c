@@ -28,6 +28,7 @@ static void set_pdr_teid(ogs_pfcp_pdr_t *pdr, uint32_t teid)
 
 static void test_clear_since_mark(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
     ogs_pfcp_sess_t sess;
     ogs_pfcp_sess_mark_t mark;
     ogs_pfcp_pdr_t *pdr = NULL;
@@ -53,7 +54,11 @@ static void test_clear_since_mark(abts_case *tc, void *data)
     ogs_pfcp_qer_add(&sess);
     ogs_pfcp_bar_new(&sess);
 
+    /* Rolling back newly created rules emits expected diagnostics. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ogs_pfcp_sess_clear_since_mark(&sess, &mark);
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
 
     ABTS_INT_EQUAL(tc, 1, ogs_list_count(&sess.pdr_list));
     ABTS_INT_EQUAL(tc, 1, ogs_list_count(&sess.far_list));
@@ -72,6 +77,7 @@ static void test_clear_since_mark(abts_case *tc, void *data)
 /* A rejected request must not leave an End Marker for the next request. */
 static void test_clear_since_mark_far_flags(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
     ogs_pfcp_sess_t sess;
     ogs_pfcp_sess_mark_t mark;
     ogs_pfcp_pdr_t *pdr = NULL;
@@ -108,12 +114,19 @@ static void test_clear_since_mark_far_flags(abts_case *tc, void *data)
 
     /* A later Update FAR fails before the normal End Marker/clear pass. */
     update_far.far_id.u32 = 0x100;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_PTR_EQUAL(tc, NULL, ogs_pfcp_handle_update_far_flags(
                 &sess, &update_far, &cause, &offending_ie));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT, cause);
     ABTS_INT_EQUAL(tc, OGS_PFCP_FAR_ID_TYPE, offending_ie);
 
+    /* Rolling back newly created rules emits expected diagnostics. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ogs_pfcp_sess_clear_since_mark(&sess, &mark);
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
 
     ABTS_INT_EQUAL(tc, 1, ogs_list_count(&sess.pdr_list));
     ABTS_INT_EQUAL(tc, 1, ogs_list_count(&sess.far_list));
@@ -130,6 +143,7 @@ static void test_clear_since_mark_far_flags(abts_case *tc, void *data)
 
 static void test_clear_failed_create(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
     ogs_pfcp_sess_t sess;
     ogs_pfcp_sess_mark_t mark;
     ogs_pfcp_tlv_create_far_t create_far;
@@ -145,12 +159,19 @@ static void test_clear_failed_create(abts_case *tc, void *data)
     create_far.far_id.presence = 1;
     create_far.far_id.u32 = 0x100;
 
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_PTR_EQUAL(tc, NULL,
             ogs_pfcp_handle_create_far(
                 &sess, &create_far, &cause, &offending_ie));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_PTR_NOTNULL(tc, ogs_pfcp_far_find(&sess, create_far.far_id.u32));
 
+    /* Rolling back newly created rules emits expected diagnostics. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ogs_pfcp_sess_clear_since_mark(&sess, &mark);
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_PTR_EQUAL(tc, NULL,
             ogs_pfcp_far_find(&sess, create_far.far_id.u32));
 
@@ -160,6 +181,7 @@ static void test_clear_failed_create(abts_case *tc, void *data)
 
 static void test_validate_create_rules(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
     ogs_pfcp_sess_t sess;
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -183,8 +205,11 @@ static void test_validate_create_rules(abts_case *tc, void *data)
     req.create_pdr[0].presence = 1;
     req.create_pdr[0].pdr_id.presence = 1;
     req.create_pdr[0].pdr_id.u16 = pdr->id;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_RULE_TYPE_PDR, rule_type);
     ABTS_INT_EQUAL(tc, pdr->id, rule_id);
 
@@ -192,8 +217,11 @@ static void test_validate_create_rules(abts_case *tc, void *data)
     ABTS_TRUE(tc, ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
     req.create_pdr[1] = req.create_pdr[0];
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_RULE_TYPE_PDR, rule_type);
     ABTS_INT_EQUAL(tc, 0x1234, rule_id);
 
@@ -201,8 +229,11 @@ static void test_validate_create_rules(abts_case *tc, void *data)
     req.create_far[0].presence = 1;
     req.create_far[0].far_id.presence = 1;
     req.create_far[0].far_id.u32 = far->id;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_RULE_TYPE_FAR, rule_type);
     ABTS_INT_EQUAL(tc, far->id, rule_id);
 
@@ -210,8 +241,11 @@ static void test_validate_create_rules(abts_case *tc, void *data)
     ABTS_TRUE(tc, ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
     req.create_far[1] = req.create_far[0];
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_RULE_TYPE_FAR, rule_type);
     ABTS_INT_EQUAL(tc, 0x12345678, rule_id);
 
@@ -219,8 +253,11 @@ static void test_validate_create_rules(abts_case *tc, void *data)
     req.create_urr[0].presence = 1;
     req.create_urr[0].urr_id.presence = 1;
     req.create_urr[0].urr_id.u32 = urr->id;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_RULE_TYPE_URR, rule_type);
     ABTS_INT_EQUAL(tc, urr->id, rule_id);
 
@@ -228,8 +265,11 @@ static void test_validate_create_rules(abts_case *tc, void *data)
     ABTS_TRUE(tc, ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
     req.create_urr[1] = req.create_urr[0];
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_RULE_TYPE_URR, rule_type);
     ABTS_INT_EQUAL(tc, 0x12345678, rule_id);
 
@@ -237,8 +277,11 @@ static void test_validate_create_rules(abts_case *tc, void *data)
     req.create_qer[0].presence = 1;
     req.create_qer[0].qer_id.presence = 1;
     req.create_qer[0].qer_id.u32 = qer->id;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_RULE_TYPE_QER, rule_type);
     ABTS_INT_EQUAL(tc, qer->id, rule_id);
 
@@ -246,8 +289,11 @@ static void test_validate_create_rules(abts_case *tc, void *data)
     ABTS_TRUE(tc, ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
     req.create_qer[1] = req.create_qer[0];
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_validate_create_rules(
                 &sess, &req, &rule_type, &rule_id));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_RULE_TYPE_QER, rule_type);
     ABTS_INT_EQUAL(tc, 0x12345678, rule_id);
 
@@ -267,6 +313,7 @@ static void test_validate_create_rules(abts_case *tc, void *data)
 
 static void test_pdr_teid_owner(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
     ogs_pfcp_sess_t sess, other_sess;
     ogs_pfcp_pdr_t *first = NULL, *second = NULL, *other = NULL;
     uint32_t teid = 0x1234;
@@ -293,9 +340,12 @@ static void test_pdr_teid_owner(abts_case *tc, void *data)
     ABTS_TRUE(tc, !second->hash.teid.registered);
     ABTS_PTR_EQUAL(tc, first, ogs_pfcp_object_find_by_teid(teid));
 
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_INT_EQUAL(tc, OGS_PFCP_CAUSE_REQUEST_REJECTED,
             ogs_pfcp_object_teid_hash_set(
                 OGS_PFCP_OBJ_PDR_TYPE, other));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_TRUE(tc, !other->hash.teid.registered);
 
     ogs_pfcp_pdr_remove(first);
@@ -319,6 +369,7 @@ static void test_pdr_teid_owner(abts_case *tc, void *data)
 
 static void test_removed_pdr_owner(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
     ogs_pfcp_sess_t sess;
     ogs_pfcp_sess_mark_t mark;
     ogs_pfcp_pdr_t *pdr = NULL, *new_pdr = NULL;
@@ -350,7 +401,11 @@ static void test_removed_pdr_owner(abts_case *tc, void *data)
         ABTS_PTR_EQUAL(tc, expected,
                 ogs_pfcp_object_find_by_teid(teid + i));
 
+        /* Rolling back newly created rules emits expected diagnostics. */
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
         ogs_pfcp_sess_clear_since_mark(&sess, &mark);
+        ogs_log_set_domain_level(__ogs_pfcp_domain, level);
         ABTS_PTR_EQUAL(tc, NULL,
                 ogs_pfcp_object_find_by_teid(teid + i));
         ogs_pfcp_pool_final(&sess);
@@ -359,6 +414,7 @@ static void test_removed_pdr_owner(abts_case *tc, void *data)
 
 static void test_far_f_teid_owner(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
     ogs_pfcp_sess_t sess;
     ogs_pfcp_sess_mark_t mark;
     ogs_pfcp_far_t *first = NULL, *second = NULL;
@@ -391,7 +447,11 @@ static void test_far_f_teid_owner(abts_case *tc, void *data)
 
     /* Rejection must not erase the marked FAR's Error Indication entry. */
     second->gnode = NULL;
+    /* Rolling back newly created rules emits expected diagnostics. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ogs_pfcp_sess_clear_since_mark(&sess, &mark);
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_PTR_EQUAL(tc, first,
             ogs_hash_get(ogs_pfcp_self()->far_f_teid_hash, &key, len));
 
@@ -462,6 +522,7 @@ static void test_far_rekey_collision(abts_case *tc, void *data)
 
 static void test_remove_referenced_rules(abts_case *tc, void *data)
 {
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
     ogs_pfcp_sess_t sess;
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -486,8 +547,11 @@ static void test_remove_referenced_rules(abts_case *tc, void *data)
     memset(&remove_far, 0, sizeof(remove_far));
     remove_far.presence = remove_far.far_id.presence = 1;
     remove_far.far_id.u32 = far->id;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_handle_remove_far(
                 &sess, &remove_far, &cause, &offending_ie));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_CAUSE_REQUEST_REJECTED, cause);
     ABTS_INT_EQUAL(tc, 0, offending_ie);
 
@@ -495,8 +559,11 @@ static void test_remove_referenced_rules(abts_case *tc, void *data)
     memset(&remove_urr, 0, sizeof(remove_urr));
     remove_urr.presence = remove_urr.urr_id.presence = 1;
     remove_urr.urr_id.u32 = urr->id;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_handle_remove_urr(
                 &sess, &remove_urr, &cause, &offending_ie));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_CAUSE_REQUEST_REJECTED, cause);
     ABTS_INT_EQUAL(tc, 0, offending_ie);
 
@@ -504,8 +571,11 @@ static void test_remove_referenced_rules(abts_case *tc, void *data)
     memset(&remove_qer, 0, sizeof(remove_qer));
     remove_qer.presence = remove_qer.qer_id.presence = 1;
     remove_qer.qer_id.u32 = qer->id;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
     ABTS_TRUE(tc, !ogs_pfcp_handle_remove_qer(
                 &sess, &remove_qer, &cause, &offending_ie));
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
     ABTS_INT_EQUAL(tc, OGS_PFCP_CAUSE_REQUEST_REJECTED, cause);
     ABTS_INT_EQUAL(tc, 0, offending_ie);
 
@@ -524,19 +594,16 @@ static void test_remove_referenced_rules(abts_case *tc, void *data)
 
 abts_suite *test_pfcp_rule(abts_suite *suite)
 {
-    int id;
-    ogs_log_level_e level;
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
 
     ogs_app_context_init();
     ogs_app()->pool.nf = 8;
     ogs_app()->pool.sess = 8;
     ogs_pfcp_context_init();
+    /* Context initialization must preserve the configured test log level. */
+    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
 
     suite = ADD_SUITE(suite)
-
-    id = ogs_log_get_domain_id("pfcp");
-    level = ogs_log_get_domain_level(id);
-    ogs_log_set_domain_level(id, OGS_LOG_NONE);
 
     abts_run_test(suite, test_clear_since_mark, NULL);
     abts_run_test(suite, test_clear_since_mark_far_flags, NULL);
@@ -548,7 +615,6 @@ abts_suite *test_pfcp_rule(abts_suite *suite)
     abts_run_test(suite, test_far_rekey_collision, NULL);
     abts_run_test(suite, test_remove_referenced_rules, NULL);
 
-    ogs_log_set_domain_level(id, level);
     ogs_pfcp_context_final();
     ogs_app_context_final();
 

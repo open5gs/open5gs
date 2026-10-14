@@ -100,6 +100,7 @@ static void eir_test_unknown_and_failure(abts_case *tc, void *data)
     OpenAPI_problem_details_t problem;
     ogs_eir_action_e saved_unknown = amf_self()->eir.unknown_action;
     ogs_eir_action_e saved_failure = amf_self()->eir.failure_action;
+    ogs_log_level_e level = ogs_log_get_domain_level(__amf_log_domain);
 
     amf_ue = ogs_calloc(1, sizeof(*amf_ue));
     ABTS_PTR_NOTNULL(tc, amf_ue);
@@ -130,13 +131,20 @@ static void eir_test_unknown_and_failure(abts_case *tc, void *data)
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
 
     message.res_status = OGS_SBI_HTTP_STATUS_OK;
+    /* Missing response data deliberately produces an error. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__amf_log_domain, OGS_LOG_FATAL);
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
+    ogs_log_set_domain_level(__amf_log_domain, level);
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
             amf_n5geir_eic_failure_cause());
     amf_self()->eir.failure_action = OGS_EIR_ACTION_ALLOW;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__amf_log_domain, OGS_LOG_FATAL);
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_REQUEST_ACCEPTED,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
+    ogs_log_set_domain_level(__amf_log_domain, level);
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_REQUEST_ACCEPTED,
             amf_n5geir_eic_failure_cause());
 
@@ -147,20 +155,11 @@ static void eir_test_unknown_and_failure(abts_case *tc, void *data)
 
 abts_suite *test_amf_eir(abts_suite *suite)
 {
-    ogs_log_level_e saved_log_level;
-
     suite = ADD_SUITE(suite)
-
-    if (!ogs_log_find_domain("amf"))
-        ogs_log_install_domain(
-                &__amf_log_domain, "amf", ogs_core()->log.level);
-    saved_log_level = ogs_log_get_domain_level(__amf_log_domain);
-    ogs_log_set_domain_level(__amf_log_domain, OGS_LOG_NONE);
 
     abts_run_test(suite, eir_test_check_wanted, NULL);
     abts_run_test(suite, eir_test_equipment_status, NULL);
     abts_run_test(suite, eir_test_unknown_and_failure, NULL);
 
-    ogs_log_set_domain_level(__amf_log_domain, saved_log_level);
     return suite;
 }

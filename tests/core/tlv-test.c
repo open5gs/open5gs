@@ -947,6 +947,10 @@ static void test7_func(abts_case *tc, void *data)
     uint32_t size;
     ogs_tlv_t tlv;
     uint8_t *blk = NULL;
+    int id = ogs_log_get_domain_id("tlv");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
+    int core_id = ogs_log_get_domain_id("core");
+    ogs_log_level_e core_level = ogs_log_get_domain_level(core_id);
 
     for (i = 0; i < OGS_ARRAY_SIZE(tlv_bounds_mode); i++) {
         uint8_t mode = tlv_bounds_mode[i].mode;
@@ -966,8 +970,14 @@ static void test7_func(abts_case *tc, void *data)
             memset(&tlv, 0, sizeof(tlv));
             ABTS_PTR_EQUAL(tc, NULL,
                     tlv_get_element(&tlv, blk, size, mode));
+            if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                ogs_log_set_domain_level(id, OGS_LOG_FATAL);
+            if (core_level >= OGS_LOG_ERROR && core_level < OGS_LOG_DEBUG)
+                ogs_log_set_domain_level(core_id, OGS_LOG_FATAL);
             ABTS_PTR_EQUAL(tc, NULL,
                     ogs_tlv_parse_block(size, blk, mode));
+            ogs_log_set_domain_level(id, level);
+            ogs_log_set_domain_level(core_id, core_level);
 
             free(blk);
         }
@@ -1015,6 +1025,10 @@ static void test8_func(abts_case *tc, void *data)
     ogs_tlv_t *root = NULL;
     uint8_t *blk = NULL;
     uint32_t size;
+    int id = ogs_log_get_domain_id("tlv");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
+    int core_id = ogs_log_get_domain_id("core");
+    ogs_log_level_e core_level = ogs_log_get_domain_level(core_id);
 
     for (i = 0; i < OGS_ARRAY_SIZE(tlv_bounds_mode); i++) {
         uint8_t mode = tlv_bounds_mode[i].mode;
@@ -1049,7 +1063,13 @@ static void test8_func(abts_case *tc, void *data)
         memset(blk, 0, size);
         tlv_bounds_put_header(blk, mode, 1, 2);
 
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(id, OGS_LOG_FATAL);
+        if (core_level >= OGS_LOG_ERROR && core_level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(core_id, OGS_LOG_FATAL);
         ABTS_PTR_EQUAL(tc, NULL, ogs_tlv_parse_block(size, blk, mode));
+        ogs_log_set_domain_level(id, level);
+        ogs_log_set_domain_level(core_id, core_level);
         free(blk);
 
         /* Declared value length larger than the remaining block. */
@@ -1062,7 +1082,13 @@ static void test8_func(abts_case *tc, void *data)
         memset(&tlv, 0, sizeof(tlv));
         ABTS_PTR_EQUAL(tc, NULL,
                 tlv_get_element(&tlv, blk, size, mode));
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(id, OGS_LOG_FATAL);
+        if (core_level >= OGS_LOG_ERROR && core_level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(core_id, OGS_LOG_FATAL);
         ABTS_PTR_EQUAL(tc, NULL, ogs_tlv_parse_block(size, blk, mode));
+        ogs_log_set_domain_level(id, level);
+        ogs_log_set_domain_level(core_id, core_level);
         free(blk);
     }
 
@@ -1083,6 +1109,8 @@ static void test9_func(abts_case *tc, void *data)
     ogs_pkbuf_t *req = NULL;
     ogs_pkbuf_t *built = NULL;
     int rv;
+    int id = ogs_log_get_domain_id("core");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
 
     memset(&reqv, 0, sizeof(tlv_attach_req));
 
@@ -1119,8 +1147,11 @@ static void test9_func(abts_case *tc, void *data)
     ogs_pkbuf_free(built);
 
     memset(&reqv2, 0, sizeof(tlv_attach_req));
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     rv = ogs_tlv_parse_msg_desc(&reqv2, &tlv_desc_attach_req, req,
             OGS_TLV_MODE_T1_L2_I1);
+    ogs_log_set_domain_level(id, level);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     ogs_pkbuf_free(req);
 
@@ -1130,8 +1161,11 @@ static void test9_func(abts_case *tc, void *data)
     ogs_pkbuf_trim(req, req->len - 1);
 
     memset(&reqv2, 0, sizeof(tlv_attach_req));
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     rv = ogs_tlv_parse_msg_desc(&reqv2, &tlv_desc_attach_req, req,
             OGS_TLV_MODE_T1_L2_I1);
+    ogs_log_set_domain_level(id, level);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     ogs_pkbuf_free(req);
 
@@ -1146,8 +1180,11 @@ static void test9_func(abts_case *tc, void *data)
     ogs_pkbuf_put_u8(req, 0);
 
     memset(&reqv2, 0, sizeof(tlv_attach_req));
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
     rv = ogs_tlv_parse_msg_desc(&reqv2, &tlv_desc_attach_req, req,
             OGS_TLV_MODE_T2_L2);
+    ogs_log_set_domain_level(id, level);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     ogs_pkbuf_free(req);
 
@@ -1156,11 +1193,6 @@ static void test9_func(abts_case *tc, void *data)
 
 abts_suite *test_tlv(abts_suite *suite)
 {
-    int tlv_id = ogs_log_get_domain_id("tlv");
-    int core_id = ogs_log_get_domain_id("core");
-    ogs_log_level_e tlv_level = ogs_log_get_domain_level(tlv_id);
-    ogs_log_level_e core_level = ogs_log_get_domain_level(core_id);
-
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, (void*)OGS_TLV_MODE_T2_L2);
@@ -1184,21 +1216,9 @@ abts_suite *test_tlv(abts_suite *suite)
     abts_run_test(suite, test6_func, NULL);
     abts_run_test(suite, test_uint32_func, NULL);
 
-    /*
-     * The cases below feed truncated and over-long blocks to the parser
-     * to prove that it rejects them without reading past the end.  Only
-     * the return value matters, so the diagnostic each rejection prints
-     * is not wanted -- silence the two domains while they run.
-     */
-    ogs_log_set_domain_level(tlv_id, OGS_LOG_FATAL);
-    ogs_log_set_domain_level(core_id, OGS_LOG_FATAL);
-
     abts_run_test(suite, test7_func, NULL);
     abts_run_test(suite, test8_func, NULL);
     abts_run_test(suite, test9_func, NULL);
-
-    ogs_log_set_domain_level(tlv_id, tlv_level);
-    ogs_log_set_domain_level(core_id, core_level);
 
     return suite;
 }
