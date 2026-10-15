@@ -1319,6 +1319,9 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_init(&gnb->ran_ue_list);
 
+    gnb->ran_ue_ngap_id_hash = ogs_hash_make();
+    ogs_assert(gnb->ran_ue_ngap_id_hash);
+
     ogs_hash_set(self.gnb_addr_hash,
             gnb->sctp.addr, sizeof(ogs_sockaddr_t), gnb);
 
@@ -1362,6 +1365,11 @@ void amf_gnb_remove(amf_gnb_t *gnb)
                 &gnb->gnb_id, sizeof(gnb->gnb_id), gnb);
 
     ogs_sctp_flush_and_destroy(&gnb->sctp);
+
+    if (gnb->ran_ue_ngap_id_hash) {
+        ogs_hash_destroy(gnb->ran_ue_ngap_id_hash);
+        gnb->ran_ue_ngap_id_hash = NULL;
+    }
 
     ogs_pool_id_free(&amf_gnb_pool, gnb);
     amf_metrics_inst_global_dec(AMF_METR_GLOB_GAUGE_GNB);
@@ -1495,6 +1503,10 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint64_t ran_ue_ngap_id)
 
     ogs_list_add(&gnb->ran_ue_list, ran_ue);
 
+    if (gnb->ran_ue_ngap_id_hash)
+        ogs_hash_set(gnb->ran_ue_ngap_id_hash,
+                &ran_ue->ran_ue_ngap_id, sizeof(ran_ue->ran_ue_ngap_id), ran_ue);
+
     stats_add_ran_ue();
 
     return ran_ue;
@@ -1508,7 +1520,14 @@ void ran_ue_remove(ran_ue_t *ran_ue)
 
     gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
 
-    if (gnb) ogs_list_remove(&gnb->ran_ue_list, ran_ue);
+    if (gnb) {
+        ogs_list_remove(&gnb->ran_ue_list, ran_ue);
+
+        if (gnb->ran_ue_ngap_id_hash)
+            ogs_hash_unset_if_owner(gnb->ran_ue_ngap_id_hash,
+                    &ran_ue->ran_ue_ngap_id,
+                    sizeof(ran_ue->ran_ue_ngap_id), ran_ue);
+    }
 
     ogs_assert(ran_ue->t_ng_holding);
     ogs_timer_delete(ran_ue->t_ng_holding);
@@ -1530,9 +1549,15 @@ void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb)
 
     /* Remove from the old gnb */
     ogs_list_remove(&gnb->ran_ue_list, ran_ue);
+    if (gnb->ran_ue_ngap_id_hash)
+        ogs_hash_unset_if_owner(gnb->ran_ue_ngap_id_hash,
+                &ran_ue->ran_ue_ngap_id, sizeof(ran_ue->ran_ue_ngap_id), ran_ue);
 
     /* Add to the new gnb */
     ogs_list_add(&new_gnb->ran_ue_list, ran_ue);
+    if (new_gnb->ran_ue_ngap_id_hash)
+        ogs_hash_set(new_gnb->ran_ue_ngap_id_hash,
+                &ran_ue->ran_ue_ngap_id, sizeof(ran_ue->ran_ue_ngap_id), ran_ue);
 
     /* Switch to gnb */
     ran_ue->gnb_id = new_gnb->id;
@@ -1589,6 +1614,17 @@ ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
         amf_gnb_t *gnb, uint64_t ran_ue_ngap_id)
 {
     ran_ue_t *ran_ue = NULL;
+
+    /*
+     * O(1) lookup in the per-gNB RAN-UE-NGAP-ID hash (created in
+     * amf_gnb_add()); the list scan below is a fallback for gNB contexts
+     * without the index.
+     */
+    if (gnb->ran_ue_ngap_id_hash) {
+        ran_ue = ogs_hash_get(gnb->ran_ue_ngap_id_hash,
+                &ran_ue_ngap_id, sizeof(ran_ue_ngap_id));
+        return ran_ue;
+    }
 
     ogs_list_for_each(&gnb->ran_ue_list, ran_ue) {
         if (ran_ue_ngap_id == ran_ue->ran_ue_ngap_id)
