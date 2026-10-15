@@ -443,7 +443,9 @@ static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
     smf_sess_t *sess = NULL;
     smf_bearer_t *bearer = NULL;
     ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
+    smf_event_t *e = NULL;
     uint8_t type;
+    int rv;
 
     ogs_assert(xact);
     type = xact->seq[0].type;
@@ -461,6 +463,18 @@ static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
     switch (type) {
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
         ogs_warn("No PFCP session establishment response");
+        e = smf_event_new(SMF_EVT_N4_TIMER);
+        ogs_assert(e);
+        e->sess_id = sess->id;
+        e->h.timer_id = SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE;
+        e->pfcp_node = sess->pfcp_node;
+        e->gtp_xact_id = xact->assoc_xact_id;
+
+        rv = ogs_queue_push(ogs_app()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            ogs_event_free(e);
+        }
         break;
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
         if (xact->modify_flags & OGS_PFCP_MODIFY_ERROR_INDICATION) {
