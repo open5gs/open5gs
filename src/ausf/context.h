@@ -79,6 +79,24 @@ struct ausf_ue_s {
     uint8_t hxres_star[OGS_MAX_RES_LEN];
     uint8_t kausf[OGS_SHA256_DIGEST_SIZE];
     uint8_t kseaf[OGS_SHA256_DIGEST_SIZE];
+
+    /* EAP-AKA' (RFC 5448) authentication state */
+    uint8_t ck_prime[OGS_KEY_LEN];
+    uint8_t ik_prime[OGS_KEY_LEN];
+    uint8_t k_aut[OGS_EAP_AKA_PRIME_K_AUT_LEN];
+    uint8_t xres[OGS_MAX_RES_LEN];
+    size_t xres_len;
+    uint8_t eap_id; /* EAP Identifier of the last Request we sent */
+
+    /*
+     * Set while an EAP-AKA' Synchronization-Failure is being resolved:
+     * the AUSF fetches a fresh AV from the UDM (using eap_auts) and then
+     * answers the held eap-session request with a new EAP-Challenge
+     * (authResult ONGOING) instead of a UeAuthenticationCtx.
+     */
+    bool eap_resync;
+    uint8_t eap_auts[OGS_AUTS_LEN];
+    int eap_sync_count; /* consecutive AKA'-Synchronization-Failures */
 };
 
 void ausf_context_init(void);

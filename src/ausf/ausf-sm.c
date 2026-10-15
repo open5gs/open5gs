@@ -140,12 +140,17 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 if (message.AuthenticationInfo &&
                     message.AuthenticationInfo->supi_or_suci &&
                     strlen(message.AuthenticationInfo->supi_or_suci)) {
+                    /* Initial ue-authentications request */
                     ausf_ue = ausf_ue_find_by_suci_or_supi(
                             message.AuthenticationInfo->supi_or_suci);
                     if (!ausf_ue) {
                         ausf_ue = ausf_ue_add(
                                 message.AuthenticationInfo->supi_or_suci);
                     }
+                } else if (message.h.resource.component[1]) {
+                    /* EAP-AKA' eap-session sub-resource (TS 29.509) */
+                    ausf_ue = ausf_ue_find_by_ctx_id(
+                            message.h.resource.component[1]);
                 }
                 break;
             CASE(OGS_SBI_HTTP_METHOD_DELETE)

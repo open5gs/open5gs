@@ -26,6 +26,8 @@ libausf_sources = files('''
     nudm-handler.c
     ue-sm.c
 
+    eap-aka-prime.c
+
     sbi-path.c
     ausf-sm.c
 

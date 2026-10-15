@@ -24,10 +24,8 @@ int amf_nausf_auth_handle_authenticate(
         amf_ue_t *amf_ue, ogs_sbi_message_t *message)
 {
     int r;
-    uint8_t rand[OGS_RAND_LEN];
-    uint8_t hxres_star[OGS_MAX_RES_LEN];
-    uint8_t autn[OGS_AUTN_LEN];
     OpenAPI_ue_authentication_ctx_t *UeAuthenticationCtx = NULL;
+    OpenAPI_ue_authentication_ctx_5g_auth_data_t *AuthData = NULL;
     OpenAPI_av5g_aka_t *AV5G_AKA = NULL;
     OpenAPI_links_value_schema_t *LinksValueSchemeValue = NULL;
     OpenAPI_map_t *LinksValueScheme = NULL;
@@ -54,52 +52,14 @@ int amf_nausf_auth_handle_authenticate(
         return OGS_ERROR;
     }
 
-    if (UeAuthenticationCtx->auth_type != OpenAPI_auth_type_5G_AKA) {
+    if (UeAuthenticationCtx->auth_type != OpenAPI_auth_type_5G_AKA &&
+        UeAuthenticationCtx->auth_type != OpenAPI_auth_type_EAP_AKA_PRIME) {
         ogs_error("[%s] Not supported Auth Method [%d]",
             amf_ue->suci, UeAuthenticationCtx->auth_type);
         return OGS_ERROR;
     }
 
-    if (UeAuthenticationCtx->_5g_auth_data)
-        AV5G_AKA = UeAuthenticationCtx->_5g_auth_data->av5g_aka;
-    if (!AV5G_AKA) {
-        ogs_error("[%s] No Av5gAka", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
-    if (!AV5G_AKA->rand) {
-        ogs_error("[%s] No Av5gAka.rand", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
-    if (!AV5G_AKA->hxres_star) {
-        ogs_error("[%s] No Av5gAka.hxresStar", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
-    if (!AV5G_AKA->autn) {
-        ogs_error("[%s] No Av5gAka.autn", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
-    if (ogs_hex_from_string_checked(
-                AV5G_AKA->rand, rand, sizeof(rand)) != OGS_OK) {
-        ogs_error("[%s] Invalid Av5gAka.rand", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
-    if (ogs_hex_from_string_checked(
-                AV5G_AKA->hxres_star,
-                hxres_star, sizeof(hxres_star)) != OGS_OK) {
-        ogs_error("[%s] Invalid Av5gAka.hxresStar", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
-    if (ogs_hex_from_string_checked(
-                AV5G_AKA->autn, autn, sizeof(autn)) != OGS_OK) {
-        ogs_error("[%s] Invalid Av5gAka.autn", amf_ue->suci);
-        return OGS_ERROR;
-    }
+    amf_ue->auth_type = UeAuthenticationCtx->auth_type;
 
     if (!UeAuthenticationCtx->_links) {
         ogs_error("[%s] No _links", amf_ue->suci);
@@ -110,20 +70,17 @@ int amf_nausf_auth_handle_authenticate(
         LinksValueScheme = node->data;
         if (LinksValueScheme) {
             if (strcmp(LinksValueScheme->key,
-                        OGS_SBI_RESOURCE_NAME_5G_AKA) == 0) {
+                        OGS_SBI_RESOURCE_NAME_5G_AKA) == 0 ||
+                strcmp(LinksValueScheme->key,
+                        OGS_SBI_RESOURCE_NAME_EAP_SESSION) == 0) {
                 LinksValueSchemeValue = LinksValueScheme->value;
                 break;
             }
         }
     }
 
-    if (!LinksValueSchemeValue) {
-        ogs_error("[%s] No _links.5g-aka", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
-    if (!LinksValueSchemeValue->href) {
-        ogs_error("[%s] No _links.5g-aka.href", amf_ue->suci);
+    if (!LinksValueSchemeValue || !LinksValueSchemeValue->href) {
+        ogs_error("[%s] No confirmation _links.href", amf_ue->suci);
         return OGS_ERROR;
     }
 
@@ -158,9 +115,58 @@ int amf_nausf_auth_handle_authenticate(
 
     STORE_5G_AKA_CONFIRMATION(amf_ue, LinksValueSchemeValue->href);
 
-    memcpy(amf_ue->rand, rand, sizeof(amf_ue->rand));
-    memcpy(amf_ue->hxres_star, hxres_star, sizeof(amf_ue->hxres_star));
-    memcpy(amf_ue->autn, autn, sizeof(amf_ue->autn));
+    AuthData = UeAuthenticationCtx->_5g_auth_data;
+    if (!AuthData) {
+        ogs_error("[%s] No 5gAuthData", amf_ue->suci);
+        return OGS_ERROR;
+    }
+
+    if (UeAuthenticationCtx->auth_type == OpenAPI_auth_type_EAP_AKA_PRIME) {
+        int decoded;
+
+        if (!AuthData->eap_payload) {
+            ogs_error("[%s] No 5gAuthData.eapPayload", amf_ue->suci);
+            return OGS_ERROR;
+        }
+
+        decoded = ogs_base64_decode_to_buffer(
+                amf_ue->eap, sizeof(amf_ue->eap),
+                AuthData->eap_payload);
+        if (decoded <= 0) {
+            ogs_error("[%s] EAP payload decode failed", amf_ue->suci);
+            return OGS_ERROR;
+        }
+        amf_ue->eap_len = decoded;
+        /* Remember the Identifier of the EAP-Request we relay to the UE */
+        if (decoded >= 2)
+            amf_ue->eap_id = amf_ue->eap[1];
+    } else {
+        AV5G_AKA = AuthData->av5g_aka;
+        if (!AV5G_AKA) {
+            ogs_error("[%s] No Av5gAka", amf_ue->suci);
+            return OGS_ERROR;
+        }
+        if (!AV5G_AKA->rand || !AV5G_AKA->hxres_star || !AV5G_AKA->autn) {
+            ogs_error("[%s] Incomplete Av5gAka", amf_ue->suci);
+            return OGS_ERROR;
+        }
+
+        if (ogs_hex_from_string_checked(AV5G_AKA->rand,
+                    amf_ue->rand, sizeof(amf_ue->rand)) != OGS_OK) {
+            ogs_error("[%s] Invalid Av5gAka.rand", amf_ue->suci);
+            return OGS_ERROR;
+        }
+        if (ogs_hex_from_string_checked(AV5G_AKA->hxres_star,
+                    amf_ue->hxres_star, sizeof(amf_ue->hxres_star)) != OGS_OK) {
+            ogs_error("[%s] Invalid Av5gAka.hxresStar", amf_ue->suci);
+            return OGS_ERROR;
+        }
+        if (ogs_hex_from_string_checked(AV5G_AKA->autn,
+                    amf_ue->autn, sizeof(amf_ue->autn)) != OGS_OK) {
+            ogs_error("[%s] Invalid Av5gAka.autn", amf_ue->suci);
+            return OGS_ERROR;
+        }
+    }
 
     /* Clear Security Context */
     CLEAR_SECURITY_CONTEXT(amf_ue);
@@ -182,12 +188,106 @@ int amf_nausf_auth_handle_authenticate(
 int amf_nausf_auth_handle_authenticate_confirmation(
         amf_ue_t *amf_ue, ogs_sbi_message_t *message)
 {
+    int r;
     uint8_t kseaf[OGS_SHA256_DIGEST_SIZE];
 
     OpenAPI_confirmation_data_response_t *ConfirmationDataResponse;
 
     ogs_assert(amf_ue);
     ogs_assert(message);
+
+    if (amf_ue->auth_type == OpenAPI_auth_type_EAP_AKA_PRIME) {
+        OpenAPI_eap_session_t *EapSession = message->EapSession;
+        int decoded;
+
+        /*
+         * Drop any previously relayed EAP packet so an error path that ends
+         * in Authentication Reject does not carry a stale EAP message. Only
+         * an EAP-Failure from the AUSF (below) sets eap_failure again.
+         */
+        amf_ue->eap_len = 0;
+        amf_ue->eap_failure = false;
+
+        if (!EapSession) {
+            ogs_error("[%s] No EapSession", amf_ue->suci);
+            return OGS_ERROR;
+        }
+
+        amf_ue->auth_result = EapSession->auth_result;
+
+        if (amf_ue->auth_result ==
+                OpenAPI_auth_result_AUTHENTICATION_ONGOING) {
+            /*
+             * Multi-round EAP-AKA' (e.g. after a synchronization failure):
+             * relay the next EAP-Request to the UE and keep authenticating.
+             */
+            if (!EapSession->eap_payload) {
+                ogs_error("[%s] No eapPayload in ongoing EapSession",
+                        amf_ue->suci);
+                return OGS_ERROR;
+            }
+            decoded = ogs_base64_decode_to_buffer(
+                    amf_ue->eap, sizeof(amf_ue->eap), EapSession->eap_payload);
+            if (decoded <= 0) {
+                ogs_error("[%s] EAP payload decode failed", amf_ue->suci);
+                return OGS_ERROR;
+            }
+            amf_ue->eap_len = decoded;
+            /* Track the Identifier of the next EAP-Request relayed to the UE */
+            if (decoded >= 2)
+                amf_ue->eap_id = amf_ue->eap[1];
+
+            r = nas_5gs_send_authentication_request(amf_ue);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
+            return OGS_OK;
+        }
+
+        if (amf_ue->auth_result !=
+                OpenAPI_auth_result_AUTHENTICATION_SUCCESS) {
+            ogs_error("[%s] EAP-AKA' authentication failed", amf_ue->suci);
+            /*
+             * Carry the terminating EAP-Failure to the UE in the EAP message
+             * IE of the Authentication Reject (TS 24.501 8.2.4).
+             */
+            if (EapSession->eap_payload) {
+                decoded = ogs_base64_decode_to_buffer(amf_ue->eap,
+                        sizeof(amf_ue->eap), EapSession->eap_payload);
+                if (decoded > 0) {
+                    amf_ue->eap_len = decoded;
+                    amf_ue->eap_failure = true;
+                }
+            }
+            return OGS_ERROR;
+        }
+
+        if (!EapSession->supi || !EapSession->k_seaf ||
+                !EapSession->eap_payload) {
+            ogs_error("[%s] Incomplete EapSession", amf_ue->suci);
+            return OGS_ERROR;
+        }
+
+        amf_ue_set_supi(amf_ue, EapSession->supi);
+        if (ogs_hex_from_string_checked(EapSession->k_seaf,
+                    kseaf, sizeof(kseaf)) != OGS_OK) {
+            ogs_error("[%s] Invalid EapSession.kSeaf", amf_ue->suci);
+            return OGS_ERROR;
+        }
+        ogs_kdf_kamf(amf_ue->supi, amf_ue->abba, amf_ue->abba_len,
+                kseaf, amf_ue->kamf);
+
+        /* Relay the terminating EAP-Success to the UE over NAS */
+        decoded = ogs_base64_decode_to_buffer(
+                amf_ue->eap, sizeof(amf_ue->eap), EapSession->eap_payload);
+        if (decoded <= 0) {
+            ogs_error("[%s] EAP payload decode failed", amf_ue->suci);
+            return OGS_ERROR;
+        }
+        amf_ue->eap_len = decoded;
+
+        return OGS_OK;
+    }
 
     ConfirmationDataResponse = message->ConfirmationDataResponse;
     if (!ConfirmationDataResponse) {
