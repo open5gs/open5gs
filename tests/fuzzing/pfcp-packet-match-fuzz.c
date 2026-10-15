@@ -39,7 +39,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     if (!initialized) {
         initialize();
-        ogs_log_set_mask_level("core", OGS_LOG_NONE);
+        ogs_log_set_domain_level(ogs_log_get_domain_id("core"), OGS_LOG_NONE);
         ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", OGS_LOG_NONE);
     }
 
