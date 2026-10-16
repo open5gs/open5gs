@@ -235,7 +235,14 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_am_t *pcf_ue_am,
     Guami = PolicyAssociationRequest->guami;
     if (Guami && Guami->amf_id &&
         Guami->plmn_id && Guami->plmn_id->mnc && Guami->plmn_id->mcc) {
-        ogs_sbi_parse_guami(&pcf_ue_am->guami, PolicyAssociationRequest->guami);
+        if (!ogs_sbi_parse_guami(
+                &pcf_ue_am->guami, PolicyAssociationRequest->guami)) {
+            ogs_error("[%s] Invalid GUAMI", pcf_ue_am->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    message, "Invalid GUAMI", pcf_ue_am->supi, NULL));
+            return false;
+        }
     }
 
     OpenAPI_list_for_each(PolicyAssociationRequest->allowed_snssais, node) {

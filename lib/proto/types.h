@@ -287,6 +287,7 @@ typedef struct ogs_guami_s {
 
 uint32_t ogs_amf_id_hexdump(const ogs_amf_id_t *amf_id);
 
+/* Return NULL for malformed hex without changing amf_id. */
 ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex);
 char *ogs_amf_id_to_string(const ogs_amf_id_t *amf_id);
 

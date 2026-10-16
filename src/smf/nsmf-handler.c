@@ -422,7 +422,15 @@ bool smf_nsmf_handle_create_sm_context(
     ogs_assert(sess->amf_nf_id);
 
     ogs_assert(SmContextCreateData->guami);
-    ogs_sbi_parse_guami(&sess->guami, SmContextCreateData->guami);
+    if (!ogs_sbi_parse_guami(&sess->guami, SmContextCreateData->guami)) {
+        ogs_error("[%s:%d] Invalid GUAMI", smf_ue->supi, sess->psi);
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                "Invalid GUAMI", smf_ue->supi, n1smbuf);
+        return false;
+    }
 
     if (SmContextCreateData->pcf_id) {
         if (sess->pcf_id) ogs_free(sess->pcf_id);
@@ -1618,7 +1626,14 @@ bool smf_nsmf_handle_create_data_in_hsmf(
     sess->amf_nf_id = ogs_strdup(PduSessionCreateData->amf_nf_id);
     ogs_assert(sess->amf_nf_id);
 
-    ogs_sbi_parse_guami(&sess->guami, PduSessionCreateData->guami);
+    if (!ogs_sbi_parse_guami(&sess->guami, PduSessionCreateData->guami)) {
+        ogs_error("[%s:%d] Invalid GUAMI", smf_ue->supi, sess->psi);
+        smf_sbi_send_pdu_session_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                "Invalid GUAMI", smf_ue->supi, NULL);
+        return false;
+    }
 
     sess->s_nssai.sst = sNssai->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sNssai->sd);

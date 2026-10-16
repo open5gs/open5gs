@@ -4158,7 +4158,13 @@ int ogs_sbi_discovery_option_parse_guami(
         return OGS_ERROR;
     }
 
-    ogs_sbi_parse_guami(&parsed_guami, Guami);
+    if (!ogs_sbi_parse_guami(&parsed_guami, Guami)) {
+        ogs_error("Invalid GUAMI discovery parameter [%s]", guami);
+        OpenAPI_guami_free(Guami);
+        cJSON_Delete(guamItem);
+        ogs_free(v);
+        return OGS_ERROR;
+    }
     ogs_sbi_discovery_option_set_guami(discovery_option, &parsed_guami);
     OpenAPI_guami_free(Guami);
     cJSON_Delete(guamItem);

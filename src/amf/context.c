@@ -2258,7 +2258,11 @@ static bool amf_namf_comm_parse_guti(ogs_nas_5gs_guti_t *guti, char *ue_context_
     memset(&plmn_id, 0, sizeof(plmn_id));
     ogs_sbi_parse_plmn_id(&plmn_id, &Plmn_id);
     ogs_nas_from_plmn_id(&guti->nas_plmn_id, &plmn_id);
-    ogs_amf_id_from_string(&guti->amf_id, amf_id_string);
+    if (!ogs_amf_id_from_string(&guti->amf_id, amf_id_string)) {
+        ogs_error("Invalid AMF ID [%s] in UE context ID [%s]",
+                amf_id_string, ue_context_id);
+        return false;
+    }
 
     guti->m_tmsi = (u_int32_t)strtol(tmsi_string, NULL, 16);
     return true;

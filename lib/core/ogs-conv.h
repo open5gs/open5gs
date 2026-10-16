@@ -28,25 +28,41 @@
 extern "C" {
 #endif
 
+/*
+ * Skip whitespace and convert up to out_len bytes without validating hex.
+ * Return the number of complete bytes. Short/odd input may leave partial
+ * output; excess input is ignored. out_len is capacity, not an exact size.
+ * Use ogs_ascii_to_hex_checked() for received, fixed-size hex fields.
+ */
 int ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len);
 /*
- * Convert exactly out_len * 2 hexadecimal characters.
- * Return OGS_OK on success. On error, leave out unchanged.
+ * Require exactly out_len * 2 hex digits (0-9, a-f, A-F), without whitespace.
+ * Return OGS_OK, or log an error and return OGS_ERROR without changing out.
+ * Check the result before using the output; out_len is the exact decoded size.
+ *
+ * Added for AUSF vector validation after issue #4734
+ * (opened 2026-08-08): https://github.com/open5gs/open5gs/issues/4734
  */
 int ogs_ascii_to_hex_checked(
         const char *in, int in_len, void *out, int out_len);
+/*
+ * Permissive string wrapper; returns out without reporting invalid input.
+ * Use ogs_hex_from_string_checked() for received, fixed-size hex fields.
+ */
 static ogs_inline void *ogs_hex_from_string(
         const char *str, void *out, int out_len)
 {
     ogs_ascii_to_hex((char*)str, strlen(str), out, out_len);
     return out;
 }
+/*
+ * String wrapper for ogs_ascii_to_hex_checked(); check the return value.
+ */
 static ogs_inline int ogs_hex_from_string_checked(
         const char *str, void *out, int out_len)
 {
-    if (!str)
-        return OGS_ERROR;
-    return ogs_ascii_to_hex_checked(str, strlen(str), out, out_len);
+    return ogs_ascii_to_hex_checked(
+            str, str ? strlen(str) : 0, out, out_len);
 }
 
 void *ogs_hex_to_ascii(const void *in, int in_len, void *out, int out_len);

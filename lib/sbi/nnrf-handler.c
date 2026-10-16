@@ -860,9 +860,14 @@ static bool handle_amf_info(
                     GuamiAmfInfoItem->plmn_id->mnc &&
                     GuamiAmfInfoItem->plmn_id->mcc) {
 
-                ogs_sbi_parse_guami(
+                if (!ogs_sbi_parse_guami(
                         &nf_info->amf.guami[nf_info->amf.num_of_guami],
-                        GuamiAmfInfoItem);
+                        GuamiAmfInfoItem)) {
+                    ogs_error("[%s] Invalid GUAMI in AMF NF profile",
+                            nf_instance->id);
+                    rv = false;
+                    break;
+                }
                 nf_info->amf.num_of_guami++;
             }
         }

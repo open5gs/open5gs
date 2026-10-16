@@ -337,13 +337,19 @@ bool udm_nudm_uecm_handle_amf_registration(
         return false;
     }
 
+    if (!ogs_sbi_parse_guami(&udm_ue->guami, Guami)) {
+        ogs_error("[%s] Invalid GUAMI", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "Invalid GUAMI", udm_ue->supi, NULL));
+        return false;
+    }
+
     if (udm_ue->dereg_callback_uri)
         ogs_free(udm_ue->dereg_callback_uri);
     udm_ue->dereg_callback_uri = ogs_strdup(
             Amf3GppAccessRegistration->dereg_callback_uri);
     ogs_assert(udm_ue->dereg_callback_uri);
-
-    ogs_sbi_parse_guami(&udm_ue->guami, Guami);
 
     udm_ue->rat_type = Amf3GppAccessRegistration->rat_type;
 
@@ -441,7 +447,13 @@ bool udm_nudm_uecm_handle_amf_registration_update(
      * GUAMI. If so, the UDM shall set the PurgeFlag. The UDM responds with
      * "204 No Content".
      * 2b. Otherwise the UDM responds with "403 Forbidden". */
-    ogs_sbi_parse_guami(&recv_guami, Guami);
+    if (!ogs_sbi_parse_guami(&recv_guami, Guami)) {
+        ogs_error("[%s] Invalid GUAMI", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "Invalid GUAMI", udm_ue->supi, NULL));
+        return false;
+    }
     if (memcmp(&recv_guami, &udm_ue->guami, sizeof(recv_guami)) != 0) {
         ogs_error("[%s] Guami mismatch", udm_ue->supi);
         /*

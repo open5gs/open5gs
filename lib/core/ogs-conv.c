@@ -35,9 +35,15 @@ int ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len)
     uint8_t *out_p = out;
 
     while(i < in_len && j < out_len) {
-        if (!isspace(in[i])) {
-            hex = isdigit(in[i]) ? in[i] - '0' :
-                islower(in[i]) ? in[i] - 'a' + 10 : in[i] - 'A' + 10;
+        if (!isspace((unsigned char)in[i])) {
+            hex = isdigit((unsigned char)in[i]) ? in[i] - '0' :
+                islower((unsigned char)in[i]) ?
+                    in[i] - 'a' + 10 : in[i] - 'A' + 10;
+            /*
+             * Non-hex input may produce a negative value. Mask it before
+             * shifting; input validation remains the checked API's job.
+             */
+            hex &= 0x0f;
             if ((k & 0x1) == 0) {
                 out_p[j] = (hex << 4);
             } else {
@@ -57,18 +63,34 @@ int ogs_ascii_to_hex_checked(
 {
     int i;
 
-    if (!in || !out)
+    if (!in) {
+        ogs_error("Missing hex input");
         return OGS_ERROR;
+    }
+    if (!out) {
+        ogs_error("Missing hex output buffer");
+        return OGS_ERROR;
+    }
 
-    if (in_len < 0 || out_len < 0 || out_len > INT_MAX / 2 ||
-        in_len != out_len * 2)
+    if (in_len < 0 || out_len < 0 || out_len > INT_MAX / 2) {
+        ogs_error("Invalid hex conversion length [input:%d output:%d]",
+                in_len, out_len);
         return OGS_ERROR;
+    }
+    if (in_len != out_len * 2) {
+        ogs_error("Invalid hex string length [%d], expected [%d]",
+                in_len, out_len * 2);
+        return OGS_ERROR;
+    }
 
     for (i = 0; i < in_len; i++) {
         if (!((in[i] >= '0' && in[i] <= '9') ||
               (in[i] >= 'a' && in[i] <= 'f') ||
-              (in[i] >= 'A' && in[i] <= 'F')))
+              (in[i] >= 'A' && in[i] <= 'F'))) {
+            ogs_error("Invalid hex character [0x%02x] at offset [%d]",
+                    (unsigned char)in[i], i);
             return OGS_ERROR;
+        }
     }
 
     ogs_ascii_to_hex((char *)in, in_len, out, out_len);

@@ -246,7 +246,10 @@ ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex)
     ogs_assert(amf_id);
     ogs_assert(hex);
 
-    ogs_hex_from_string(hex, hexbuf, sizeof(hexbuf));
+    if (ogs_hex_from_string_checked(hex, hexbuf, sizeof(hexbuf)) != OGS_OK) {
+        ogs_error("Invalid AMF ID [%s]", hex);
+        return NULL;
+    }
 
     amf_id->region = hexbuf[0];
     amf_id->set1 = hexbuf[1];
