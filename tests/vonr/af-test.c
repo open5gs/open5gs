@@ -5039,6 +5039,110 @@ static void test_arp_update_func(abts_case *tc, void *data)
     test_af_qos_reference_cleanup(tc, test_ue, ngap, gtpu);
 }
 
+static void test_ran_release_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *ngap = NULL;
+    ogs_socknode_t *gtpu = NULL;
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *gsmbuf = NULL;
+    ogs_pkbuf_t *sendbuf = NULL;
+    ogs_pkbuf_t *recvbuf = NULL;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+    af_sess_t *af_sess = NULL;
+    af_npcf_policyauthorization_param_t af_param;
+
+    /*
+     * NG-RAN releases a dedicated QoS flow (e.g. pre-emption)
+     *
+     * The SMF removes the QoS flow and the UE deletes its QoS rules,
+     * so the traffic continues on the default QoS flow.
+     */
+    test_af_qos_reference_setup(tc, "0000000014",
+            &test_ue, &sess, &af_sess, &ngap, &gtpu);
+
+    /* Create with bandwidth : dedicated QoS flow(QFI 2) */
+    memset(&af_param, 0, sizeof(af_param));
+    af_param.med_type = OpenAPI_media_type_AUDIO;
+    af_param.qos_reference = "test-audio";
+    af_param.qos_type = 1;
+    af_param.flow_type = 99;
+
+    af_local_send_to_pcf(af_sess, &af_param,
+            af_npcf_policyauthorization_build_create);
+
+    qos_flow = test_af_complete_qos_flow_modify(tc, test_ue, sess, ngap);
+    ogs_assert(qos_flow);
+
+    /* Send PDUSessionResourceNotify : QFI 2 released */
+    sendbuf = testngap_build_qos_flow_resource_notify(qos_flow,
+            NGAP_Cause_PR_radioNetwork,
+            NGAP_CauseRadioNetwork_release_due_to_pre_emption);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
+
+    /* Send PDU session resource modify response */
+    sendbuf = testngap_build_qos_flow_resource_release_response(qos_flow);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send PDU session modification complete */
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
+
+    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_bearer_remove(qos_flow);
+
+    ogs_msleep(100);
+
+    /* Send GTP-U ICMP Packet on the default QoS flow */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send AF-Session : DELETE - QoS flow has already been removed */
+    af_local_send_to_pcf(af_sess, NULL,
+            af_npcf_policyauthorization_build_delete);
+
+    ogs_msleep(100);
+
+    test_af_qos_reference_cleanup(tc, test_ue, ngap, gtpu);
+}
+
 abts_suite *test_af(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -5065,6 +5169,9 @@ abts_suite *test_af(abts_suite *suite)
     abts_run_test(suite, test13_func, NULL);
     abts_run_test(suite, test_issue4672_func, NULL);
     abts_run_test(suite, test_arp_update_func, NULL);
+#if !HOME_ROUTED_ROAMING_TEST
+    abts_run_test(suite, test_ran_release_func, NULL);
+#endif
 
     return suite;
 }

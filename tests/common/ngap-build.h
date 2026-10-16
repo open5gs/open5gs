@@ -57,6 +57,8 @@ ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response(
         test_bearer_t *qos_flow);
 ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response(
         test_bearer_t *qos_flow);
+ogs_pkbuf_t *testngap_build_qos_flow_resource_notify(
+        test_bearer_t *qos_flow, NGAP_Cause_PR group, long cause);
 ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
         test_sess_t *sess);
 

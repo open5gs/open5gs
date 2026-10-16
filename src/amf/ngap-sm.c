@@ -97,6 +97,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_PathSwitchRequest:
                 ngap_handle_path_switch_request(gnb, pdu);
                 break;
+            case NGAP_ProcedureCode_id_PDUSessionResourceNotify:
+                ngap_handle_pdu_session_resource_notify(gnb, pdu);
+                break;
             case NGAP_ProcedureCode_id_UplinkRANConfigurationTransfer:
                 pkbuf = e->pkbuf;
                 ogs_assert(pkbuf);
