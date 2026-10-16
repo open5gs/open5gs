@@ -888,11 +888,10 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
     uint8_t pfcp_cause, gtp_cause;
     smf_n1_n2_message_transfer_param_t param;
-
     ogs_pfcp_xact_t *pfcp_xact = NULL;
     ogs_pfcp_message_t *pfcp_message = NULL;
     int rv;
-
+    ogs_gtp_xact_t *gtp_xact = NULL;
     ogs_sbi_stream_t *stream = NULL;
 
     ogs_assert(s);
@@ -920,8 +919,7 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
         switch (pfcp_message->h.type) {
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             if (pfcp_xact->epc) {
-                ogs_gtp_xact_t *gtp_xact =
-                    ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
+                gtp_xact = ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
                 ogs_assert(gtp_xact);
 
                 pfcp_cause = smf_epc_n4_handle_session_establishment_response(
@@ -1028,7 +1026,15 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_N4_TIMER:
         switch (e->h.timer_id) {
         case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
-            OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+            if (sess->epc) {
+                gtp_xact = ogs_gtp_xact_find_by_id(e->gtp_xact_id);
+                if (send_ccr_termination_req_gx_gy_s6b(sess, gtp_xact) == true)
+                    OGS_FSM_TRAN(s, smf_gsm_state_wait_epc_auth_release);
+                else
+                    OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+            } else {
+                OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+            }
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
@@ -3290,19 +3296,49 @@ test_can_proceed:
         /* Initiated by peer request, let's answer: */
         if (gtp_xact) {
             if (diam_err == ER_DIAMETER_SUCCESS) {
-                /*
-                 * 1. MME sends Delete Session Request to SGW/SMF.
-                 * 2. SMF sends Delete Session Response to SGW/MME.
-                 */
                 switch (gtp_xact->gtp_version) {
                 case 1:
-                    smf_gtp1_send_delete_pdp_context_response(
-                                sess, gtp_xact);
+                    switch (gtp_xact->seq[0].type) {
+                    case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
+                        smf_gtp1_send_delete_pdp_context_response(
+                                    sess, gtp_xact);
+                        break;
+                    case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
+                        ogs_gtp1_send_error_message(
+                            gtp_xact, sess->sgw_s5c_teid,
+                            OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
+                            OGS_GTP1_CAUSE_SYSTEM_FAILURE);
+                        break;
+                    default:
+                        ogs_error(
+                            "Replying GTPv1C type %u not implemented!",
+                            gtp_xact->seq[0].type);
+                        break;
+                    }
                     break;
                 case 2:
-                    smf_gtp2_send_delete_session_response(
-                                sess, gtp_xact);
-                    break;
+                    switch (gtp_xact->seq[0].type) {
+                    case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+                        /* Regular path:
+                        * 1. MME sends Delete Session Request to SGW/SMF.
+                        * 2. SMF sends Delete Session Response to SGW/MME.
+                        */
+                        smf_gtp2_send_delete_session_response(
+                            sess, gtp_xact);
+                        break;
+                    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+                        /* Create Session Request failed (eg. during Diameter or PFCP session establishment). */
+                        ogs_gtp2_send_error_message(
+                            gtp_xact, sess->sgw_s5c_teid,
+                            OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                            OGS_GTP2_CAUSE_SYSTEM_FAILURE);
+                        break;
+                    default:
+                        ogs_error(
+                            "Replying GTPv2C type %u not implemented!",
+                            gtp_xact->seq[0].type);
+                        break;
+                    }
                 }
             } else {
                 uint8_t gtp_cause = gtp_cause_from_diameter(
