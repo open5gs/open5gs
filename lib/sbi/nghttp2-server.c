@@ -330,11 +330,6 @@ static int verify_callback(int preverify_ok, X509_STORE_CTX *ctx)
     if (!preverify_ok) {
         int err = X509_STORE_CTX_get_error(ctx);
         int depth = X509_STORE_CTX_get_error_depth(ctx);
-        if (err == X509_V_ERR_CERT_HAS_EXPIRED && depth == 0) {
-            ogs_error("The client certificate has expired, but is accepted by "
-                        "configuration");
-            return 1;
-        }
         ogs_error("client certificate verify error:num=%d:%s:depth=%d",
                 err, X509_verify_cert_error_string(err), depth);
     }
