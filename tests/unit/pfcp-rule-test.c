@@ -20,6 +20,14 @@
 #include "ogs-pfcp.h"
 #include "core/abts.h"
 
+#if HAVE_NETINET_IP_H
+#include <netinet/ip.h>
+#endif
+
+#if HAVE_NETINET_IP6_H
+#include <netinet/ip6.h>
+#endif
+
 static void set_pdr_teid(ogs_pfcp_pdr_t *pdr, uint32_t teid)
 {
     pdr->f_teid.teid = teid;
