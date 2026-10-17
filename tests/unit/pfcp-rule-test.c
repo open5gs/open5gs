@@ -592,6 +592,77 @@ static void test_remove_referenced_rules(abts_case *tc, void *data)
     ogs_pfcp_pool_final(&sess);
 }
 
+static void test_find_by_packet_address_family(abts_case *tc, void *data)
+{
+    ogs_pfcp_sess_t sess;
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_rule_t *rule = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+    struct ip *ip4 = NULL;
+    struct ip6_hdr *ip6 = NULL;
+    uint8_t *p = NULL;
+
+    memset(&sess, 0, sizeof(sess));
+    ogs_pfcp_pool_init(&sess);
+
+    pdr = ogs_pfcp_pdr_add(&sess);
+
+    /*
+     * The RS rule the SMF installs for every 5G session
+     * (src/smf/npcf-handler.c): "permit out 58 from ff02::2/128 to assigned"
+     */
+    rule = ogs_pfcp_rule_add(pdr);
+    rule->ipfw.proto = 58;
+    rule->ipfw.ipv6_src = 1;
+    /* ff02::2 in address order, as ogs-ipfw.c copies it */
+    ((uint8_t *)&rule->ipfw.ip.src.addr[0])[0] = 0xff;
+    ((uint8_t *)&rule->ipfw.ip.src.addr[0])[1] = 0x02;
+    ((uint8_t *)&rule->ipfw.ip.src.addr[3])[3] = 0x02;
+    rule->ipfw.ip.src.mask[0] = 0xffffffff;
+    rule->ipfw.ip.src.mask[1] = 0xffffffff;
+    rule->ipfw.ip.src.mask[2] = 0xffffffff;
+    rule->ipfw.ip.src.mask[3] = 0xffffffff;
+
+    /* An IPv4 packet whose first four source bytes equal ff02::2's must not match.
+       ip_src.s_addr is already in network order, so the bytes are what is compared. */
+    pkbuf = ogs_pkbuf_alloc(NULL, 20 + 8);
+    ogs_assert(pkbuf);
+    pkbuf->len = 20 + 8;
+    ip4 = (struct ip *)pkbuf->data;
+    memset(ip4, 0, 20 + 8);
+    ip4->ip_v = 4;
+    ip4->ip_hl = 5;
+    ip4->ip_p = 58;
+    ip4->ip_len = htons(20 + 8);
+    ((uint8_t *)&ip4->ip_src.s_addr)[0] = 0xff;  /* 255.2.0.0 */
+    ((uint8_t *)&ip4->ip_src.s_addr)[1] = 0x02;
+    ((uint8_t *)&ip4->ip_dst.s_addr)[0] = 0x0a;
+    ((uint8_t *)&ip4->ip_dst.s_addr)[1] = 0x2d;
+
+    ABTS_PTR_EQUAL(tc,
+            NULL, ogs_pfcp_pdr_rule_find_by_packet(pdr, pkbuf));
+    ogs_pkbuf_free(pkbuf);
+
+    /* An IPv6 packet from ff02::2 must match */
+    pkbuf = ogs_pkbuf_alloc(NULL, 40 + 8);
+    ogs_assert(pkbuf);
+    pkbuf->len = 40 + 8;
+    ip6 = (struct ip6_hdr *)pkbuf->data;
+    memset(ip6, 0, 40 + 8);
+    ip6->ip6_vfc = 0x60;
+    ip6->ip6_nxt = 58;
+    ip6->ip6_plen = htons(8);
+    p = (uint8_t *)&ip6->ip6_src;
+    p[0] = 0xff; p[1] = 0x02; p[15] = 0x02;
+
+    ABTS_PTR_EQUAL(tc,
+            rule, ogs_pfcp_pdr_rule_find_by_packet(pdr, pkbuf));
+    ogs_pkbuf_free(pkbuf);
+
+    ogs_pfcp_sess_clear(&sess);
+    ogs_pfcp_pool_final(&sess);
+}
+
 abts_suite *test_pfcp_rule(abts_suite *suite)
 {
     ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
@@ -614,6 +685,7 @@ abts_suite *test_pfcp_rule(abts_suite *suite)
     abts_run_test(suite, test_far_f_teid_owner, NULL);
     abts_run_test(suite, test_far_rekey_collision, NULL);
     abts_run_test(suite, test_remove_referenced_rules, NULL);
+    abts_run_test(suite, test_find_by_packet_address_family, NULL);
 
     ogs_pfcp_context_final();
     ogs_app_context_final();
