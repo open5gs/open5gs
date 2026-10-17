@@ -381,6 +381,18 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
                 be32toh(ipfw->ip.dst.mask[2]),
                 be32toh(ipfw->ip.dst.mask[3]));
 
+        /*
+         * addr_len is the packet's address length, so comparing only that many
+         * bytes of the rule matches the first four bytes of an IPv6 address
+         * against an IPv4 packet, and the reverse. A rule that names an address
+         * of the other family cannot match this packet.
+         */
+        if ((addr_len == OGS_IPV4_LEN &&
+                (ipfw->ipv6_src || ipfw->ipv6_dst)) ||
+            (addr_len == OGS_IPV6_LEN &&
+                (ipfw->ipv4_src || ipfw->ipv4_dst)))
+            continue;
+
         for (k = 0; k < 4; k++) {
             src_mask[k] = src_addr[k] & ipfw->ip.src.mask[k];
             dst_mask[k] = dst_addr[k] & ipfw->ip.dst.mask[k];
