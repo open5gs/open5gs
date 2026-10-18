@@ -339,6 +339,7 @@ static int hss_ogs_diam_cx_uar_cb(struct msg **msg, struct avp *avp,
         if (user_name) ogs_free(user_name);
         if (public_identity) ogs_free(public_identity);
         if (visited_network_identifier) ogs_free(visited_network_identifier);
+        if (server_name) ogs_free(server_name);
 
         return 0;
     }
@@ -381,6 +382,7 @@ out:
     if (user_name) ogs_free(user_name);
     if (public_identity) ogs_free(public_identity);
     if (visited_network_identifier) ogs_free(visited_network_identifier);
+    if (server_name) ogs_free(server_name);
 
     return 0;
 }
@@ -1501,6 +1503,7 @@ static int hss_ogs_diam_cx_sar_cb(struct msg **msg, struct avp *avp,
         if (user_name) ogs_free(user_name);
         if (public_identity) ogs_free(public_identity);
         if (server_name) ogs_free(server_name);
+        if (visited_network_identifier) ogs_free(visited_network_identifier);
 
         return 0;
     }
@@ -1544,6 +1547,7 @@ out:
     if (user_name) ogs_free(user_name);
     if (public_identity) ogs_free(public_identity);
     if (server_name) ogs_free(server_name);
+    if (visited_network_identifier) ogs_free(visited_network_identifier);
 
     return 0;
 }
@@ -1709,6 +1713,7 @@ static int hss_ogs_diam_cx_lir_cb(struct msg **msg, struct avp *avp,
 
         /* Cleanup resources */
         if (public_identity) ogs_free(public_identity);
+        if (server_name) ogs_free(server_name);
 
         return 0;
     }
@@ -1762,6 +1767,7 @@ out:
 
     /* Cleanup resources */
     if (public_identity) ogs_free(public_identity);
+    if (server_name) ogs_free(server_name);
 
     return 0;
 }

@@ -30,6 +30,7 @@ typedef struct hss_imsi_s {
     ogs_lnode_t lnode;
 
     char *id;
+    /* Replaced by UAR; must not be borrowed beyond cx_lock. */
     char *visited_network_identifier;
 } hss_imsi_t;
 
@@ -46,6 +47,7 @@ typedef struct hss_impu_s {
     ogs_lnode_t lnode;
 
     char *id;
+    /* Replaced by MAR/SAR; must not be borrowed beyond cx_lock. */
     char *server_name;
 
     hss_impi_t *impi;
@@ -121,6 +123,7 @@ void hss_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
+    /* Diameter callbacks must have stopped before context strings are freed. */
     imsi_remove_all();
     impi_remove_all();
 
@@ -630,6 +633,7 @@ static char *impi_get_server_name(hss_impi_t *impi)
 
     ogs_assert(impi);
 
+    /* Caller holds cx_lock; the returned pointer must not escape that lock. */
     ogs_list_for_each(&impi->impu_list, impu) {
         if (impu->server_name)
             return impu->server_name;
@@ -826,8 +830,13 @@ char *hss_cx_get_visited_network_identifier(char *public_identity)
         impi = impu->impi;
         ogs_assert(impi);
 
-        if (impi->imsi)
-            visited_network_identifier = impi->imsi->visited_network_identifier;
+        /*
+         * Another UAR can free this string as soon as cx_lock is released.
+         * SAR uses it later to build User-Data, so return an owned copy.
+         */
+        if (impi->imsi && impi->imsi->visited_network_identifier)
+            visited_network_identifier =
+                ogs_strdup(impi->imsi->visited_network_identifier);
     }
 
     ogs_thread_mutex_unlock(&self.cx_lock);
@@ -875,6 +884,14 @@ char *hss_cx_get_server_name(char *public_identity)
 
             server_name = impi_get_server_name(impi);
         }
+
+        /*
+         * MAR/SAR can free the selected string after cx_lock is released,
+         * including a name found through another IMPU of the same IMPI.
+         * Copy it under the lock so UAR/LIR can safely build their AVPs.
+         */
+        if (server_name)
+            server_name = ogs_strdup(server_name);
     }
 
     ogs_thread_mutex_unlock(&self.cx_lock);

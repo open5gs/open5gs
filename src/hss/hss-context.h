@@ -43,6 +43,7 @@ typedef struct _hss_context_t {
     int                 use_mongodb_change_stream;
 
     ogs_thread_mutex_t  db_lock;
+    /* Protects Cx maps, lists, associations and replaceable strings. */
     ogs_thread_mutex_t  cx_lock;
 
     /* S6A Interface */
@@ -82,14 +83,25 @@ bool hss_cx_identity_is_associated(char *user_name, char *public_identity);
 void hss_cx_set_imsi_bcd(char *user_name,
         char *imsi_bcd, char *visited_network_identifier);
 
+/*
+ * Borrowed immutable identifiers, valid until hss_context_final().
+ * Callers must not modify or free them. Diameter callbacks stop before
+ * context teardown, so these identifiers remain valid throughout a callback.
+ */
 char *hss_cx_get_imsi_bcd(char *public_identity);
-char *hss_cx_get_visited_network_identifier(char *public_identity);
 char *hss_cx_get_user_name(char *public_identity);
 
+/*
+ * These values can be freed and replaced by another Diameter thread.
+ * Return copies taken under cx_lock, or NULL if no value is available.
+ * Callers own the returned strings and must ogs_free() them.
+ */
+char *hss_cx_get_visited_network_identifier(char *public_identity);
 char *hss_cx_get_server_name(char *public_identity);
 void hss_cx_set_server_name(
         char *public_identity, char *server_name, bool overwrite);
 
+/* Returns caller-owned XML; caller must ogs_free() it. */
 char *hss_cx_download_user_data(
         char *user_name, char *visited_network_identifier,
         ogs_ims_data_t *ims_data);
