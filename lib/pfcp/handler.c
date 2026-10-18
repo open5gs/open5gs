@@ -1848,6 +1848,21 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
+    /* Validate the URR-ID range before storing it: a Create URR without a
+     * Create PDR bypasses the check in ogs_pfcp_handle_create_pdr(), and
+     * find_or_add() below stores the raw wire value as-is. An out-of-range
+     * id would later abort the process in the usage report path which
+     * asserts ids within 1..OGS_MAX_NUM_OF_URR on session deletion. */
+    if (!(message->urr_id.u32 > 0 &&
+            message->urr_id.u32 <= OGS_MAX_NUM_OF_URR)) {
+        ogs_error("Invalid URR-ID %u (valid range: 1..%d) "
+                "in PFCP message",
+                message->urr_id.u32, OGS_MAX_NUM_OF_URR);
+        *cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
+        *offending_ie_value = OGS_PFCP_URR_ID_TYPE;
+        return NULL;
+    }
+
     urr = ogs_pfcp_urr_find_or_add(sess, message->urr_id.u32);
     if (!urr) {
         ogs_error("Cannot allocate URR-ID[%d]", message->urr_id.u32);
