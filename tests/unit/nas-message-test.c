@@ -18,6 +18,7 @@
  */
 
 #include "ogs-nas-eps.h"
+#include "ogs-nas-5gs.h"
 #include "core/abts.h"
 
 static void ogs_nas_eps_message_test1(abts_case *tc, void *data)
@@ -580,6 +581,44 @@ static void imeisv_conversion_test(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0xa5, output.guard);
 }
 
+static void ogs_nas_5gs_qos_rules_prefix_length_test(abts_case *tc, void *data)
+{
+    ogs_nas_qos_rule_t rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
+    ogs_nas_qos_rules_t rules;
+    uint8_t buffer[64];
+    unsigned int i, n = 0;
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_nas_domain);
+
+    /* Create new QoS rule, one bi-directional packet filter whose only
+     * component is an IPv6 local address/prefix length. */
+    buffer[n++] = 1; /* QoS rule identifier */
+    buffer[n++] = 0;
+    buffer[n++] = 1 + 1 + 1 + (1 + OGS_IPV6_LEN + 1) + 1 + 1;
+    buffer[n++] = (OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE << 5) | (1 << 4) | 1;
+    buffer[n++] = (OGS_NAS_QOS_DIRECTION_BIDIRECTIONAL << 4) | 0;
+    buffer[n++] = 1 + OGS_IPV6_LEN + 1; /* Length of packet filter contents */
+    buffer[n++] = OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+    for (i = 0; i < OGS_IPV6_LEN; i++)
+        buffer[n++] = 0x20 + i;
+    buffer[n++] = OGS_IPV6_128_PREFIX_LEN + 1;
+    buffer[n++] = 0xff; /* QoS rule precedence */
+    buffer[n++] = 1; /* QoS flow identifier */
+    rules.buffer = buffer;
+    rules.length = n;
+
+    /* A prefix length above 128 is rejected. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_FATAL);
+    ABTS_INT_EQUAL(tc, 0, ogs_nas_parse_qos_rules(rule, &rules));
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
+
+    /* The largest valid prefix length is still accepted. */
+    buffer[n-3] = OGS_IPV6_128_PREFIX_LEN;
+    ABTS_INT_EQUAL(tc, 1, ogs_nas_parse_qos_rules(rule, &rules));
+    ABTS_INT_EQUAL(tc, OGS_IPV6_128_PREFIX_LEN,
+            rule[0].pf[0].content.component[0].ipv6.prefixlen);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -596,6 +635,7 @@ abts_suite *test_nas_message(abts_suite *suite)
     abts_run_test(suite, ogs_nas_eps_message_test7, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test8, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test9, NULL);
+    abts_run_test(suite, ogs_nas_5gs_qos_rules_prefix_length_test, NULL);
 
     return suite;
 }
