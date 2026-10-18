@@ -471,12 +471,16 @@ void mme_send_tau_accept_and_check_release(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
      * This ensures that the UE has acknowledged the new P-TMSI,
      * allowing the TAU procedure to complete successfully
      * and maintaining synchronization between the UE and the network.
+     *
+     * A pending GUTI also keeps the S1 connection, so that the UE can
+     * acknowledge it with TAU Complete.
      */
     ogs_info("[%s] TAU done (sgsap_connected=%d, next_ptmsi=%u)",
          mme_ue->imsi_bcd,
          MME_SGSAP_IS_CONNECTED(mme_ue),
          (unsigned)mme_ue->next.p_tmsi);
     if (!mme_ue->nas_eps.update.active_flag &&
+        !MME_NEXT_GUTI_IS_AVAILABLE(mme_ue) &&
         !MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
         enb_ue->relcause.group = S1AP_Cause_PR_nas;
         enb_ue->relcause.cause = S1AP_CauseNas_normal_release;

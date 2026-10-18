@@ -217,7 +217,7 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
     req = &gtp1_message.sgsn_context_request;
     memset(&gtp1_message, 0, sizeof(ogs_gtp1_message_t));
 
-    guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, &ptmsi);
+    guti_to_rai_ptmsi(&mme_ue->old_guti, &rai, &ptmsi);
 
     req->imsi.presence = 0;
 

@@ -576,6 +576,9 @@ struct mme_ue_s {
         ogs_pool_id_t   gtp_xact_id; /* 2g->4g SGSN Context Req/Resp/Ack gtp1c xact */
     } gn;
 
+    /* Received TAU identity, separate from the pending GUTI allocation. */
+    ogs_nas_eps_guti_t old_guti;
+
     struct {
 #define MME_NEXT_GUTI_IS_AVAILABLE(__mME) ((__mME)->next.m_tmsi)
 #define MME_CURRENT_GUTI_IS_AVAILABLE(__mME) ((__mME)->current.m_tmsi)
