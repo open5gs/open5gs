@@ -3149,7 +3149,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 
 void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 {
-    int rv, r, state;
+    int rv, r, state, xact_count;
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
@@ -3656,7 +3656,36 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     amf_timer_cfg(AMF_TIMER_T3550)->max_count) {
                 ogs_warn("[%s] Retransmission failed. Stop retransmission",
                         amf_ue->suci);
-                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                /*
+                 * TS 24.501, 5.5.1.2.8(c) and 5.5.1.3.8(c):
+                 * abort registration without removing the UE context.
+                 */
+                CLEAR_AMF_UE_TIMER(amf_ue->t3550);
+                OGS_FSM_TRAN(s, &gmm_state_registered);
+
+                ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+                if (!ran_ue) {
+                    ogs_timer_start(amf_ue->mobile_reachable.timer,
+                            ogs_time_from_sec(
+                                amf_self()->time.t3512.value + 240));
+                    break;
+                }
+
+                xact_count = amf_sess_xact_count(amf_ue);
+                ran_ue->deactivation.group = NGAP_Cause_PR_nas;
+                ran_ue->deactivation.cause = NGAP_CauseNas_normal_release;
+
+                amf_sbi_send_deactivate_all_sessions(
+                        ran_ue, amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+
+                if (amf_sess_xact_count(amf_ue) == xact_count) {
+                    r = ngap_send_ran_ue_context_release_command(ran_ue,
+                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                            NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                }
             } else {
                 amf_ue->t3550.retry_count++;
                 r = nas_5gs_send_registration_accept(amf_ue);
