@@ -22,6 +22,7 @@
 
 static void conv_test1(abts_case *tc, void *data)
 {
+    ogs_log_level_e saved_log_level;
     uint8_t expected[4] = { 0x01, 0xab, 0xCD, 0xef };
     uint8_t output[4] = { 0xff, 0xff, 0xff, 0xff };
     char non_ascii[8] = {
@@ -31,6 +32,9 @@ static void conv_test1(abts_case *tc, void *data)
             ogs_hex_from_string_checked(
                 "01abCDef", output, sizeof(output)));
     ABTS_TRUE(tc, memcmp(expected, output, sizeof(output)) == 0);
+
+    saved_log_level = ogs_log_get_domain_level(OGS_LOG_DOMAIN);
+    ogs_log_set_domain_level(OGS_LOG_DOMAIN, OGS_LOG_FATAL);
 
     ABTS_INT_EQUAL(tc, OGS_ERROR,
             ogs_ascii_to_hex_checked("01abCD", 6, output, sizeof(output)));
@@ -50,6 +54,8 @@ static void conv_test1(abts_case *tc, void *data)
             ogs_ascii_to_hex_checked(NULL, 0, output, sizeof(output)));
     ABTS_INT_EQUAL(tc, OGS_ERROR,
             ogs_ascii_to_hex_checked("01abCDef", 8, NULL, sizeof(output)));
+
+    ogs_log_set_domain_level(OGS_LOG_DOMAIN, saved_log_level);
 
     ABTS_TRUE(tc, memcmp(expected, output, sizeof(output)) == 0);
 }
