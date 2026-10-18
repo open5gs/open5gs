@@ -67,26 +67,46 @@ static uint8_t gtp_cause_from_diameter(uint8_t gtp_version,
     }
 }
 
-static void send_gtp_create_err_msg(const smf_sess_t *sess,
+static void send_gtp_error_msg(const smf_sess_t *sess,
         ogs_gtp_xact_t *gtp_xact, uint8_t gtp_cause)
 {
-    if (gtp_xact->gtp_version == 1)
-        ogs_gtp1_send_error_message(gtp_xact, sess->sgw_s5c_teid,
-            OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE, gtp_cause);
-    else
-        ogs_gtp2_send_error_message(gtp_xact, sess->sgw_s5c_teid,
-            OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, gtp_cause);
-}
+    uint8_t response_type = 0;
 
-static void send_gtp_delete_err_msg(const smf_sess_t *sess,
-        ogs_gtp_xact_t *gtp_xact, uint8_t gtp_cause)
-{
-    if (gtp_xact->gtp_version == 1)
-        ogs_gtp1_send_error_message(gtp_xact, sess->sgw_s5c_teid,
-            OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE, gtp_cause);
-    else
-        ogs_gtp2_send_error_message(gtp_xact, sess->sgw_s5c_teid,
-            OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, gtp_cause);
+    ogs_assert(sess);
+    ogs_assert(gtp_xact);
+
+    switch (gtp_xact->gtp_version) {
+    case 1:
+        switch (gtp_xact->seq[0].type) {
+        case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
+            response_type = OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE;
+            break;
+        case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
+            response_type = OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE;
+            break;
+        }
+        break;
+    case 2:
+        switch (gtp_xact->seq[0].type) {
+        case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+            response_type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
+            break;
+        case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+            response_type = OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE;
+            break;
+        }
+        break;
+    }
+
+    if (!response_type) {
+        ogs_fatal("Unsupported GTP request [version:%u,type:%u]",
+                gtp_xact->gtp_version, gtp_xact->seq[0].type);
+        ogs_assert_if_reached();
+        return;
+    }
+
+    ogs_gtp_send_error_message(
+            gtp_xact, sess->sgw_s5c_teid, response_type, gtp_cause);
 }
 
 static bool send_ccr_init_req_gx_gy(smf_sess_t *sess, ogs_gtp_xact_t *gtp_xact)
@@ -99,7 +119,7 @@ static bool send_ccr_init_req_gx_gy(smf_sess_t *sess, ogs_gtp_xact_t *gtp_xact)
         uint8_t gtp_cause = (gtp_xact->gtp_version == 1) ?
                 OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE :
                 OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
-        send_gtp_create_err_msg(sess, gtp_xact, gtp_cause);
+        send_gtp_error_msg(sess, gtp_xact, gtp_cause);
         return false;
     }
 
@@ -137,7 +157,7 @@ static bool send_ccr_termination_req_gx_gy_s6b(
             uint8_t gtp_cause = (gtp_xact->gtp_version == 1) ?
                 OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE :
                 OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
-            send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+            send_gtp_error_msg(sess, gtp_xact, gtp_cause);
         } else {
             ogs_error("No GTP transaction : "
                     "Cannot report 'No Gy Diameter Peer' to the peer");
@@ -296,7 +316,7 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
                             gtp_xact,
                             &e->gtp1_message->create_pdp_context_request);
             if (gtp1_cause != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
-                send_gtp_create_err_msg(sess, gtp_xact, gtp1_cause);
+                send_gtp_error_msg(sess, gtp_xact, gtp1_cause);
                 return;
             }
             if (send_ccr_init_req_gx_gy(sess, gtp_xact) == true)
@@ -315,7 +335,7 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
                             gtp_xact,
                             &e->gtp2_message->create_session_request);
             if (gtp2_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-                send_gtp_create_err_msg(sess, gtp_xact, gtp2_cause);
+                send_gtp_error_msg(sess, gtp_xact, gtp2_cause);
                 return;
             }
             switch (sess->gtp_rat_type) {
@@ -655,7 +675,7 @@ test_can_proceed:
             !create_error_sent) {
             uint8_t gtp_cause = gtp_cause_from_diameter(
                                     gtp_xact->gtp_version, diam_err, NULL);
-            send_gtp_create_err_msg(sess, gtp_xact, gtp_cause);
+            send_gtp_error_msg(sess, gtp_xact, gtp_cause);
         }
 
         /* Terminate only sessions confirmed by an Initial answer. In
@@ -929,7 +949,7 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                     /* FIXME: tear down Gy and Gx */
                     gtp_cause = gtp_cause_from_pfcp(
                                     pfcp_cause, gtp_xact->gtp_version);
-                    send_gtp_create_err_msg(sess, gtp_xact, gtp_cause);
+                    send_gtp_error_msg(sess, gtp_xact, gtp_cause);
                     return;
                 }
 
@@ -1105,8 +1125,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             gtp_xact,
                             &gtp1_message->delete_pdp_context_request);
             if (gtp1_cause != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
-                ogs_gtp1_send_error_message(gtp_xact, sess->sgw_s5c_teid,
-                        OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE, gtp1_cause);
+                send_gtp_error_msg(sess, gtp_xact, gtp1_cause);
                 return;
             }
             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
@@ -1124,8 +1143,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             sess, gtp_xact,
                             &gtp2_message->delete_session_request);
             if (gtp2_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-                ogs_gtp2_send_error_message(gtp_xact, sess->sgw_s5c_teid,
-                        OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, gtp2_cause);
+                send_gtp_error_msg(sess, gtp_xact, gtp2_cause);
                 return;
             }
             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
@@ -2467,7 +2485,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                     if (gtp_xact) {
                         gtp_cause = gtp_cause_from_pfcp(
                                 pfcp_cause, gtp_xact->gtp_version);
-                        send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+                        send_gtp_error_msg(sess, gtp_xact, gtp_cause);
                     } else {
         /*
          * No peer is waiting for a response, so the session has to be
@@ -3304,10 +3322,8 @@ test_can_proceed:
                                     sess, gtp_xact);
                         break;
                     case OGS_GTP1_CREATE_PDP_CONTEXT_REQUEST_TYPE:
-                        ogs_gtp1_send_error_message(
-                            gtp_xact, sess->sgw_s5c_teid,
-                            OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
-                            OGS_GTP1_CAUSE_SYSTEM_FAILURE);
+                        send_gtp_error_msg(sess, gtp_xact,
+                                OGS_GTP1_CAUSE_SYSTEM_FAILURE);
                         break;
                     default:
                         ogs_error(
@@ -3328,10 +3344,8 @@ test_can_proceed:
                         break;
                     case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
                         /* Create Session Request failed (eg. during Diameter or PFCP session establishment). */
-                        ogs_gtp2_send_error_message(
-                            gtp_xact, sess->sgw_s5c_teid,
-                            OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-                            OGS_GTP2_CAUSE_SYSTEM_FAILURE);
+                        send_gtp_error_msg(sess, gtp_xact,
+                                OGS_GTP2_CAUSE_SYSTEM_FAILURE);
                         break;
                     default:
                         ogs_error(
@@ -3339,11 +3353,12 @@ test_can_proceed:
                             gtp_xact->seq[0].type);
                         break;
                     }
+                    break;
                 }
             } else {
                 uint8_t gtp_cause = gtp_cause_from_diameter(
                                     gtp_xact->gtp_version, diam_err, NULL);
-                send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+                send_gtp_error_msg(sess, gtp_xact, gtp_cause);
             }
         }
         OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
