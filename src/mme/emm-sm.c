@@ -529,7 +529,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
             if (emm_tau_request_ue_comes_from_gb_or_iu(&message->emm.tracking_area_update_request)) {
                 ogs_info("TAU request : UE comes from SGSN, attempt retrieving context");
-                guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, NULL);
+                guti_to_rai_ptmsi(&mme_ue->old_guti, &rai, NULL);
                 sgsn = mme_sgsn_find_by_routing_address(&rai, 0xffff);
                 if (!sgsn) {
                     ogs_plmn_id_t plmn_id;
@@ -726,9 +726,11 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 }
             }
 
+            /*
+             * A TAU aborted on T3450 expiry leaves its GUTI pending.
+             * The TAU Accept offers it again, so wait for TAU Complete.
+             */
             if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
-                ogs_fatal("MME does not create new GUTI");
-                ogs_assert_if_reached();
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
             } else {
                 OGS_FSM_TRAN(s, &emm_state_registered);
@@ -1780,7 +1782,32 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                     mme_timer_cfg(MME_TIMER_T3450)->max_count) {
                 ogs_warn("Retransmission of IMSI[%s] failed. "
                         "Stop retransmission", mme_ue->imsi_bcd);
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+
+                /*
+                 * TS 24.301, 5.5.1.2.7(c): an aborted attach enters
+                 * EMM-DEREGISTERED. 5.5.3.2.7(c): an aborted tracking area
+                 * update keeps the UE context and both GUTIs, and enters
+                 * EMM-IDLE.
+                 */
+                if (mme_ue->nas_eps.type != MME_EPS_TYPE_TAU_REQUEST) {
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                    break;
+                }
+
+                CLEAR_MME_UE_TIMER(mme_ue->t3450);
+                OGS_FSM_TRAN(s, &emm_state_registered);
+
+                enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+                if (!enb_ue) {
+                    ogs_timer_start(mme_ue->t_mobile_reachable.timer,
+                            ogs_time_from_sec(
+                                mme_self()->time.t3412.value + 240));
+                    break;
+                }
+
+                enb_ue->relcause.group = S1AP_Cause_PR_nas;
+                enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+                mme_send_release_access_bearer_or_ue_context_release(enb_ue);
             } else {
                 ogs_pkbuf_t *emmbuf = NULL;
 

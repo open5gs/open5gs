@@ -861,7 +861,7 @@ int emm_handle_tau_request(
                 MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown");
 
-        memcpy(&mme_ue->next.guti,
+        memcpy(&mme_ue->old_guti,
            &nas_guti, sizeof(ogs_nas_eps_guti_t));
 
         break;

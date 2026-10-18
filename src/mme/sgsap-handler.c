@@ -337,8 +337,12 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
          * This ensures that the UE has acknowledged the new P-TMSI,
          * allowing the TAU procedure to complete successfully
          * and maintaining synchronization between the UE and the network.
+         *
+         * A pending GUTI also keeps the S1 connection, so that the UE can
+         * acknowledge it with TAU Complete.
          */
         if (!mme_ue->nas_eps.update.active_flag &&
+            !MME_NEXT_GUTI_IS_AVAILABLE(mme_ue) &&
             !MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
             enb_ue->relcause.group = S1AP_Cause_PR_nas;
             enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
