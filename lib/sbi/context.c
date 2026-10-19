@@ -1252,6 +1252,11 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     }
     memset(nf_instance, 0, sizeof(ogs_sbi_nf_instance_t));
 
+    nf_instance->pool_id = OGS_NEXT_ID(
+            nf_instance_pool.id, OGS_MIN_POOL_ID, OGS_MAX_POOL_ID);
+    ogs_hash_set(nf_instance_pool.id_hash,
+            &nf_instance->pool_id, sizeof(ogs_pool_id_t), nf_instance);
+
     nf_instance->time.heartbeat_interval =
             ogs_local_conf()->time.nf_instance.heartbeat_interval;
 
@@ -1388,6 +1393,8 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
     if (nf_instance->client)
         ogs_sbi_client_remove(nf_instance->client);
 
+    ogs_hash_set(nf_instance_pool.id_hash,
+            &nf_instance->pool_id, sizeof(ogs_pool_id_t), NULL);
     ogs_pool_free(&nf_instance_pool, nf_instance);
 }
 
@@ -1424,6 +1431,11 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id)
     }
 
     return nf_instance;
+}
+
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_pool_id(ogs_pool_id_t id)
+{
+    return ogs_pool_find_by_id(&nf_instance_pool, id);
 }
 
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_discovery_param(
@@ -2851,6 +2863,12 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void)
 
     memset(subscription_data, 0, sizeof(ogs_sbi_subscription_data_t));
 
+    subscription_data->pool_id = OGS_NEXT_ID(
+            subscription_data_pool.id, OGS_MIN_POOL_ID, OGS_MAX_POOL_ID);
+    ogs_hash_set(subscription_data_pool.id_hash,
+            &subscription_data->pool_id, sizeof(ogs_pool_id_t),
+            subscription_data);
+
     ogs_list_add(&ogs_sbi_self()->subscription_data_list, subscription_data);
 
     return subscription_data;
@@ -2911,6 +2929,8 @@ void ogs_sbi_subscription_data_remove(
     if (subscription_data->client)
         ogs_sbi_client_remove(subscription_data->client);
 
+    ogs_hash_set(subscription_data_pool.id_hash,
+            &subscription_data->pool_id, sizeof(ogs_pool_id_t), NULL);
     ogs_pool_free(&subscription_data_pool, subscription_data);
 }
 
@@ -3042,6 +3062,12 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id)
     }
 
     return subscription_data;
+}
+
+ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find_by_pool_id(
+        ogs_pool_id_t id)
+{
+    return ogs_pool_find_by_id(&subscription_data_pool, id);
 }
 
 bool ogs_sbi_nf_status_subscription_exists(

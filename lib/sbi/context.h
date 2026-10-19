@@ -112,6 +112,7 @@ typedef struct ogs_sbi_context_s {
 
 typedef struct ogs_sbi_nf_instance_s {
     ogs_lnode_t lnode;
+    ogs_pool_id_t pool_id;                  /* Allocation ID for async lookups */
 
     ogs_fsm_t sm;                           /* A state machine */
     ogs_timer_t *t_registration_interval;   /* timer to retry
@@ -398,6 +399,7 @@ typedef struct ogs_sbi_subscription_spec_s {
 
 typedef struct ogs_sbi_subscription_data_s {
     ogs_lnode_t lnode;
+    ogs_pool_id_t pool_id;                  /* Allocation ID for async lookups */
 
     ogs_time_t validity_duration;           /* valditiyTime(unit: usec) */
     ogs_timer_t *t_validity;                /* check validation */
@@ -530,6 +532,7 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove_all(void);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id);
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_pool_id(ogs_pool_id_t id);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_discovery_param(
         OpenAPI_nf_type_e nf_type,
         OpenAPI_nf_type_e requester_nf_type,
@@ -717,6 +720,8 @@ void ogs_sbi_subscription_data_delete_and_remove_all_by_nf_instance_id(
         const char *nf_instance_id);
 void ogs_sbi_subscription_data_remove_all(void);
 ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id);
+ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find_by_pool_id(
+        ogs_pool_id_t id);
 
 bool ogs_sbi_nf_status_subscription_exists(
         const char *req_nf_instance_id,

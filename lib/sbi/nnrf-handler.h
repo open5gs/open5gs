@@ -35,6 +35,8 @@ void ogs_nnrf_nfm_handle_nf_status_subscribe(
 void ogs_nnrf_nfm_handle_nf_status_update(
         ogs_sbi_subscription_data_t *subscription_data,
         ogs_sbi_message_t *recvmsg);
+void ogs_nnrf_nfm_handle_nf_status_subscription_response(
+        ogs_sbi_message_t *recvmsg, void *data);
 bool ogs_nnrf_nfm_handle_nf_status_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 

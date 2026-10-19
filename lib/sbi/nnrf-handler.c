@@ -1005,7 +1005,8 @@ static void handle_validity_time(
     if (!subscription_data->t_validity) {
         subscription_data->t_validity =
             ogs_timer_add(ogs_app()->timer_mgr,
-                ogs_timer_subscription_validity, subscription_data);
+                ogs_timer_subscription_validity,
+                OGS_UINT_TO_POINTER(subscription_data->pool_id));
         ogs_assert(subscription_data->t_validity);
     }
     ogs_timer_start(subscription_data->t_validity,
@@ -1020,7 +1021,8 @@ static void handle_validity_time(
     if (!subscription_data->t_patch) {
         subscription_data->t_patch =
             ogs_timer_add(ogs_app()->timer_mgr,
-                ogs_timer_subscription_patch, subscription_data);
+                ogs_timer_subscription_patch,
+                OGS_UINT_TO_POINTER(subscription_data->pool_id));
         ogs_assert(subscription_data->t_patch);
     }
     ogs_timer_start(subscription_data->t_patch, patch);
@@ -1179,6 +1181,63 @@ void ogs_nnrf_nfm_handle_nf_status_update(
 
     /* Update Subscription Validity Time */
     handle_validity_time(subscription_data, validity_time, action);
+}
+
+void ogs_nnrf_nfm_handle_nf_status_subscription_response(
+        ogs_sbi_message_t *recvmsg, void *data)
+{
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
+
+    ogs_assert(recvmsg);
+
+    subscription_data = ogs_sbi_subscription_data_find_by_pool_id(
+            OGS_POINTER_TO_UINT(data));
+    if (!subscription_data) {
+        ogs_error("Subscription has already been removed [%d]",
+                (int)OGS_POINTER_TO_UINT(data));
+        return;
+    }
+
+    SWITCH(recvmsg->h.method)
+    CASE(OGS_SBI_HTTP_METHOD_POST)
+        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_CREATED ||
+            recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
+            ogs_nnrf_nfm_handle_nf_status_subscribe(
+                    subscription_data, recvmsg);
+        } else {
+            ogs_error("HTTP response error : %d", recvmsg->res_status);
+        }
+        break;
+
+    CASE(OGS_SBI_HTTP_METHOD_PATCH)
+        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK ||
+            recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+            ogs_nnrf_nfm_handle_nf_status_update(subscription_data, recvmsg);
+        } else {
+            ogs_error("[%s] HTTP response error [%d]",
+                    subscription_data->id ? subscription_data->id : "Unknown",
+                    recvmsg->res_status);
+        }
+        break;
+
+    CASE(OGS_SBI_HTTP_METHOD_DELETE)
+        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT)
+            ogs_info("[%s] Subscription deleted",
+                    subscription_data->id ? subscription_data->id : "Unknown");
+        else
+            ogs_error("[%s] HTTP response error [%d]",
+                    subscription_data->id ? subscription_data->id : "Unknown",
+                    recvmsg->res_status);
+
+        ogs_sbi_subscription_data_remove(subscription_data);
+        break;
+
+    DEFAULT
+        ogs_error("[%s] Invalid HTTP method [%s]",
+                subscription_data->id ? subscription_data->id : "Unknown",
+                recvmsg->h.method);
+        ogs_assert_if_reached();
+    END
 }
 
 /*

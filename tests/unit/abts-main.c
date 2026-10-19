@@ -28,6 +28,7 @@ extern int __ogs_sbi_domain;
 extern int __ogs_app_domain;
 extern int __ogs_diam_domain;
 extern int __ogs_pfcp_domain;
+extern int __nrf_log_domain;
 extern int __mme_log_domain;
 extern int __emm_log_domain;
 extern int __amf_log_domain;
@@ -45,6 +46,8 @@ abts_suite *test_sbi_message(abts_suite *suite);
 abts_suite *test_sbi_server(abts_suite *suite);
 abts_suite *test_security(abts_suite *suite);
 abts_suite *test_nrf_discovery(abts_suite *suite);
+abts_suite *test_nrf_timer(abts_suite *suite);
+abts_suite *test_nnrf_subscription(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
 abts_suite *test_mme_dns_select(abts_suite *suite);
 abts_suite *test_mme_s13(abts_suite *suite);
@@ -70,6 +73,8 @@ const struct testlist {
     {test_sbi_server},
     {test_security},
     {test_nrf_discovery},
+    {test_nrf_timer},
+    {test_nnrf_subscription},
     {test_crash},
     {test_mme_dns_select},
     {test_mme_s13},
@@ -143,6 +148,7 @@ int main(int argc, const char *const argv[])
     ogs_log_install_domain(&__ogs_app_domain, "app", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_diam_domain, "diam", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__nrf_log_domain, "nrf", OGS_LOG_ERROR);
     ogs_log_install_domain(&__mme_log_domain, "mme", OGS_LOG_ERROR);
     ogs_log_install_domain(&__emm_log_domain, "emm", OGS_LOG_ERROR);
     ogs_log_install_domain(&__amf_log_domain, "amf", OGS_LOG_ERROR);

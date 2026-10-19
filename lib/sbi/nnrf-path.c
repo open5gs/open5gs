@@ -130,7 +130,8 @@ bool ogs_nnrf_nfm_send_nf_status_subscribe(
 
     rc = ogs_sbi_send_request_to_nrf(
             OpenAPI_service_name_nnrf_nfm, NULL,
-            ogs_sbi_client_handler, request, subscription_data);
+            ogs_sbi_client_handler, request,
+            OGS_UINT_TO_POINTER(subscription_data->pool_id));
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);
@@ -202,7 +203,8 @@ bool ogs_nnrf_nfm_send_nf_status_update(
 
     rc = ogs_sbi_send_request_to_nrf(
             OpenAPI_service_name_nnrf_nfm, NULL,
-            ogs_sbi_client_handler, request, subscription_data);
+            ogs_sbi_client_handler, request,
+            OGS_UINT_TO_POINTER(subscription_data->pool_id));
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);
@@ -226,7 +228,8 @@ bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
 
     rc = ogs_sbi_send_request_to_nrf(
             OpenAPI_service_name_nnrf_nfm, NULL,
-            ogs_sbi_client_handler, request, subscription_data);
+            ogs_sbi_client_handler, request,
+            OGS_UINT_TO_POINTER(subscription_data->pool_id));
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);

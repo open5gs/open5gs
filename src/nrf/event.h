@@ -27,13 +27,11 @@ extern "C" {
 #endif
 
 typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
-typedef struct ogs_sbi_subscription_data_s ogs_sbi_subscription_data_t;
 
 typedef struct nrf_event_s {
     ogs_event_t h;
 
     ogs_sbi_nf_instance_t *nf_instance;
-    ogs_sbi_subscription_data_t *subscription_data;
 } nrf_event_t;
 
 nrf_event_t *nrf_event_new(int id);

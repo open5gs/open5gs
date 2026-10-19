@@ -683,7 +683,8 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         if (!subscription_data->t_validity) {
             subscription_data->t_validity =
                 ogs_timer_add(ogs_app()->timer_mgr,
-                    nrf_timer_subscription_validity, subscription_data);
+                    nrf_timer_subscription_validity,
+                    OGS_UINT_TO_POINTER(subscription_data->pool_id));
             ogs_assert(subscription_data->t_validity);
         }
         ogs_timer_start(subscription_data->t_validity,
@@ -850,7 +851,8 @@ bool nrf_nnrf_handle_nf_status_update(
     if (!subscription_data->t_validity) {
         subscription_data->t_validity =
             ogs_timer_add(ogs_app()->timer_mgr,
-                nrf_timer_subscription_validity, subscription_data);
+                nrf_timer_subscription_validity,
+                OGS_UINT_TO_POINTER(subscription_data->pool_id));
         ogs_assert(subscription_data->t_validity);
     }
     ogs_timer_start(subscription_data->t_validity,
