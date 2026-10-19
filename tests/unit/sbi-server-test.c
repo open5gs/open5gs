@@ -28,10 +28,11 @@
 
 #define TEST_BODY "{\"nfInstanceId\":\"test\"}"
 #define OTHER_BODY "{\"cause\":\"OTHER_RESPONSE\"}"
+#define LARGE_BODY_LEN (2 * 16384 + 17)
 
 typedef struct test_peer_s {
     ogs_pool_id_t stream_id;
-    char body[256];
+    char body[LARGE_BODY_LEN + 1];
     size_t body_len;
 } test_peer_t;
 
@@ -261,12 +262,76 @@ out:
     test_conn_close(&conn);
 }
 
+/* The peer opens its 8-byte window between partial DATA frames. */
+static void partial_data_func(abts_case *tc, void *data)
+{
+    test_conn_t conn;
+    ogs_sbi_stream_t *stream = NULL;
+
+    stream = test_conn_open(&conn, 8);
+    ABTS_PTR_NOTNULL(tc, stream);
+    if (!stream)
+        goto out;
+
+    ABTS_TRUE(tc, server_send_response(stream, test_response(TEST_BODY)));
+    server_to_client(conn.sbi_sess, conn.client);
+    ABTS_INT_EQUAL(tc, 8, peer.body_len);
+    ABTS_TRUE(tc, memcmp(peer.body, TEST_BODY, 8) == 0);
+    ABTS_PTR_EQUAL(tc, stream, stream_find_by_id(peer.stream_id));
+
+    client_to_server(conn.client, conn.sbi_sess);
+    server_to_client(conn.sbi_sess, conn.client);
+    ABTS_INT_EQUAL(tc, 16, peer.body_len);
+    ABTS_TRUE(tc, memcmp(peer.body, TEST_BODY, 16) == 0);
+    ABTS_PTR_EQUAL(tc, stream, stream_find_by_id(peer.stream_id));
+
+    client_to_server(conn.client, conn.sbi_sess);
+    server_to_client(conn.sbi_sess, conn.client);
+    ABTS_INT_EQUAL(tc, strlen(TEST_BODY), peer.body_len);
+    ABTS_TRUE(tc, peer.body_len == strlen(TEST_BODY) &&
+            memcmp(peer.body, TEST_BODY, peer.body_len) == 0);
+    ABTS_PTR_EQUAL(tc, NULL, stream_find_by_id(peer.stream_id));
+
+out:
+    test_conn_close(&conn);
+}
+
+/* An open window still limits each DATA frame to the default 16 KiB. */
+static void large_data_func(abts_case *tc, void *data)
+{
+    test_conn_t conn;
+    ogs_sbi_stream_t *stream = NULL;
+    char body[LARGE_BODY_LEN + 1];
+    int i;
+
+    for (i = 0; i < LARGE_BODY_LEN; i++)
+        body[i] = 'a' + i % 26;
+    body[LARGE_BODY_LEN] = '\0';
+
+    stream = test_conn_open(&conn, 65535);
+    ABTS_PTR_NOTNULL(tc, stream);
+    if (!stream)
+        goto out;
+
+    ABTS_TRUE(tc, server_send_response(stream, test_response(body)));
+    server_to_client(conn.sbi_sess, conn.client);
+    ABTS_INT_EQUAL(tc, LARGE_BODY_LEN, peer.body_len);
+    ABTS_TRUE(tc, peer.body_len == LARGE_BODY_LEN &&
+            memcmp(peer.body, body, LARGE_BODY_LEN) == 0);
+    ABTS_PTR_EQUAL(tc, NULL, stream_find_by_id(peer.stream_id));
+
+out:
+    test_conn_close(&conn);
+}
+
 abts_suite *test_sbi_server(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, deferred_data_func, NULL);
     abts_run_test(suite, second_response_func, NULL);
+    abts_run_test(suite, partial_data_func, NULL);
+    abts_run_test(suite, large_data_func, NULL);
 
     return suite;
 }

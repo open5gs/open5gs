@@ -115,6 +115,7 @@ typedef struct ogs_sbi_stream_s {
     struct {
         void                *data;
         size_t              len;
+        size_t              sent;
     } body;
     bool                    responded;
 
@@ -596,6 +597,8 @@ static ssize_t response_read_callback(nghttp2_session *session,
 #endif
 
     ogs_sbi_stream_t *stream = NULL;
+    size_t n;
+    bool last;
 
     ogs_assert(session);
 
@@ -607,12 +610,25 @@ static ssize_t response_read_callback(nghttp2_session *session,
 
     ogs_assert(stream->body.data);
     ogs_assert(stream->body.len);
+    ogs_assert(stream->body.sent < stream->body.len);
+
+    /*
+     * nghttp2 limits each DATA frame to `length` bytes (frame size and
+     * flow-control window). A longer body goes out over several frames.
+     */
+    n = ogs_min(length, stream->body.len - stream->body.sent);
+    last = (stream->body.sent + n == stream->body.len);
 
 #if USE_SEND_DATA_WITH_NO_COPY
+    /* on_send_data() copies these n bytes and advances body.sent */
     *data_flags |= NGHTTP2_DATA_FLAG_NO_COPY;
 #else
-    memcpy(buf, stream->body.data, stream->body.len);
+    memcpy(buf, (uint8_t *)stream->body.data + stream->body.sent, n);
+    stream->body.sent += n;
 #endif
+
+    if (!last)
+        return n;
 
     *data_flags |= NGHTTP2_DATA_FLAG_EOF;
 
@@ -627,7 +643,7 @@ static ssize_t response_read_callback(nghttp2_session *session,
     }
 #endif
 
-    return stream->body.len;
+    return n;
 }
 
 static bool server_send_rspmem_persistent(
@@ -1860,7 +1876,10 @@ static int on_send_data(nghttp2_session *session, nghttp2_frame *frame,
         ogs_pkbuf_put_u8(pkbuf, padlen-1);
     }
 
-    ogs_pkbuf_put_data(pkbuf, stream->body.data, stream->body.len);
+    ogs_assert(length <= stream->body.len - stream->body.sent);
+    ogs_pkbuf_put_data(pkbuf,
+            (uint8_t *)stream->body.data + stream->body.sent, length);
+    stream->body.sent += length;
 
     if (padlen > 0) {
         memset(pkbuf->tail, 0, padlen-1);
