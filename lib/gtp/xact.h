@@ -95,6 +95,9 @@ typedef struct ogs_gtp_xact_s {
     void (*cb)(ogs_gtp_xact_t *, void *); /**< Local timer expiration handler */
     void            *data;          /**< Transaction Data */
 
+    /* Cleanup external references before teardown; must not delete the xact. */
+    void (*delete_cb)(ogs_gtp_xact_t *);
+
     int             step;           /**< Current step in the sequence.
                                          1 : Initial
                                          2 : Triggered

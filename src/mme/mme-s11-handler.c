@@ -60,6 +60,16 @@ static uint8_t esm_cause_from_gtp(uint8_t gtp_cause)
     return OGS_NAS_ESM_CAUSE_NETWORK_FAILURE;
 }
 
+static void gtp_update_bearer_xact_delete(ogs_gtp_xact_t *xact)
+{
+    mme_bearer_t *bearer = NULL;
+
+    bearer = mme_bearer_find_by_id(OGS_POINTER_TO_UINT(xact->peer_data));
+    if (bearer && ogs_list_exists(
+                &bearer->update.xact_list, &xact->to_update_node))
+        ogs_list_remove(&bearer->update.xact_list, &xact->to_update_node);
+}
+
 static void gtp_remote_peer_timeout(ogs_gtp_xact_t *xact, void *data)
 {
     char buf[OGS_ADDRSTRLEN];
@@ -1289,6 +1299,7 @@ void mme_s11_handle_update_bearer_request(
 
     xact->peer_cb = gtp_remote_peer_timeout;
     xact->peer_data = OGS_UINT_TO_POINTER(bearer->id);
+    xact->delete_cb = gtp_update_bearer_xact_delete;
 
     ogs_list_add(&bearer->update.xact_list, &xact->to_update_node);
 

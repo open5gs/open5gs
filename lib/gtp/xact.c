@@ -1277,6 +1277,9 @@ static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact)
             OGS_ADDR(&xact->gnode->addr, buf),
             OGS_PORT(&xact->gnode->addr));
 
+    if (xact->delete_cb)
+        xact->delete_cb(xact);
+
     if (xact->seq[0].pkbuf)
         ogs_pkbuf_free(xact->seq[0].pkbuf);
     if (xact->seq[1].pkbuf)

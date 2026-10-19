@@ -36,6 +36,7 @@ static struct {
     ogs_timer_mgr_t *timers;
     int air, deletes, continuation, eir, smc, rejects, delete_action, releases;
     int xacts;
+    int pages, modifies;
     uint8_t reject_cause;
     uint32_t m_tmsi;
 } *f;
@@ -72,6 +73,17 @@ static mme_sess_t *attach_sess(ogs_pool_id_t id)
 }
 static sgw_ue_t *attach_sgw(ogs_pool_id_t id)
 { return &f->sgw; }
+static mme_bearer_t *attach_bearer(ogs_pool_id_t id)
+{
+    int i;
+    for (i = 0; i < 2; i++)
+        if (f->bearer[i].id == id) return &f->bearer[i];
+    return NULL;
+}
+static int attach_paging(mme_ue_t *ue, S1AP_CNDomain_t domain)
+{ f->pages++; return OGS_OK; }
+static int attach_modify_bearer(mme_bearer_t *bearer, int qos, int tft)
+{ f->modifies++; return OGS_OK; }
 static int attach_commit(ogs_gtp_xact_t *xact)
 {
     if (f->xacts)
@@ -142,6 +154,9 @@ void emm_state_exception(ogs_fsm_t *, mme_event_t *);
 #include "../../src/mme/emm-sm.c"
 
 /* Run the real EIR/ULR choice and asynchronous Delete Session Response path. */
+#define mme_bearer_find_by_id attach_bearer
+#define s1ap_send_paging attach_paging
+#define nas_eps_send_modify_bearer_context_request attach_modify_bearer
 #define mme_send_delete_session_or_mme_ue_context_release attach_delete_or_release
 #define mme_send_release_access_bearer_or_ue_context_release attach_access_release
 #define mme_send_after_paging attach_after_paging
@@ -790,6 +805,83 @@ static void delete_timeout_cancels_attach(abts_case *tc, void *data)
     }
 }
 
+static void update_bearer_holding_expiry(abts_case *tc, void *data)
+{
+    ogs_timer_mgr_t *saved_timers = ogs_app()->timer_mgr;
+    uint64_t saved_xacts = ogs_app()->pool.xact;
+    ogs_app_local_conf_t saved_conf = *ogs_local_conf();
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
+    ogs_gtp_node_t node = {0};
+    ogs_gtp2_header_t header = {0};
+    ogs_gtp2_update_bearer_request_t request = {0};
+    ogs_gtp_xact_t *xact = NULL;
+    ogs_pool_id_t id;
+    uint8_t qos[GTP2_BEARER_QOS_LEN] = {0};
+
+    fixture_init(true);
+    f->ue.enb_ue_id = OGS_INVALID_POOL_ID;
+    f->bearer[0].id = 5;
+    f->bearer[0].sess_id = f->sess[0].id;
+    f->bearer[0].ebi = 5;
+    node.addr.sin.sin_family = AF_INET;
+    ogs_app()->pool.xact = 1;
+    ogs_app()->timer_mgr = ogs_timer_mgr_create(3);
+    ogs_local_conf()->time.message.gtp.t3_holding_duration =
+        ogs_time_from_sec(60);
+    ogs_local_conf()->time.message.gtp.t3_response_duration =
+        ogs_time_from_sec(5);
+    ogs_local_conf()->time.message.gtp.n3_holding_rcount = 1;
+    ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp_xact_init());
+
+    header.type = OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE;
+    header.teid_presence = 1;
+    header.sqn = OGS_GTP2_XID_TO_SQN(1);
+    ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp_xact_receive(&node, &header, &xact));
+    ogs_assert(xact);
+    id = xact->id;
+    request.bearer_contexts.presence = 1;
+    request.bearer_contexts.eps_bearer_id.presence = 1;
+    request.bearer_contexts.eps_bearer_id.u8 = f->bearer[0].ebi;
+    qos[0] = 0x20;
+    qos[1] = 9;
+    request.bearer_contexts.bearer_level_qos.presence = 1;
+    request.bearer_contexts.bearer_level_qos.len = sizeof(qos);
+    request.bearer_contexts.bearer_level_qos.data = qos;
+
+    mme_s11_handle_update_bearer_request(xact, &f->ue, &request);
+    ABTS_INT_EQUAL(tc, 1, ogs_list_count(&f->bearer[0].update.xact_list));
+    ABTS_INT_EQUAL(tc, MME_PAGING_TYPE_UPDATE_BEARER, f->ue.paging.type);
+    ABTS_INT_EQUAL(tc, 1, f->pages);
+    ABTS_INT_EQUAL(tc, 0, f->modifies);
+    ABTS_TRUE(tc, xact->tm_holding->running);
+    ABTS_TRUE(tc, !xact->tm_peer->running);
+
+    /* The UE answers paging after the GTP holding timer has deleted xact. */
+    ogs_timer_start(xact->tm_holding, -1);
+    ogs_timer_mgr_expire(ogs_app()->timer_mgr);
+    ABTS_PTR_EQUAL(tc, NULL, ogs_gtp_xact_find_by_id(id));
+    ABTS_TRUE(tc, ogs_list_empty(&node.remote_list));
+    ABTS_TRUE(tc, ogs_list_empty(&f->bearer[0].update.xact_list));
+
+    f->ue.enb_ue_id = f->enb.id;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
+    mme_send_after_paging(&f->ue, false);
+    ogs_log_set_domain_level(__emm_log_domain, level);
+    ABTS_INT_EQUAL(tc, 0, f->modifies);
+    ABTS_INT_EQUAL(tc, 0, f->ue.paging.type);
+    ABTS_INT_EQUAL(tc, OGS_INFINITE_TIME,
+            ogs_timer_mgr_next(ogs_app()->timer_mgr));
+
+    ogs_gtp_xact_delete_all(&node);
+    ogs_gtp_xact_final();
+    ogs_timer_mgr_destroy(ogs_app()->timer_mgr);
+    ogs_app()->timer_mgr = saved_timers;
+    ogs_app()->pool.xact = saved_xacts;
+    *ogs_local_conf() = saved_conf;
+    fixture_final();
+}
+
 abts_suite *test_mme_attach(abts_suite *suite)
 {
     int i;
@@ -815,6 +907,7 @@ abts_suite *test_mme_attach(abts_suite *suite)
     abts_run_test(suite, last_delete_continues_attach, NULL);
     abts_run_test(suite, eir_policy_completes_attach, NULL);
     abts_run_test(suite, delete_timeout_cancels_attach, NULL);
+    abts_run_test(suite, update_bearer_holding_expiry, NULL);
     *mme_self() = *saved;
     ogs_free(saved);
     return suite;
