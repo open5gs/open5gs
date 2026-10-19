@@ -92,6 +92,9 @@ typedef struct ogs_sbi_session_s {
 
     struct h2_settings      settings;
     SSL*                    ssl;
+
+    /* Send queued responses after nghttp2_session_mem_recv() returns. */
+    bool                    in_recv;
 } ogs_sbi_session_t;
 
 typedef struct ogs_sbi_stream_s {
@@ -101,7 +104,7 @@ typedef struct ogs_sbi_stream_s {
 
     int32_t                 stream_id;
     ogs_sbi_request_t       *request;
-    bool                    memory_overflow;
+    bool                    request_rejected;
 
     size_t                  header_list_size;
 
@@ -1139,8 +1142,10 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
         ogs_pkbuf_put(pkbuf, n);
 
         ogs_assert(sbi_sess->session);
+        sbi_sess->in_recv = true;
         readlen = nghttp2_session_mem_recv(
                 sbi_sess->session, pkbuf->data, pkbuf->len);
+        sbi_sess->in_recv = false;
         if (readlen < 0) {
             ogs_error("nghttp2_session_mem_recv() failed (%d:%s)",
                         (int)readlen, nghttp2_strerror((int)readlen));
@@ -1169,8 +1174,11 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
              * by nghttp2_session_want_write(), we need to call session_send()
              * directly to send it.
              */
-            if (nghttp2_session_want_write(sbi_sess->session))
-                session_send(sbi_sess);
+            if (nghttp2_session_want_write(sbi_sess->session) &&
+                session_send(sbi_sess) != OGS_OK) {
+                ogs_error("session_send() failed");
+                session_remove(sbi_sess);
+            }
         }
     } else {
         if (n < 0) {
@@ -1308,7 +1316,8 @@ static int on_frame_recv(nghttp2_session *session,
         request = stream->request;
         ogs_assert(request);
 
-        if (frame->headers.cat == NGHTTP2_HCAT_REQUEST) {
+        if (frame->headers.cat == NGHTTP2_HCAT_REQUEST &&
+            !stream->request_rejected) {
             const char *expect100 =
                 ogs_sbi_header_get(request->http.headers, OGS_SBI_EXPECT);
             if (expect100 && ogs_strcasecmp(expect100, "100-continue") == 0) {
@@ -1341,11 +1350,13 @@ static int on_frame_recv(nghttp2_session *session,
         if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM) {
             ogs_log_level_e level = OGS_LOG_DEBUG;
 
-            if (stream->memory_overflow == true)
+            if (stream->request_rejected == true)
                 level = OGS_LOG_ERROR;
 
             ogs_log_message(level, 0,
-                    "[%s] %s", request->h.method, request->h.uri);
+                    "[%s] %s",
+                    request->h.method ? request->h.method : "(unknown)",
+                    request->h.uri ? request->h.uri : "(unknown)");
 
             if (request->http.content_length && request->http.content) {
                 ogs_log_message(level, 0,
@@ -1353,8 +1364,8 @@ static int on_frame_recv(nghttp2_session *session,
                 ogs_log_message(level, 0, "%s", request->http.content);
             }
 
-            if (stream->memory_overflow == true) {
-                ogs_error("[DROP] Overflow");
+            if (stream->request_rejected == true) {
+                ogs_error("[DROP] Rejected request");
                 break;
             }
 
@@ -1362,12 +1373,11 @@ static int on_frame_recv(nghttp2_session *session,
                         OGS_UINT_TO_POINTER(stream->id)) != OGS_OK) {
                 ogs_warn("server callback error");
 
-                /* The callback may have sent a response and closed
-                 * the stream. */
+                /* A submitted response is sent after receiving returns. */
                 stream = nghttp2_session_get_stream_user_data(
                         session, frame->hd.stream_id);
-                if (!stream) {
-                    ogs_error("The server callback already sent a response "
+                if (!stream || stream->responded) {
+                    ogs_error("The server callback already submitted a response "
                             "but returned an error; it must return OGS_OK "
                             "instead [%d]", frame->hd.stream_id);
                     return 0;
@@ -1506,6 +1516,9 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
     request = stream->request;
     ogs_assert(request);
 
+    if (stream->request_rejected)
+        return 0;
+
     ogs_assert(name);
     namebuf = nghttp2_rcbuf_get_buf(name);
     ogs_assert(namebuf.base);
@@ -1568,6 +1581,7 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
             if (j >= MAX_NUM_OF_PARAM_IN_QUERY) {
                 ogs_error("Too many query params (max=%d)",
                         MAX_NUM_OF_PARAM_IN_QUERY);
+                stream->request_rejected = true;
                 ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
                         "Too many query parameters", NULL, NULL);
@@ -1577,7 +1591,9 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
                 ogs_free(namestr);
                 ogs_free(valuestr);
 
-                return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+                /* Keep a submitted error response; otherwise reset as before. */
+                return stream->responded ? 0 :
+                    NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
             }
 
             if (strlen(params[j].key))
@@ -1634,9 +1650,12 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
     ogs_assert(data);
     ogs_assert(len);
 
+    if (stream->request_rejected)
+        return 0;
+
 #define MAX_HTTP_CONTENT_LEN (256 * 1024 * 1024) /* 256MB */
     if (request->http.content_length + len > MAX_HTTP_CONTENT_LEN) {
-        stream->memory_overflow = true;
+        stream->request_rejected = true;
 
         ogs_error("Payload too large : Content-Length[%d], len[%d]",
                     (int)request->http.content_length, (int)len);
@@ -1645,7 +1664,7 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
                 OGS_SBI_HTTP_STATUS_PAYLOAD_TOO_LARGE,
                 NULL, "Payload too large", NULL, NULL);
 
-        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+        return 0;
     }
 
     if (request->http.content == NULL) {
@@ -1661,7 +1680,7 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
     }
 
     if (!content) {
-        stream->memory_overflow = true;
+        stream->request_rejected = true;
 
         ogs_error("Memory Overflow : Content-Length[%d], len[%d]",
                     (int)request->http.content_length, (int)len);
@@ -1671,7 +1690,7 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
                 OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE,
                 NULL, "Memory Overflow", NULL, NULL);
 
-        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+        return 0;
     }
 
     request->http.content = content;
@@ -1929,6 +1948,10 @@ static int session_send(ogs_sbi_session_t *sbi_sess)
 
     ogs_assert(sbi_sess);
     ogs_assert(sbi_sess->session);
+
+    /* nghttp2 permits submitting frames, but not sending, in its callbacks. */
+    if (sbi_sess->in_recv)
+        return OGS_OK;
 
 #if USE_SEND_DATA_WITH_NO_COPY
     for (;;) {
