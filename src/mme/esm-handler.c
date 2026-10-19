@@ -160,7 +160,7 @@ int esm_handle_pdn_connectivity_request(
         } else {
             apn = req->access_point_name.apn;
         }
-        sess->session = mme_session_find_by_apn(mme_ue, apn);
+        mme_sess_set_session(sess, mme_session_find_by_apn(mme_ue, apn));
         if (!sess->session) {
             /* Invalid APN */
             r = nas_eps_send_pdn_connectivity_reject(
@@ -212,7 +212,7 @@ int esm_handle_pdn_connectivity_request(
 
     if (!sess->session) {
         /* Default APN */
-        sess->session = mme_default_session(mme_ue);
+        mme_sess_set_session(sess, mme_default_session(mme_ue));
     }
 
     if (sess->session) {
@@ -288,8 +288,8 @@ int esm_handle_information_response(
 
     if (rsp->presencemask &
             OGS_NAS_EPS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT) {
-        sess->session = mme_session_find_by_apn(
-                            mme_ue, rsp->access_point_name.apn);
+        mme_sess_set_session(sess, mme_session_find_by_apn(
+                            mme_ue, rsp->access_point_name.apn));
     }
 
     if (rsp->presencemask &

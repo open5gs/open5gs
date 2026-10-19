@@ -409,8 +409,10 @@ static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
         } else {
             ogs_error("Invalid PDN_TYPE[%d]",
                 slice_data->session[i].session_type);
-            if (mme_ue->session[i].name)
+            if (mme_ue->session[i].name) {
                 ogs_free(mme_ue->session[i].name);
+                mme_ue->session[i].name = NULL;
+            }
             break;
         }
         memcpy(&mme_ue->session[i].ue_ip, &slice_data->session[i].ue_ip,

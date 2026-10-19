@@ -4554,20 +4554,30 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
             /* Phase-2 : Move Session Context from OLD to NEW MME-UE Context */
             ogs_assert(ogs_list_empty(&mme_ue->sess_list));
 
-            /* The retained PDNs still reference the old UE's subscription
-             * entries. Transfer their ownership and rebind those references
-             * before removing the old UE, including when the target has a
-             * previous subscription but no PDNs of its own. */
+            /*
+             * Preserve subscription data when migrating retained PDNs, even
+             * when the target already has a subscription but no PDNs.
+             *
+             * Keeping PDNs through GUTI re-attach authentication (#4577) also
+             * requires their APN data to survive old-UE removal. Commit
+             * d86e013f fixed this by transferring the subscription list and
+             * rebinding sess->session, which pointed into the old UE's array.
+             *
+             * mme_sess_set_session() now gives each PDN its own configuration
+             * and APN name. These allocations stay with the same PDN objects
+             * during migration, so pointer rebinding is no longer needed.
+             *
+             * The subscription list and default APN identifier must still
+             * move to the new UE. Free the target's previous subscription
+             * first, then clear the old count after the shallow copy so
+             * old-UE removal cannot free the transferred APN names.
+             */
             ogs_assert(old_mme_ue->num_of_session <= OGS_MAX_NUM_OF_SESS);
             mme_session_remove_all(mme_ue);
             mme_ue->num_of_session = old_mme_ue->num_of_session;
             mme_ue->context_identifier = old_mme_ue->context_identifier;
             for (i = 0; i < mme_ue->num_of_session; i++) {
                 mme_ue->session[i] = old_mme_ue->session[i];
-                ogs_list_for_each(&old_mme_ue->sess_list, old_sess) {
-                    if (old_sess->session == &old_mme_ue->session[i])
-                        old_sess->session = &mme_ue->session[i];
-                }
             }
             old_mme_ue->num_of_session = 0;
 
@@ -4930,6 +4940,8 @@ void mme_sess_remove(mme_sess_t *sess)
 
     mme_dns_sess_clear(sess);
 
+    mme_sess_set_session(sess, NULL);
+
     ogs_pool_id_free(&mme_sess_pool, sess);
 
     stats_remove_mme_session();
@@ -4947,6 +4959,41 @@ void mme_sess_remove_all(mme_ue_t *mme_ue)
 
         sess = next_sess;
     }
+}
+
+void mme_sess_set_session(mme_sess_t *sess, const ogs_session_t *session)
+{
+    ogs_session_t *new_session = NULL;
+
+    ogs_assert(sess);
+
+    if (session) {
+        ogs_assert(session->name);
+        new_session = ogs_calloc(1, sizeof(*new_session));
+        ogs_assert(new_session);
+        new_session->name = ogs_strdup(session->name);
+        ogs_assert(new_session->name);
+
+        /* Copy only the EPC fields populated by S6a/Gn. Framed routes are
+         * delivered directly to the SMF and are not owned by the MME. */
+        new_session->context_identifier = session->context_identifier;
+        new_session->session_type = session->session_type;
+        new_session->qos = session->qos;
+        new_session->ambr = session->ambr;
+        new_session->ue_ip = session->ue_ip;
+        new_session->smf_ip = session->smf_ip;
+        memcpy(new_session->charging_characteristics,
+                session->charging_characteristics,
+                sizeof(new_session->charging_characteristics));
+        new_session->charging_characteristics_presence =
+            session->charging_characteristics_presence;
+    }
+
+    if (sess->session) {
+        ogs_free(sess->session->name);
+        ogs_free(sess->session);
+    }
+    sess->session = new_session;
 }
 
 mme_sess_t *mme_sess_find_by_pti(const mme_ue_t *mme_ue, uint8_t pti)
@@ -5419,6 +5466,7 @@ void mme_session_remove_all(mme_ue_t *mme_ue)
         if (mme_ue->session[i].name)
             ogs_free(mme_ue->session[i].name);
     }
+    memset(mme_ue->session, 0, sizeof(mme_ue->session));
 
     mme_ue->num_of_session = 0;
 }

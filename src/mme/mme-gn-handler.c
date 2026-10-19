@@ -287,7 +287,9 @@ static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_
         ogs_assert(sess);
     }
 
-    sess->session = ogs_sess;
+    mme_sess_set_session(sess, ogs_sess);
+    if (!sess->session->session_type)
+        sess->session->session_type = gtp1_pdp_ctx->pdp_type_num[0];
     sess->pgw_s5c_teid = gtp1_pdp_ctx->ul_teic;
     sess->pgw_s5c_ip = gtp1_pdp_ctx->ggsn_address_c;
     ogs_ip_to_paa(&gtp1_pdp_ctx->pdp_address[0], &sess->paa);

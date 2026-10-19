@@ -1055,6 +1055,7 @@ typedef struct mme_sess_s {
     /* Related Context */
     ogs_pool_id_t   mme_ue_id;
 
+    /* Owned PDN configuration, independent of the UE subscription list. */
     ogs_session_t   *session;
 
     /* PDN Address Allocation (PAA) */
@@ -1390,6 +1391,7 @@ void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue);
 mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti);
 void mme_sess_remove(mme_sess_t *sess);
 void mme_sess_remove_all(mme_ue_t *mme_ue);
+void mme_sess_set_session(mme_sess_t *sess, const ogs_session_t *session);
 mme_sess_t *mme_sess_find_by_pti(const mme_ue_t *mme_ue, uint8_t pti);
 mme_sess_t *mme_sess_find_by_ebi(const mme_ue_t *mme_ue, uint8_t ebi);
 mme_sess_t *mme_sess_find_by_apn(const mme_ue_t *mme_ue, const char *apn);
