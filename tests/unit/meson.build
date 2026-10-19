@@ -23,6 +23,7 @@ testunit_unit_sources = files('''
     gtp-message-test.c
     ngap-message-test.c
     sbi-message-test.c
+    sbi-server-test.c
     security-test.c
     nrf-discovery-test.c
     crash-test.c

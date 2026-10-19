@@ -108,6 +108,17 @@ typedef struct ogs_sbi_stream_s {
     ogs_sbi_session_t       *session;
 
     /*
+     * Response body handed to nghttp2. DATA frames can be deferred by
+     * HTTP/2 flow control until long after the caller has freed the
+     * response, so the stream owns its content until it is removed.
+     */
+    struct {
+        void                *data;
+        size_t              len;
+    } body;
+    bool                    responded;
+
+    /*
      * Outbound SBI transactions originated by this inbound stream.
      * Populated automatically when ogs_sbi_discover_and_send() sees
      * xact->assoc_stream_id pointing at this stream, and drained at
@@ -584,7 +595,6 @@ static ssize_t response_read_callback(nghttp2_session *session,
     int rv;
 #endif
 
-    ogs_sbi_response_t *response = NULL;
     ogs_sbi_stream_t *stream = NULL;
 
     ogs_assert(session);
@@ -595,17 +605,13 @@ static ssize_t response_read_callback(nghttp2_session *session,
         return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
     }
 
-    ogs_assert(source);
-    response = source->ptr;
-    ogs_assert(response);
-
-    ogs_assert(response->http.content);
-    ogs_assert(response->http.content_length);
+    ogs_assert(stream->body.data);
+    ogs_assert(stream->body.len);
 
 #if USE_SEND_DATA_WITH_NO_COPY
     *data_flags |= NGHTTP2_DATA_FLAG_NO_COPY;
 #else
-    memcpy(buf, response->http.content, response->http.content_length);
+    memcpy(buf, stream->body.data, stream->body.len);
 #endif
 
     *data_flags |= NGHTTP2_DATA_FLAG_EOF;
@@ -621,7 +627,7 @@ static ssize_t response_read_callback(nghttp2_session *session,
     }
 #endif
 
-    return response->http.content_length;
+    return stream->body.len;
 }
 
 static bool server_send_rspmem_persistent(
@@ -655,6 +661,13 @@ static bool server_send_rspmem_persistent(
     ogs_assert(sock);
     fd = sock->fd;
     ogs_assert(fd != INVALID_SOCKET); /* Check if session is removed */
+
+    /* A response without a body must also reject a second submission. */
+    if (stream->responded) {
+        ogs_error("Response already submitted on stream [%d]",
+                stream->stream_id);
+        return true;
+    }
 
     nvlen = 3; /* :status && server && date */
 
@@ -703,11 +716,17 @@ static bool server_send_rspmem_persistent(
     if (response->http.content && response->http.content_length) {
         nghttp2_data_provider data_prd;
 
-        data_prd.source.ptr = response;
+        stream->body.data = response->http.content;
+        stream->body.len = response->http.content_length;
+        /* Keep the body alive when ogs_sbi_response_free() runs. */
+        response->http.content = NULL;
+
+        /* The callbacks retrieve the body from the stream by stream_id. */
+        data_prd.source.ptr = NULL;
         data_prd.read_callback = response_read_callback;
 
         ogs_debug("SENDING...: %d", (int)response->http.content_length);
-        ogs_debug("%s", response->http.content);
+        ogs_debug("%s", (char *)stream->body.data);
 
         rv = nghttp2_submit_response(sbi_sess->session,
                 stream->stream_id, nva, nvlen, &data_prd);
@@ -715,6 +734,8 @@ static bool server_send_rspmem_persistent(
         rv = nghttp2_submit_response(sbi_sess->session,
                 stream->stream_id, nva, nvlen, NULL);
     }
+
+    stream->responded = true;
 
     if (rv != OGS_OK) {
         ogs_error("nghttp2_submit_response(%d) failed (%d:%s)",
@@ -880,6 +901,9 @@ static void stream_remove(ogs_sbi_stream_t *stream)
 
     ogs_assert(stream->request);
     ogs_sbi_request_free(stream->request);
+
+    if (stream->body.data)
+        ogs_free(stream->body.data);
 
     ogs_pool_id_free(&stream_pool, stream);
 }
@@ -1805,7 +1829,6 @@ static int on_send_data(nghttp2_session *session, nghttp2_frame *frame,
 {
     ogs_sbi_session_t *sbi_sess = user_data;
 
-    ogs_sbi_response_t *response = NULL;
     ogs_sbi_stream_t *stream = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
     size_t padlen = 0;
@@ -1821,12 +1844,8 @@ static int on_send_data(nghttp2_session *session, nghttp2_frame *frame,
 
     ogs_assert(sbi_sess);
 
-    ogs_assert(source);
-    response = source->ptr;
-    ogs_assert(response);
-
-    ogs_assert(response->http.content);
-    ogs_assert(response->http.content_length);
+    ogs_assert(stream->body.data);
+    ogs_assert(stream->body.len);
 
     ogs_assert(framehd);
     ogs_assert(length);
@@ -1841,8 +1860,7 @@ static int on_send_data(nghttp2_session *session, nghttp2_frame *frame,
         ogs_pkbuf_put_u8(pkbuf, padlen-1);
     }
 
-    ogs_pkbuf_put_data(pkbuf,
-            response->http.content, response->http.content_length);
+    ogs_pkbuf_put_data(pkbuf, stream->body.data, stream->body.len);
 
     if (padlen > 0) {
         memset(pkbuf->tail, 0, padlen-1);
