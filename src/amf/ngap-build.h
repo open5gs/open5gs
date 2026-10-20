@@ -65,6 +65,9 @@ ogs_pkbuf_t *ngap_build_downlink_ran_configuration_transfer(
     NGAP_SONConfigurationTransfer_t *transfer);
 
 ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue);
+ogs_pkbuf_t *ngap_build_path_switch_request_unsuccessful_transfer(
+        NGAP_Cause_PR group, long cause);
+ogs_pkbuf_t *ngap_build_path_switch_failure_by_sess(amf_ue_t *amf_ue);
 ogs_pkbuf_t *ngap_build_path_switch_failure(
         uint64_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id,
         NGAP_PDUSessionResourceToBeSwitchedDLList_t

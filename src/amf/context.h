@@ -888,6 +888,9 @@ typedef struct amf_sess_s {
         ogs_pkbuf_t *pdu_session_resource_setup_request;
         ogs_pkbuf_t *pdu_session_resource_modification_command;
         ogs_pkbuf_t *path_switch_request_ack;
+        /* Path Switch Request Unsuccessful Transfer of a PDU session the
+         * SMF did not switch (TS 38.413 9.3.4.20) */
+        ogs_pkbuf_t *path_switch_request_unsuccessful;
         ogs_pkbuf_t *handover_request;
         ogs_pkbuf_t *handover_command;
     } transfer;
