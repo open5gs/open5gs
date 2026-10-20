@@ -462,6 +462,47 @@ void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e)
     }
 }
 
+/*
+ * Only a session the UE still has may be re-established in the restarted
+ * UPF (TS 23.527 4.3.2: "the SMF may start restoring PFCP sessions in the
+ * UPF"). A session whose release is under way (any state but operational:
+ * waiting for the N1/N2 release, the PFCP deletion or the end of its
+ * policy association), or one that a later session of the UE with the
+ * same PDU session ID (5GC) or APN and RAT (EPC) has replaced, keeps its
+ * old UE IP address; installed again it would hold that address in the
+ * UPF while the SMF frees it at the end of the release, and the downlink
+ * for the address would go to a session the UE no longer has.
+ */
+static bool restoration_wanted(smf_ue_t *smf_ue, smf_sess_t *sess)
+{
+    smf_sess_t *current = NULL;
+
+    ogs_assert(smf_ue);
+    ogs_assert(sess);
+
+    if (!OGS_FSM_CHECK(&sess->sm, smf_gsm_state_operational)) {
+        ogs_warn("[%s:%s] Skip restoration: session not operational",
+                sess->epc ? smf_ue->imsi_bcd : smf_ue->supi,
+                sess->session.name);
+        return false;
+    }
+
+    if (sess->epc)
+        current = smf_sess_find_by_apn(
+                smf_ue, sess->session.name, sess->gtp_rat_type);
+    else
+        current = smf_sess_find_by_psi(smf_ue, sess->psi);
+
+    if (current != sess) {
+        ogs_warn("[%s:%s] Skip restoration: session replaced",
+                sess->epc ? smf_ue->imsi_bcd : smf_ue->supi,
+                sess->session.name);
+        return false;
+    }
+
+    return true;
+}
+
 static void pfcp_restoration(ogs_pfcp_node_t *node)
 {
     smf_ue_t *smf_ue = NULL;
@@ -477,6 +518,9 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
             ogs_assert(sess);
 
             if (node == sess->pfcp_node) {
+                if (!restoration_wanted(smf_ue, sess))
+                    continue;
+
                 if (sess->epc) {
                     ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
                         smf_ue->imsi_bcd, sess->session.name,
