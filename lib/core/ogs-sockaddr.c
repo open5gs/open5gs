@@ -799,12 +799,12 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
     return OGS_OK;
 }
 
-char *ogs_gethostname(ogs_sockaddr_t *addr)
+char *ogs_gethostname(const ogs_sockaddr_t *addr)
 {
     return addr->hostname;
 }
 
-char *ogs_ipstrdup(ogs_sockaddr_t *addr)
+char *ogs_ipstrdup(const ogs_sockaddr_t *addr)
 {
     char buf[OGS_ADDRSTRLEN + 1];
 
@@ -816,11 +816,11 @@ char *ogs_ipstrdup(ogs_sockaddr_t *addr)
     return ogs_strdup(buf);
 }
 
-char *ogs_sockaddr_to_string_static(ogs_sockaddr_t *sa_list)
+char *ogs_sockaddr_to_string_static(const ogs_sockaddr_t *sa_list)
 {
     static char dumpstr[OGS_HUGE_LEN] = { 0, };
     char *p, *last;
-    ogs_sockaddr_t *addr = NULL;
+    const ogs_sockaddr_t *addr = NULL;
 
     last = dumpstr + OGS_HUGE_LEN;
     p = dumpstr;

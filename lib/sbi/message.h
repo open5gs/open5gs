@@ -44,7 +44,7 @@ extern "C" {
                                                            POST PUT */
 #define OGS_SBI_HTTP_STATUS_TEMPORARY_REDIRECT      307 /* ALL */
 #define OGS_SBI_HTTP_STATUS_PERMANENT_REDIRECT      308 /* ALL */
-#define OGS_SBI_HTTP_STATUS_BAD_REQUEST             400 /* ALL */ 
+#define OGS_SBI_HTTP_STATUS_BAD_REQUEST             400 /* ALL */
 #define OGS_SBI_HTTP_STATUS_UNAUTHORIZED            401 /* ALL */
 #define OGS_SBI_HTTP_STATUS_FORBIDDEN               403 /* ALL */
 #define OGS_SBI_HTTP_STATUS_NOT_FOUND               404 /* ALL */
@@ -668,14 +668,14 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message);
 ogs_sbi_request_t *ogs_sbi_request_new(void);
 ogs_sbi_request_t *ogs_sbi_request_new_incoming(void);
 void ogs_sbi_request_free(ogs_sbi_request_t *request);
-ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message);
+ogs_sbi_request_t *ogs_sbi_build_request(const ogs_sbi_message_t *message);
 int ogs_sbi_parse_request(
         ogs_sbi_message_t *message, ogs_sbi_request_t *request);
 
 ogs_sbi_response_t *ogs_sbi_response_new(void);
 void ogs_sbi_response_free(ogs_sbi_response_t *response);
 ogs_sbi_response_t *ogs_sbi_build_response(
-        ogs_sbi_message_t *message, int status);
+        const ogs_sbi_message_t *message, int status);
 int ogs_sbi_parse_response(
         ogs_sbi_message_t *message, ogs_sbi_response_t *response);
 
@@ -684,7 +684,7 @@ void ogs_sbi_header_set(ogs_hash_t *ht, const char *key, const char *val);
     ogs_hash_get(ht, key, strlen(key))
 
 ogs_pkbuf_t *ogs_sbi_find_part_by_content_id(
-        ogs_sbi_message_t *message, char *content_id);
+        ogs_sbi_message_t *message, const char *content_id);
 
 int ogs_sbi_parse_header(ogs_sbi_message_t *message, ogs_sbi_header_t *header);
 void ogs_sbi_header_free(ogs_sbi_header_t *h);
@@ -697,12 +697,12 @@ void ogs_sbi_discovery_option_free(
 
 void ogs_sbi_discovery_option_set_target_nf_instance_id(
         ogs_sbi_discovery_option_t *discovery_option,
-        char *target_nf_instance_id);
+        const char *target_nf_instance_id);
 void ogs_sbi_discovery_option_set_requester_nf_instance_id(
         ogs_sbi_discovery_option_t *discovery_option,
-        char *requester_nf_instance_id);
+        const char *requester_nf_instance_id);
 void ogs_sbi_discovery_option_set_dnn(
-        ogs_sbi_discovery_option_t *discovery_option, char *dnn);
+        ogs_sbi_discovery_option_t *discovery_option, const char *dnn);
 
 void ogs_sbi_discovery_option_add_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
@@ -711,43 +711,43 @@ char *ogs_sbi_discovery_option_build_service_names(
         ogs_sbi_discovery_option_t *discovery_option);
 int ogs_sbi_discovery_option_parse_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
-        char *service_names);
+        const char *service_names);
 
 void ogs_sbi_discovery_option_add_snssais(
-        ogs_sbi_discovery_option_t *discovery_option, ogs_s_nssai_t *s_nssai);
+        ogs_sbi_discovery_option_t *discovery_option, const ogs_s_nssai_t *s_nssai);
 char *ogs_sbi_discovery_option_build_snssais(
         ogs_sbi_discovery_option_t *discovery_option);
 int ogs_sbi_discovery_option_parse_snssais(
-        ogs_sbi_discovery_option_t *discovery_option, char *snssais);
+        ogs_sbi_discovery_option_t *discovery_option, const char *snssais);
 
 void ogs_sbi_discovery_option_set_guami(
-        ogs_sbi_discovery_option_t *discovery_option, ogs_guami_t *guami);
+        ogs_sbi_discovery_option_t *discovery_option, const ogs_guami_t *guami);
 char *ogs_sbi_discovery_option_build_guami(
         ogs_sbi_discovery_option_t *discovery_option);
 int ogs_sbi_discovery_option_parse_guami(
-        ogs_sbi_discovery_option_t *discovery_option, char *guami);
+        ogs_sbi_discovery_option_t *discovery_option, const char *guami);
 
 void ogs_sbi_discovery_option_set_tai(
-        ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai);
+        ogs_sbi_discovery_option_t *discovery_option, const ogs_5gs_tai_t *tai);
 char *ogs_sbi_discovery_option_build_tai(
         ogs_sbi_discovery_option_t *discovery_option);
 int ogs_sbi_discovery_option_parse_tai(
-        ogs_sbi_discovery_option_t *discovery_option, char *tai);
+        ogs_sbi_discovery_option_t *discovery_option, const char *tai);
 
 void ogs_sbi_discovery_option_add_target_plmn_list(
         ogs_sbi_discovery_option_t *discovery_option,
-        ogs_plmn_id_t *target_plmn_id);
+        const ogs_plmn_id_t *target_plmn_id);
 void ogs_sbi_discovery_option_add_requester_plmn_list(
         ogs_sbi_discovery_option_t *discovery_option,
-        ogs_plmn_id_t *requester_plmn_id);
+        const ogs_plmn_id_t *requester_plmn_id);
 
 char *ogs_sbi_discovery_option_build_plmn_list(
-        ogs_plmn_id_t *plmn_list, int num_of_plmn_list);
+        const ogs_plmn_id_t *plmn_list, int num_of_plmn_list);
 int ogs_sbi_discovery_option_parse_plmn_list(
-        ogs_plmn_id_t *plmn_list, char *v);
+        ogs_plmn_id_t *plmn_list, const char *v);
 
 void ogs_sbi_discovery_option_set_hnrf_uri(
-        ogs_sbi_discovery_option_t *discovery_option, char *hnrf_uri);
+        ogs_sbi_discovery_option_t *discovery_option, const char *hnrf_uri);
 void ogs_sbi_discovery_option_clear_hnrf_uri(
         ogs_sbi_discovery_option_t *discovery_option);
 
