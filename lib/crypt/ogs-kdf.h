@@ -28,6 +28,9 @@
 extern "C" {
 #endif
 
+/* TS33.535: Kakma derivation function */
+void ogs_kdf_kakma(const uint8_t *kausf, const char *rid, uint8_t *kakma);
+
 /* TS33.501 Annex A.2 : Kausf derviation function */
 void ogs_kdf_kausf(
         uint8_t *ck, uint8_t *ik,
