@@ -81,6 +81,13 @@ typedef struct ogs_sbi_server_actions_s {
      */
     void (*xact_attach)(ogs_sbi_stream_t *stream, ogs_sbi_xact_t *xact);
     void (*xact_detach)(ogs_sbi_xact_t *xact);
+
+    /*
+     * Get the verified client certificate from the connection for this stream.
+     * Return NULL if unavailable. On success, the caller owns one reference
+     * and must release it with X509_free().
+     */
+    X509 *(*peer_certificate)(ogs_sbi_stream_t *stream);
 } ogs_sbi_server_actions_t;
 
 void ogs_sbi_server_init(int num_of_session_pool, int num_of_stream_pool);
@@ -113,6 +120,9 @@ bool ogs_sbi_server_send_problem(
         ogs_sbi_stream_t *stream, OpenAPI_problem_details_t *problem);
 
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream);
+/* Match a claimed hostname against the stream's verified client certificate. */
+bool ogs_sbi_server_verify_client_identity(
+        ogs_sbi_stream_t *stream, const char *name);
 
 ogs_pool_id_t ogs_sbi_id_from_stream(ogs_sbi_stream_t *stream);
 void *ogs_sbi_stream_find_by_id(ogs_pool_id_t id);

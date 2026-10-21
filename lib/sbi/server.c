@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sbi.h"
+#include <openssl/x509v3.h>
 
 extern const ogs_sbi_server_actions_t ogs_mhd_server_actions;
 extern const ogs_sbi_server_actions_t ogs_nghttp2_server_actions;
@@ -250,6 +251,41 @@ bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream)
 {
     return ogs_sbi_server_actions.server_from_stream(stream);
+}
+
+bool ogs_sbi_server_verify_client_identity(
+        ogs_sbi_stream_t *stream, const char *name)
+{
+    X509 *cert;
+    bool matched;
+
+    /*
+     * Require a nonempty hostname. X509_check_host() treats a leading dot
+     * (e.g. ".example.org") as a domain suffix pattern, so accepting that
+     * syntax would check a suffix instead of the claimed peer hostname.
+     */
+    if (!name || !*name || name[0] == '.')
+        return false;
+
+    /* A backend without this hook cannot provide a verified TLS identity. */
+    if (!ogs_sbi_server_actions.peer_certificate)
+        return false;
+
+    /* Acquire one certificate reference; NULL also covers a missing cert. */
+    cert = ogs_sbi_server_actions.peer_certificate(stream);
+    if (!cert)
+        return false;
+
+    /*
+     * Certificate trust and the claimed hostname are separate checks.
+     * Here, name length 0 means a NUL-terminated string, and flags 0 retain
+     * OpenSSL's default certificate wildcard rules and DNS SAN priority.
+     * CN fallback is allowed only when there is no DNS SAN. Only a return
+     * value of 1 is a match; a mismatch or error must reject the identity.
+     */
+    matched = X509_check_host(cert, name, 0, 0, NULL) == 1;
+    X509_free(cert); /* Release the reference acquired from the backend. */
+    return matched;
 }
 
 ogs_pool_id_t ogs_sbi_id_from_stream(ogs_sbi_stream_t *stream)

@@ -65,6 +65,8 @@ const ogs_sbi_server_actions_t ogs_mhd_server_actions = {
 
     xact_attach,
     xact_detach,
+    /* This backend does not expose a verified TLS client certificate. */
+    NULL, /* peer_certificate */
 };
 
 static void run(short when, ogs_socket_t fd, void *data);

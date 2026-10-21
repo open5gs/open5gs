@@ -45,6 +45,7 @@ static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream);
 static ogs_pool_id_t id_from_stream(ogs_sbi_stream_t *stream);
 static void *stream_find_by_id(ogs_pool_id_t id);
 
+static X509 *peer_certificate(ogs_sbi_stream_t *stream);
 static void xact_attach(ogs_sbi_stream_t *stream, ogs_sbi_xact_t *xact);
 static void xact_detach(ogs_sbi_xact_t *xact);
 
@@ -66,6 +67,7 @@ const ogs_sbi_server_actions_t ogs_nghttp2_server_actions = {
 
     xact_attach,
     xact_detach,
+    peer_certificate,
 };
 
 struct h2_settings {
@@ -798,6 +800,40 @@ static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream)
     ogs_assert(sbi_sess->server);
 
     return sbi_sess->server;
+}
+
+static X509 *peer_certificate(ogs_sbi_stream_t *stream)
+{
+    ogs_sbi_session_t *session;
+
+    ogs_assert(stream);
+    /* HTTP/2 streams share the TLS connection stored in their session. */
+    session = stream->session;
+    ogs_assert(session);
+
+    /*
+     * Require client verification to be enabled on an actual TLS connection.
+     * SSL_get_verify_result() reads the certificate verification result saved
+     * by OpenSSL during the handshake (or restored for a resumed session).
+     * X509_V_OK means no verification error was recorded. This does not check
+     * an application-level name such as the N32-c sender.
+     */
+    if (!session->server->verify_client || !session->ssl ||
+        SSL_get_verify_result(session->ssl) != X509_V_OK)
+        return NULL;
+
+    /*
+     * X509_V_OK is also possible when no peer certificate was presented;
+     * these getters return NULL in that case, which the caller must check.
+     * On success both APIs increment the certificate's reference count;
+     * the caller must release that reference with X509_free(). OpenSSL 3
+     * provides the explicit get1 name for this ownership convention.
+     */
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    return SSL_get1_peer_certificate(session->ssl);
+#else
+    return SSL_get_peer_certificate(session->ssl);
+#endif
 }
 
 static ogs_sbi_stream_t *stream_add(

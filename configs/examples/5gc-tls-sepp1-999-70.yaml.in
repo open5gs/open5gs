@@ -466,7 +466,7 @@ nssf:
       scp:
         - uri: http://127.0.1.200:7777
       nsi:
-        - uri: http://127.0.1.10:7777
+        - uri: http://nrf.5gc.mnc070.mcc999.3gppnetwork.org
           s_nssai:
             sst: 1
 bsf:
