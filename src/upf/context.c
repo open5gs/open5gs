@@ -29,8 +29,6 @@ static OGS_POOL(upf_n4_seid_pool, ogs_pool_id_t);
 
 static int context_initialized = 0;
 
-static void upf_sess_urr_acc_remove_all(upf_sess_t *sess);
-
 void upf_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -1035,7 +1033,7 @@ void upf_sess_urr_acc_remove(upf_sess_t *sess, ogs_pfcp_urr_id_t urr_id)
     memset(urr_acc, 0, sizeof(*urr_acc));
 }
 
-static void upf_sess_urr_acc_remove_all(upf_sess_t *sess)
+void upf_sess_urr_acc_remove_all(upf_sess_t *sess)
 {
     unsigned int i;
     for (i = 0; i < OGS_ARRAY_SIZE(sess->urr_acc); i++)

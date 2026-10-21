@@ -275,6 +275,8 @@ void upf_n4_handle_session_establishment_request(
 cleanup:
     upf_metrics_inst_by_cause_add(cause_value,
             UPF_METR_CTR_SM_N4SESSIONESTABFAIL, 1);
+    /* Stop URR timers before freeing the rules they reference. */
+    upf_sess_urr_acc_remove_all(sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
     ogs_pfcp_send_error_message(xact, sess ? sess->smf_n4_f_seid.seid : 0,
             OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
