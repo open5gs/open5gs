@@ -25,17 +25,17 @@
 static OGS_POOL(request_pool, ogs_sbi_request_t);
 static OGS_POOL(response_pool, ogs_sbi_response_t);
 
-static char *build_json(ogs_sbi_message_t *message);
+static char *build_json(const ogs_sbi_message_t *message);
 static int parse_json(ogs_sbi_message_t *message,
-        char *content_type, char *json);
+        const char *content_type, const char *json);
 
 static bool build_content(
-        ogs_sbi_http_message_t *http, ogs_sbi_message_t *message);
+        ogs_sbi_http_message_t *http, const ogs_sbi_message_t *message);
 static int parse_content(
         ogs_sbi_message_t *message, ogs_sbi_http_message_t *http);
 
 static bool build_multipart(
-        ogs_sbi_http_message_t *http, ogs_sbi_message_t *message);
+        ogs_sbi_http_message_t *http, const ogs_sbi_message_t *message);
 static int parse_multipart(
         ogs_sbi_message_t *sbi_message, ogs_sbi_http_message_t *http);
 
@@ -347,7 +347,7 @@ void ogs_sbi_response_free(ogs_sbi_response_t *response)
     ogs_pool_free(&response_pool, response);
 }
 
-ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
+ogs_sbi_request_t *ogs_sbi_build_request(const ogs_sbi_message_t *message)
 {
     int i;
     ogs_sbi_request_t *request = NULL;
@@ -926,7 +926,7 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
 }
 
 ogs_sbi_response_t *ogs_sbi_build_response(
-        ogs_sbi_message_t *message, int status)
+        const ogs_sbi_message_t *message, int status)
 {
     ogs_sbi_response_t *response = NULL;
 
@@ -1384,7 +1384,7 @@ int ogs_sbi_parse_response(
 }
 
 ogs_pkbuf_t *ogs_sbi_find_part_by_content_id(
-        ogs_sbi_message_t *message, char *content_id)
+        ogs_sbi_message_t *message, const char *content_id)
 {
     int i;
 
@@ -1518,7 +1518,7 @@ void ogs_sbi_http_hash_free(ogs_hash_t *hash)
     ogs_hash_destroy(hash);
 }
 
-static char *build_json(ogs_sbi_message_t *message)
+static char *build_json(const ogs_sbi_message_t *message)
 {
     char *content = NULL;
     cJSON *item = NULL;
@@ -1702,7 +1702,7 @@ static char *build_json(ogs_sbi_message_t *message)
         ogs_assert(item);
 
         OpenAPI_list_for_each(message->SessionManagementSubscriptionDataList, node) {
-            cJSON *smSubDataItem = 
+            cJSON *smSubDataItem =
                 OpenAPI_session_management_subscription_data_convertToJSON(node->data);
             ogs_assert(smSubDataItem);
             cJSON_AddItemToArray(item, smSubDataItem);
@@ -1829,7 +1829,7 @@ static char *build_json(ogs_sbi_message_t *message)
 }
 
 static int parse_json(ogs_sbi_message_t *message,
-        char *content_type, char *json)
+                      const char *content_type, const char *json)
 {
     int rv = OGS_OK;
     int service_name_id = OpenAPI_service_name_NULL;
@@ -3244,7 +3244,7 @@ static int parse_content(
 }
 
 static bool build_content(
-        ogs_sbi_http_message_t *http, ogs_sbi_message_t *message)
+        ogs_sbi_http_message_t *http, const ogs_sbi_message_t *message)
 {
     ogs_assert(message);
     ogs_assert(http);
@@ -3642,7 +3642,7 @@ cleanup:
 }
 
 static bool build_multipart(
-        ogs_sbi_http_message_t *http, ogs_sbi_message_t *message)
+        ogs_sbi_http_message_t *http, const ogs_sbi_message_t *message)
 {
     int i;
 
@@ -3800,7 +3800,7 @@ void ogs_sbi_discovery_option_free(
 
 void ogs_sbi_discovery_option_set_target_nf_instance_id(
         ogs_sbi_discovery_option_t *discovery_option,
-        char *target_nf_instance_id)
+        const char *target_nf_instance_id)
 {
     ogs_assert(discovery_option);
     ogs_assert(target_nf_instance_id);
@@ -3811,7 +3811,7 @@ void ogs_sbi_discovery_option_set_target_nf_instance_id(
 }
 void ogs_sbi_discovery_option_set_requester_nf_instance_id(
         ogs_sbi_discovery_option_t *discovery_option,
-        char *requester_nf_instance_id)
+        const char *requester_nf_instance_id)
 {
     ogs_assert(discovery_option);
     ogs_assert(requester_nf_instance_id);
@@ -3822,7 +3822,7 @@ void ogs_sbi_discovery_option_set_requester_nf_instance_id(
     ogs_assert(discovery_option->requester_nf_instance_id);
 }
 void ogs_sbi_discovery_option_set_dnn(
-        ogs_sbi_discovery_option_t *discovery_option, char *dnn)
+        ogs_sbi_discovery_option_t *discovery_option, const char *dnn)
 {
     ogs_assert(discovery_option);
     ogs_assert(dnn);
@@ -3905,7 +3905,7 @@ char *ogs_sbi_discovery_option_build_service_names(
 
 int ogs_sbi_discovery_option_parse_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
-        char *service_names)
+        const char *service_names)
 {
     char *v = NULL;
     char *token = NULL;
@@ -3964,7 +3964,7 @@ int ogs_sbi_discovery_option_parse_service_names(
 }
 
 void ogs_sbi_discovery_option_add_snssais(
-        ogs_sbi_discovery_option_t *discovery_option, ogs_s_nssai_t *s_nssai)
+        ogs_sbi_discovery_option_t *discovery_option, const ogs_s_nssai_t *s_nssai)
 {
     ogs_assert(discovery_option);
     ogs_assert(s_nssai);
@@ -4014,7 +4014,7 @@ char *ogs_sbi_discovery_option_build_snssais(
     return v;
 }
 int ogs_sbi_discovery_option_parse_snssais(
-        ogs_sbi_discovery_option_t *discovery_option, char *snssais)
+        ogs_sbi_discovery_option_t *discovery_option, const char *snssais)
 {
     cJSON *item = NULL;
     cJSON *snssaiItem = NULL;
@@ -4085,7 +4085,7 @@ int ogs_sbi_discovery_option_parse_snssais(
 }
 
 void ogs_sbi_discovery_option_set_guami(
-        ogs_sbi_discovery_option_t *discovery_option, ogs_guami_t *guami)
+        ogs_sbi_discovery_option_t *discovery_option, const ogs_guami_t *guami)
 {
     ogs_assert(discovery_option);
     ogs_assert(guami);
@@ -4120,7 +4120,7 @@ char *ogs_sbi_discovery_option_build_guami(
 }
 
 int ogs_sbi_discovery_option_parse_guami(
-        ogs_sbi_discovery_option_t *discovery_option, char *guami)
+        ogs_sbi_discovery_option_t *discovery_option, const char *guami)
 {
     OpenAPI_guami_t *Guami = NULL;
     ogs_guami_t parsed_guami;
@@ -4174,7 +4174,7 @@ int ogs_sbi_discovery_option_parse_guami(
 }
 
 void ogs_sbi_discovery_option_set_tai(
-        ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai)
+        ogs_sbi_discovery_option_t *discovery_option, const ogs_5gs_tai_t *tai)
 {
     ogs_assert(discovery_option);
     ogs_assert(tai);
@@ -4214,7 +4214,7 @@ char *ogs_sbi_discovery_option_build_tai(
     return v;
 }
 int ogs_sbi_discovery_option_parse_tai(
-        ogs_sbi_discovery_option_t *discovery_option, char *tai)
+        ogs_sbi_discovery_option_t *discovery_option, const char *tai)
 {
     OpenAPI_tai_t *Tai = NULL;
     ogs_5gs_tai_t parsed_tai;
@@ -4270,7 +4270,7 @@ int ogs_sbi_discovery_option_parse_tai(
 
 void ogs_sbi_discovery_option_add_target_plmn_list(
         ogs_sbi_discovery_option_t *discovery_option,
-        ogs_plmn_id_t *target_plmn_id)
+        const ogs_plmn_id_t *target_plmn_id)
 {
     ogs_assert(discovery_option);
     ogs_assert(target_plmn_id);
@@ -4286,7 +4286,7 @@ void ogs_sbi_discovery_option_add_target_plmn_list(
 
 void ogs_sbi_discovery_option_add_requester_plmn_list(
         ogs_sbi_discovery_option_t *discovery_option,
-        ogs_plmn_id_t *requester_plmn_id)
+        const ogs_plmn_id_t *requester_plmn_id)
 {
     ogs_assert(discovery_option);
     ogs_assert(requester_plmn_id);
@@ -4301,7 +4301,7 @@ void ogs_sbi_discovery_option_add_requester_plmn_list(
 }
 
 char *ogs_sbi_discovery_option_build_plmn_list(
-        ogs_plmn_id_t *plmn_list, int num_of_plmn_list)
+        const ogs_plmn_id_t *plmn_list, int num_of_plmn_list)
 {
     OpenAPI_list_t *PlmnList = NULL;
     OpenAPI_plmn_id_t *PlmnId = NULL;
@@ -4339,7 +4339,7 @@ char *ogs_sbi_discovery_option_build_plmn_list(
 }
 
 int ogs_sbi_discovery_option_parse_plmn_list(
-        ogs_plmn_id_t *plmn_list, char *v)
+        ogs_plmn_id_t *plmn_list, const char *v)
 {
     cJSON *item = NULL;
     cJSON *PlmnIdJSON = NULL;
@@ -4396,7 +4396,7 @@ cleanup:
 }
 
 void ogs_sbi_discovery_option_set_hnrf_uri(
-        ogs_sbi_discovery_option_t *discovery_option, char *hnrf_uri)
+        ogs_sbi_discovery_option_t *discovery_option, const char *hnrf_uri)
 {
     ogs_assert(discovery_option);
     ogs_assert(hnrf_uri);

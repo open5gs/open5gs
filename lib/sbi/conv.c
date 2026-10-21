@@ -78,7 +78,7 @@ static int parse_scheme_output(
     return OGS_OK;
 }
 
-char *ogs_supi_from_suci(char *suci)
+char *ogs_supi_from_suci(const char *suci)
 {
 #define MAX_SUCI_TOKEN 16
     char *array[MAX_SUCI_TOKEN];
@@ -247,7 +247,7 @@ cleanup:
     return supi;
 }
 
-char *ogs_supi_from_supi_or_suci(char *supi_or_suci)
+char *ogs_supi_from_supi_or_suci(const char *supi_or_suci)
 {
     char *type = NULL;
     char *supi = NULL;
@@ -280,8 +280,11 @@ cleanup:
 
 char *ogs_uridup(
         OpenAPI_uri_scheme_e scheme,
-        char *fqdn, ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, uint16_t port,
-        ogs_sbi_header_t *h)
+        const char *fqdn,
+        const ogs_sockaddr_t *addr,
+        const ogs_sockaddr_t *addr6,
+        uint16_t port,
+        const ogs_sbi_header_t *h)
 {
     char buf[OGS_ADDRSTRLEN];
     char uri[OGS_HUGE_LEN];
@@ -335,7 +338,9 @@ char *ogs_uridup(
     return ogs_strdup(uri);
 }
 
-char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
+char *ogs_sbi_server_uri(
+        const ogs_sbi_server_t *server,
+        const ogs_sbi_header_t *h)
 {
     ogs_sockaddr_t *advertise = NULL;
 
@@ -350,7 +355,8 @@ char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
 }
 
 uint16_t ogs_sbi_uri_port_from_scheme_and_addr(
-        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr)
+        OpenAPI_uri_scheme_e scheme,
+        const ogs_sockaddr_t *addr)
 {
     uint16_t port = 0;
 
@@ -372,7 +378,8 @@ uint16_t ogs_sbi_uri_port_from_scheme_and_addr(
 
 char *ogs_sbi_sockaddr_uri(
         OpenAPI_uri_scheme_e scheme,
-        ogs_sockaddr_t *sa_list, ogs_sbi_header_t *h)
+        const ogs_sockaddr_t *sa_list,
+        const ogs_sbi_header_t *h)
 {
     int rv;
     char *hostname = NULL;
@@ -408,7 +415,9 @@ char *ogs_sbi_sockaddr_uri(
     return uri;
 }
 
-char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)
+char *ogs_sbi_client_uri(
+        const ogs_sbi_client_t *client,
+        const ogs_sbi_header_t *h)
 {
     uint16_t port = 0;
 
@@ -430,7 +439,7 @@ char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)
             client->scheme, client->fqdn, client->addr, client->addr6, port, h);
 }
 
-char *ogs_sbi_client_apiroot(ogs_sbi_client_t *client)
+char *ogs_sbi_client_apiroot(const ogs_sbi_client_t *client)
 {
     return ogs_sbi_client_uri(client, NULL);
 }
@@ -610,7 +619,7 @@ bool ogs_sbi_getaddr_from_uri(
     return true;
 }
 
-bool ogs_sbi_getpath_from_uri(char **path, char *uri)
+bool ogs_sbi_getpath_from_uri(char **path, const char *uri)
 {
     int rv;
     struct yuarel yuarel;
@@ -725,9 +734,9 @@ char *ogs_sbi_bitrate_to_string(uint64_t bitrate, int unit)
     return ogs_msprintf("%lld bps", (long long)bitrate);
 }
 
-uint64_t ogs_sbi_bitrate_from_string(char *str)
+uint64_t ogs_sbi_bitrate_from_string(const char *str)
 {
-    char *unit = NULL;
+    const char *unit = NULL;
     double bitrate = 0;
     ogs_assert(str);
     uint64_t mul = 1;
@@ -847,7 +856,7 @@ char *ogs_sbi_timezone_string(int tm_gmtoff)
     return ogs_msprintf("%s", timezone);
 }
 
-bool ogs_sbi_time_from_string(ogs_time_t *timestamp, char *str)
+bool ogs_sbi_time_from_string(ogs_time_t *timestamp, const char *str)
 {
     int rv, i, j, k;
     struct tm tm;
@@ -985,7 +994,7 @@ int ogs_sbi_rfc7231_string(char *date_str, ogs_time_t time)
     return OGS_OK;
 }
 
-char *ogs_sbi_s_nssai_to_json(ogs_s_nssai_t *s_nssai)
+char *ogs_sbi_s_nssai_to_json(const ogs_s_nssai_t *s_nssai)
 {
     cJSON *item = NULL;
     OpenAPI_snssai_t sNSSAI;
@@ -1011,7 +1020,7 @@ char *ogs_sbi_s_nssai_to_json(ogs_s_nssai_t *s_nssai)
     return v;
 }
 
-bool ogs_sbi_s_nssai_from_json(ogs_s_nssai_t *s_nssai, char *str)
+bool ogs_sbi_s_nssai_from_json(ogs_s_nssai_t *s_nssai, const char *str)
 {
     bool rc = false;
 
@@ -1036,7 +1045,7 @@ bool ogs_sbi_s_nssai_from_json(ogs_s_nssai_t *s_nssai, char *str)
     return rc;
 }
 
-char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
+char *ogs_sbi_s_nssai_to_string(const ogs_s_nssai_t *s_nssai)
 {
     ogs_assert(s_nssai);
 
@@ -1047,7 +1056,7 @@ char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
     }
 }
 
-bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
+bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, const char *str)
 {
     bool rc = false;
     char *token, *p, *tofree;
@@ -1100,7 +1109,7 @@ cleanup:
     return rc;
 }
 
-OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id)
+OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
     OpenAPI_plmn_id_t *PlmnId = NULL;
 
@@ -1129,7 +1138,7 @@ OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id)
 }
 
 bool ogs_sbi_parse_plmn_id(
-        ogs_plmn_id_t *plmn_id, OpenAPI_plmn_id_t *PlmnId)
+        ogs_plmn_id_t *plmn_id, const OpenAPI_plmn_id_t *PlmnId)
 {
     ogs_assert(plmn_id);
     ogs_assert(PlmnId);
@@ -1155,7 +1164,7 @@ void ogs_sbi_free_plmn_id(OpenAPI_plmn_id_t *PlmnId)
 }
 
 OpenAPI_list_t *ogs_sbi_build_plmn_list(
-        ogs_plmn_id_t *plmn_list, int num_of_plmn_list)
+        const ogs_plmn_id_t *plmn_list, int num_of_plmn_list)
 {
     OpenAPI_list_t *PlmnList = NULL;
     OpenAPI_plmn_id_t *PlmnId = NULL;
@@ -1178,7 +1187,7 @@ OpenAPI_list_t *ogs_sbi_build_plmn_list(
 }
 
 int ogs_sbi_parse_plmn_list(
-        ogs_plmn_id_t *plmn_list, OpenAPI_list_t *PlmnList)
+        ogs_plmn_id_t *plmn_list, const OpenAPI_list_t *PlmnList)
 {
     OpenAPI_plmn_id_t *PlmnId = NULL;
     OpenAPI_lnode_t *node = NULL;
@@ -1233,7 +1242,7 @@ void ogs_sbi_free_plmn_list(OpenAPI_list_t *PlmnList)
  * @return true if the PLMN-IDs are equal; otherwise, false.
  */
 bool ogs_sbi_compare_plmn_list(
-        ogs_plmn_id_t *plmn_id, OpenAPI_plmn_id_t *PlmnId)
+        const ogs_plmn_id_t *plmn_id, const OpenAPI_plmn_id_t *PlmnId)
 {
     ogs_plmn_id_t temp_plmn_id;
 
@@ -1254,7 +1263,7 @@ bool ogs_sbi_compare_plmn_list(
     return false;
 }
 
-OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id)
+OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(const ogs_plmn_id_t *plmn_id)
 {
     OpenAPI_plmn_id_nid_t *PlmnIdNid = NULL;
 
@@ -1283,7 +1292,7 @@ OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id)
 }
 
 bool ogs_sbi_parse_plmn_id_nid(
-        ogs_plmn_id_t *plmn_id, OpenAPI_plmn_id_nid_t *PlmnIdNid)
+        ogs_plmn_id_t *plmn_id, const OpenAPI_plmn_id_nid_t *PlmnIdNid)
 {
     ogs_assert(plmn_id);
     ogs_assert(PlmnIdNid);
@@ -1310,7 +1319,7 @@ void ogs_sbi_free_plmn_id_nid(OpenAPI_plmn_id_nid_t *PlmnIdNid)
     ogs_free(PlmnIdNid);
 }
 
-OpenAPI_guami_t *ogs_sbi_build_guami(ogs_guami_t *guami)
+OpenAPI_guami_t *ogs_sbi_build_guami(const ogs_guami_t *guami)
 {
     OpenAPI_guami_t *Guami = NULL;
 
@@ -1338,7 +1347,7 @@ OpenAPI_guami_t *ogs_sbi_build_guami(ogs_guami_t *guami)
     return Guami;
 }
 
-bool ogs_sbi_parse_guami(ogs_guami_t *guami, OpenAPI_guami_t *Guami)
+bool ogs_sbi_parse_guami(ogs_guami_t *guami, const OpenAPI_guami_t *Guami)
 {
     ogs_assert(guami);
     ogs_assert(Guami);
@@ -1366,7 +1375,7 @@ void ogs_sbi_free_guami(OpenAPI_guami_t *Guami)
 }
 
 OpenAPI_nr_location_t *ogs_sbi_build_nr_location(
-    ogs_5gs_tai_t *tai, ogs_nr_cgi_t *nr_cgi)
+    const ogs_5gs_tai_t *tai, const ogs_nr_cgi_t *nr_cgi)
 {
     OpenAPI_nr_location_t *NrLocation = NULL;
     OpenAPI_tai_t *Tai = NULL;
@@ -1423,7 +1432,7 @@ OpenAPI_nr_location_t *ogs_sbi_build_nr_location(
 }
 
 bool ogs_sbi_parse_nr_location(ogs_5gs_tai_t *tai, ogs_nr_cgi_t *nr_cgi,
-        OpenAPI_nr_location_t *NrLocation)
+        const OpenAPI_nr_location_t *NrLocation)
 {
     OpenAPI_tai_t *Tai = NULL;
     OpenAPI_ncgi_t *Ncgi = NULL;
@@ -1482,7 +1491,7 @@ void ogs_sbi_free_nr_location(OpenAPI_nr_location_t *NrLocation)
 }
 
 OpenAPI_pcc_rule_t *ogs_sbi_build_pcc_rule(
-        ogs_pcc_rule_t *pcc_rule, int flow_presence)
+        const ogs_pcc_rule_t *pcc_rule, int flow_presence)
 {
     OpenAPI_pcc_rule_t *PccRule = NULL;
     OpenAPI_list_t *FlowInformationList = NULL;
@@ -1514,7 +1523,7 @@ OpenAPI_pcc_rule_t *ogs_sbi_build_pcc_rule(
         ogs_assert(FlowInformationList);
 
         for (i = 0; i < pcc_rule->num_of_flow; i++) {
-            ogs_flow_t *flow = &pcc_rule->flow[i];
+            const ogs_flow_t *flow = &pcc_rule->flow[i];
             ogs_assert(flow);
 
             FlowInformation = ogs_calloc(1, sizeof(*FlowInformation));
