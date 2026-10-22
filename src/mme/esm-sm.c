@@ -368,6 +368,19 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
                     "context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+            /*
+             * TS 24.301 8.3.11: the accept completes a network-initiated
+             * deactivation (6.4.4), whose Delete Bearer transaction is
+             * recorded in bearer->delete.xact_id.  Without that transaction
+             * the message is stray; ignore it instead of asserting in
+             * mme_gtp_send_delete_bearer_response().
+             */
+            if (bearer->delete.xact_id < OGS_MIN_POOL_ID ||
+                    bearer->delete.xact_id > OGS_MAX_POOL_ID) {
+                ogs_error("No Delete Bearer transaction: EBI[%d]",
+                        bearer->ebi);
+                break;
+            }
             ogs_assert(OGS_OK ==
                 mme_gtp_send_delete_bearer_response(
                     bearer, OGS_GTP2_CAUSE_REQUEST_ACCEPTED));
