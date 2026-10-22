@@ -1097,6 +1097,72 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             return OGS_ERROR;
         }
 
+        /*
+         * 404 Not Found from SMF on an Update SM Context request means the
+         * SMF no longer holds the session we are pointing at. Most common
+         * causes:
+         *   - SMF restart while AMF survived (session state lost peer-side)
+         *   - Cross-RAT race (session was superseded by a 4G/5G swap)
+         *   - Upstream N1N2 leak mitigation released the session while AMF
+         *     still retained the smContextRef for a stale PSI slot
+         *
+         * Without cleanup on this side, AMF keeps the dead smContextRef on
+         * the sess and retransmits Update SM Context on every subsequent
+         * Service Request (activate/deactivate) or other N2 event, each
+         * answered with another 404 - a ghost-PSI retry loop that blocks
+         * the UE from establishing a fresh session on this PSI.
+         *
+         * Treat the 404 as authoritative: drop the AMF-side sess so the
+         * next UE request builds a fresh sm_context_ref. No NGAP
+         * ErrorIndication - the RAN is not involved in this consistency
+         * reconciliation.
+         *
+         * A procedure that waits for the answers of all PDU sessions of the
+         * UE (AMF_SESSION_SYNC_DONE()) still has to be answered:
+         * - Service Request: the Service Accept goes once the last SMF has
+         *   answered, as for any other failed reactivation below; the sess
+         *   is dropped before, so a PDU session status IE in the Service
+         *   Accept shows the PSI as inactive and the UE releases it locally
+         *   (TS 24.501 5.6.1.4.1).
+         * - Path Switch Request: the sess is one of the PDU sessions the
+         *   SMF did not switch (TS 23.502 4.9.1.2.2 step 7) and goes the
+         *   error path below with the answer to the NG-RAN; it is not
+         *   dropped here.
+         */
+        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NOT_FOUND) {
+            switch (state) {
+            case AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST:
+                ogs_warn("[%s:%d] SMF 404 on sm-contexts/%s/modify "
+                        "[state:%d] - path switch failed for this sess",
+                        amf_ue->supi, sess->psi,
+                        sess->sm_context_ref ? sess->sm_context_ref : "?",
+                        state);
+                break;
+            case AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST:
+                ogs_warn("[%s:%d] SMF 404 on sm-contexts/%s/modify "
+                        "[state:%d] - releasing stranded AMF sess",
+                        amf_ue->supi, sess->psi,
+                        sess->sm_context_ref ? sess->sm_context_ref : "?",
+                        state);
+                AMF_SESS_CLEAR(sess);
+                if (AMF_SESSION_SYNC_DONE(amf_ue,
+                            AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST)) {
+                    r = nas_5gs_send_service_accept(amf_ue);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                }
+                return OGS_OK;
+            default:
+                ogs_warn("[%s:%d] SMF 404 on sm-contexts/%s/modify "
+                        "[state:%d] - releasing stranded AMF sess",
+                        amf_ue->supi, sess->psi,
+                        sess->sm_context_ref ? sess->sm_context_ref : "?",
+                        state);
+                AMF_SESS_CLEAR(sess);
+                return OGS_OK;
+            }
+        }
+
         SmContextUpdateError = recvmsg->SmContextUpdateError;
         if (!SmContextUpdateError) {
             ogs_error("[%d:%d] No SmContextUpdateError [%d]",
