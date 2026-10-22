@@ -1269,10 +1269,10 @@ smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
     bool created = false;
 
     ogs_assert(imsi);
-    ogs_assert(imsi_len);
 
-    if (imsi_len > OGS_MAX_IMSI_LEN) {
-        ogs_error("Invalid IMSI length [%d]", imsi_len);
+    if (imsi_len <= 0 || imsi_len > OGS_MAX_IMSI_LEN) {
+        ogs_error("Invalid IMSI length [%d], expected [1..%d]",
+                imsi_len, OGS_MAX_IMSI_LEN);
         return NULL;
     }
 
@@ -1554,6 +1554,18 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
         ogs_error("No IMSI");
         return NULL;
     }
+
+    /* Validate the peer's IMSI before the hash lookup, whose key must be
+     * nonempty, and before removing any context selected by that key. */
+    if (req->imsi.len == 0 || req->imsi.len > OGS_MAX_IMSI_LEN) {
+        ogs_error("Invalid IMSI length [%u], expected [1..%d]",
+                req->imsi.len, OGS_MAX_IMSI_LEN);
+        return NULL;
+    }
+    if (!req->imsi.data) {
+        ogs_error("Missing IMSI data [len:%u]", req->imsi.len);
+        return NULL;
+    }
     if (req->tunnel_endpoint_identifier_data_i.presence == 0) {
         ogs_error("No Tunnel Endpoint Identifier Data I");
         return NULL;
@@ -1636,6 +1648,18 @@ smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message)
 
     if (req->imsi.presence == 0) {
         ogs_error("No IMSI");
+        return NULL;
+    }
+
+    /* Validate the peer's IMSI before the hash lookup, whose key must be
+     * nonempty, and before removing any context selected by that key. */
+    if (req->imsi.len == 0 || req->imsi.len > OGS_MAX_IMSI_LEN) {
+        ogs_error("Invalid IMSI length [%u], expected [1..%d]",
+                req->imsi.len, OGS_MAX_IMSI_LEN);
+        return NULL;
+    }
+    if (!req->imsi.data) {
+        ogs_error("Missing IMSI data [len:%u]", req->imsi.len);
         return NULL;
     }
     if (req->access_point_name.presence == 0) {
