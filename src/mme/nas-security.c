@@ -131,6 +131,18 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
         uint8_t mac[NAS_SECURITY_MAC_SIZE];
         uint32_t estimated_ul_count = 0;
 
+        /*
+         * A SERVICE REQUEST carries the security header, the KSI and
+         * sequence number, and the two-octet short MAC (TS 24.301
+         * Table 8.2.25.1). A shorter NAS PDU cannot be decoded; discard it
+         * instead of reading and appending its missing MAC in place.
+         */
+        if (pkbuf->len < 1 + 1 + SHORT_MAC_SIZE) {
+            ogs_error("NAS SERVICE REQUEST too short [%d]",
+                    (int)pkbuf->len);
+            return OGS_ERROR;
+        }
+
         if (mme_ue->selected_int_algorithm == 0) {
             ogs_warn("integrity algorithm is not defined");
             return OGS_ERROR;
