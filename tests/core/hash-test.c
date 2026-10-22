@@ -168,23 +168,12 @@ static void same_value(abts_case *tc, void *data)
     ogs_hash_destroy(h);
 }
 
-static unsigned int hash_custom( const char *key, int *klen)
-{
-    unsigned int hash = 0;
-    unsigned int len = *klen;
-    while( len ) {
-        (len) --;
-        hash = hash * 33 + key[ len ];
-    }
-    return hash;
-}
-
-static void same_value_custom(abts_case *tc, void *data)
+static void same_value_binary(abts_case *tc, void *data)
 {
     ogs_hash_t *h = NULL;
     char *result = NULL;
 
-    h = ogs_hash_make_custom(hash_custom);
+    h = ogs_hash_make();
     ABTS_PTR_NOTNULL(tc, h);
 
     ogs_hash_set(h, "same1", 5, "same");
@@ -438,7 +427,7 @@ static void hash_set_keeps_stored_key_test(abts_case *tc, void *data)
     ABTS_PTR_EQUAL(tc, &owner[1], ogs_hash_get(h, &lookup, sizeof(lookup)));
     ABTS_PTR_EQUAL(tc, NULL, ogs_hash_get(h, &key[0], sizeof(key[0])));
 
-    /* Growing the table relinks entries; every key stays intact. */
+    /* Growing the table moves entries; every key stays intact. */
     for (i = 1; i <= 1000; i++)
         ogs_hash_set(h, &i, sizeof(i), &owner[0]);
     ABTS_INT_EQUAL(tc, 1001, ogs_hash_count(h));
@@ -647,9 +636,9 @@ static void hash_unset_by_stored_key_test(abts_case *tc, void *data)
 }
 
 /*
- * ogs_hash_clear() and ogs_hash_destroy() release key storage, and an
- * entry recycled by the free list takes a key of any length, followed
- * by a NUL where its previous, longer key had other bytes.
+ * ogs_hash_clear() and ogs_hash_destroy() release key storage. Slots
+ * reused after clear take a key of any length, followed by a NUL where
+ * a previous, longer key had other bytes.
  */
 static void hash_clear_releases_keys_test(abts_case *tc, void *data)
 {
@@ -662,7 +651,7 @@ static void hash_clear_releases_keys_test(abts_case *tc, void *data)
 
     ogs_assert(h);
     for (round = 0; round < 3; round++) {
-        /* Entries that held a long key take a short one, and back. */
+        /* Slots that held a long key take a short one, and back. */
         for (i = 0; i < 200; i++) {
             ogs_snprintf(key, sizeof(key), "%s%d", (i + round) % 2 ?
                     "a-key-longer-than-the-entry-holds-" : "k", i);
@@ -679,7 +668,7 @@ static void hash_clear_releases_keys_test(abts_case *tc, void *data)
             ogs_hash_clear(h);
     }
 
-    /* Recycled entries take 4-byte keys after 23-byte ones. */
+    /* Cleared slots take 4-byte keys after 23-byte ones. */
     ogs_hash_clear(h);
     memset(full, 0xff, sizeof(full));
     for (i = 0; i < 200; i++) {
@@ -757,7 +746,7 @@ static void hash_insert_from_stored_key_test(abts_case *tc, void *data)
 
         ogs_assert(h);
         ogs_hash_set(h, keys[i], OGS_HASH_KEY_STRING, &owner[0]);
-        for (j = 0; j < 14; j++)
+        for (j = 0; j < 13; j++)
             ogs_hash_set(h, &j, sizeof(j), &owner[2]);
         for (hi = ogs_hash_first(h); hi; hi = ogs_hash_next(hi)) {
             if (ogs_hash_this_val(hi) == &owner[0])
@@ -766,10 +755,10 @@ static void hash_insert_from_stored_key_test(abts_case *tc, void *data)
         ABTS_PTR_NOTNULL(tc, hi);
         if (hi) {
             stored = ogs_hash_this_key(hi);
-            /* The sixteenth insertion grows the initial bucket array. */
+            /* The fifteenth insertion exceeds 90% of sixteen slots. */
             ogs_hash_set(h, stored, 5, &owner[1]);
         }
-        ABTS_INT_EQUAL(tc, 16, ogs_hash_count(h));
+        ABTS_INT_EQUAL(tc, 15, ogs_hash_count(h));
         ABTS_PTR_EQUAL(tc, &owner[0],
                 ogs_hash_get(h, keys[i], OGS_HASH_KEY_STRING));
         ABTS_PTR_EQUAL(tc, &owner[1], ogs_hash_get(h, keys[i], 5));
@@ -847,17 +836,10 @@ static void hash_set_string_test(abts_case *tc, void *data)
     ogs_hash_destroy(h);
 }
 
-/* Force collisions so replacement also exercises lookups within a bucket. */
-static unsigned int hash_constant(const char *key, int *klen)
+/* Repeated replacement and removal must preserve every other entry. */
+static void hash_set_many_test(abts_case *tc, void *data)
 {
-    if (*klen == OGS_HASH_KEY_STRING)
-        *klen = strlen(key);
-    return 1;
-}
-
-static void hash_set_collision_test(abts_case *tc, void *data)
-{
-    ogs_hash_t *h = ogs_hash_make_custom(hash_constant);
+    ogs_hash_t *h = ogs_hash_make();
     uint32_t old_key[64], new_key[64];
     int owner[64], i;
 
@@ -904,6 +886,363 @@ static void hash_set_arguments_test(abts_case *tc, void *data)
     ogs_hash_destroy(h);
 }
 
+#define HASH_MODEL_KEYS 251
+
+static uint32_t hash_test_random(uint32_t *state)
+{
+    *state = *state * 1664525u + 1013904223u;
+    return *state;
+}
+
+/* Unique binary keys exercise both sides of the inline boundary. */
+static int hash_model_key(uint8_t *key, uint32_t id)
+{
+    static const int lengths[] = { 4, 23, 24, 40, 108 };
+    int len = lengths[id % OGS_ARRAY_SIZE(lengths)];
+
+    fill_key(key, len, id);
+    memcpy(key, &id, sizeof(id));
+    return len;
+}
+
+static void hash_check_model(abts_case *tc, ogs_hash_t *h, void **model)
+{
+    ogs_hash_index_t *hi;
+    uint8_t key[108];
+    unsigned int seen[HASH_MODEL_KEYS] = { 0 };
+    unsigned int i, count = 0, visited = 0;
+
+    for (i = 0; i < HASH_MODEL_KEYS; i++) {
+        int len = hash_model_key(key, i);
+
+        ABTS_PTR_EQUAL(tc, model[i], ogs_hash_get(h, key, len));
+        if (model[i])
+            count++;
+    }
+    ABTS_INT_EQUAL(tc, count, ogs_hash_count(h));
+    for (hi = ogs_hash_first(h); hi; hi = ogs_hash_next(hi)) {
+        uint32_t id;
+        int len;
+
+        if (visited++ >= count) {
+            ABTS_TRUE(tc, false);
+            break;
+        }
+        ABTS_TRUE(tc, ogs_hash_this_key_len(hi) >= (int)sizeof(id));
+        if (ogs_hash_this_key_len(hi) < (int)sizeof(id))
+            break;
+        memcpy(&id, ogs_hash_this_key(hi), sizeof(id));
+        ABTS_TRUE(tc, id < HASH_MODEL_KEYS);
+        if (id >= HASH_MODEL_KEYS)
+            break;
+        ABTS_INT_EQUAL(tc, 0, seen[id]++);
+        len = hash_model_key(key, id);
+        ABTS_TRUE(tc, key_is(hi, key, len));
+        ABTS_PTR_EQUAL(tc, model[id], ogs_hash_this_val(hi));
+    }
+    ABTS_INT_EQUAL(tc, count, visited);
+}
+
+/* Empty tables do not allocate a slot array, even after unsuccessful calls. */
+static void hash_lazy_allocation_test(abts_case *tc, void *data)
+{
+    size_t before = core_blocks();
+    ogs_hash_t *h = ogs_hash_make();
+    uint32_t key = 1;
+    int owner;
+
+    ABTS_SIZE_EQUAL(tc, before + 1, core_blocks());
+    ABTS_PTR_EQUAL(tc, NULL, ogs_hash_get(h, &key, sizeof(key)));
+    ABTS_PTR_EQUAL(tc, NULL,
+            ogs_hash_get_or_set(h, &key, sizeof(key), NULL));
+    ogs_hash_set(h, &key, sizeof(key), NULL);
+    ABTS_TRUE(tc, !ogs_hash_unset_if_owner(h, &key, sizeof(key), &owner));
+    ABTS_PTR_EQUAL(tc, NULL, ogs_hash_first(h));
+    ogs_hash_clear(h);
+    ABTS_SIZE_EQUAL(tc, before + 1, core_blocks());
+    ogs_hash_set(h, &key, sizeof(key), &owner);
+    ABTS_SIZE_EQUAL(tc, before + 2, core_blocks());
+    ABTS_PTR_EQUAL(tc, &owner, ogs_hash_get(h, &key, sizeof(key)));
+    ogs_hash_destroy(h);
+    ABTS_SIZE_EQUAL(tc, before, core_blocks());
+}
+
+/* Check lookup and iteration immediately before and after 90% boundaries. */
+static void hash_growth_boundaries_test(abts_case *tc, void *data)
+{
+    static const unsigned int boundaries[] = { 14, 28, 57, 115, 230, 460, 921 };
+    ogs_hash_t *h = ogs_hash_make();
+    int owner[923];
+    unsigned int i, boundary = 0;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(owner); i++) {
+        uint32_t key = i;
+
+        owner[i] = i;
+        ogs_hash_set(h, &key, sizeof(key), &owner[i]);
+        if (boundary < OGS_ARRAY_SIZE(boundaries) &&
+                (i + 1 == boundaries[boundary] || i == boundaries[boundary])) {
+            ogs_hash_index_t *hi;
+            unsigned int j, visited = 0;
+
+            ABTS_INT_EQUAL(tc, i + 1, ogs_hash_count(h));
+            for (j = 0; j <= i; j++) {
+                key = j;
+                ABTS_PTR_EQUAL(tc, &owner[j],
+                        ogs_hash_get(h, &key, sizeof(key)));
+            }
+            for (hi = ogs_hash_first(h); hi; hi = ogs_hash_next(hi)) {
+                if (visited++ > i) {
+                    ABTS_TRUE(tc, false);
+                    break;
+                }
+                memcpy(&key, ogs_hash_this_key(hi), sizeof(key));
+                ABTS_TRUE(tc, key <= i);
+                if (key <= i)
+                    ABTS_PTR_EQUAL(tc, &owner[key], ogs_hash_this_val(hi));
+            }
+            ABTS_INT_EQUAL(tc, i + 1, visited);
+            if (i == boundaries[boundary])
+                boundary++;
+        }
+    }
+    ABTS_INT_EQUAL(tc, OGS_ARRAY_SIZE(boundaries), boundary);
+    ogs_hash_destroy(h);
+}
+
+/* Compare mutations with a separate map model across growth and repeated reuse. */
+static void hash_randomized_model_test(abts_case *tc, void *data)
+{
+    ogs_hash_t *h = ogs_hash_make();
+    void *model[HASH_MODEL_KEYS] = { NULL };
+    int owner[2][HASH_MODEL_KEYS];
+    uint8_t key[108];
+    uint32_t state = 0x5a17c9e3u;
+    unsigned int i, step;
+
+    for (i = 0; i < HASH_MODEL_KEYS; i++)
+        owner[0][i] = owner[1][i] = i;
+    for (i = 0; i < 230; i++) {
+        int len = hash_model_key(key, i);
+
+        model[i] = &owner[0][i];
+        ogs_hash_set(h, key, len, model[i]);
+    }
+    for (step = 0; step < 30000; step++) {
+        uint32_t choice = hash_test_random(&state);
+        unsigned int id = (choice >> 8) % HASH_MODEL_KEYS;
+        void *candidate = &owner[(choice >> 24) & 1][id];
+        int len = hash_model_key(key, id);
+
+        switch ((hash_test_random(&state) >> 16) % 8) {
+        case 0:
+        case 6:
+            ogs_hash_set(h, key, len, candidate);
+            model[id] = candidate;
+            break;
+        case 1:
+            ABTS_PTR_EQUAL(tc, model[id] ? model[id] : candidate,
+                    ogs_hash_get_or_set(h, key, len, candidate));
+            if (!model[id])
+                model[id] = candidate;
+            break;
+        case 2:
+            ogs_hash_set(h, key, len, NULL);
+            model[id] = NULL;
+            break;
+        case 3:
+            ABTS_INT_EQUAL(tc, model[id] == candidate,
+                    ogs_hash_unset_if_owner(h, key, len, candidate));
+            if (model[id] == candidate)
+                model[id] = NULL;
+            break;
+        case 4:
+            ABTS_PTR_EQUAL(tc, model[id], ogs_hash_get(h, key, len));
+            break;
+        case 5:
+            ABTS_PTR_EQUAL(tc, model[id],
+                    ogs_hash_get_or_set(h, key, len, NULL));
+            break;
+        case 7:
+            if (step % 1024 == 0) {
+                ogs_hash_clear(h);
+                memset(model, 0, sizeof(model));
+            }
+            break;
+        }
+        if (step % 127 == 0)
+            hash_check_model(tc, h, model);
+    }
+    hash_check_model(tc, h, model);
+    ogs_hash_destroy(h);
+}
+
+/* Backward-shift deletion must not skip or repeat unvisited entries. */
+static void hash_iteration_delete_test(abts_case *tc, void *data)
+{
+    uint32_t state = 0xf1538a27u;
+    int owner[HASH_MODEL_KEYS];
+    unsigned int round, i;
+
+    for (i = 0; i < HASH_MODEL_KEYS; i++)
+        owner[i] = i;
+    for (round = 0; round < 2048; round++) {
+        ogs_hash_t *h = ogs_hash_make();
+        ogs_hash_index_t *hi;
+        unsigned int seen[HASH_MODEL_KEYS] = { 0 };
+        bool removed[HASH_MODEL_KEYS] = { false };
+        uint8_t key[108];
+        unsigned int count = 14 + (hash_test_random(&state) >> 8) % 217;
+        unsigned int visited = 0, remaining = count;
+
+        for (i = 0; i < count; i++) {
+            int len = hash_model_key(key, i);
+
+            ogs_hash_set(h, key, len, &owner[i]);
+        }
+        for (hi = ogs_hash_first(h); hi; hi = ogs_hash_next(hi)) {
+            unsigned int id = *(int *)ogs_hash_this_val(hi);
+
+            if (visited++ >= count) {
+                ABTS_TRUE(tc, false);
+                break;
+            }
+            ABTS_TRUE(tc, id < count);
+            if (id >= count)
+                break;
+            ABTS_INT_EQUAL(tc, 0, seen[id]++);
+            if (round % 3 == 0 || (round % 3 == 1 && id % 2 == 0) ||
+                    (round % 3 == 2 && (hash_test_random(&state) >> 31))) {
+                ogs_hash_set(h, ogs_hash_this_key(hi),
+                        ogs_hash_this_key_len(hi), NULL);
+                removed[id] = true;
+                remaining--;
+            }
+        }
+        ABTS_INT_EQUAL(tc, count, visited);
+        ABTS_INT_EQUAL(tc, remaining, ogs_hash_count(h));
+        for (i = 0; i < count; i++) {
+            int len = hash_model_key(key, i);
+
+            ABTS_INT_EQUAL(tc, 1, seen[i]);
+            ABTS_PTR_EQUAL(tc, removed[i] ? NULL : &owner[i],
+                    ogs_hash_get(h, key, len));
+        }
+        ogs_hash_destroy(h);
+    }
+}
+
+#define HASH_DO_KEYS 115
+
+typedef struct hash_do_record_s {
+    abts_case *tc;
+    ogs_hash_t *h;
+    int *owner;
+    unsigned int seen[HASH_DO_KEYS];
+    unsigned int count, stop_after;
+    bool remove, nested;
+} hash_do_record_t;
+
+static int hash_do_callback(void *data,
+        const void *key, int klen, const void *value)
+{
+    hash_do_record_t *rec = data;
+    uint32_t id;
+
+    ABTS_INT_EQUAL(rec->tc, sizeof(id), klen);
+    if (klen != (int)sizeof(id))
+        return 0;
+    memcpy(&id, key, sizeof(id));
+    ABTS_TRUE(rec->tc, id < HASH_DO_KEYS);
+    if (id >= HASH_DO_KEYS)
+        return 0;
+    ABTS_INT_EQUAL(rec->tc, 0, rec->seen[id]++);
+    ABTS_PTR_EQUAL(rec->tc, &rec->owner[id], value);
+    ABTS_INT_EQUAL(rec->tc, 0, ((const char *)key)[klen]);
+    rec->count++;
+    if (rec->nested && rec->count == 1) {
+        hash_do_record_t child;
+
+        memset(&child, 0, sizeof(child));
+        child.tc = rec->tc;
+        child.h = rec->h;
+        child.owner = rec->owner;
+        ABTS_INT_EQUAL(rec->tc, 1,
+                ogs_hash_do(hash_do_callback, &child, rec->h));
+        ABTS_INT_EQUAL(rec->tc, HASH_DO_KEYS, child.count);
+    }
+    if (rec->remove)
+        ogs_hash_set(rec->h, key, klen, NULL);
+    return !rec->stop_after || rec->count < rec->stop_after;
+}
+
+/* hash_do owns its iterator, supports nesting, early stop and current deletion. */
+static void hash_do_test(abts_case *tc, void *data)
+{
+    ogs_hash_t *h = ogs_hash_make();
+    ogs_hash_index_t *hi;
+    hash_do_record_t rec;
+    unsigned int outer_seen[HASH_DO_KEYS] = { 0 };
+    int owner[HASH_DO_KEYS];
+    unsigned int i, visited = 0;
+
+    for (i = 0; i < HASH_DO_KEYS; i++) {
+        uint32_t key = i;
+
+        owner[i] = i;
+        ogs_hash_set(h, &key, sizeof(key), &owner[i]);
+    }
+    /* A full callback traversal must preserve an in-progress first/next loop. */
+    for (hi = ogs_hash_first(h); hi; hi = ogs_hash_next(hi)) {
+        unsigned int id = *(int *)ogs_hash_this_val(hi);
+
+        if (visited++ >= HASH_DO_KEYS) {
+            ABTS_TRUE(tc, false);
+            break;
+        }
+        ABTS_TRUE(tc, id < HASH_DO_KEYS);
+        if (id >= HASH_DO_KEYS)
+            break;
+        ABTS_INT_EQUAL(tc, 0, outer_seen[id]++);
+        memset(&rec, 0, sizeof(rec));
+        rec.tc = tc;
+        rec.h = h;
+        rec.owner = owner;
+        ABTS_INT_EQUAL(tc, 1, ogs_hash_do(hash_do_callback, &rec, h));
+        ABTS_INT_EQUAL(tc, HASH_DO_KEYS, rec.count);
+    }
+    ABTS_INT_EQUAL(tc, HASH_DO_KEYS, visited);
+
+    memset(&rec, 0, sizeof(rec));
+    rec.tc = tc;
+    rec.h = h;
+    rec.owner = owner;
+    rec.stop_after = 7;
+    ABTS_INT_EQUAL(tc, 0, ogs_hash_do(hash_do_callback, &rec, h));
+    ABTS_INT_EQUAL(tc, 7, rec.count);
+
+    memset(&rec, 0, sizeof(rec));
+    rec.tc = tc;
+    rec.h = h;
+    rec.owner = owner;
+    rec.nested = true;
+    ABTS_INT_EQUAL(tc, 1, ogs_hash_do(hash_do_callback, &rec, h));
+    ABTS_INT_EQUAL(tc, HASH_DO_KEYS, rec.count);
+
+    memset(&rec, 0, sizeof(rec));
+    rec.tc = tc;
+    rec.h = h;
+    rec.owner = owner;
+    rec.remove = true;
+    ABTS_INT_EQUAL(tc, 1, ogs_hash_do(hash_do_callback, &rec, h));
+    ABTS_INT_EQUAL(tc, HASH_DO_KEYS, rec.count);
+    ABTS_INT_EQUAL(tc, 0, ogs_hash_count(h));
+    rec.count = 0;
+    ABTS_INT_EQUAL(tc, 1, ogs_hash_do(hash_do_callback, &rec, h));
+    ABTS_INT_EQUAL(tc, 0, rec.count);
+    ogs_hash_destroy(h);
+}
+
 abts_suite *test_hash(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -921,11 +1260,11 @@ abts_suite *test_hash(abts_suite *suite)
     abts_run_test(suite, hash_insert_from_stored_key_test, NULL);
     abts_run_test(suite, hash_set_owner_test, NULL);
     abts_run_test(suite, hash_set_string_test, NULL);
-    abts_run_test(suite, hash_set_collision_test, NULL);
+    abts_run_test(suite, hash_set_many_test, NULL);
     abts_run_test(suite, hash_set_arguments_test, NULL);
     abts_run_test(suite, hash_reset, NULL);
     abts_run_test(suite, same_value, NULL);
-    abts_run_test(suite, same_value_custom, NULL);
+    abts_run_test(suite, same_value_binary, NULL);
     abts_run_test(suite, key_space, NULL);
     abts_run_test(suite, delete_key, NULL);
 
@@ -936,6 +1275,11 @@ abts_suite *test_hash(abts_suite *suite)
     abts_run_test(suite, hash_clear_test, NULL);
     abts_run_test(suite, hash_traverse, NULL);
     abts_run_test(suite, summation_test, NULL);
+    abts_run_test(suite, hash_lazy_allocation_test, NULL);
+    abts_run_test(suite, hash_growth_boundaries_test, NULL);
+    abts_run_test(suite, hash_randomized_model_test, NULL);
+    abts_run_test(suite, hash_iteration_delete_test, NULL);
+    abts_run_test(suite, hash_do_test, NULL);
 
     return suite;
 }

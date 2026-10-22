@@ -32,170 +32,526 @@
  * limitations under the License.
  */
 
-#include "ogs-core.h"
+/*
+ * Robin Hood insertion, backward-shift deletion and reverse iteration
+ * follow PostgreSQL src/include/lib/simplehash.h. PostgreSQL notice:
+ *
+ * PostgreSQL Database Management System
+ * (also known as Postgres, formerly known as Postgres95)
+ *
+ * Portions Copyright (c) 1996-2026, PostgreSQL Global Development Group
+ *
+ * Portions Copyright (c) 1994, The Regents of the University of California
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written agreement
+ * is hereby granted, provided that the above copyright notice and this
+ * paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS
+ * DOCUMENTATION, EVEN IF THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+ * ON AN "AS IS" BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATIONS TO
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ */
 
 /*
- * Every entry keeps its own copy of the key, followed by a NUL. A key
- * that fits (with its NUL) in key_inline is stored there: keys of up to
- * 23 bytes, including TEIDs, SEIDs, UE addresses, F-TEIDs and SUPIs.
- * A longer key gets an allocation of its own, released on removal.
+ * SipHash-2-4 adapted from https://github.com/veorq/SipHash, using its
+ * MIT license option. Original implementation:
+ * Copyright (c) 2012-2022 Jean-Philippe Aumasson
+ * Copyright (c) 2012-2014 Daniel J. Bernstein
+ * Upstream MIT notice:
+ *
+ * Copyright 2012-2024 JP Aumasson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#define KEY_INLINE_SIZE 24
 
-typedef struct ogs_hash_entry_t ogs_hash_entry_t;
-struct ogs_hash_entry_t {
-    ogs_hash_entry_t    *next;
-    const void          *key;   /* key_inline.bytes, or allocated */
-    const void          *val;
-    unsigned int        hash;
+#include "ogs-core.h"
+
+#include <limits.h>
+
+#define KEY_INLINE_SIZE 24
+#define INITIAL_CAPACITY 16
+
+typedef struct ogs_hash_slot_t ogs_hash_slot_t;
+struct ogs_hash_slot_t {
+    const void          *val;   /* NULL marks an empty slot */
+    uint32_t            hash;
     int                 klen;
     union {
         char            bytes[KEY_INLINE_SIZE];
-        uint64_t        align;  /* keys are read back as structs */
-    } key_inline;
+        char            *ptr;
+    } key;
 };
 
 struct ogs_hash_index_t {
     ogs_hash_t          *ht;
-    ogs_hash_entry_t    *this, *next;
     unsigned int        index;
+    unsigned int        next;
+    unsigned int        remaining;
 };
 
 struct ogs_hash_t {
-    ogs_hash_entry_t    **array;
-    ogs_hash_index_t    iterator;  /* For ogs_hash_first(NULL, ...) */
-    unsigned int        count, max, seed;
-    ogs_hashfunc_t      hash_func;
-    ogs_hash_entry_t    *free;  /* List of recycled entries */
+    ogs_hash_slot_t     *slots;
+    ogs_hash_index_t    iterator;
+    unsigned int        count;
+    unsigned int        capacity;
 };
 
-#define INITIAL_MAX 15 /* tunable == 2^n - 1 */
+/* Initialized once, before publishing any table; lookups need no lock. */
+static uint8_t hash_secret[16];
 
-static ogs_hash_entry_t **alloc_array(ogs_hash_t *ht, unsigned int max)
+#ifdef _WIN32
+static INIT_ONCE hash_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK init_hash_secret(
+        PINIT_ONCE once, PVOID parameter, PVOID *context)
 {
-    ogs_hash_entry_t **ptr = ogs_calloc(1, sizeof(*ht->array) * (max + 1));
-    ogs_assert(ptr);
-    return ptr;
+    ogs_random(hash_secret, sizeof(hash_secret));
+    return TRUE;
+}
+#else
+static pthread_once_t hash_once = PTHREAD_ONCE_INIT;
+
+static void init_hash_secret(void)
+{
+    ogs_random(hash_secret, sizeof(hash_secret));
+}
+#endif
+
+static uint64_t load64_le(const uint8_t *p)
+{
+    return (uint64_t)p[0] | ((uint64_t)p[1] << 8) |
+        ((uint64_t)p[2] << 16) | ((uint64_t)p[3] << 24) |
+        ((uint64_t)p[4] << 32) | ((uint64_t)p[5] << 40) |
+        ((uint64_t)p[6] << 48) | ((uint64_t)p[7] << 56);
 }
 
-static void copy_key(ogs_hash_entry_t *he, const void *key, int klen)
+static uint64_t rotl64(uint64_t v, unsigned int bits)
+{
+    return (v << bits) | (v >> (64 - bits));
+}
+
+#define HASH_SIPROUND() do { \
+    v0 += v1; v1 = rotl64(v1, 13); v1 ^= v0; v0 = rotl64(v0, 32); \
+    v2 += v3; v3 = rotl64(v3, 16); v3 ^= v2; \
+    v0 += v3; v3 = rotl64(v3, 21); v3 ^= v0; \
+    v2 += v1; v1 = rotl64(v1, 17); v1 ^= v2; v2 = rotl64(v2, 32); \
+} while (0)
+
+/* Byte loads make both unaligned keys and host endianness immaterial. */
+static uint64_t siphash24(
+        const void *key, size_t length, const uint8_t secret[16])
+{
+    const uint8_t *p = key;
+    uint64_t k0 = load64_le(secret);
+    uint64_t k1 = load64_le(secret + 8);
+    uint64_t v0 = UINT64_C(0x736f6d6570736575) ^ k0;
+    uint64_t v1 = UINT64_C(0x646f72616e646f6d) ^ k1;
+    uint64_t v2 = UINT64_C(0x6c7967656e657261) ^ k0;
+    uint64_t v3 = UINT64_C(0x7465646279746573) ^ k1;
+    uint64_t last = (uint64_t)(length & 0xff) << 56;
+    size_t remaining = length;
+    unsigned int i;
+
+    while (remaining >= 8) {
+        uint64_t m = load64_le(p);
+
+        v3 ^= m;
+        HASH_SIPROUND();
+        HASH_SIPROUND();
+        v0 ^= m;
+        p += 8;
+        remaining -= 8;
+    }
+    for (i = 0; i < remaining; i++)
+        last |= (uint64_t)p[i] << (8 * i);
+
+    v3 ^= last;
+    HASH_SIPROUND();
+    HASH_SIPROUND();
+    v0 ^= last;
+    v2 ^= 0xff;
+    HASH_SIPROUND();
+    HASH_SIPROUND();
+    HASH_SIPROUND();
+    HASH_SIPROUND();
+    return v0 ^ v1 ^ v2 ^ v3;
+}
+
+#undef HASH_SIPROUND
+
+static uint32_t hash_key(const void *key, int *klen)
+{
+    if (*klen == OGS_HASH_KEY_STRING) {
+        size_t length = strlen(key);
+
+        ogs_assert(length <= INT_MAX);
+        *klen = (int)length;
+    }
+    return (uint32_t)siphash24(key, (size_t)*klen, hash_secret);
+}
+
+static const void *slot_key(const ogs_hash_slot_t *slot)
+{
+    if (slot->klen < KEY_INLINE_SIZE)
+        return slot->key.bytes;
+    return slot->key.ptr;
+}
+
+static void free_key(ogs_hash_slot_t *slot)
+{
+    if (slot->klen >= KEY_INLINE_SIZE)
+        ogs_free(slot->key.ptr);
+}
+
+static void prepare_slot(ogs_hash_slot_t *slot,
+        const void *key, int klen, const void *val, uint32_t hash)
 {
     char *copy;
 
-    ogs_assert(klen >= 0);
-
-    if (klen < KEY_INLINE_SIZE) {
-        copy = he->key_inline.bytes;
-    } else {
+    memset(slot, 0, sizeof(*slot));
+    slot->hash = hash;
+    slot->klen = klen;
+    if (klen < KEY_INLINE_SIZE)
+        copy = slot->key.bytes;
+    else {
         copy = ogs_malloc((size_t)klen + 1);
         ogs_assert(copy);
+        slot->key.ptr = copy;
     }
     memcpy(copy, key, klen);
     copy[klen] = '\0';
-
-    he->key = copy;
-    he->klen = klen;
+    slot->val = val;
 }
 
-static void free_key(ogs_hash_entry_t *he)
+static unsigned int probe_distance(
+        uint32_t hash, unsigned int index, unsigned int mask)
 {
-    if (he->key != he->key_inline.bytes)
-        ogs_free((void *)he->key);
-    he->key = NULL;
+    return (index - (hash & mask)) & mask;
+}
+
+/* A resident closer to home proves this key cannot occur further on. */
+static ogs_hash_slot_t *find_slot(
+        ogs_hash_t *ht, const void *key, int klen, uint32_t hash)
+{
+    unsigned int index, distance = 0, mask;
+
+    if (!ht->count)
+        return NULL;
+
+    mask = ht->capacity - 1;
+    index = hash & mask;
+    for (;;) {
+        ogs_hash_slot_t *slot = &ht->slots[index];
+
+        if (!slot->val ||
+                probe_distance(slot->hash, index, mask) < distance)
+            return NULL;
+        if (slot->hash == hash && slot->klen == klen &&
+                memcmp(slot_key(slot), key, klen) == 0)
+            return slot;
+
+        index = (index + 1) & mask;
+        distance++;
+    }
+}
+
+/*
+ * The caller has already excluded duplicates and left an empty slot.
+ * Swapping whole slots transfers long-key pointers without copying or
+ * freeing their allocations; inline keys travel with the slot itself.
+ */
+static void insert_slot(ogs_hash_slot_t *slots,
+        unsigned int capacity, ogs_hash_slot_t entry)
+{
+    unsigned int mask = capacity - 1;
+    unsigned int index = entry.hash & mask;
+    unsigned int distance = 0;
+
+    for (;;) {
+        ogs_hash_slot_t *slot = &slots[index];
+        unsigned int resident_distance;
+
+        if (!slot->val) {
+            *slot = entry;
+            return;
+        }
+        resident_distance = probe_distance(slot->hash, index, mask);
+        if (resident_distance < distance) {
+            ogs_hash_slot_t displaced = *slot;
+
+            *slot = entry;
+            entry = displaced;
+            distance = resident_distance;
+        }
+        index = (index + 1) & mask;
+        distance++;
+    }
+}
+
+static void grow_slots(ogs_hash_t *ht)
+{
+    ogs_hash_slot_t *slots;
+    unsigned int capacity, i;
+
+    ogs_assert(ht->capacity <= UINT_MAX / 2);
+    capacity = ht->capacity ? ht->capacity * 2 : INITIAL_CAPACITY;
+    ogs_assert(sizeof(*slots) <= SIZE_MAX / (size_t)capacity);
+    slots = ogs_calloc((size_t)capacity, sizeof(*slots));
+    ogs_assert(slots);
+
+    for (i = 0; i < ht->capacity; i++) {
+        if (ht->slots[i].val)
+            insert_slot(slots, capacity, ht->slots[i]);
+    }
+    if (ht->slots)
+        ogs_free(ht->slots);
+    ht->slots = slots;
+    ht->capacity = capacity;
+}
+
+static void add_entry(ogs_hash_t *ht,
+        const void *key, int klen, const void *val, uint32_t hash)
+{
+    ogs_hash_slot_t entry;
+
+    /*
+     * key may point into the old array, or be a prefix of a stored key.
+     * Finish its independent copy before growth or Robin Hood swaps.
+     */
+    prepare_slot(&entry, key, klen, val, hash);
+    if (!ht->capacity ||
+            ht->count >= (uint64_t)ht->capacity * 9 / 10)
+        grow_slots(ht);
+    insert_slot(ht->slots, ht->capacity, entry);
+    ht->count++;
+}
+
+static void remove_slot(ogs_hash_t *ht, ogs_hash_slot_t *slot)
+{
+    unsigned int mask = ht->capacity - 1;
+    unsigned int index = (unsigned int)(slot - ht->slots);
+
+    free_key(slot);
+    for (;;) {
+        unsigned int next = (index + 1) & mask;
+
+        /*
+         * This stop-at-home rule relies on Robin Hood insertion.
+         * A plain linear-probing table would need a different test.
+         */
+        if (!ht->slots[next].val ||
+                !probe_distance(ht->slots[next].hash, next, mask))
+            break;
+        ht->slots[index] = ht->slots[next];
+        index = next;
+    }
+    memset(&ht->slots[index], 0, sizeof(ht->slots[index]));
+    ht->count--;
 }
 
 ogs_hash_t *ogs_hash_make(void)
 {
     ogs_hash_t *ht;
-    ogs_time_t now = ogs_get_monotonic_time();
 
-    ht = ogs_malloc(sizeof(ogs_hash_t));
-    if (!ht) {
-        ogs_error("ogs_malloc() failed");
-        return NULL;
-    }
+#ifdef _WIN32
+    BOOL initialized = InitOnceExecuteOnce(
+            &hash_once, init_hash_secret, NULL, NULL);
+    ogs_assert(initialized);
+#else
+    int rv = pthread_once(&hash_once, init_hash_secret);
+    ogs_assert(rv == 0);
+#endif
 
-    ht->free = NULL;
-    ht->count = 0;
-    ht->max = INITIAL_MAX;
-    ht->seed = (unsigned int)((now >> 32) ^ now ^ 
-                              (uintptr_t)ht ^ (uintptr_t)&now) - 1;
-    ht->array = alloc_array(ht, ht->max);
-    ht->hash_func = NULL;
-
+    ht = ogs_calloc(1, sizeof(*ht));
+    if (!ht)
+        ogs_error("ogs_calloc() failed");
     return ht;
 }
 
-ogs_hash_t *ogs_hash_make_custom(ogs_hashfunc_t hash_func)
+void ogs_hash_clear(ogs_hash_t *ht)
 {
-    ogs_hash_t *ht = ogs_hash_make();
-    if (!ht) {
-        ogs_error("ogs_hash_make() failed");
-        return NULL;
+    unsigned int i;
+
+    ogs_assert(ht);
+    if (!ht->count)
+        return;
+    for (i = 0; i < ht->capacity; i++) {
+        if (ht->slots[i].val)
+            free_key(&ht->slots[i]);
     }
-    ht->hash_func = hash_func;
-    return ht;
+    memset(ht->slots, 0, (size_t)ht->capacity * sizeof(*ht->slots));
+    ht->count = 0;
 }
 
 void ogs_hash_destroy(ogs_hash_t *ht)
 {
-    ogs_hash_entry_t *he = NULL, *next_he = NULL;
+    ogs_assert(ht);
+    ogs_hash_clear(ht);
+    if (ht->slots)
+        ogs_free(ht->slots);
+    ogs_free(ht);
+}
+
+void *ogs_hash_get_debug(ogs_hash_t *ht,
+        const void *key, int klen, const char *file_line)
+{
+    ogs_hash_slot_t *slot;
+    uint32_t hash;
 
     ogs_assert(ht);
-    ogs_assert(ht->array);
+    ogs_assert(key);
+    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
 
-    ogs_hash_clear(ht);
+    if (!ht->count)
+        return NULL;
+    hash = hash_key(key, &klen);
+    slot = find_slot(ht, key, klen, hash);
+    return slot ? (void *)slot->val : NULL;
+}
 
-    he = ht->free;
-    while(he) {
-        next_he = he->next;
+void ogs_hash_set_debug(ogs_hash_t *ht,
+        const void *key, int klen, const void *val, const char *file_line)
+{
+    ogs_hash_slot_t *slot;
+    uint32_t hash;
 
-        ogs_free(he);
-        he = next_he;
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
+
+    if (!ht->count && !val)
+        return;
+    hash = hash_key(key, &klen);
+    slot = find_slot(ht, key, klen, hash);
+    if (slot) {
+        if (val)
+            slot->val = val;
+        else
+            remove_slot(ht, slot);
+    } else if (val)
+        add_entry(ht, key, klen, val, hash);
+}
+
+void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
+        const void *key, int klen, const void *val, const char *file_line)
+{
+    ogs_hash_slot_t *slot;
+    uint32_t hash;
+
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
+
+    if (!ht->count && !val)
+        return NULL;
+    hash = hash_key(key, &klen);
+    slot = find_slot(ht, key, klen, hash);
+    if (slot)
+        return (void *)slot->val;
+    if (val)
+        add_entry(ht, key, klen, val, hash);
+    return (void *)val;
+}
+
+bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
+        const void *key, int klen, const void *owner, const char *file_line)
+{
+    ogs_hash_slot_t *slot;
+    uint32_t hash;
+
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
+    ogs_assert(owner);
+
+    hash = hash_key(key, &klen);
+    slot = find_slot(ht, key, klen, hash);
+    if (slot && slot->val == owner) {
+        remove_slot(ht, slot);
+        return true;
     }
+    ogs_warn("%s: hash unset skipped: entry not owned by expected context",
+            file_line);
+    return false;
+}
 
-    ogs_free(ht->array);
-    ogs_free(ht);
+unsigned int ogs_hash_count(ogs_hash_t *ht)
+{
+    ogs_assert(ht);
+    return ht->count;
+}
+
+static void init_iterator(ogs_hash_t *ht, ogs_hash_index_t *hi)
+{
+    unsigned int boundary;
+
+    memset(hi, 0, sizeof(*hi));
+    hi->ht = ht;
+    if (!ht->count)
+        return;
+
+    /* There is always an empty slot at the configured maximum load. */
+    for (boundary = 0; ht->slots[boundary].val; boundary++)
+        ;
+    hi->next = boundary;
+    hi->remaining = ht->capacity;
 }
 
 ogs_hash_index_t *ogs_hash_next(ogs_hash_index_t *hi)
 {
     ogs_assert(hi);
 
-    hi->this = hi->next;
-    while (!hi->this) {
-        if (hi->index > hi->ht->max)
-            return NULL;
+    while (hi->remaining) {
+        unsigned int index = hi->next;
 
-        hi->this = hi->ht->array[hi->index++];
+        /* Save the next position before the caller can delete current. */
+        hi->next = (index - 1) & (hi->ht->capacity - 1);
+        hi->remaining--;
+        if (hi->ht->slots[index].val) {
+            hi->index = index;
+            return hi;
+        }
     }
-    hi->next = hi->this->next;
-    return hi;
+    return NULL;
 }
 
 ogs_hash_index_t *ogs_hash_first(ogs_hash_t *ht)
 {
-    ogs_hash_index_t *hi;
-
     ogs_assert(ht);
-
-    hi = &ht->iterator;
-
-    hi->ht = ht;
-    hi->index = 0;
-    hi->this = NULL;
-    hi->next = NULL;
-    return ogs_hash_next(hi);
+    init_iterator(ht, &ht->iterator);
+    return ogs_hash_next(&ht->iterator);
 }
 
 void ogs_hash_this(ogs_hash_index_t *hi,
         const void **key, int *klen, void **val)
 {
-    ogs_assert(hi);
+    ogs_hash_slot_t *slot;
 
-    if (key)  *key  = hi->this->key;
-    if (klen) *klen = hi->this->klen;
-    if (val)  *val  = (void *)hi->this->val;
+    ogs_assert(hi);
+    ogs_assert(hi->ht);
+    ogs_assert(hi->index < hi->ht->capacity);
+    slot = &hi->ht->slots[hi->index];
+    ogs_assert(slot->val);
+
+    if (key)
+        *key = slot_key(slot);
+    if (klen)
+        *klen = slot->klen;
+    if (val)
+        *val = (void *)slot->val;
 }
 
 const void *ogs_hash_this_key(ogs_hash_index_t *hi)
@@ -222,288 +578,19 @@ void *ogs_hash_this_val(ogs_hash_index_t *hi)
     return val;
 }
 
-static void expand_array(ogs_hash_t *ht)
-{
-    ogs_hash_index_t *hi;
-    ogs_hash_entry_t **new_array;
-    unsigned int new_max;
-
-    new_max = ht->max * 2 + 1;
-    new_array = alloc_array(ht, new_max);
-    for (hi = ogs_hash_first(ht); hi; hi = ogs_hash_next(hi)) {
-        unsigned int i = hi->this->hash & new_max;
-        hi->this->next = new_array[i];
-        new_array[i] = hi->this;
-    }
-    ogs_free(ht->array);
-    ht->array = new_array;
-    ht->max = new_max;
-}
-
-static unsigned int hashfunc_default(
-        const char *char_key, int *klen, unsigned int hash)
-{
-    const unsigned char *key = (const unsigned char *)char_key;
-    const unsigned char *p;
-    int i;
-    
-    /*
-     * This is the popular `times 33' hash algorithm which is used by
-     * perl and also appears in Berkeley DB. This is one of the best
-     * known hash functions for strings because it is both computed
-     * very fast and distributes very well.
-     *
-     * The originator may be Dan Bernstein but the code in Berkeley DB
-     * cites Chris Torek as the source. The best citation I have found
-     * is "Chris Torek, Hash function for text in C, Usenet message
-     * <27038@mimsy.umd.edu> in comp.lang.c , October, 1990." in Rich
-     * Salz's USENIX 1992 paper about INN which can be found at
-     * <http://citeseer.nj.nec.com/salz92internetnews.html>.
-     *
-     * The magic of number 33, i.e. why it works better than many other
-     * constants, prime or not, has never been adequately explained by
-     * anyone. So I try an explanation: if one experimentally tests all
-     * multipliers between 1 and 256 (as I did while writing a low-level
-     * data structure library some time ago) one detects that even
-     * numbers are not useable at all. The remaining 128 odd numbers
-     * (except for the number 1) work more or less all equally well.
-     * They all distribute in an acceptable way and this way fill a hash
-     * table with an average percent of approx. 86%.
-     *
-     * If one compares the chi^2 values of the variants (see
-     * Bob Jenkins ``Hashing Frequently Asked Questions'' at
-     * http://burtleburtle.net/bob/hash/hashfaq.html for a description
-     * of chi^2), the number 33 not even has the best value. But the
-     * number 33 and a few other equally good numbers like 17, 31, 63,
-     * 127 and 129 have nevertheless a great advantage to the remaining
-     * numbers in the large set of possible multipliers: their multiply
-     * operation can be replaced by a faster operation based on just one
-     * shift plus either a single addition or subtraction operation. And
-     * because a hash function has to both distribute good _and_ has to
-     * be very fast to compute, those few numbers should be preferred.
-     *
-     *                  -- Ralf S. Engelschall <rse@engelschall.com>
-     */
-
-    if (*klen == OGS_HASH_KEY_STRING) {
-        for (p = key; *p; p++) {
-            hash = hash * 33 + *p;
-        }
-        *klen = p - key;
-    }
-    else {
-        for (p = key, i = *klen; i; i--, p++) {
-            hash = hash * 33 + *p;
-        }
-    }
-
-    return hash;
-}
-
-unsigned int ogs_hashfunc_default(const char *char_key, int *klen)
-{
-    return hashfunc_default(char_key, klen, 0);
-}
-
-static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
-        const void *key, int klen, const void *val, const char *file_line)
-{
-    ogs_hash_entry_t **hep, *he;
-    unsigned int hash;
-
-    if (ht->hash_func)
-        hash = ht->hash_func(key, &klen);
-    else
-        hash = hashfunc_default(key, &klen, ht->seed);
-
-    ogs_assert(klen >= 0);
-
-    /* scan linked list */
-    for (hep = &ht->array[hash & ht->max], he = *hep;
-         he; hep = &he->next, he = *hep) {
-        if (he->hash == hash
-            && he->klen == klen
-            && memcmp(he->key, key, klen) == 0)
-            break;
-    }
-    if (he || !val)
-        return hep;
-
-    /* add a new entry for non-NULL values */
-    if ((he = ht->free) != NULL)
-        ht->free = he->next;
-    else {
-        he = ogs_malloc(sizeof(*he));
-        ogs_assert(he);
-    }
-    he->next = NULL;
-    he->hash = hash;
-    copy_key(he, key, klen);
-    he->val  = val;
-    *hep = he;
-    ht->count++;
-    return hep;
-}
-
-void *ogs_hash_get_debug(ogs_hash_t *ht,
-        const void *key, int klen, const char *file_line)
-{
-    ogs_hash_entry_t *he;
-
-    ogs_assert(ht);
-    ogs_assert(key);
-    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
-
-    he = *find_entry(ht, key, klen, NULL, file_line);
-    if (he)
-        return (void *)he->val;
-    else
-        return NULL;
-}
-
-void ogs_hash_set_debug(ogs_hash_t *ht,
-        const void *key, int klen, const void *val, const char *file_line)
-{
-    ogs_hash_entry_t **hep;
-
-    ogs_assert(ht);
-    ogs_assert(key);
-    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
-
-    hep = find_entry(ht, key, klen, val, file_line);
-    if (*hep) {
-        if (!val) {
-            /* delete entry */
-            ogs_hash_entry_t *old = *hep;
-            *hep = (*hep)->next;
-            free_key(old);
-            old->next = ht->free;
-            ht->free = old;
-            --ht->count;
-        } else {
-            /* replace entry */
-            (*hep)->val = val;
-            /* check that the collision rate isn't too high */
-            if (ht->count > ht->max) {
-                expand_array(ht);
-            }
-        }
-    }
-    /* else key not present and val==NULL */
-}
-
-void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
-        const void *key, int klen, const void *val, const char *file_line)
-{
-    ogs_hash_entry_t **hep;
-
-    ogs_assert(ht);
-    ogs_assert(key);
-    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
-
-    hep = find_entry(ht, key, klen, val, file_line);
-    if (*hep) {
-        val = (*hep)->val;
-        /* check that the collision rate isn't too high */
-        if (ht->count > ht->max) {
-            expand_array(ht);
-        }
-        return (void *)val;
-    }
-    /* else key not present and val==NULL */
-    return NULL;
-}
-
-bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
-        const void *key, int klen, const void *owner, const char *file_line)
-{
-    void *indexed = NULL;
-
-    ogs_assert(ht);
-    ogs_assert(key);
-    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
-    ogs_assert(owner);
-
-    indexed = ogs_hash_get_debug(ht, key, klen, file_line);
-    if (indexed == owner) {
-        ogs_hash_set_debug(ht, key, klen, NULL, file_line);
-        return true;
-    }
-
-    /*
-     * A newer context has re-claimed this key (the same identity re-attached
-     * while this context was still being torn down). Leave the entry alone so
-     * the live context stays findable; clearing it would orphan that entry.
-     */
-    ogs_warn("%s: hash unset skipped: entry not owned by expected context",
-            file_line);
-    return false;
-}
-
-unsigned int ogs_hash_count(ogs_hash_t *ht)
-{
-    ogs_assert(ht);
-    return ht->count;
-}
-
-void ogs_hash_clear(ogs_hash_t *ht)
-{
-    unsigned int i;
-
-    ogs_assert(ht);
-    ogs_assert(ht->array);
-
-    /*
-     * Recycle entries directly through the bucket array instead of
-     * re-locating each one with ogs_hash_set(ht, key, klen, NULL):
-     * clearing needs only the entries we already hold, not their hashes.
-     * Each entry's key storage is released on the way.
-     */
-    for (i = 0; i <= ht->max; i++) {
-        ogs_hash_entry_t *he = ht->array[i];
-
-        ht->array[i] = NULL;
-        while (he) {
-            ogs_hash_entry_t *next_he = he->next;
-
-            free_key(he);
-            he->next = ht->free;
-            ht->free = he;
-            he = next_he;
-        }
-    }
-    ht->count = 0;
-}
-
-/* This is basically the following...
- * for every element in hash table {
- *    comp elemeny.key, element.value
- * }
- *
- * Like with table_do, the comp callback is called for each and every
- * element of the hash table.
- */
 int ogs_hash_do(ogs_hash_do_callback_fn_t *comp,
-                             void *rec, const ogs_hash_t *ht)
+        void *rec, const ogs_hash_t *ht)
 {
-    ogs_hash_index_t  hix;
-    ogs_hash_index_t *hi;
-    int rv, dorv  = 1;
+    ogs_hash_index_t hi;
 
-    hix.ht    = (ogs_hash_t *)ht;
-    hix.index = 0;
-    hix.this  = NULL;
-    hix.next  = NULL;
+    ogs_assert(comp);
+    ogs_assert(ht);
+    init_iterator((ogs_hash_t *)ht, &hi);
+    while (ogs_hash_next(&hi)) {
+        ogs_hash_slot_t *slot = &hi.ht->slots[hi.index];
 
-    if ((hi = ogs_hash_next(&hix))) {
-        /* Scan the entire table */
-        do {
-            rv = (*comp)(rec, hi->this->key, hi->this->klen, hi->this->val);
-        } while (rv && (hi = ogs_hash_next(hi)));
-
-        if (rv == 0) {
-            dorv = 0;
-        }
+        if (!comp(rec, slot_key(slot), slot->klen, slot->val))
+            return 0;
     }
-    return dorv;
+    return 1;
 }
