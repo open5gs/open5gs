@@ -690,11 +690,8 @@ static bool server_send_rspmem_persistent(
         return true;
     }
 
-    nvlen = 3; /* :status && server && date */
-
-    for (hi = ogs_hash_first(response->http.headers);
-            hi; hi = ogs_hash_next(hi))
-        nvlen++;
+    /* :status, server, date and the application headers. */
+    nvlen = 3 + ogs_hash_count(response->http.headers);
 
     if (response->http.content && response->http.content_length)
         nvlen++;
@@ -1531,7 +1528,6 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
     const char METHOD[] = ":method";
 
     nghttp2_vec namebuf, valuebuf;
-    char *namestr = NULL, *valuestr = NULL;
 
     ogs_assert(session);
     ogs_assert(frame);
@@ -1589,18 +1585,17 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
 
     if (valuebuf.len == 0) return 0;
 
-    namestr = ogs_strndup((const char *)namebuf.base, namebuf.len);
-    ogs_assert(namestr);
-
-    valuestr = ogs_strndup((const char *)valuebuf.base, valuebuf.len);
-    ogs_assert(valuestr);
-
     if (namebuf.len == sizeof(PATH) - 1 &&
             memcmp(PATH, namebuf.base, namebuf.len) == 0) {
+        char *valuestr;
         char *saveptr = NULL, *query;
 #define MAX_NUM_OF_PARAM_IN_QUERY 16
         struct yuarel_param params[MAX_NUM_OF_PARAM_IN_QUERY+2];
         int j;
+
+        /* URI parsing modifies its input; keep nghttp2's buffer intact. */
+        valuestr = ogs_strndup((const char *)valuebuf.base, valuebuf.len);
+        ogs_assert(valuestr);
 
         ogs_assert(request->h.uri == NULL);
         request->h.uri = ogs_sbi_parse_uri(valuestr, "?", &saveptr);
@@ -1624,7 +1619,6 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
 
                 ogs_free(query);
 
-                ogs_free(namestr);
                 ogs_free(valuestr);
 
                 /* Keep a submitted error response; otherwise reset as before. */
@@ -1642,22 +1636,23 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
         }
 
         ogs_free(query);
+        ogs_free(valuestr);
 
     } else if (namebuf.len == sizeof(METHOD) - 1 &&
             memcmp(METHOD, namebuf.base, namebuf.len) == 0) {
 
         ogs_assert(request->h.method == NULL);
-        request->h.method = ogs_strdup(valuestr);
+        request->h.method = ogs_strndup(
+                (const char *)valuebuf.base, valuebuf.len);
         ogs_assert(request->h.method);
 
     } else {
 
-        ogs_sbi_header_set(request->http.headers, namestr, valuestr);
+        /* nghttp2 supplies NUL-terminated buffers; the setter copies both. */
+        ogs_sbi_header_set(request->http.headers,
+                (const char *)namebuf.base, (const char *)valuebuf.base);
 
     }
-
-    ogs_free(namestr);
-    ogs_free(valuestr);
 
     return 0;
 }

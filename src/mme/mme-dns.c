@@ -66,6 +66,7 @@
  * if the cache is still full, the entries closest to expiry are evicted.
  */
 #define MME_DNS_CACHE_MAX_ENTRIES 4096
+#define MME_DNS_CACHE_KEY_LEN     (MME_DNS_MAX_FQDN_LEN+4)
 
 static int negative_ttl(void)
 {
@@ -134,7 +135,6 @@ typedef struct mme_dns_query_ctx_s {
 } mme_dns_query_ctx_t;
 
 typedef struct mme_dns_cache_entry_s {
-    char key[MME_DNS_MAX_FQDN_LEN+4];
     ogs_time_t expire;
     int num;                                /* 0 = negative entry */
     union {
@@ -252,7 +252,7 @@ static void dns_sock_state_cb(
 
 static mme_dns_cache_entry_t *cache_get(int qtype, const char *fqdn)
 {
-    char key[sizeof(((mme_dns_cache_entry_t *)0)->key)];
+    char key[MME_DNS_CACHE_KEY_LEN];
     mme_dns_cache_entry_t *entry = NULL;
 
     ogs_snprintf(key, sizeof(key), "%d:%s", qtype, fqdn);
@@ -261,7 +261,7 @@ static mme_dns_cache_entry_t *cache_get(int qtype, const char *fqdn)
         return NULL;
 
     if (entry->expire < ogs_time_now()) {
-        ogs_hash_set(g_cache, entry->key, OGS_HASH_KEY_STRING, NULL);
+        ogs_hash_set(g_cache, key, OGS_HASH_KEY_STRING, NULL);
         ogs_free(entry);
         return NULL;
     }
@@ -276,6 +276,8 @@ static void cache_make_room(void)
 {
     ogs_hash_index_t *hi = NULL;
     mme_dns_cache_entry_t *entry = NULL, *victim = NULL;
+    const void *victim_key = NULL;
+    int victim_klen = 0;
     ogs_time_t now = ogs_time_now();
 
     if (ogs_hash_count(g_cache) < MME_DNS_CACHE_MAX_ENTRIES)
@@ -284,7 +286,8 @@ static void cache_make_room(void)
     for (hi = ogs_hash_first(g_cache); hi; hi = ogs_hash_next(hi)) {
         entry = ogs_hash_this_val(hi);
         if (entry->expire < now) {
-            ogs_hash_set(g_cache, entry->key, OGS_HASH_KEY_STRING, NULL);
+            ogs_hash_set(g_cache, ogs_hash_this_key(hi),
+                    ogs_hash_this_key_len(hi), NULL);
             ogs_free(entry);
         }
     }
@@ -293,12 +296,16 @@ static void cache_make_room(void)
         victim = NULL;
         for (hi = ogs_hash_first(g_cache); hi; hi = ogs_hash_next(hi)) {
             entry = ogs_hash_this_val(hi);
-            if (!victim || entry->expire < victim->expire)
+            if (!victim || entry->expire < victim->expire) {
                 victim = entry;
+                victim_key = ogs_hash_this_key(hi);
+                victim_klen = ogs_hash_this_key_len(hi);
+            }
         }
         if (!victim)
             break;
-        ogs_hash_set(g_cache, victim->key, OGS_HASH_KEY_STRING, NULL);
+        /* The table has not changed since victim_key was read. */
+        ogs_hash_set(g_cache, victim_key, victim_klen, NULL);
         ogs_free(victim);
     }
 }
@@ -306,27 +313,26 @@ static void cache_make_room(void)
 static mme_dns_cache_entry_t *cache_put(
         int qtype, const char *fqdn, int ttl_sec)
 {
+    char key[MME_DNS_CACHE_KEY_LEN];
     mme_dns_cache_entry_t *entry = NULL, *old = NULL;
 
     entry = ogs_calloc(1, sizeof(*entry));
     ogs_assert(entry);
-    ogs_snprintf(entry->key, sizeof(entry->key), "%d:%s", qtype, fqdn);
+    ogs_snprintf(key, sizeof(key), "%d:%s", qtype, fqdn);
 
     /* Only a genuinely new key needs a free slot: updating an existing
      * key replaces it in place, and calling cache_make_room() in that
      * case would evict one unrelated entry per refresh once the cache
      * is at capacity. */
-    old = ogs_hash_get(g_cache, entry->key, OGS_HASH_KEY_STRING);
+    old = ogs_hash_get(g_cache, key, OGS_HASH_KEY_STRING);
     if (!old)
         cache_make_room();
 
     entry->expire = ogs_time_now() + ogs_time_from_sec(ttl_sec);
 
-    if (old) {
-        ogs_hash_set(g_cache, old->key, OGS_HASH_KEY_STRING, NULL);
+    ogs_hash_set(g_cache, key, OGS_HASH_KEY_STRING, entry);
+    if (old)
         ogs_free(old);
-    }
-    ogs_hash_set(g_cache, entry->key, OGS_HASH_KEY_STRING, entry);
 
     return entry;
 }
@@ -338,11 +344,9 @@ static void cache_flush(void)
     if (!g_cache)
         return;
 
-    for (hi = ogs_hash_first(g_cache); hi; hi = ogs_hash_next(hi)) {
-        mme_dns_cache_entry_t *entry = ogs_hash_this_val(hi);
-        ogs_hash_set(g_cache, entry->key, OGS_HASH_KEY_STRING, NULL);
-        ogs_free(entry);
-    }
+    for (hi = ogs_hash_first(g_cache); hi; hi = ogs_hash_next(hi))
+        ogs_free(ogs_hash_this_val(hi));
+    ogs_hash_clear(g_cache);
 }
 
 /*****************************************************************

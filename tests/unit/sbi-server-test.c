@@ -455,6 +455,65 @@ out:
     test_conn_close(&conn);
 }
 
+/* Header callbacks copy library-owned strings before returning to nghttp2. */
+static void request_headers_func(abts_case *tc, void *data)
+{
+    test_conn_t conn;
+    ogs_sbi_stream_t *stream;
+    ogs_sbi_request_t *request;
+    nghttp2_nv nva[8];
+    char name[] = "x-open5gs-header-name-longer-than-the-inline-key";
+    char value[] = "a-header-value-owned-by-the-request";
+
+    stream = test_conn_open(&conn, 65535);
+    ABTS_PTR_NOTNULL(tc, stream);
+    if (!stream)
+        goto out;
+
+    add_header(&nva[0], ":method", "POST");
+    add_header(&nva[1], ":scheme", "http");
+    add_header(&nva[2], ":authority", "localhost");
+    add_header(&nva[3], ":path",
+            "/nnrf-nfm/v1/nf-instances?first=one&last=two");
+    add_header(&nva[4], "x-repeated", "old");
+    add_header(&nva[5], "x-repeated", "new");
+    add_header(&nva[6], name, value);
+    add_header(&nva[7], "x-empty", "");
+    ogs_assert(nghttp2_submit_request(conn.client,
+                NULL, nva, OGS_ARRAY_SIZE(nva), NULL, NULL) > 0);
+
+    /* The serialized request must not retain the caller's input buffers. */
+    memset(name, 'X', sizeof(name) - 1);
+    memset(value, 'Y', sizeof(value) - 1);
+    client_to_server(conn.client, conn.sbi_sess);
+    server_to_client(conn.sbi_sess, conn.client);
+
+    stream = stream_find_by_id(peer.stream_id);
+    ABTS_PTR_NOTNULL(tc, stream);
+    if (!stream)
+        goto out;
+    request = stream->request;
+    ABTS_STR_EQUAL(tc, "POST", request->h.method);
+    ABTS_STR_EQUAL(tc, "/nnrf-nfm/v1/nf-instances", request->h.uri);
+    ABTS_STR_EQUAL(tc, "one",
+            ogs_hash_get(request->http.params, "first", OGS_HASH_KEY_STRING));
+    ABTS_STR_EQUAL(tc, "two",
+            ogs_hash_get(request->http.params, "last", OGS_HASH_KEY_STRING));
+    ABTS_STR_EQUAL(tc, "new",
+            ogs_hash_get(request->http.headers,
+                "x-repeated", OGS_HASH_KEY_STRING));
+    ABTS_STR_EQUAL(tc, "a-header-value-owned-by-the-request",
+            ogs_hash_get(request->http.headers,
+                "x-open5gs-header-name-longer-than-the-inline-key",
+                OGS_HASH_KEY_STRING));
+    ABTS_PTR_EQUAL(tc, NULL,
+            ogs_hash_get(request->http.headers,
+                "x-empty", OGS_HASH_KEY_STRING));
+
+out:
+    test_conn_close(&conn);
+}
+
 abts_suite *test_sbi_server(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -464,6 +523,7 @@ abts_suite *test_sbi_server(abts_suite *suite)
     abts_run_test(suite, partial_data_func, NULL);
     abts_run_test(suite, large_data_func, NULL);
     abts_run_test(suite, recv_handler_error_response_func, NULL);
+    abts_run_test(suite, request_headers_func, NULL);
 
     return suite;
 }

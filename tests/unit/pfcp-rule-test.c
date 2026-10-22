@@ -433,8 +433,13 @@ static void test_far_f_teid_owner(abts_case *tc, void *data)
     memset(&sess, 0, sizeof(sess));
     memset(&gnode, 0, sizeof(gnode));
     ogs_pfcp_pool_init(&sess);
-    gnode.addr.sin.sin_family = AF_INET;
-    gnode.addr.sin.sin_addr.s_addr = htobe32(0x7f000001);
+    if (*(int *)data == AF_INET) {
+        gnode.addr.sin.sin_family = AF_INET;
+        gnode.addr.sin.sin_addr.s_addr = htobe32(0x7f000001);
+    } else {
+        gnode.addr.sin6.sin6_family = AF_INET6;
+        gnode.addr.sin6.sin6_addr.s6_addr[15] = 1;
+    }
 
     first = ogs_pfcp_far_add(&sess);
     first->id = 1;
@@ -452,6 +457,10 @@ static void test_far_f_teid_owner(abts_case *tc, void *data)
     second->outer_header_creation.teid = first->outer_header_creation.teid;
     ogs_pfcp_far_f_teid_hash_set(second);
     ABTS_INT_EQUAL(tc, 0, second->hash.f_teid.len);
+    ogs_pfcp_far_f_teid_hash_set(second);
+    ABTS_INT_EQUAL(tc, 0, second->hash.f_teid.len);
+    ABTS_PTR_EQUAL(tc, first,
+            ogs_hash_get(ogs_pfcp_self()->far_f_teid_hash, &key, len));
 
     /* Rejection must not erase the marked FAR's Error Indication entry. */
     second->gnode = NULL;
@@ -674,6 +683,8 @@ static void test_find_by_packet_address_family(abts_case *tc, void *data)
 abts_suite *test_pfcp_rule(abts_suite *suite)
 {
     ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
+    int family[] = { AF_INET, AF_INET6 };
+    size_t i;
 
     ogs_app_context_init();
     ogs_app()->pool.nf = 8;
@@ -690,7 +701,8 @@ abts_suite *test_pfcp_rule(abts_suite *suite)
     abts_run_test(suite, test_validate_create_rules, NULL);
     abts_run_test(suite, test_pdr_teid_owner, NULL);
     abts_run_test(suite, test_removed_pdr_owner, NULL);
-    abts_run_test(suite, test_far_f_teid_owner, NULL);
+    for (i = 0; i < OGS_ARRAY_SIZE(family); i++)
+        abts_run_test(suite, test_far_f_teid_owner, &family[i]);
     abts_run_test(suite, test_far_rekey_collision, NULL);
     abts_run_test(suite, test_remove_referenced_rules, NULL);
     abts_run_test(suite, test_find_by_packet_address_family, NULL);

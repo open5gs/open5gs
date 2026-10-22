@@ -26,30 +26,6 @@ static ogs_diam_config_t g_diam_conf;
 
 int __pcrf_log_domain;
 
-/*
- * IP address to Gx Session-Id mapping
- *
- * ogs_hash_t copies its keys but stores value pointers as given, so an
- * entry that borrowed its Session-Id from a Diameter session state would
- * outlive its owner. Each entry therefore keeps its own key and Session-Id,
- * and lookups return a copy that the caller frees.
- */
-#define MAX_IP_KEY_LEN      (OGS_IPV6_DEFAULT_PREFIX_LEN >> 3)
-
-typedef struct ip_sid_s {
-    uint8_t     key[MAX_IP_KEY_LEN];
-    int         klen;
-    uint8_t     *sid;
-} ip_sid_t;
-
-static void ip_sid_free(ip_sid_t *entry)
-{
-    ogs_assert(entry);
-    if (entry->sid)
-        ogs_free(entry->sid);
-    ogs_free(entry);
-}
-
 static int context_initialized = 0;
 
 pcrf_context_t *pcrf_self(void)
@@ -88,11 +64,9 @@ void pcrf_context_final(void)
     ogs_assert(context_initialized == 1);
     ogs_assert(self.ip_hash);
 
-    for (hi = ogs_hash_first(self.ip_hash); hi; hi = ogs_hash_next(hi)) {
-        ip_sid_t *entry = ogs_hash_this_val(hi);
-        ogs_hash_set(self.ip_hash, entry->key, entry->klen, NULL);
-        ip_sid_free(entry);
-    }
+    /* Values are ours; ogs_hash_destroy() releases the keys. */
+    for (hi = ogs_hash_first(self.ip_hash); hi; hi = ogs_hash_next(hi))
+        ogs_free(ogs_hash_this_val(hi));
     ogs_hash_destroy(self.ip_hash);
     ogs_thread_mutex_destroy(&self.hash_lock);
 
@@ -489,56 +463,56 @@ int pcrf_db_qos_data(
     return rv;
 }
 
+/*
+ * IP address to Gx Session-Id mapping
+ *
+ * ogs_hash_t copies the IP key. The value is our own copy of the
+ * Session-Id, freed when it is replaced or removed, so it does not depend
+ * on the Diameter session state. Lookups return a copy that the caller
+ * frees.
+ */
 static void sess_set(const void *key, int klen, const uint8_t *sid)
 {
-    ip_sid_t *entry = NULL;
+    char *old_sid = NULL, *new_sid = NULL;
 
     ogs_assert(key);
-    ogs_assert(klen > 0 && klen <= MAX_IP_KEY_LEN);
     ogs_assert(self.ip_hash);
+
+    if (sid) {
+        new_sid = ogs_strdup((char *)sid);
+        ogs_assert(new_sid);
+    }
 
     ogs_thread_mutex_lock(&self.hash_lock);
 
-    entry = ogs_hash_get(self.ip_hash, key, klen);
-    if (entry) {
-        ogs_hash_set(self.ip_hash, entry->key, entry->klen, NULL);
-        ip_sid_free(entry);
-    }
-
-    if (sid) {
-        entry = ogs_calloc(1, sizeof(*entry));
-        ogs_assert(entry);
-
-        memcpy(entry->key, key, klen);
-        entry->klen = klen;
-        entry->sid = (uint8_t *)ogs_strdup((char *)sid);
-        ogs_assert(entry->sid);
-
-        ogs_hash_set(self.ip_hash, entry->key, entry->klen, entry);
-    }
+    /* A NULL new_sid removes the entry. */
+    old_sid = ogs_hash_get(self.ip_hash, key, klen);
+    ogs_hash_set(self.ip_hash, key, klen, new_sid);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
+
+    if (old_sid)
+        ogs_free(old_sid);
 }
 
 static uint8_t *sess_find(const void *key, int klen)
 {
-    ip_sid_t *entry = NULL;
-    uint8_t *sid = NULL;
+    char *sid = NULL;
 
     ogs_assert(key);
     ogs_assert(self.ip_hash);
 
     ogs_thread_mutex_lock(&self.hash_lock);
 
-    entry = ogs_hash_get(self.ip_hash, key, klen);
-    if (entry) {
-        sid = (uint8_t *)ogs_strdup((char *)entry->sid);
+    sid = ogs_hash_get(self.ip_hash, key, klen);
+    if (sid) {
+        sid = ogs_strdup(sid);
         ogs_assert(sid);
     }
 
     ogs_thread_mutex_unlock(&self.hash_lock);
 
-    return sid;
+    return (uint8_t *)sid;
 }
 
 void pcrf_sess_set_ipv4(const void *key, uint8_t *sid)

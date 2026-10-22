@@ -49,7 +49,6 @@ struct upf_route_trie_node;
 
 typedef struct upf_context_s {
     ogs_hash_t *upf_n4_seid_hash;   /* hash table (UPF-N4-SEID) */
-    ogs_hash_t *smf_n4_seid_hash;   /* hash table (SMF-N4-SEID) */
     ogs_hash_t *smf_n4_f_seid_hash; /* hash table (SMF-N4-F-SEID) */
     ogs_hash_t *ipv4_hash;  /* hash table (IPv4 Address) */
     ogs_hash_t *ipv6_hash;  /* hash table (IPv6 Address) */
@@ -140,7 +139,6 @@ upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message);
 upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *f_seid);
 int upf_sess_remove(upf_sess_t *sess);
 void upf_sess_remove_all(void);
-upf_sess_t *upf_sess_find_by_smf_n4_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_smf_n4_f_seid(ogs_pfcp_f_seid_t *f_seid);
 upf_sess_t *upf_sess_find_by_upf_n4_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_ipv4(uint32_t addr);

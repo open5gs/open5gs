@@ -49,8 +49,6 @@ void sgwu_context_init(void)
 
     self.sgwu_sxa_seid_hash = ogs_hash_make();
     ogs_assert(self.sgwu_sxa_seid_hash);
-    self.sgwc_sxa_seid_hash = ogs_hash_make();
-    ogs_assert(self.sgwc_sxa_seid_hash);
     self.sgwc_sxa_f_seid_hash = ogs_hash_make();
     ogs_assert(self.sgwc_sxa_f_seid_hash);
 
@@ -65,8 +63,6 @@ void sgwu_context_final(void)
 
     ogs_assert(self.sgwu_sxa_seid_hash);
     ogs_hash_destroy(self.sgwu_sxa_seid_hash);
-    ogs_assert(self.sgwc_sxa_seid_hash);
-    ogs_hash_destroy(self.sgwc_sxa_seid_hash);
     ogs_assert(self.sgwc_sxa_f_seid_hash);
     ogs_hash_destroy(self.sgwc_sxa_f_seid_hash);
 
@@ -167,8 +163,6 @@ sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
 
     ogs_hash_set(self.sgwc_sxa_f_seid_hash, &sess->sgwc_sxa_f_seid,
             sizeof(sess->sgwc_sxa_f_seid), sess);
-    ogs_hash_set(self.sgwc_sxa_seid_hash, &sess->sgwc_sxa_f_seid.seid,
-            sizeof(sess->sgwc_sxa_f_seid.seid), sess);
 
     ogs_info("UE F-SEID[UP:0x%lx CP:0x%lx]",
         (long)sess->sgwu_sxa_seid, (long)sess->sgwc_sxa_f_seid.seid);
@@ -191,8 +185,6 @@ int sgwu_sess_remove(sgwu_sess_t *sess)
     ogs_hash_set(self.sgwu_sxa_seid_hash, &sess->sgwu_sxa_seid,
             sizeof(sess->sgwu_sxa_seid), NULL);
 
-    ogs_hash_set(self.sgwc_sxa_seid_hash, &sess->sgwc_sxa_f_seid.seid,
-            sizeof(sess->sgwc_sxa_f_seid.seid), NULL);
     ogs_hash_set(self.sgwc_sxa_f_seid_hash, &sess->sgwc_sxa_f_seid,
             sizeof(sess->sgwc_sxa_f_seid), NULL);
 
@@ -216,11 +208,6 @@ void sgwu_sess_remove_all(void)
     }
 }
 
-sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_seid(uint64_t seid)
-{
-    return ogs_hash_get(self.sgwc_sxa_seid_hash, &seid, sizeof(seid));
-}
-
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_f_seid(ogs_pfcp_f_seid_t *f_seid)
 {
     struct {
@@ -229,6 +216,8 @@ sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_f_seid(ogs_pfcp_f_seid_t *f_seid)
     } key;
 
     ogs_assert(f_seid);
+    /* The hash compares the complete key, including structure padding. */
+    memset(&key, 0, sizeof(key));
     ogs_assert(OGS_OK == ogs_pfcp_f_seid_to_ip(f_seid, &key.ip));
     key.seid = f_seid->seid;
 
