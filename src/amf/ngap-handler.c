@@ -3733,6 +3733,42 @@ void ngap_handle_handover_required(
         return;
     }
 
+    /*
+     * The container is opaque to the AMF: it is stored in
+     * amf_ue->handover.container and put back verbatim into the
+     * HandoverRequest that ogs_asn_encode() encodes into an
+     * OGS_MAX_SDU_LEN (32768) buffer.  A container that, with the
+     * HandoverRequest IEs, cannot fit that buffer makes the encoder
+     * fail; ngap_send_handover_request() then returns OGS_ERROR and
+     * the caller asserts.  The container is UE-influenced input (the
+     * gNB relays the RRC container), so reject it here, while a
+     * failure can still be reported, rather than abort the AMF.
+     */
+    if (SourceToTarget_TransparentContainer->size >
+            (OGS_MAX_SDU_LEN - 1024)) {
+        NGAP_Cause_t cause;
+
+        ogs_error("SourceToTarget-TransparentContainer is too large "
+                "[size:%d max:%d]",
+                (int)SourceToTarget_TransparentContainer->size,
+                (int)(OGS_MAX_SDU_LEN - 1024));
+
+        /*
+         * TS 38.413 10.4: a HANDOVER REQUIRED that the AMF cannot
+         * process is answered with HANDOVER PREPARATION FAILURE.  Use
+         * a protocol/semantic-error cause; the target context has not
+         * been created yet and no SMF update was sent.
+         */
+        memset(&cause, 0, sizeof(cause));
+        cause.present = NGAP_Cause_PR_protocol;
+        cause.choice.protocol = NGAP_CauseProtocol_semantic_error;
+
+        r = ngap_send_handover_preparation_failure(source_ue, &cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         ogs_error("No Security Context");
         r = ngap_send_error_indication2(source_ue,
