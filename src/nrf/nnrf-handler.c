@@ -1398,7 +1398,22 @@ bool nrf_nnrf_handle_nf_discover(
         }
 
         client = NF_INSTANCE_CLIENT(nf_instance);
-        ogs_assert(client);
+        if (!client) {
+            /* ogs_sbi_client_associate() above failed to allocate a client
+             * (e.g. the process-wide client_pool is drained by NF
+             * subscription requests with distinct notification endpoints).
+             * Answer the way the NF-subscription path answers the identical
+             * failure instead of asserting: remove the placeholder NRF
+             * instance and keep serving. */
+            ogs_error("No SBI client available for Home NRF [%s]",
+                    nf_instance->fqdn ? nf_instance->fqdn : "NULL");
+            ogs_sbi_nf_instance_remove(nf_instance);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    recvmsg, "No SBI client available", NULL, NULL));
+            goto cleanup;
+        }
 
         /*
          * TS29.510
