@@ -152,6 +152,37 @@ void sepp_n32c_handshake_send_security_capability_response(
         ogs_free(SecNegotiateRspData.supported_features);
 }
 
+/*
+ * A request relayed towards our own PLMN must name one of our NFs,
+ * i.e. <...>.mncXXX.mccXXX.3gppnetwork.org with a serving PLMN-ID.
+ * Anything else (IP literal, non-3GPP host) is not a valid N32 target.
+ */
+static bool fqdn_in_hplmn(char *fqdn)
+{
+    char *oi = NULL;
+    int i;
+
+    ogs_assert(fqdn);
+
+    oi = ogs_dnn_oi_from_fqdn(fqdn);
+    if (!oi)
+        return false;
+
+    /* "mncXXX.mccXXX" must be followed directly by the 3GPP domain */
+    if (ogs_strcasecmp(oi + 13, ".3gppnetwork.org") != 0)
+        return false;
+
+    for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+        if (ogs_plmn_id_mcc_from_fqdn(fqdn) ==
+            ogs_plmn_id_mcc(&ogs_local_conf()->serving_plmn_id[i]) &&
+            ogs_plmn_id_mnc_from_fqdn(fqdn) ==
+            ogs_plmn_id_mnc(&ogs_local_conf()->serving_plmn_id[i]))
+            return true;
+    }
+
+    return false;
+}
+
 static int request_handler(ogs_sbi_request_t *request, void *data)
 {
     int rv;
@@ -307,6 +338,21 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 ogs_error("Invalid Target-apiRoot [%s]",
                         headers.target_apiroot);
 
+                sepp_assoc_remove(assoc);
+                return OGS_ERROR;
+            }
+
+            /*
+             * Check the host that will actually be dialed, not the raw
+             * header, so a peer cannot use us to reach arbitrary hosts.
+             */
+            if (!fqdn || fqdn_in_hplmn(fqdn) == false) {
+                ogs_error("[DROP] Target-apiRoot is not in the home PLMN [%s]",
+                        headers.target_apiroot);
+
+                ogs_free(fqdn);
+                ogs_freeaddrinfo(addr);
+                ogs_freeaddrinfo(addr6);
                 sepp_assoc_remove(assoc);
                 return OGS_ERROR;
             }
