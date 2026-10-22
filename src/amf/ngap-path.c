@@ -620,6 +620,56 @@ int ngap_send_path_switch_ack(amf_sess_t *sess)
     return rv;
 }
 
+/*
+ * The answer to the target NG-RAN once every SMF has answered its Update SM
+ * Context of a path switch (TS 23.502 4.9.1.2.2 step 7,
+ * 23502-ie0.txt:4322): PATH SWITCH REQUEST ACKNOWLEDGE if at least one PDU
+ * session was switched (the others in its PDU Session Resource Released
+ * List), PATH SWITCH REQUEST FAILURE otherwise.
+ */
+int ngap_send_path_switch_result(amf_ue_t *amf_ue)
+{
+    int rv;
+
+    ran_ue_t *ran_ue = NULL;
+    amf_sess_t *sess = NULL, *switched = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (sess->transfer.path_switch_request_ack) {
+            switched = sess;
+            break;
+        }
+    }
+
+    if (switched) {
+        rv = ngap_send_path_switch_ack(switched);
+    } else {
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+        if (!ran_ue) {
+            ogs_error("[%s] NG context has already been removed",
+                    amf_ue->supi);
+            rv = OGS_NOTFOUND;
+        } else {
+            ngapbuf = ngap_build_path_switch_failure_by_sess(amf_ue);
+            if (!ngapbuf) {
+                ogs_error("ngap_build_path_switch_failure_by_sess() failed");
+                rv = OGS_ERROR;
+            } else {
+                rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+                ogs_expect(rv == OGS_OK);
+            }
+        }
+    }
+
+    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_ack);
+    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_unsuccessful);
+
+    return rv;
+}
+
 int ngap_send_path_switch_failure(
         amf_gnb_t *gnb,
         uint64_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id,

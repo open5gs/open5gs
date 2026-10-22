@@ -2647,6 +2647,7 @@ void amf_sess_remove(amf_sess_t *sess)
     AMF_SESS_CLEAR_N2_TRANSFER(sess, pdu_session_resource_setup_request);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, pdu_session_resource_modification_command);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, path_switch_request_ack);
+    AMF_SESS_CLEAR_N2_TRANSFER(sess, path_switch_request_unsuccessful);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, handover_request);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, handover_command);
 
