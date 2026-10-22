@@ -5235,6 +5235,25 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             "ESM message type:%d, PTI:%d, EBI:%d",
             message->esm.h.message_type, pti, ebi);
 
+    /*
+     * TS 24.301 7.3.2: a PDN DISCONNECT REQUEST carries no EPS bearer
+     * identity in its ESM header.  Checking it here, before the generic
+     * non-zero-EBI lookup below returns the named bearer, keeps an
+     * assigned or reserved header EBI (6.5.2.6 a) from selecting the
+     * default or a dedicated bearer and dispatching the disconnect on it.
+     */
+    if (message->esm.h.message_type == OGS_NAS_EPS_PDN_DISCONNECT_REQUEST &&
+            ebi != OGS_NAS_EPS_BEARER_IDENTITY_UNASSIGNED) {
+        ogs_error("PDN disconnect with EBI[%d] in the ESM header", ebi);
+        if (pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED) {
+            r = nas_eps_send_pdn_disconnect_reject(mme_ue, pti,
+                    OGS_NAS_ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
+        return NULL;
+    }
+
     if (ebi != OGS_NAS_EPS_BEARER_IDENTITY_UNASSIGNED) {
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
         if (!bearer) {
@@ -5272,9 +5291,26 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         if (!bearer) {
             ogs_error("No Bearer : Linked-EBI[%d]",
                     linked_eps_bearer_identity->eps_bearer_identity);
-            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
-                    OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            r = nas_eps_send_pdn_disconnect_reject(mme_ue, pti,
+                    OGS_NAS_ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return NULL;
+        }
+
+        /*
+         * TS 24.301 6.5.2.2: the Linked EBI of a PDN DISCONNECT REQUEST
+         * identifies the default bearer of the PDN connection.  A dedicated
+         * bearer here is an invalid EPS bearer identity and 6.5.2.6 says to
+         * answer with PDN DISCONNECT REJECT cause #43, not to dispatch the
+         * disconnect on the dedicated bearer's ESM state machine.
+         */
+        sess = mme_sess_find_by_id(bearer->sess_id);
+        if (!sess || mme_default_bearer_in_sess(sess) != bearer) {
+            ogs_error("PDN disconnect for non-default Linked-EBI[%d]",
+                    linked_eps_bearer_identity->eps_bearer_identity);
+            r = nas_eps_send_pdn_disconnect_reject(mme_ue, pti,
+                    OGS_NAS_ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
             return NULL;

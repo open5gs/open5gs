@@ -41,6 +41,8 @@ ogs_pkbuf_t *esm_build_bearer_resource_allocation_reject(
         mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause);
 ogs_pkbuf_t *esm_build_bearer_resource_modification_reject(
         mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause);
+ogs_pkbuf_t *esm_build_pdn_disconnect_reject(
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause);
 
 #ifdef __cplusplus
 }
