@@ -2335,7 +2335,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(
 
     if (send_ue_security_capability) {
         ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestAcknowledgeIEs_t));
-        ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+        ASN_SEQUENCE_ADD(PathSwitchRequestAcknowledge->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
         ie->criticality = S1AP_Criticality_ignore;
