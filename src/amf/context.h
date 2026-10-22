@@ -182,6 +182,12 @@ typedef struct amf_gnb_s {
 
     ogs_list_t      ran_ue_list;
 
+    /*
+     * RAN-UE-NGAP-ID -> ran_ue index (O(1) lookup for every gNB-originated
+     * NGAP message; the list scan grows linearly with the number of UEs).
+     */
+    ogs_hash_t      *ran_ue_ngap_id_hash;
+
 } amf_gnb_t;
 
 struct ran_ue_s {
