@@ -3437,14 +3437,11 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
 
     /*
      * A reconnect can register the same eNB-ID before the old association's
-     * shutdown event is handled. Keep the existing last-registration-wins
-     * mapping, but also replace the key pointer: plain ogs_hash_set() would
-     * retain &old_enb->enb_id even though its value now points to this
-     * context. Freeing or reusing the old context could then break lookups
-     * (including handover target lookup), even with owner-checked removal.
+     * shutdown event is handled: the last registration wins. The hash keeps
+     * its own copy of the key, so freeing or reusing the old context does not
+     * break lookups (including handover target lookup).
      */
-    ogs_hash_set_rekey(self.enb_id_hash,
-            &enb->enb_id, sizeof(enb->enb_id), enb);
+    ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
 
     enb->enb_id_presence = true;
 

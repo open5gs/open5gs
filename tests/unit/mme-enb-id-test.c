@@ -40,18 +40,24 @@ static void replacement_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 1, ogs_hash_count(mme_self()->enb_id_hash));
     ABTS_PTR_EQUAL(tc, &enb[1], mme_enb_find_by_enb_id(id));
 
-    /* Both the key pointer and the value must belong to the replacement. */
+    /* The hash indexes its own copy of the ID, not either context's. */
     hi = ogs_hash_first(mme_self()->enb_id_hash);
     ABTS_PTR_NOTNULL(tc, hi);
-    if (hi)
-        ABTS_PTR_EQUAL(tc, &enb[1].enb_id, ogs_hash_this_key(hi));
+    if (hi) {
+        ABTS_INT_EQUAL(tc, sizeof(id), ogs_hash_this_key_len(hi));
+        ABTS_TRUE(tc, memcmp(ogs_hash_this_key(hi), &id, sizeof(id)) == 0);
+    }
 
-    /*
-     * Model reuse of the old context's pool storage without dereferencing
-     * freed memory. Checking only the value above would miss a stale key.
-     */
+    /* Reuse of either context's storage must not break the lookup. */
     enb[0].enb_id = id ^ 1;
+    enb[1].enb_id = id ^ 2;
     ABTS_PTR_EQUAL(tc, &enb[1], mme_enb_find_by_enb_id(id));
+    hi = ogs_hash_first(mme_self()->enb_id_hash);
+    ABTS_PTR_NOTNULL(tc, hi);
+    if (hi) {
+        ABTS_INT_EQUAL(tc, sizeof(id), ogs_hash_this_key_len(hi));
+        ABTS_TRUE(tc, memcmp(ogs_hash_this_key(hi), &id, sizeof(id)) == 0);
+    }
 
     ogs_hash_destroy(mme_self()->enb_id_hash);
     mme_self()->enb_id_hash = saved_hash;

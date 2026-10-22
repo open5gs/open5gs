@@ -29,10 +29,10 @@ int __pcrf_log_domain;
 /*
  * IP address to Gx Session-Id mapping
  *
- * ogs_hash_t stores the key and the value pointers as given, so an entry
- * that borrowed them from a Diameter session state would outlive its
- * owner. Each entry therefore keeps its own key and Session-Id, and
- * lookups return a copy that the caller frees.
+ * ogs_hash_t copies its keys but stores value pointers as given, so an
+ * entry that borrowed its Session-Id from a Diameter session state would
+ * outlive its owner. Each entry therefore keeps its own key and Session-Id,
+ * and lookups return a copy that the caller frees.
  */
 #define MAX_IP_KEY_LEN      (OGS_IPV6_DEFAULT_PREFIX_LEN >> 3)
 

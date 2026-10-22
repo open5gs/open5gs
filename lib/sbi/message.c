@@ -1477,7 +1477,7 @@ void ogs_sbi_header_free(ogs_sbi_header_t *h)
 
 void ogs_sbi_header_set(ogs_hash_t *ht, const char *key, const char *val)
 {
-    char *old_val, *new_val, *new_key;
+    char *old_val, *new_val;
     int keylen;
 
     ogs_assert(ht);
@@ -1491,15 +1491,10 @@ void ogs_sbi_header_set(ogs_hash_t *ht, const char *key, const char *val)
     new_val = ogs_strdup(val);
     ogs_assert(new_val);
 
-    if (old_val) {
-        /* The hash retains the original key when replacing a value. */
-        ogs_hash_set(ht, key, keylen, new_val);
+    /* The hash keeps its own copy of the key. */
+    ogs_hash_set(ht, key, keylen, new_val);
+    if (old_val)
         ogs_free(old_val);
-    } else {
-        new_key = ogs_strdup(key);
-        ogs_assert(new_key);
-        ogs_hash_set(ht, new_key, keylen, new_val);
-    }
 }
 
 void ogs_sbi_http_hash_free(ogs_hash_t *hash)
@@ -1508,13 +1503,9 @@ void ogs_sbi_http_hash_free(ogs_hash_t *hash)
 
     ogs_assert(hash);
 
-    for (hi = ogs_hash_first(hash); hi; hi = ogs_hash_next(hi)) {
-        char *key = (char *)ogs_hash_this_key(hi);
-        char *val = ogs_hash_this_val(hi);
-        ogs_hash_set(hash, key, strlen(key), NULL);
-        ogs_free(key);
-        ogs_free(val);
-    }
+    /* Values are ours; ogs_hash_destroy() releases the keys. */
+    for (hi = ogs_hash_first(hash); hi; hi = ogs_hash_next(hi))
+        ogs_free(ogs_hash_this_val(hi));
     ogs_hash_destroy(hash);
 }
 

@@ -139,16 +139,15 @@ void upf_metrics_inst_by_qfi_add(uint8_t qfi,
         upf_metric_type_by_qfi_t t, int val)
 {
     ogs_metrics_inst_t *metrics = NULL;
-    upf_metric_key_by_qfi_t *qfi_key;
+    upf_metric_key_by_qfi_t qfi_key;
 
-    qfi_key = ogs_calloc(1, sizeof(*qfi_key));
-    ogs_assert(qfi_key);
+    memset(&qfi_key, 0, sizeof(qfi_key));
 
-    qfi_key->qfi = qfi;
-    qfi_key->t = t;
+    qfi_key.qfi = qfi;
+    qfi_key.t = t;
 
     metrics = ogs_hash_get(metrics_hash_by_qfi,
-            qfi_key, sizeof(*qfi_key));
+            &qfi_key, sizeof(qfi_key));
 
     if (!metrics) {
         char qfi_str[4];
@@ -160,9 +159,7 @@ void upf_metrics_inst_by_qfi_add(uint8_t qfi,
 
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_qfi,
-                qfi_key, sizeof(*qfi_key), metrics);
-    } else {
-        ogs_free(qfi_key);
+                &qfi_key, sizeof(qfi_key), metrics);
     }
 
     ogs_metrics_inst_add(metrics, val);
@@ -212,16 +209,15 @@ void upf_metrics_inst_by_cause_add(uint8_t cause,
         upf_metric_type_by_cause_t t, int val)
 {
     ogs_metrics_inst_t *metrics = NULL;
-    upf_metric_key_by_cause_t *cause_key;
+    upf_metric_key_by_cause_t cause_key;
 
-    cause_key = ogs_calloc(1, sizeof(*cause_key));
-    ogs_assert(cause_key);
+    memset(&cause_key, 0, sizeof(cause_key));
 
-    cause_key->cause = cause;
-    cause_key->t = t;
+    cause_key.cause = cause;
+    cause_key.t = t;
 
     metrics = ogs_hash_get(metrics_hash_by_cause,
-            cause_key, sizeof(*cause_key));
+            &cause_key, sizeof(cause_key));
 
     if (!metrics) {
         char cause_str[4];
@@ -233,9 +229,7 @@ void upf_metrics_inst_by_cause_add(uint8_t cause,
 
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_cause,
-                cause_key, sizeof(*cause_key), metrics);
-    } else {
-        ogs_free(cause_key);
+                &cause_key, sizeof(cause_key), metrics);
     }
 
     ogs_metrics_inst_add(metrics, val);
@@ -285,32 +279,29 @@ void upf_metrics_inst_by_dnn_add(char *dnn,
         upf_metric_type_by_dnn_t t, int val)
 {
     ogs_metrics_inst_t *metrics = NULL;
-    upf_metric_key_by_dnn_t *dnn_key;
+    upf_metric_key_by_dnn_t dnn_key;
 
-    dnn_key = ogs_calloc(1, sizeof(*dnn_key));
-    ogs_assert(dnn_key);
+    memset(&dnn_key, 0, sizeof(dnn_key));
 
     if (dnn) {
-        ogs_cpystrn(dnn_key->dnn, dnn, ogs_min(strlen(dnn), OGS_MAX_DNN_LEN)+1);
+        ogs_cpystrn(dnn_key.dnn, dnn, ogs_min(strlen(dnn), OGS_MAX_DNN_LEN)+1);
     } else {
-        dnn_key->dnn[0] = '\0';
+        dnn_key.dnn[0] = '\0';
     }
 
-    dnn_key->t = t;
+    dnn_key.t = t;
 
     metrics = ogs_hash_get(metrics_hash_by_dnn,
-            dnn_key, sizeof(*dnn_key));
+            &dnn_key, sizeof(dnn_key));
 
     if (!metrics) {
         metrics = ogs_metrics_inst_new(upf_metrics_spec_by_dnn[t],
                 upf_metrics_spec_def_by_dnn->num_labels,
-                (const char *[]){ dnn_key->dnn });
+                (const char *[]){ dnn_key.dnn });
 
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_dnn,
-                dnn_key, sizeof(*dnn_key), metrics);
-    } else {
-        ogs_free(dnn_key);
+                &dnn_key, sizeof(dnn_key), metrics);
     }
 
     ogs_metrics_inst_add(metrics, val);
@@ -343,53 +334,16 @@ void upf_metrics_init(void)
 
 void upf_metrics_final(void)
 {
-    ogs_hash_index_t *hi;
-
-    if (metrics_hash_by_qfi) {
-        for (hi = ogs_hash_first(metrics_hash_by_qfi); hi; hi = ogs_hash_next(hi)) {
-            upf_metric_key_by_qfi_t *key =
-                (upf_metric_key_by_qfi_t *)ogs_hash_this_key(hi);
-            //void *val = ogs_hash_this_val(hi);
-
-            ogs_hash_set(metrics_hash_by_qfi, key, sizeof(*key), NULL);
-
-            ogs_free(key);
-            /* don't free val (metric itself) -
-             * it will be free'd by ogs_metrics_context_final() */
-            //ogs_free(val);
-        }
+    /*
+     * The hashes release their own keys. Their values, the metrics,
+     * are freed by ogs_metrics_context_final().
+     */
+    if (metrics_hash_by_qfi)
         ogs_hash_destroy(metrics_hash_by_qfi);
-    }
-    if (metrics_hash_by_cause) {
-        for (hi = ogs_hash_first(metrics_hash_by_cause); hi; hi = ogs_hash_next(hi)) {
-            upf_metric_key_by_cause_t *key =
-                (upf_metric_key_by_cause_t *)ogs_hash_this_key(hi);
-            //void *val = ogs_hash_this_val(hi);
-
-            ogs_hash_set(metrics_hash_by_cause, key, sizeof(*key), NULL);
-
-            ogs_free(key);
-            /* don't free val (metric itself) -
-             * it will be free'd by ogs_metrics_context_final() */
-            //ogs_free(val);
-        }
+    if (metrics_hash_by_cause)
         ogs_hash_destroy(metrics_hash_by_cause);
-    }
-    if (metrics_hash_by_dnn) {
-        for (hi = ogs_hash_first(metrics_hash_by_dnn); hi; hi = ogs_hash_next(hi)) {
-            upf_metric_key_by_dnn_t *key =
-                (upf_metric_key_by_dnn_t *)ogs_hash_this_key(hi);
-            //void *val = ogs_hash_this_val(hi);
-
-            ogs_hash_set(metrics_hash_by_dnn, key, sizeof(*key), NULL);
-
-            ogs_free(key);
-            /* don't free val (metric itself) -
-             * it will be free'd by ogs_metrics_context_final() */
-            //ogs_free(val);
-        }
+    if (metrics_hash_by_dnn)
         ogs_hash_destroy(metrics_hash_by_dnn);
-    }
 
     ogs_metrics_context_final();
 }

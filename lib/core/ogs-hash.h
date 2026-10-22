@@ -54,6 +54,26 @@ ogs_hash_t *ogs_hash_make(void);
 ogs_hash_t *ogs_hash_make_custom(ogs_hashfunc_t ogs_hash_func);
 void ogs_hash_destroy(ogs_hash_t *ht);
 
+/*
+ * The table keeps its own copy of every key. ogs_hash_set() and
+ * ogs_hash_get_or_set() copy the key when they add an entry, so the
+ * caller's key buffer may change or be freed right after the call. Setting
+ * a key that is already present replaces only the value and keeps the
+ * stored copy. The copy is released when the entry is removed
+ * (ogs_hash_set(..., NULL)), cleared or destroyed.
+ * key must be non-NULL. klen is a nonnegative byte count (including
+ * zero), or OGS_HASH_KEY_STRING to use strlen(key).
+ *
+ * ogs_hash_this(), ogs_hash_this_key() and ogs_hash_do() hand out the
+ * table's read-only copy, followed by a NUL even for an explicit length.
+ * Hashing and comparison use only the klen key bytes. Do not modify or
+ * free this copy, or retain its address across a table mutation.
+ * Values are never copied or freed. Access must be externally serialized.
+ *
+ * Updating a context's key does not rename its entry: remove the old
+ * mapping explicitly and insert the new key. Use unset_if_owner() when
+ * another context may have taken over the old mapping.
+ */
 #define ogs_hash_set(ht, key, klen, val) \
     ogs_hash_set_debug(ht, key, klen, val, OGS_FILE_LINE)
 void ogs_hash_set_debug(ogs_hash_t *ht,
@@ -62,36 +82,15 @@ void ogs_hash_set_debug(ogs_hash_t *ht,
     ogs_hash_get_debug(ht, key, klen, OGS_FILE_LINE)
 void *ogs_hash_get_debug(ogs_hash_t *ht,
         const void *key, int klen, const char *file_line);
+
+/*
+ * get_or_set() returns the existing value without changing the stored
+ * key or value. If absent and val is non-NULL, it copies key, inserts
+ * val and returns val; otherwise it returns NULL without inserting.
+ */
 #define ogs_hash_get_or_set(ht, key, klen, val) \
     ogs_hash_get_or_set_debug(ht, key, klen, val, OGS_FILE_LINE)
 void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
-        const void *key, int klen, const void *val, const char *file_line);
-
-/*
- * Insert an entry, or replace BOTH the stored key pointer and its value.
- *
- * ogs_hash_set() keeps the original key pointer when an equal key already
- * exists. If a new context replaces an older context with the same ID,
- * that leaves the new value indexed by memory inside the old context.
- * Even owner-checked removal cannot prevent that key from becoming stale
- * when the old context is freed or its ID storage is reused. Use this
- * operation when the replacement's key storage must replace the old one.
- *
- * No key or value is copied or freed. Any existing key must remain valid
- * and unchanged until replaced by this call; afterwards the supplied key
- * must remain valid and unchanged while indexed. val must be non-NULL;
- * use ogs_hash_set(..., NULL) or ogs_hash_unset_if_owner() for removal.
- *
- * This replaces storage for the SAME key, not an old-key/new-key rename.
- * Unindex a context's previous key before modifying its key bytes, and
- * use ogs_hash_unset_if_owner() when later removing a displaced context.
- * Like the other hash operations, this requires externally serialized
- * access; the removal and insertion are not an atomic operation. Do not
- * call this while traversing the table, as iterators may be invalidated.
- */
-#define ogs_hash_set_rekey(ht, key, klen, val) \
-    ogs_hash_set_rekey_debug((ht), (key), (klen), (val), OGS_FILE_LINE)
-void ogs_hash_set_rekey_debug(ogs_hash_t *ht,
         const void *key, int klen, const void *val, const char *file_line);
 
 /*
@@ -103,14 +102,16 @@ void ogs_hash_set_rekey_debug(ogs_hash_t *ht,
  * ogs_hash_set(ht, key, klen, NULL) in the old context's teardown would then
  * orphan the newer entry, leaving the live context unfindable.
  *
- * Returns true if the entry was unset (owner matched), false if it was left
- * in place because a newer context owns it now.
+ * owner is the expected value pointer, independent of key ownership.
+ * Returns true if the entry was unset (owner matched), false if absent
+ * or if its value did not match.
  */
 #define ogs_hash_unset_if_owner(ht, key, klen, owner) \
     ogs_hash_unset_if_owner_debug(ht, key, klen, owner, OGS_FILE_LINE)
 bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
         const void *key, int klen, const void *owner, const char *file_line);
 
+/* During iteration, only deletion of the current entry is supported. */
 ogs_hash_index_t *ogs_hash_first(ogs_hash_t *ht);
 ogs_hash_index_t *ogs_hash_next(ogs_hash_index_t *hi);
 void ogs_hash_this(ogs_hash_index_t *hi, 

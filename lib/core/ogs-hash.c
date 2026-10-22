@@ -34,13 +34,25 @@
 
 #include "ogs-core.h"
 
+/*
+ * Every entry keeps its own copy of the key, followed by a NUL. A key
+ * that fits (with its NUL) in key_inline is stored there: keys of up to
+ * 23 bytes, including TEIDs, SEIDs, UE addresses, F-TEIDs and SUPIs.
+ * A longer key gets an allocation of its own, released on removal.
+ */
+#define KEY_INLINE_SIZE 24
+
 typedef struct ogs_hash_entry_t ogs_hash_entry_t;
 struct ogs_hash_entry_t {
     ogs_hash_entry_t    *next;
-    unsigned int        hash;
-    const void          *key;
-    int                 klen;
+    const void          *key;   /* key_inline.bytes, or allocated */
     const void          *val;
+    unsigned int        hash;
+    int                 klen;
+    union {
+        char            bytes[KEY_INLINE_SIZE];
+        uint64_t        align;  /* keys are read back as structs */
+    } key_inline;
 };
 
 struct ogs_hash_index_t {
@@ -64,6 +76,32 @@ static ogs_hash_entry_t **alloc_array(ogs_hash_t *ht, unsigned int max)
     ogs_hash_entry_t **ptr = ogs_calloc(1, sizeof(*ht->array) * (max + 1));
     ogs_assert(ptr);
     return ptr;
+}
+
+static void copy_key(ogs_hash_entry_t *he, const void *key, int klen)
+{
+    char *copy;
+
+    ogs_assert(klen >= 0);
+
+    if (klen < KEY_INLINE_SIZE) {
+        copy = he->key_inline.bytes;
+    } else {
+        copy = ogs_malloc((size_t)klen + 1);
+        ogs_assert(copy);
+    }
+    memcpy(copy, key, klen);
+    copy[klen] = '\0';
+
+    he->key = copy;
+    he->klen = klen;
+}
+
+static void free_key(ogs_hash_entry_t *he)
+{
+    if (he->key != he->key_inline.bytes)
+        ogs_free((void *)he->key);
+    he->key = NULL;
 }
 
 ogs_hash_t *ogs_hash_make(void)
@@ -278,6 +316,8 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
     else
         hash = hashfunc_default(key, &klen, ht->seed);
 
+    ogs_assert(klen >= 0);
+
     /* scan linked list */
     for (hep = &ht->array[hash & ht->max], he = *hep;
          he; hep = &he->next, he = *hep) {
@@ -298,8 +338,7 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
     }
     he->next = NULL;
     he->hash = hash;
-    he->key  = key;
-    he->klen = klen;
+    copy_key(he, key, klen);
     he->val  = val;
     *hep = he;
     ht->count++;
@@ -313,7 +352,7 @@ void *ogs_hash_get_debug(ogs_hash_t *ht,
 
     ogs_assert(ht);
     ogs_assert(key);
-    ogs_assert(klen);
+    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
 
     he = *find_entry(ht, key, klen, NULL, file_line);
     if (he)
@@ -329,7 +368,7 @@ void ogs_hash_set_debug(ogs_hash_t *ht,
 
     ogs_assert(ht);
     ogs_assert(key);
-    ogs_assert(klen);
+    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
 
     hep = find_entry(ht, key, klen, val, file_line);
     if (*hep) {
@@ -337,6 +376,7 @@ void ogs_hash_set_debug(ogs_hash_t *ht,
             /* delete entry */
             ogs_hash_entry_t *old = *hep;
             *hep = (*hep)->next;
+            free_key(old);
             old->next = ht->free;
             ht->free = old;
             --ht->count;
@@ -359,7 +399,7 @@ void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
 
     ogs_assert(ht);
     ogs_assert(key);
-    ogs_assert(klen);
+    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
 
     hep = find_entry(ht, key, klen, val, file_line);
     if (*hep) {
@@ -374,24 +414,6 @@ void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
     return NULL;
 }
 
-void ogs_hash_set_rekey_debug(ogs_hash_t *ht,
-        const void *key, int klen, const void *val, const char *file_line)
-{
-    ogs_assert(ht);
-    ogs_assert(key);
-    ogs_assert(klen);
-    ogs_assert(val);
-
-    /*
-     * Updating an existing entry with ogs_hash_set() changes only its value.
-     * Remove it first so find_entry() also installs the supplied key pointer
-     * on insertion. Neither call frees the displaced key or value.
-     * Keep ordinary ogs_hash_set() semantics unchanged for other callers.
-     */
-    ogs_hash_set_debug(ht, key, klen, NULL, file_line);
-    ogs_hash_set_debug(ht, key, klen, val, file_line);
-}
-
 bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
         const void *key, int klen, const void *owner, const char *file_line)
 {
@@ -399,7 +421,7 @@ bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
 
     ogs_assert(ht);
     ogs_assert(key);
-    ogs_assert(klen);
+    ogs_assert(klen == OGS_HASH_KEY_STRING || klen >= 0);
     ogs_assert(owner);
 
     indexed = ogs_hash_get_debug(ht, key, klen, file_line);
@@ -433,16 +455,9 @@ void ogs_hash_clear(ogs_hash_t *ht)
 
     /*
      * Recycle entries directly through the bucket array instead of
-     * re-locating each one with ogs_hash_set(ht, key, klen, NULL).
-     *
-     * Clearing the table only needs the entries we already hold, not their
-     * hash values, so re-hashing the key here is unnecessary -- and unsafe.
-     * During teardown a key may point at memory that an owning context has
-     * already freed; hashfunc_default() reads the key byte-by-byte (and
-     * find_entry() then memcmp()s it), which is a use-after-free read on a
-     * dangling key. Walking the buckets never dereferences key contents, so
-     * a stale entry is recycled harmlessly rather than crashing the exit
-     * path. (The hash never owns the key memory, so nothing is freed here.)
+     * re-locating each one with ogs_hash_set(ht, key, klen, NULL):
+     * clearing needs only the entries we already hold, not their hashes.
+     * Each entry's key storage is released on the way.
      */
     for (i = 0; i <= ht->max; i++) {
         ogs_hash_entry_t *he = ht->array[i];
@@ -451,6 +466,7 @@ void ogs_hash_clear(ogs_hash_t *ht)
         while (he) {
             ogs_hash_entry_t *next_he = he->next;
 
+            free_key(he);
             he->next = ht->free;
             ht->free = he;
             he = next_he;

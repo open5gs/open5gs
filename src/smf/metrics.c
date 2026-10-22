@@ -255,26 +255,25 @@ void smf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
         ogs_s_nssai_t *snssai, smf_metric_type_by_slice_t t, int val)
 {
     ogs_metrics_inst_t *metrics = NULL;
-    smf_metric_key_by_slice_t *slice_key;
+    smf_metric_key_by_slice_t slice_key;
 
-    slice_key = ogs_calloc(1, sizeof(*slice_key));
-    ogs_assert(slice_key);
+    memset(&slice_key, 0, sizeof(slice_key));
 
     if (plmn) {
-        slice_key->plmn_id = *plmn;
+        slice_key.plmn_id = *plmn;
     }
 
     if (snssai) {
-        slice_key->snssai = *snssai;
+        slice_key.snssai = *snssai;
     } else {
-        slice_key->snssai.sst = 0;
-        slice_key->snssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        slice_key.snssai.sst = 0;
+        slice_key.snssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
     }
 
-    slice_key->t = t;
+    slice_key.t = t;
 
     metrics = ogs_hash_get(metrics_hash_by_slice,
-            slice_key, sizeof(*slice_key));
+            &slice_key, sizeof(slice_key));
 
     if (!metrics) {
         char plmn_id[OGS_PLMNIDSTRLEN] = "";
@@ -296,12 +295,10 @@ void smf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
 
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_slice,
-                slice_key, sizeof(*slice_key), metrics);
+                &slice_key, sizeof(slice_key), metrics);
 
         if (s_nssai)
             ogs_free(s_nssai);
-    } else {
-        ogs_free(slice_key);
     }
 
     ogs_metrics_inst_add(metrics, val);
@@ -355,27 +352,26 @@ void smf_metrics_inst_by_5qi_add(ogs_plmn_id_t *plmn,
         smf_metric_type_by_5qi_t t, int val)
 {
     ogs_metrics_inst_t *metrics = NULL;
-    smf_metric_key_by_5qi_t *fiveqi_key;
+    smf_metric_key_by_5qi_t fiveqi_key;
 
-    fiveqi_key = ogs_calloc(1, sizeof(*fiveqi_key));
-    ogs_assert(fiveqi_key);
+    memset(&fiveqi_key, 0, sizeof(fiveqi_key));
 
     if (plmn) {
-        fiveqi_key->plmn_id = *plmn;
+        fiveqi_key.plmn_id = *plmn;
     }
 
     if (snssai) {
-        fiveqi_key->snssai = *snssai;
+        fiveqi_key.snssai = *snssai;
     } else {
-        fiveqi_key->snssai.sst = 0;
-        fiveqi_key->snssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        fiveqi_key.snssai.sst = 0;
+        fiveqi_key.snssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
     }
 
-    fiveqi_key->fiveqi = fiveqi;
-    fiveqi_key->t = t;
+    fiveqi_key.fiveqi = fiveqi;
+    fiveqi_key.t = t;
 
     metrics = ogs_hash_get(metrics_hash_by_5qi,
-            fiveqi_key, sizeof(*fiveqi_key));
+            &fiveqi_key, sizeof(fiveqi_key));
 
     if (!metrics) {
         char plmn_id[OGS_PLMNIDSTRLEN] = "";
@@ -400,12 +396,10 @@ void smf_metrics_inst_by_5qi_add(ogs_plmn_id_t *plmn,
 
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_5qi,
-                fiveqi_key, sizeof(*fiveqi_key), metrics);
+                &fiveqi_key, sizeof(fiveqi_key), metrics);
 
         if (s_nssai)
             ogs_free(s_nssai);
-    } else {
-        ogs_free(fiveqi_key);
     }
 
     ogs_metrics_inst_add(metrics, val);
@@ -459,16 +453,15 @@ void smf_metrics_inst_by_cause_add(int cause,
         smf_metric_type_by_cause_t t, int val)
 {
     ogs_metrics_inst_t *metrics = NULL;
-    smf_metric_key_by_cause_t *cause_key;
+    smf_metric_key_by_cause_t cause_key;
 
-    cause_key = ogs_calloc(1, sizeof(*cause_key));
-    ogs_assert(cause_key);
+    memset(&cause_key, 0, sizeof(cause_key));
 
-    cause_key->cause = cause;
-    cause_key->t = t;
+    cause_key.cause = cause;
+    cause_key.t = t;
 
     metrics = ogs_hash_get(metrics_hash_by_cause,
-            cause_key, sizeof(*cause_key));
+            &cause_key, sizeof(cause_key));
 
     if (!metrics) {
         char cause_str[4];
@@ -480,9 +473,7 @@ void smf_metrics_inst_by_cause_add(int cause,
 
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_cause,
-                cause_key, sizeof(*cause_key), metrics);
-    } else {
-        ogs_free(cause_key);
+                &cause_key, sizeof(cause_key), metrics);
     }
 
     ogs_metrics_inst_add(metrics, val);
@@ -519,53 +510,16 @@ void smf_metrics_init(void)
 
 void smf_metrics_final(void)
 {
-    ogs_hash_index_t *hi;
-
-    if (metrics_hash_by_slice) {
-        for (hi = ogs_hash_first(metrics_hash_by_slice); hi; hi = ogs_hash_next(hi)) {
-            smf_metric_key_by_slice_t *key =
-                (smf_metric_key_by_slice_t *)ogs_hash_this_key(hi);
-            //void *val = ogs_hash_this_val(hi);
-
-            ogs_hash_set(metrics_hash_by_slice, key, sizeof(*key), NULL);
-
-            ogs_free(key);
-            /* don't free val (metric itself) -
-             * it will be free'd by ogs_metrics_context_final() */
-            //ogs_free(val);
-        }
+    /*
+     * The hashes release their own keys. Their values, the metrics,
+     * are freed by ogs_metrics_context_final().
+     */
+    if (metrics_hash_by_slice)
         ogs_hash_destroy(metrics_hash_by_slice);
-    }
-    if (metrics_hash_by_5qi) {
-        for (hi = ogs_hash_first(metrics_hash_by_5qi); hi; hi = ogs_hash_next(hi)) {
-            smf_metric_key_by_5qi_t *key =
-                (smf_metric_key_by_5qi_t *)ogs_hash_this_key(hi);
-            //void *val = ogs_hash_this_val(hi);
-
-            ogs_hash_set(metrics_hash_by_5qi, key, sizeof(*key), NULL);
-
-            ogs_free(key);
-            /* don't free val (metric itself) -
-             * it will be free'd by ogs_metrics_context_final() */
-            //ogs_free(val);
-        }
+    if (metrics_hash_by_5qi)
         ogs_hash_destroy(metrics_hash_by_5qi);
-    }
-    if (metrics_hash_by_cause) {
-        for (hi = ogs_hash_first(metrics_hash_by_cause); hi; hi = ogs_hash_next(hi)) {
-            smf_metric_key_by_cause_t *key =
-                (smf_metric_key_by_cause_t *)ogs_hash_this_key(hi);
-            //void *val = ogs_hash_this_val(hi);
-
-            ogs_hash_set(metrics_hash_by_cause, key, sizeof(*key), NULL);
-
-            ogs_free(key);
-            /* don't free val (metric itself) -
-             * it will be free'd by ogs_metrics_context_final() */
-            //ogs_free(val);
-        }
+    if (metrics_hash_by_cause)
         ogs_hash_destroy(metrics_hash_by_cause);
-    }
 
     ogs_metrics_context_final();
 }

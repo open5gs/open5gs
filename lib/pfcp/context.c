@@ -1611,7 +1611,7 @@ static void pdr_teid_hash_register(
     ogs_assert(pdr->sess);
     ogs_assert(!pdr->hash.teid.registered);
 
-    /* ogs_hash keeps this key's address; only the registered PDR owns it. */
+    /* Only the registered PDR owns the TEID's entry and removes it. */
     pdr->hash.teid.key = pdr->f_teid.teid;
     pdr->hash.teid.type = type;
     pdr->hash.teid.registered = true;
@@ -1625,7 +1625,6 @@ static void pdr_teid_hash_register(
 }
 
 /*
- * ogs_hash retains the address of the key instead of copying it.
  * When removing or changing the registered PDR, move a shared TEID
  * to a live PDR so other QFIs can still use the tunnel (#2003).
  */

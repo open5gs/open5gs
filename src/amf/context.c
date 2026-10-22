@@ -1413,14 +1413,11 @@ int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id, uint8_t gnb_id_length)
 
     /*
      * A reconnect can register the same gNB-ID before the old association's
-     * shutdown event is handled. Keep the existing last-registration-wins
-     * mapping, but also replace the key pointer: plain ogs_hash_set() would
-     * retain &old_gnb->gnb_id even though its value now points to this
-     * context. Freeing or reusing the old context could then break lookups
-     * (including handover target lookup), even with owner-checked removal.
+     * shutdown event is handled: the last registration wins. The hash keeps
+     * its own copy of the key, so freeing or reusing the old context does not
+     * break lookups (including handover target lookup).
      */
-    ogs_hash_set_rekey(self.gnb_id_hash,
-            &gnb->gnb_id, sizeof(gnb->gnb_id), gnb);
+    ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), gnb);
 
     gnb->gnb_id_presence = true;
 
