@@ -1205,7 +1205,16 @@ void s1ap_handle_ue_capability_info_indication(
 
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (mme_ue) {
-        ogs_assert(UERadioCapability);
+        /*
+         * TS 36.413 9.1.10: UE Radio Capability is mandatory but its
+         * Assigned Criticality is "ignore".  10.3.5 says a missing IE of
+         * that criticality is ignored and the procedure continues, so the
+         * indication is dropped without an ERROR INDICATION.
+         */
+        if (!UERadioCapability) {
+            ogs_error("No UERadioCapability IE; ignoring the indication");
+            return;
+        }
         OGS_ASN_STORE_DATA(&mme_ue->ueRadioCapability, UERadioCapability);
     }
 }
