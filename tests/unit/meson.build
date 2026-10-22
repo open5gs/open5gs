@@ -37,6 +37,7 @@ testunit_unit_sources = files('''
     amf-eir-test.c
     amf-registration-test.c
     amf-gnb-id-test.c
+    amf-supi-test.c
     eir-config-test.c
     ipfw-test.c
     pfcp-rule-test.c
@@ -65,3 +66,21 @@ test('eir-fsm', testunit_unit_exe,
             'amf-eir-test', 'amf-registration-test', 'eir-config-test'],
     is_parallel : false,
     suite : 'eir')
+
+# AUSF context tests link libausf alone.
+testunit_ausf_exe = executable('ausf-unit',
+    sources : files('ausf-abts-main.c', 'ausf-context-test.c'),
+    c_args : testunit_core_cc_flags,
+    include_directories : [srcinc, include_directories('../../src/ausf')],
+    dependencies : [libausf_dep])
+
+test('ausf-unit', testunit_ausf_exe, is_parallel : false, suite: 'unit')
+
+# UPF tests link libupf, whose metrics symbols clash with libamf.
+testunit_upf_exe = executable('upf-unit',
+    sources : files('upf-abts-main.c', 'upf-context-test.c'),
+    c_args : testunit_core_cc_flags,
+    include_directories : [srcinc, include_directories('../../src/upf')],
+    dependencies : [libpfcp_dep, libupf_dep])
+
+test('upf-unit', testunit_upf_exe, is_parallel : false, suite: 'unit')
