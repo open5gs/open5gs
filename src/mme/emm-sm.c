@@ -779,6 +779,26 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             }
 
             /*
+             * An Extended Service Request for CS fallback needs an active
+             * EPS bearer: the idle branch below builds an
+             * INITIAL CONTEXT SETUP REQUEST, whose mandatory E-RAB list is
+             * empty when every bearer is inactive (for example after the UE
+             * rejected the default bearer activation in ATTACH COMPLETE).
+             * The Service Request and TAU branches already reject this
+             * state; do the same here instead of letting the S1AP builder
+             * fail and asserting on its return value.
+             */
+            if (!ACTIVE_EPS_BEARERS_IS_AVAIABLE(mme_ue)) {
+                ogs_error("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
+                r = nas_eps_send_service_reject(enb_ue, mme_ue,
+                        OGS_NAS_EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
+                break;
+            }
+
+            /*
              * If the OLD ENB_UE is being maintained in MME-UE Context,
              * it deletes the S1 Context after exchanging
              * the UEContextReleaseCommand/Complete with the eNB
