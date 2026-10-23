@@ -44,6 +44,42 @@ void ogs_kdf_xres_star(
 /* TS33.501 Annex A.5 : HRES* and HXRES* derivation function */
 void ogs_kdf_hxres_star(uint8_t *rand, uint8_t *xres_star, uint8_t *hxres_star);
 
+/*
+ * EAP-AKA' key derivation (RFC 5448 / TS33.402 Annex A, TS33.501)
+ *
+ * Output key lengths for the PRF' expansion below.
+ */
+#define OGS_EAP_AKA_PRIME_K_ENCR_LEN    16
+#define OGS_EAP_AKA_PRIME_K_AUT_LEN     32
+#define OGS_EAP_AKA_PRIME_K_RE_LEN      32
+#define OGS_EAP_AKA_PRIME_MSK_LEN       64
+#define OGS_EAP_AKA_PRIME_EMSK_LEN      64
+
+/*
+ * RFC 5448 3.3 (TS33.402 Annex A, TS33.501 Annex A) :
+ * CK'/IK' derivation for EAP-AKA'
+ *
+ * CK'||IK' = KDF(CK||IK, FC=0x20, P0=serving network name, P1=SQN xor AK)
+ * where SQN xor AK is the first OGS_SQN_XOR_AK_LEN(6) octets of AUTN.
+ */
+void ogs_kdf_ck_ik_prime(
+        uint8_t *ck, uint8_t *ik,
+        char *serving_network_name, uint8_t *autn,
+        uint8_t *ck_prime, uint8_t *ik_prime);
+
+/*
+ * RFC 5448 3.4.1 : EAP-AKA' PRF' key derivation
+ *
+ * MK = PRF'(IK'|CK', "EAP-AKA'"|Identity) and split into:
+ *   K_encr(16) | K_aut(32) | K_re(32) | MSK(64) | EMSK(64)
+ * Any output pointer may be NULL if that key is not required.
+ */
+void ogs_kdf_eap_aka_prime_prf(
+        const uint8_t *ck_prime, const uint8_t *ik_prime,
+        const char *identity, size_t identity_len,
+        uint8_t *k_encr, uint8_t *k_aut, uint8_t *k_re,
+        uint8_t *msk, uint8_t *emsk);
+
 /* TS33.501 Annex A.6 : Kseaf derivation function */
 void ogs_kdf_kseaf(char *serving_network_name, const uint8_t *kausf, uint8_t *kseaf);
 

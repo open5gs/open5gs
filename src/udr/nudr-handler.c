@@ -119,8 +119,13 @@ bool udr_nudr_dr_handle_subscription_authentication(
             memset(&AuthenticationSubscription, 0,
                     sizeof(AuthenticationSubscription));
 
-            AuthenticationSubscription.authentication_method =
-                OpenAPI_auth_method_5G_AKA;
+            if (strcmp(auth_info.authentication_method,
+                        "EAP_AKA_PRIME") == 0)
+                AuthenticationSubscription.authentication_method =
+                    OpenAPI_auth_method_EAP_AKA_PRIME;
+            else
+                AuthenticationSubscription.authentication_method =
+                    OpenAPI_auth_method_5G_AKA;
 
             ogs_hex_to_ascii(auth_info.k, sizeof(auth_info.k),
                     k_string, sizeof(k_string));
