@@ -130,8 +130,14 @@ int esm_handle_pdn_connectivity_request(
             &req->request_type, sizeof(sess->ue_request_type));
 
     security_protected_required = 0;
-    if (req->presencemask &
-        OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_PRESENT) {
+    /*
+     * TS 24.301 6.6.1.2.1 and 8.3.20.2: the ESM information request
+     * procedure is used during the attach procedure only, so ignore
+     * the ESM information transfer flag in a standalone request.
+     */
+    if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST &&
+        (req->presencemask &
+        OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_PRESENT)) {
         ogs_nas_esm_information_transfer_flag_t *esm_information_transfer_flag =
             &req->esm_information_transfer_flag;
         security_protected_required = 
