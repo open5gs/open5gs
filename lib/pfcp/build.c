@@ -285,6 +285,10 @@ void ogs_pfcp_pdrbuf_clear(void)
     }
 }
 
+/* The PDI SDF Filter list must hold every flow of a PDR. */
+OGS_STATIC_ASSERT(OGS_ARRAY_SIZE(((ogs_pfcp_tlv_pdi_t *)0)->sdf_filter) >=
+        OGS_MAX_NUM_OF_FLOW_IN_PDR);
+
 void ogs_pfcp_build_create_pdr(
     ogs_pfcp_tlv_create_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
 {
