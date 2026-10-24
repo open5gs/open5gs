@@ -35,6 +35,7 @@ bool udm_sbi_send_request(
 #define UDM_SBI_NO_STATE                                   0
 #define UDM_SBI_UE_PROVISIONED_NSSAI_ONLY                  1
 #define UDM_SBI_UE_PROVISIONED_DATASETS                    2
+#define UDM_SBI_UE_RESYNC                                  3
 
 int udm_ue_sbi_discover_and_send(
         OpenAPI_service_name_e service_name,

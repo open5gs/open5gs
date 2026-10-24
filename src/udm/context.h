@@ -68,6 +68,11 @@ struct udm_ue_s {
     uint8_t rand[OGS_RAND_LEN];
     uint8_t sqn[OGS_SQN_LEN];
 
+    /* Re-synchronisation: SQN MS from a verified AUTS, checked against
+     * SQN HE from the UDR, and the SQN written back if it is out of range */
+    uint64_t sqn_ms;
+    uint8_t resync_sqn[OGS_SQN_LEN];
+
     ogs_guami_t guami;
 
     OpenAPI_auth_type_e auth_type;
