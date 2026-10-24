@@ -3567,8 +3567,22 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
     r = s1ap_send_handover_request(
             source_ue, target_enb, &source_ue->handover_type, Cause,
             Source_ToTarget_TransparentContainer);
+    if (r == OGS_ERROR) {
+        /*
+         * HANDOVER REQUEST could not be built or sent to the target eNB,
+         * e.g. a valid, opaque Source-ToTarget-TransparentContainer does
+         * not fit in the local 32 KiB S1AP encode buffer.  Fail the
+         * preparation towards the source with a target-side cause
+         * instead of aborting the MME.
+         */
+        ogs_error("s1ap_send_handover_request() failed");
+        r = s1ap_send_handover_preparation_failure(source_ue,
+            S1AP_Cause_PR_radioNetwork,
+            S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system);
+        ogs_expect(r == OGS_OK);
+        return;
+    }
     ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
 }
 
 void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
