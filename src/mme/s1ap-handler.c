@@ -3397,7 +3397,7 @@ void s1ap_handle_enb_configuration_transfer(
             SONConfigurationTransfer->sourceeNB_ID;
 
         mme_enb_t *target_enb = NULL;
-        uint32_t source_enb_id, target_enb_id;
+        uint32_t source_enb_id = 0, target_enb_id;
         uint16_t source_tac, target_tac;
 
         if (!sourceeNB_ID || !targeteNB_ID ||
@@ -3416,10 +3416,39 @@ void s1ap_handle_enb_configuration_transfer(
             return;
         }
 
-        ogs_s1ap_ENB_ID_to_uint32(
-                sourceeNB_ID->global_ENB_ID->eNB_ID, &source_enb_id);
-        ogs_s1ap_ENB_ID_to_uint32(
-                targeteNB_ID->global_ENB_ID->eNB_ID, &target_enb_id);
+        /*
+         * ogs_s1ap_ENB_ID_to_uint32() maps only macroENB-ID and homeENB-ID;
+         * the short-macroENB-ID and long-macroENB-ID extension alternatives
+         * reach its process-fatal assertion. Such a Target eNB-ID cannot
+         * name an eNB registered with this MME, so handle it as an unknown
+         * target. The Source eNB-ID is only logged, so it does not stop
+         * the transfer.
+         */
+        switch (targeteNB_ID->global_ENB_ID->eNB_ID->present) {
+        case S1AP_ENB_ID_PR_macroENB_ID:
+        case S1AP_ENB_ID_PR_homeENB_ID:
+            ogs_s1ap_ENB_ID_to_uint32(
+                    targeteNB_ID->global_ENB_ID->eNB_ID, &target_enb_id);
+            break;
+        default:
+            ogs_error("Unsupported Target eNB-ID choice[%d]",
+                    targeteNB_ID->global_ENB_ID->eNB_ID->present);
+            r = s1ap_send_error_indication(enb, NULL, NULL,
+                    S1AP_Cause_PR_radioNetwork,
+                    S1AP_CauseRadioNetwork_unknown_targetID);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
+        switch (sourceeNB_ID->global_ENB_ID->eNB_ID->present) {
+        case S1AP_ENB_ID_PR_macroENB_ID:
+        case S1AP_ENB_ID_PR_homeENB_ID:
+            ogs_s1ap_ENB_ID_to_uint32(
+                    sourceeNB_ID->global_ENB_ID->eNB_ID, &source_enb_id);
+            break;
+        default:
+            break;
+        }
 
         if (sourceeNB_ID->selected_TAI->tAC.size != sizeof(source_tac)) {
             ogs_error("Invalid sourceeNB_ID->selected_TAI->tAC.size = %d "
@@ -3501,9 +3530,32 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
 
     switch (TargetID->present) {
     case S1AP_TargetID_PR_targeteNB_ID:
-        ogs_s1ap_ENB_ID_to_uint32(
-            TargetID->choice.targeteNB_ID->global_ENB_ID->eNB_ID,
-            &target_enb_id);
+        /*
+         * The ENB-ID CHOICE has two extension alternatives
+         * (short-macroENB-ID and long-macroENB-ID) that this MME does not
+         * map to a configured eNB. They are legal encodings, so answer the
+         * handover preparation with an unknown-targetID failure instead of
+         * passing them to ogs_s1ap_ENB_ID_to_uint32(), whose unsupported
+         * alternative is a process-fatal assertion.
+         */
+        switch (TargetID->choice.targeteNB_ID->global_ENB_ID->eNB_ID->present) {
+        case S1AP_ENB_ID_PR_macroENB_ID:
+        case S1AP_ENB_ID_PR_homeENB_ID:
+            ogs_s1ap_ENB_ID_to_uint32(
+                TargetID->choice.targeteNB_ID->global_ENB_ID->eNB_ID,
+                &target_enb_id);
+            break;
+        default:
+            ogs_error("Unsupported TargetID ENB-ID choice[%d]",
+                    TargetID->choice.targeteNB_ID->global_ENB_ID->
+                        eNB_ID->present);
+            r = s1ap_send_handover_preparation_failure(source_ue,
+                    S1AP_Cause_PR_radioNetwork,
+                    S1AP_CauseRadioNetwork_unknown_targetID);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
         break;
     default:
         ogs_error("Not implemented(%d)", TargetID->present);
