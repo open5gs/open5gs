@@ -593,6 +593,14 @@ void mme_gn_handle_ran_information_relay(
         goto cleanup;
     }
 
+    /* ogs_s1ap_ENB_ID_to_uint32() maps only macroENB-ID and homeENB-ID */
+    if (global_ENB_ID->eNB_ID->present != S1AP_ENB_ID_PR_macroENB_ID &&
+        global_ENB_ID->eNB_ID->present != S1AP_ENB_ID_PR_homeENB_ID) {
+        ogs_warn("[Gn] Rx RAN Information Relay: unsupported eNB-ID choice[%d]",
+                global_ENB_ID->eNB_ID->present);
+        goto cleanup;
+    }
+
     ogs_s1ap_ENB_ID_to_uint32(global_ENB_ID->eNB_ID, &target_enb_id);
 
     ogs_debug("    Target : ENB_ID[%s:%d], TAC[%d]",
