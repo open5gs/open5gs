@@ -1322,6 +1322,27 @@ void mme_s11_handle_update_bearer_request(
         bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
         bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
 
+        /*
+         * Normalize a partially populated MBR/GBR set as in
+         * mme_s11_handle_create_bearer_request(), so that it cannot reach
+         * the asserts in s1ap_build_e_rab_modify_request().
+         */
+        if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
+            bearer->qos.gbr.downlink || bearer->qos.gbr.uplink) {
+            if (bearer->qos.mbr.downlink == 0 ||
+                bearer->qos.mbr.downlink > OGS_MAX_BITRATE_S1AP)
+                bearer->qos.mbr.downlink = OGS_MAX_BITRATE_S1AP;
+            if (bearer->qos.mbr.uplink == 0 ||
+                bearer->qos.mbr.uplink > OGS_MAX_BITRATE_S1AP)
+                bearer->qos.mbr.uplink = OGS_MAX_BITRATE_S1AP;
+            if (bearer->qos.gbr.downlink == 0 ||
+                bearer->qos.gbr.downlink > OGS_MAX_BITRATE_S1AP)
+                bearer->qos.gbr.downlink = OGS_MAX_BITRATE_S1AP;
+            if (bearer->qos.gbr.uplink == 0 ||
+                bearer->qos.gbr.uplink > OGS_MAX_BITRATE_S1AP)
+                bearer->qos.gbr.uplink = OGS_MAX_BITRATE_S1AP;
+        }
+
         xact->update_flags |=  OGS_GTP_MODIFY_QOS_UPDATE;
     }
 
