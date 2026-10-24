@@ -1600,12 +1600,25 @@ void smf_s5c_handle_bearer_resource_command(
             return;
         }
 
-        bearer->qos.mbr.uplink = flow_qos.ul_mbr;
-        bearer->qos.mbr.downlink = flow_qos.dl_mbr;
-        bearer->qos.gbr.uplink = flow_qos.ul_gbr;
-        bearer->qos.gbr.downlink = flow_qos.dl_gbr;
+        /*
+         * TS 24.301 6.5.4.2: the UE can change the GBR of a GBR bearer
+         * only, and TS 29.274 8.15: a non-GBR bearer has no bit rates.
+         * So ignore the Flow QoS for a non-GBR bearer. This includes
+         * the default bearer, whose QoS is in sess->session.qos and
+         * not in bearer->qos.
+         */
+        if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
+            bearer->qos.gbr.downlink || bearer->qos.gbr.uplink) {
+            bearer->qos.mbr.uplink = flow_qos.ul_mbr;
+            bearer->qos.mbr.downlink = flow_qos.dl_mbr;
+            bearer->qos.gbr.uplink = flow_qos.ul_gbr;
+            bearer->qos.gbr.downlink = flow_qos.dl_gbr;
 
-        qos_update = 1;
+            qos_update = 1;
+        } else {
+            ogs_warn("Ignore Flow QoS for non-GBR bearer [EBI:%d]",
+                    bearer->ebi);
+        }
     }
 
     if (tft_update == 0 && tft_delete == 0 && qos_update == 0) {
