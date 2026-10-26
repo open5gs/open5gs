@@ -33,7 +33,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     ogs_sbi_response_t *response = NULL;
 
     if (Size < kMinInputLength || Size > kMaxInputLength) {
-        return 1;
+        return -1;
     }
 
     if (!initialized) {
