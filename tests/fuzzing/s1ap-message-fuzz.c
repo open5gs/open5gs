@@ -30,7 +30,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {
 
     if (Size < kMinInputLength || Size > kMaxInputLength) {
-        return 1;
+        return -1;
     }
 
     if (!initialized) {
@@ -44,7 +44,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     if (pkbuf == NULL) {
-        return 1;
+        return 0;
     }
 
     ogs_pkbuf_put_data(pkbuf, Data, Size);

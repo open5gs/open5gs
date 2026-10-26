@@ -49,7 +49,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     ogs_ipfw_rule_t ipfw_rule;
 
     if (Size < kMinInputLength || Size > kMaxInputLength) {
-        return 1;
+        return -1;
     }
 
     if (!initialized) {
@@ -62,7 +62,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
      * terminator detectable. */
     flow_description = ogs_malloc(Size + 1);
     if (flow_description == NULL) {
-        return 1;
+        return 0;
     }
     memcpy(flow_description, Data, Size);
     flow_description[Size] = '\0';
