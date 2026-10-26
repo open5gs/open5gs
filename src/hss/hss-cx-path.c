@@ -684,9 +684,8 @@ static int hss_ogs_diam_cx_mar_cb(struct msg **msg, struct avp *avp,
             if (memcmp(mac_s, hdr->avp_value->os.data +
                         OGS_RAND_LEN + OGS_SQN_LEN, OGS_MAC_S_LEN) == 0) {
                 ogs_random(auth_info.rand, OGS_RAND_LEN);
-                auth_info.sqn = ogs_buffer_to_uint64(sqn, OGS_SQN_LEN);
-                /* 33.102 C.3.4 Guide : IND + 1 */
-                auth_info.sqn = (auth_info.sqn + 32 + 1) & OGS_MAX_SQN;
+                auth_info.sqn = ogs_auc_resync_sqn(auth_info.sqn,
+                        ogs_buffer_to_uint64(sqn, OGS_SQN_LEN));
             } else {
                 ogs_error("Re-synch MAC failed for IMSI: %s", imsi_bcd);
 
