@@ -1955,6 +1955,36 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 break;
             }
 
+            /*
+             * An IDENTITY RESPONSE only answers an identification
+             * procedure that this AMF started for this UE.  The AMF starts
+             * one only for a UE whose SUCI it does not hold, and
+             * nas_5gs_send_identity_request() keeps t3570 running while
+             * the response is awaited.  The SUCI test is still needed:
+             * gmm_state_exception() sends IDENTITY REQUEST and then enters
+             * DEREGISTERED, whose ENTRY clears t3570 with all other timers.
+             *
+             * Without this check a registered UE can name another
+             * subscriber's SUCI.  gmm_handle_identity_response() then
+             * calls amf_ue_set_suci(), which finds the other UE's live
+             * context and hands it to amf_ue_release_old_context(); its
+             * first step asserts that THIS context's session list is
+             * empty.  A UE that owns a PDU session satisfies the opposite,
+             * so the AMF aborts.
+             */
+            if (amf_ue->t3570.pkbuf == NULL && AMF_UE_HAVE_SUCI(amf_ue)) {
+                ogs_error("[%s] No pending identification procedure",
+                        amf_ue->suci);
+                r = ngap_send_error_indication2(
+                        ran_ue,
+                        NGAP_Cause_PR_protocol,
+                        NGAP_CauseProtocol_semantic_error);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                break;
+            }
+
             CLEAR_AMF_UE_TIMER(amf_ue->t3570);
 
             ogs_info("Identity response");
