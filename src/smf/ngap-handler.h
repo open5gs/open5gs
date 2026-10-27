@@ -32,6 +32,8 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf);
 int ngap_handle_pdu_session_resource_modify_response_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf);
+int ngap_handle_pdu_session_resource_notify_transfer(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf);
 int ngap_handle_path_switch_request_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf);
 int ngap_handle_handover_required_transfer(

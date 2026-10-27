@@ -43,6 +43,8 @@ void ngap_handle_pdu_session_resource_setup_response(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_pdu_session_resource_modify_response(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
+void ngap_handle_pdu_session_resource_notify(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_pdu_session_resource_release_response(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
