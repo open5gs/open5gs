@@ -133,6 +133,16 @@ bool ausf_nausf_auth_handle_authenticate_delete(ausf_ue_t *ausf_ue,
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
+    if (!ausf_ue->auth_event.resource_uri) {
+        ogs_error("[%s] No authentication event", ausf_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                recvmsg, "Authentication event not found",
+                ausf_ue->supi, NULL));
+        return true;
+    }
+
     r = ausf_sbi_discover_and_send(
             OpenAPI_service_name_nudm_ueau, NULL,
             ausf_nudm_ueau_build_auth_removal_ind,
