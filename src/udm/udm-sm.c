@@ -212,6 +212,25 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 break;
             }
 
+            if (service_name_id == OpenAPI_service_name_nudm_ueau &&
+                message.h.resource.component[1] &&
+                !strcmp(message.h.resource.component[1],
+                    OGS_SBI_RESOURCE_NAME_AUTH_EVENTS) &&
+                !strcmp(message.h.method, OGS_SBI_HTTP_METHOD_PUT)) {
+                if (!message.h.resource.component[2] ||
+                    strcmp(message.h.resource.component[2], udm_ue->ctx_id) ||
+                    strcmp(message.h.resource.component[0], udm_ue->supi) ||
+                    !udm_ue->auth_event) {
+                    ogs_error("[%s] Authentication event not found",
+                        message.h.resource.component[0]);
+                    ogs_assert(true == ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_NOT_FOUND, &message,
+                        "Authentication event not found",
+                        message.h.resource.component[0], NULL));
+                    break;
+                }
+            }
+
             SWITCH(message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS)
                 if (!message.h.resource.component[3]) {

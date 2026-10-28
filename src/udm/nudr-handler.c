@@ -313,15 +313,6 @@ bool udm_nudr_dr_handle_subscription_authentication(
             return false;
         }
 
-        if (!AuthEvent->success) {
-            ogs_error("[%s] No success", udm_ue->suci);
-            ogs_assert(true ==
-                ogs_sbi_server_send_error(
-                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    recvmsg, "No success", udm_ue->suci, NULL));
-            return false;
-        }
-
         if (!AuthEvent->time_stamp) {
             ogs_error("[%s] No timeStamp", udm_ue->suci);
             ogs_assert(true ==
