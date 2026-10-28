@@ -8,6 +8,10 @@ openapi_generator_cli="openapi-generator-cli"
 
 $openapi_generator_cli generate -i ./modified/TS29573_N32_Handshake.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29504_Nudr_DR.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
+### DataChangeNotify is only reachable via a cross-file $ref'd callback, so it
+### needs TS29505 generated directly; --skip-validate-spec works around an
+### unrelated pre-existing error elsewhere in that file.
+$openapi_generator_cli generate -i ./modified/TS29505_Subscription_Data.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi --skip-validate-spec || exit 1
 $openapi_generator_cli generate -i ./modified/TS29521_Nbsf_Management.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29531_Nnssf_NSSelection.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29507_Npcf_AMPolicyControl.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1

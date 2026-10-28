@@ -21,13 +21,27 @@
 #define UDR_EVENT_H
 
 #include "ogs-proto.h"
+#include "ogs-dbi.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef enum {
+    UDR_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
+
+    UDR_EVENT_DBI_POLL_TIMER,
+    UDR_EVENT_DBI_MESSAGE,
+
+    UDR_EVT_TOP,
+} udr_event_e;
+
 typedef struct udr_event_s {
     ogs_event_t h;
+
+    struct {
+        bson_t *document;
+    } dbi;
 } udr_event_t;
 
 OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(udr_event_t));
