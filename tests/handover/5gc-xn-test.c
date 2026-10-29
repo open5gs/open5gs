@@ -58,6 +58,8 @@ static void test_two_qos_flows(abts_case *tc, void *data)
 
     test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000001");
     ogs_assert(test_ue);
+    test_ue->redcap_indication = OGS_POINTER_TO_UINT(data) == 1;
+    test_ue->redcap_indication_in_handover = OGS_POINTER_TO_UINT(data) == 2;
 
     test_ue->nr_cgi.cell_id = 0x40001;
 
@@ -782,6 +784,9 @@ abts_suite *test_5gc_xn(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test_two_qos_flows, NULL);
+    /* Retain RedCap across NR handover, or learn it at the target. */
+    abts_run_test(suite, test_two_qos_flows, OGS_UINT_TO_POINTER(1));
+    abts_run_test(suite, test_two_qos_flows, OGS_UINT_TO_POINTER(2));
     abts_run_test(suite, test_keep_tunnel, NULL);
 
     return suite;

@@ -511,6 +511,19 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
         *UEContextRequest = NGAP_UEContextRequest_requested;
     }
 
+    if (test_ue->redcap_indication) {
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
+        ie->id = NGAP_ProtocolIE_ID_id_RedCapIndication;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present = NGAP_InitialUEMessage_IEs__value_PR_RedCapIndication;
+        ie->value.choice.RedCapIndication =
+            CALLOC(1, sizeof(*ie->value.choice.RedCapIndication));
+        ogs_assert(ie->value.choice.RedCapIndication);
+        *ie->value.choice.RedCapIndication = NGAP_RedCapIndication_redcap;
+    }
+
     return ogs_ngap_encode(&pdu);
 }
 
@@ -2043,6 +2056,19 @@ ogs_pkbuf_t *testngap_build_path_switch_request(test_ue_t *test_ue)
         ogs_pkbuf_free(n2smbuf);
     }
 
+    if (test_ue->redcap_indication_in_handover) {
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(PathSwitchRequest->protocolIEs, ie);
+        ie->id = NGAP_ProtocolIE_ID_id_RedCapIndication;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present = NGAP_PathSwitchRequestIEs__value_PR_RedCapIndication;
+        ie->value.choice.RedCapIndication =
+            CALLOC(1, sizeof(*ie->value.choice.RedCapIndication));
+        ogs_assert(ie->value.choice.RedCapIndication);
+        *ie->value.choice.RedCapIndication = NGAP_RedCapIndication_redcap;
+    }
+
     return ogs_ngap_encode(&pdu);
 }
 
@@ -2378,6 +2404,19 @@ ogs_pkbuf_t *testngap_build_handover_request_ack(test_ue_t *test_ue)
         CALLOC(TargetToSource_TransparentContainer->size, sizeof(uint8_t));
     memcpy(TargetToSource_TransparentContainer->buf,
             tmp, TargetToSource_TransparentContainer->size);
+
+    if (test_ue->redcap_indication_in_handover) {
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(HandoverRequestAcknowledge->protocolIEs, ie);
+        ie->id = NGAP_ProtocolIE_ID_id_RedCapIndication;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present = NGAP_HandoverRequestAcknowledgeIEs__value_PR_RedCapIndication;
+        ie->value.choice.RedCapIndication =
+            CALLOC(1, sizeof(*ie->value.choice.RedCapIndication));
+        ogs_assert(ie->value.choice.RedCapIndication);
+        *ie->value.choice.RedCapIndication = NGAP_RedCapIndication_redcap;
+    }
 
     return ogs_ngap_encode(&pdu);
 }

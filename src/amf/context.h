@@ -198,6 +198,7 @@ struct ran_ue_s {
     uint16_t        gnb_ostream_id; /* SCTP output stream id for eNB */
 
     /* UE context */
+    bool            redcap_indication;
     bool            ue_context_requested;
     bool            initial_context_setup_request_sent;
 
@@ -379,6 +380,9 @@ struct amf_ue_s {
     char            *suci; /* TS33.501 : SUCI */
     char            *supi; /* TS33.501 : SUPI */
     ogs_nas_5gs_mobile_identity_suci_t nas_mobile_identity_suci;
+
+    /* NR RedCap differentiation (TS 23.501, clause 5.41). */
+    bool            redcap_indication;
 
     /* Home PLMN ID */
     ogs_plmn_id_t   home_plmn_id;

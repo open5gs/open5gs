@@ -2475,6 +2475,9 @@ OpenAPI_rat_type_e amf_ue_rat_type(amf_ue_t *amf_ue)
         return OpenAPI_rat_type_NULL;
     }
 
+    if (gnb->rat_type == OpenAPI_rat_type_NR && amf_ue->redcap_indication)
+        return OpenAPI_rat_type_NR_REDCAP;
+
     return gnb->rat_type;
 }
 
@@ -2485,6 +2488,7 @@ void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 
     amf_ue->ran_ue_id = ran_ue->id;
     ran_ue->amf_ue_id = amf_ue->id;
+    amf_ue->redcap_indication = ran_ue->redcap_indication;
 }
 
 void amf_ue_note_stale_user_plane(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
@@ -2533,6 +2537,8 @@ void source_ue_associate_target_ue(
     ogs_assert(target_ue);
 
     target_ue->amf_ue_id = source_ue->amf_ue_id;
+    /* NR-to-NR handover need not repeat the RedCap indication. */
+    target_ue->redcap_indication = source_ue->redcap_indication;
     target_ue->source_ue_id = source_ue->id;
     source_ue->target_ue_id = target_ue->id;
 }
