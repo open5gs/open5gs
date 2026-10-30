@@ -1173,6 +1173,32 @@ void ogs_ims_data_free(ogs_ims_data_t *ims_data)
     }
 }
 
+/*
+ * TS29.214 4.4.5, TS29.514 4.2.6.7
+ * Subscription to Notification of Signalling Path Status
+ *
+ * Media component number 0 with a single AF signalling sub-component
+ * whose flow number is 0. The rest of the attributes shall not be used,
+ * and the PCC rules for AF signalling are expected to be provisioned
+ * already, so no PCC rule is derived from this media component.
+ */
+bool ogs_media_is_signalling_path_status(
+        ogs_media_component_t *media_component)
+{
+    ogs_media_sub_component_t *sub = NULL;
+
+    ogs_assert(media_component);
+
+    if (media_component->media_component_number != 0 ||
+        media_component->num_of_sub != 1)
+        return false;
+
+    sub = &media_component->sub[0];
+
+    return sub->flow_number == 0 &&
+        sub->flow_usage == OGS_FLOW_USAGE_AF_SIGNALLING;
+}
+
 static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
 {
     int len;

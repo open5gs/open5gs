@@ -51,6 +51,11 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_delete(
 ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
         af_sess_t *sess, void *data);
 
+ogs_sbi_request_t *af_npcf_policyauthorization_build_create_signalling(
+        af_sess_t *sess, void *data);
+ogs_sbi_request_t *af_npcf_policyauthorization_build_update_signalling(
+        af_sess_t *sess, void *data);
+
 #ifdef __cplusplus
 }
 #endif
