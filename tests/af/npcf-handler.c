@@ -37,6 +37,7 @@ void af_npcf_policyauthorization_handle_create(
 
     OpenAPI_app_session_context_t *AppSessionContext = NULL;
     OpenAPI_app_session_context_req_data_t *AscReqData = NULL;
+    OpenAPI_app_session_context_resp_data_t *AscRespData = NULL;
 
     uint64_t supported_features = 0;
 
@@ -90,6 +91,22 @@ void af_npcf_policyauthorization_handle_create(
         goto cleanup;
     }
 
+    /* Verify both the negotiated response features and the legacy echo. */
+    AscRespData = AppSessionContext->asc_resp_data;
+    if (!AscRespData || !AscRespData->supp_feat) {
+        ogs_error("[%s:%s] No AscRespData->suppFeat",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        goto cleanup;
+    }
+
+    if (strcmp(AscReqData->supp_feat, AscRespData->supp_feat)) {
+        ogs_error("[%s:%s] Mismatched negotiated suppFeat",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        goto cleanup;
+    }
+
     rc = ogs_sbi_getaddr_from_uri(
             &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
@@ -117,7 +134,7 @@ void af_npcf_policyauthorization_handle_create(
     PCF_APP_SESSION_STORE(sess, header.uri, message.h.resource.component[1]);
 
     supported_features = ogs_uint64_from_string_hexadecimal(
-            AscReqData->supp_feat);
+            AscRespData->supp_feat);
     sess->policyauthorization_features &= supported_features;
 
 cleanup:
