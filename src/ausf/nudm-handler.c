@@ -42,6 +42,9 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     ogs_sbi_response_t *response = NULL;
 
     char hxres_star_string[OGS_KEYSTRLEN(OGS_MAX_RES_LEN)];
+    uint8_t rand[OGS_RAND_LEN];
+    uint8_t xres_star[OGS_MAX_RES_LEN];
+    uint8_t kausf[OGS_SHA256_DIGEST_SIZE];
 
     OpenAPI_authentication_info_result_t *AuthenticationInfoResult = NULL;
     OpenAPI_authentication_vector_t *AuthenticationVector = NULL;
@@ -169,6 +172,22 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         return false;
     }
 
+    if (ogs_hex_from_string_checked(
+                AuthenticationVector->rand, rand, sizeof(rand)) != OGS_OK ||
+        ogs_hex_from_string_checked(
+                AuthenticationVector->xres_star,
+                xres_star, sizeof(xres_star)) != OGS_OK ||
+        ogs_hex_from_string_checked(
+                AuthenticationVector->kausf, kausf, sizeof(kausf)) != OGS_OK) {
+        ogs_error("[%s] Invalid AuthenticationVector", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid AuthenticationVector", ausf_ue->suci,
+                NULL));
+        return false;
+    }
+
     /* SUPI */
     if (ausf_ue->supi) {
         ogs_hash_unset_if_owner(ausf_self()->supi_hash,
@@ -182,18 +201,9 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
 
     ausf_ue->auth_type = AuthenticationInfoResult->auth_type;
 
-    ogs_ascii_to_hex(
-        AuthenticationVector->rand,
-        strlen(AuthenticationVector->rand),
-        ausf_ue->rand, sizeof(ausf_ue->rand));
-    ogs_ascii_to_hex(
-        AuthenticationVector->xres_star,
-        strlen(AuthenticationVector->xres_star),
-        ausf_ue->xres_star, sizeof(ausf_ue->xres_star));
-    ogs_ascii_to_hex(
-        AuthenticationVector->kausf,
-        strlen(AuthenticationVector->kausf),
-        ausf_ue->kausf, sizeof(ausf_ue->kausf));
+    memcpy(ausf_ue->rand, rand, sizeof(ausf_ue->rand));
+    memcpy(ausf_ue->xres_star, xres_star, sizeof(ausf_ue->xres_star));
+    memcpy(ausf_ue->kausf, kausf, sizeof(ausf_ue->kausf));
 
     memset(&UeAuthenticationCtx, 0, sizeof(UeAuthenticationCtx));
 

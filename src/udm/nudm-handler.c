@@ -111,12 +111,27 @@ bool udm_nudm_ueau_handle_get(
             return false;
         }
 
-        ogs_ascii_to_hex(
-            ResynchronizationInfo->rand, strlen(ResynchronizationInfo->rand),
-            rand, sizeof(rand));
-        ogs_ascii_to_hex(
-            ResynchronizationInfo->auts, strlen(ResynchronizationInfo->auts),
-            auts, sizeof(auts));
+        if (ogs_hex_from_string_checked(
+                ResynchronizationInfo->rand, rand, sizeof(rand)) != OGS_OK) {
+            ogs_error("[%s] Invalid ResynchronizationInfo.rand",
+                    udm_ue->suci);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                    "Invalid ResynchronizationInfo.rand", udm_ue->suci, NULL));
+            return false;
+        }
+
+        if (ogs_hex_from_string_checked(
+                ResynchronizationInfo->auts, auts, sizeof(auts)) != OGS_OK) {
+            ogs_error("[%s] Invalid ResynchronizationInfo.auts",
+                    udm_ue->suci);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                    "Invalid ResynchronizationInfo.auts", udm_ue->suci, NULL));
+            return false;
+        }
 
         if (memcmp(udm_ue->rand, rand, OGS_RAND_LEN) != 0) {
             ogs_error("[%s] Invalid RAND", udm_ue->suci);
