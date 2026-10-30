@@ -67,7 +67,7 @@ static void base64_test1(abts_case *tc, void *data)
 
 struct decode_tests_st {
     const char *name;
-    uint8_t *raw;
+    const char *raw;
     unsigned raw_size;
     const char *pem;
     unsigned pem_size;

@@ -3174,24 +3174,36 @@ get_mac_addr_mask(const char *p, uint8_t *addr, uint8_t *mask)
 	optr = ptr = strdup(p);
 	if ((ap = strsep(&ptr, "&/")) != NULL && *ap != 0) {
 		l = strlen(ap);
-		if (strspn(ap, macset) != l || (mac = ether_aton(ap)) == NULL)
+		if (strspn(ap, macset) != l || (mac = ether_aton(ap)) == NULL) {
 			errx(EX_DATAERR, "Incorrect MAC address");
+			free(optr);
+			return;
+		}
 		bcopy(mac, addr, ETHER_ADDR_LEN);
-	} else
+	} else {
 		errx(EX_DATAERR, "Incorrect MAC address");
+		free(optr);
+		return;
+	}
 
 	if (ptr != NULL) { /* we have mask? */
 		if (p[ptr - optr - 1] == '/') { /* mask len */
 			long ml = strtol(ptr, &ap, 10);
-			if (*ap != 0 || ml > ETHER_ADDR_LEN * 8 || ml < 0)
+			if (*ap != 0 || ml > ETHER_ADDR_LEN * 8 || ml < 0) {
 				errx(EX_DATAERR, "Incorrect mask length");
+				free(optr);
+				return;
+			}
 			for (i = 0; ml > 0 && i < ETHER_ADDR_LEN; ml -= 8, i++)
 				mask[i] = (ml >= 8) ? 0xff: (~0) << (8 - ml);
 		} else { /* mask */
 			l = strlen(ptr);
 			if (strspn(ptr, macset) != l ||
-			    (mac = ether_aton(ptr)) == NULL)
+			    (mac = ether_aton(ptr)) == NULL) {
 				errx(EX_DATAERR, "Incorrect mask");
+				free(optr);
+				return;
+			}
 			bcopy(mac, mask, ETHER_ADDR_LEN);
 		}
 	} else { /* default mask: ff:ff:ff:ff:ff:ff */

@@ -28,6 +28,9 @@ libogscjson_sources = files('cJSON.c')
 # (print_number() intentionally compares doubles with ==).
 libogscjson_cc_flags = cc.get_supported_arguments('-Wno-float-equal')
 
+# cJSON needs IEEE NaN semantics even when Open5GS uses -ffast-math.
+libogscjson_cc_flags += cc.get_supported_arguments('-fno-fast-math')
+
 # The vendored copy carries Open5GS modifications (ogs_malloc()-based
 # allocation hooks), hence the libcore dependency.
 libogscjson = library('ogscjson',

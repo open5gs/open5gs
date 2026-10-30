@@ -949,7 +949,7 @@ static void hash_lazy_allocation_test(abts_case *tc, void *data)
     size_t before = core_blocks();
     ogs_hash_t *h = ogs_hash_make();
     uint32_t key = 1;
-    int owner;
+    int owner = 0;
 
     ABTS_SIZE_EQUAL(tc, before + 1, core_blocks());
     ABTS_PTR_EQUAL(tc, NULL, ogs_hash_get(h, &key, sizeof(key)));

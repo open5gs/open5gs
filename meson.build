@@ -121,6 +121,14 @@ add_project_arguments(
     cc.get_supported_arguments(possible_cc_flags),
     language : 'c')
 
+# Apple's linker reports duplicate transitive libraries used by several targets.
+# Suppress the diagnostic only when the linker supports the option.
+if host_system == 'darwin' and meson.version().version_compare('>=0.46.0')
+    add_project_link_arguments(
+        cc.get_supported_link_arguments('-Wl,-no_warn_duplicate_libraries'),
+        language : ['c', 'cpp'])
+endif
+
 subdir('configs')
 subdir('lib')
 subdir('src')
