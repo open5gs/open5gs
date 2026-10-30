@@ -471,6 +471,15 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].ipv6.prefixlen));
                 len += sizeof(tft->pf[i].content.component[j].ipv6.prefixlen);
+
+                if (tft->pf[i].content.component[j].ipv6.prefixlen >
+                        OGS_IPV6_128_PREFIX_LEN) {
+                    ogs_error("TFT: pf[%d].component[%d]."
+                            "ipv6.prefixlen[%d] > %d", i, j,
+                            tft->pf[i].content.component[j].ipv6.prefixlen,
+                            OGS_IPV6_128_PREFIX_LEN);
+                    return size;
+                }
                 break;
             case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
             case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
