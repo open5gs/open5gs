@@ -854,6 +854,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
             MediaComponent = MediaComponentMap->value;
             if (MediaComponent) {
                 int n;
+                bool af_signalling_component = false;
                 if (ims_data.num_of_media_component >=
                         OGS_ARRAY_SIZE(ims_data.media_component)) {
                     ogs_error("OVERFLOW ims_data.num_of_media_component "
@@ -911,6 +912,19 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
                     if (SubComponentMap) {
                         SubComponent = SubComponentMap->value;
                         if (SubComponent) {
+                            if (SubComponent->f_num == 0) {
+                                /*
+                                 * TS 29.514 4.2.6.7: a media subcomponent with
+                                 * the "fNum" attribute set to "0" describes the
+                                 * AF signalling flow of this media component,
+                                 * and the rest of its attributes shall not be
+                                 * used. Skip only this subcomponent; sibling
+                                 * media subcomponents with "fNum" >= 1 still
+                                 * describe media to be authorized.
+                                 */
+                                af_signalling_component = true;
+                                continue;
+                            }
                             sub->flow_number = SubComponent->f_num;
                             sub->flow_usage = SubComponent->flow_usage;
 
@@ -938,6 +952,17 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
                             media_component->num_of_sub++;
                         }
                     }
+                }
+                if (af_signalling_component &&
+                        media_component->num_of_sub == 0) {
+                    /*
+                     * TS 29.514 4.2.6.7: this media component carried only
+                     * the AF signalling flow, so the rest of its attributes
+                     * (e.g. "medType") shall not be used and there is no
+                     * media to authorize. Skip the component entirely; the
+                     * App Session Context is still created.
+                     */
+                    continue;
                 }
                 ims_data.num_of_media_component++;
             }
