@@ -126,18 +126,28 @@ ogs_pkbuf_t *upf_n4_build_session_deletion_response(uint8_t type,
 {
     ogs_pfcp_urr_t *urr = NULL;
     ogs_pfcp_user_plane_report_t report;
-    size_t num_of_reports = 0;
     ogs_debug("Session Deletion Response");
 
     memset(&report, 0, sizeof(report));
-    ogs_list_for_each(&sess->pfcp.urr_list, urr) {
-        ogs_assert(num_of_reports < OGS_ARRAY_SIZE(report.usage_report));
-        upf_sess_urr_acc_fill_usage_report(sess, urr, &report, num_of_reports);
-        report.usage_report[num_of_reports].rep_trigger.termination_report = 1;
-        num_of_reports++;
+
+    /*
+     * Report only the first URR; the other URRs are not reported.
+     * Session Report Request also carries a single usage report.
+     *
+     * Multiple reports are not supported here:
+     * - ogs_pfcp_build_session_deletion_response() encodes every
+     *   Volume Measurement from one shared buffer, so all reports
+     *   would carry the last URR's volume.
+     * - The response holds at most 8 usage reports, but a session
+     *   can have up to OGS_MAX_NUM_OF_URR URRs.
+     */
+    urr = ogs_list_first(&sess->pfcp.urr_list);
+    if (urr) {
+        upf_sess_urr_acc_fill_usage_report(sess, urr, &report, 0);
+        report.usage_report[0].rep_trigger.termination_report = 1;
+        report.num_of_usage_report = 1;
         upf_sess_urr_acc_snapshot(sess, urr);
     }
-    report.num_of_usage_report = num_of_reports;
 
     return ogs_pfcp_build_session_deletion_response(type, OGS_PFCP_CAUSE_REQUEST_ACCEPTED,
                                                     &report);
