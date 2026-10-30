@@ -960,9 +960,27 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
+            /*
+             * During UE-initiated PDU Session Release, SBI cleanup requests
+             * may be sent without an associated HTTP stream.
+             * In this case, e->h.sbi.data still contains the SBI transaction
+             * ID, which the session FSM interprets as a stream ID.
+             *
+             * If the transaction ID coincides with an unrelated HTTP stream
+             * ID (e.g., a concurrent SM Context Modification for another
+             * PDU session), subsequent cleanup requests may be incorrectly
+             * associated with that stream. When the unrelated stream closes,
+             * the pending transaction is canceled, leaving the PDU session
+             * stuck in smf_gsm_state_5gc_session_will_deregister.
+             *
+             * Explicitly clear the stream ID when no valid association exists
+             * to prevent confusing the transaction ID with a stream ID.
+             */
             if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                 sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
                 e->h.sbi.data = OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
+            else
+                e->h.sbi.data = OGS_UINT_TO_POINTER(OGS_INVALID_POOL_ID);
 
             e->h.sbi.state = sbi_xact->state;
 
