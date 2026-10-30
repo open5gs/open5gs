@@ -420,10 +420,20 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                     ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
                             sess_id <= OGS_MAX_POOL_ID);
 
+                    /*
+                     * The SBI client event initially carries a UDR transaction
+                     * ID, but the session FSM expects an HTTP stream ID.
+                     * Although UDM normally associates these requests with a
+                     * stream, clear the ID if no valid association exists.
+                     * Otherwise, the transaction ID could match another stream.
+                     */
                     if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                         sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
                         e->h.sbi.data =
                             OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
+                    else
+                        e->h.sbi.data =
+                            OGS_UINT_TO_POINTER(OGS_INVALID_POOL_ID);
 
                     ogs_sbi_xact_remove(sbi_xact);
 
@@ -469,10 +479,18 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                     ogs_assert(udm_ue_id >= OGS_MIN_POOL_ID &&
                             udm_ue_id <= OGS_MAX_POOL_ID);
 
+                    /*
+                     * The UE FSM also expects a stream ID, not the original
+                     * UDR transaction ID. Clear it if there is no valid
+                     * stream association to avoid using an unrelated stream.
+                     */
                     if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                         sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
                         e->h.sbi.data =
                             OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
+                    else
+                        e->h.sbi.data =
+                            OGS_UINT_TO_POINTER(OGS_INVALID_POOL_ID);
 
                     e->h.sbi.state = sbi_xact->state;
 
