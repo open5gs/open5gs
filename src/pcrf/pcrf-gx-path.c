@@ -1229,6 +1229,12 @@ int pcrf_gx_send_rar(
             ogs_media_component_t *media_component =
                 &rx_message->ims_data.media_component[i];
 
+            if (ogs_media_is_signalling_path_status(media_component)) {
+                ogs_info("[%s:%s] AF subscribed to Signalling Path Status",
+                        sess_data->imsi_bcd, sess_data->apn);
+                continue;
+            }
+
             switch(media_component->media_type) {
             case OGS_DIAM_RX_MEDIA_TYPE_AUDIO:
                 qos_index = OGS_QOS_INDEX_1;
@@ -1494,12 +1500,19 @@ out:
     ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
     ogs_assert(sess_data == NULL);
 
+    /* Free unsent Diameter request */
+    ret = fd_msg_free(req);
+    ogs_assert(ret == 0);
+
+    OGS_SESSION_DATA_FREE(&gx_message.session_data);
+
+    if (rx_message->result_code == ER_DIAMETER_SUCCESS)
+        return OGS_OK;
+
     OGS_DIAM_STATS_MTX(
         OGS_DIAM_STATS_INC(nb_sent);
         PCRF_DIAM_PRIV_STATS_INC(gx.tx_rar_error);
     )
-
-    OGS_SESSION_DATA_FREE(&gx_message.session_data);
 
     return OGS_ERROR;
 }

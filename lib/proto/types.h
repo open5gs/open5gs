@@ -1232,6 +1232,9 @@ typedef struct ogs_ims_data_s {
 
 void ogs_ims_data_free(ogs_ims_data_t *ims_data);
 
+bool ogs_media_is_signalling_path_status(
+        ogs_media_component_t *media_component);
+
 int ogs_pcc_rule_num_of_flow_equal_to_media(
         ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
 int ogs_pcc_rule_install_flow_from_media(

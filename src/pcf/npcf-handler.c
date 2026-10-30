@@ -999,6 +999,12 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         const char *reference = qos_reference[i];
         const char *err_str = NULL;
 
+        if (ogs_media_is_signalling_path_status(media_component)) {
+            ogs_info("[%s:%d] AF subscribed to Signalling Path Status",
+                    pcf_ue_sm->supi, sess->psi);
+            continue;
+        }
+
         qos_index = pcf_qos_index_from_media(
                 reference, media_component->media_type, &err_str);
         if (qos_index == 0) {
@@ -1484,6 +1490,12 @@ bool pcf_npcf_policyauthorization_handle_update(
         ogs_media_component_t *media_component = &ims_data.media_component[i];
         const char *reference = qos_reference[i];
         const char *err_str = NULL;
+
+        if (ogs_media_is_signalling_path_status(media_component)) {
+            ogs_info("[%s:%d] AF subscribed to Signalling Path Status",
+                    pcf_ue_sm->supi, sess->psi);
+            continue;
+        }
 
         qos_index = pcf_qos_index_from_media(
                 reference, media_component->media_type, &err_str);

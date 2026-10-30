@@ -1152,3 +1152,175 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
 
     return request;
 }
+
+/*
+ * TS29.514 4.2.6.7 Subscription to Notification of Signalling Path Status
+ *
+ * medCompN 0 with a single AF_SIGNALLING media sub-component of fNum 0.
+ * No medType and no other attributes.
+ */
+ogs_sbi_request_t *af_npcf_policyauthorization_build_create_signalling(
+        af_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_server_t *server = NULL;
+    ogs_sbi_header_t header;
+
+    OpenAPI_app_session_context_t AppSessionContext;
+    OpenAPI_app_session_context_req_data_t AscReqData;
+
+    OpenAPI_events_subsc_req_data_t evSubsc;
+    OpenAPI_af_event_subscription_t Event;
+
+    OpenAPI_media_component_t MediaComponent;
+    OpenAPI_map_t *MediaComponentMap = NULL;
+
+    OpenAPI_media_sub_component_t SubComponent;
+    OpenAPI_map_t *SubComponentMap = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(sess->app_session.af.id);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_policyauthorization);
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
+
+    message.AppSessionContext = &AppSessionContext;
+
+    memset(&AppSessionContext, 0, sizeof(AppSessionContext));
+    AppSessionContext.asc_req_data = &AscReqData;
+
+    memset(&AscReqData, 0, sizeof(AscReqData));
+
+    server = ogs_sbi_server_first();
+    ogs_assert(server);
+
+    memset(&header, 0, sizeof(header));
+    header.service.name =
+        OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_policyauthorization);
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
+    header.resource.component[1] = (char *)sess->app_session.af.id;
+    AscReqData.notif_uri = ogs_sbi_server_uri(server, &header);
+    ogs_assert(AscReqData.notif_uri);
+
+    AscReqData.supp_feat =
+        ogs_uint64_to_string(sess->policyauthorization_features);
+    ogs_assert(AscReqData.supp_feat);
+
+    AscReqData.ue_ipv4 = sess->ipv4addr;
+    AscReqData.ue_ipv6 = sess->ipv6addr;
+
+    memset(&Event, 0, sizeof(Event));
+    Event.event = OpenAPI_npcf_af_event_FAILED_RESOURCES_ALLOCATION;
+
+    memset(&evSubsc, 0, sizeof(evSubsc));
+    evSubsc.events = OpenAPI_list_create();
+    ogs_assert(evSubsc.events);
+    OpenAPI_list_add(evSubsc.events, &Event);
+    AscReqData.ev_subsc = &evSubsc;
+
+    memset(&SubComponent, 0, sizeof(SubComponent));
+    SubComponent.f_num = 0;
+    SubComponent.flow_usage = OpenAPI_flow_usage_AF_SIGNALLING;
+
+    SubComponentMap = OpenAPI_map_create((char *)"0", &SubComponent);
+    ogs_assert(SubComponentMap);
+
+    memset(&MediaComponent, 0, sizeof(MediaComponent));
+    MediaComponent.med_comp_n = 0;
+    MediaComponent.med_sub_comps = OpenAPI_list_create();
+    ogs_assert(MediaComponent.med_sub_comps);
+    OpenAPI_list_add(MediaComponent.med_sub_comps, SubComponentMap);
+
+    MediaComponentMap = OpenAPI_map_create((char *)"0", &MediaComponent);
+    ogs_assert(MediaComponentMap);
+
+    AscReqData.med_components = OpenAPI_list_create();
+    ogs_assert(AscReqData.med_components);
+    OpenAPI_list_add(AscReqData.med_components, MediaComponentMap);
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+    OpenAPI_list_free(AscReqData.med_components);
+    ogs_free(MediaComponentMap);
+    OpenAPI_list_free(MediaComponent.med_sub_comps);
+    ogs_free(SubComponentMap);
+    OpenAPI_list_free(evSubsc.events);
+    ogs_free(AscReqData.supp_feat);
+    ogs_free(AscReqData.notif_uri);
+
+    return request;
+}
+
+/* The same subscription sent by PATCH */
+ogs_sbi_request_t *af_npcf_policyauthorization_build_update_signalling(
+        af_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_app_session_context_update_data_patch_t
+        AppSessionContextUpdateDataPatch;
+    OpenAPI_app_session_context_update_data_t AscUpdateData;
+
+    OpenAPI_media_component_rm_t MediaComponent;
+    OpenAPI_map_t *MediaComponentMap = NULL;
+
+    OpenAPI_media_sub_component_rm_t SubComponent;
+    OpenAPI_map_t *SubComponentMap = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(sess->app_session.pcf.resource_uri);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
+    message.h.uri = sess->app_session.pcf.resource_uri;
+
+    message.AppSessionContextUpdateDataPatch =
+        &AppSessionContextUpdateDataPatch;
+
+    memset(&AppSessionContextUpdateDataPatch, 0,
+            sizeof(AppSessionContextUpdateDataPatch));
+    AppSessionContextUpdateDataPatch.asc_req_data = &AscUpdateData;
+
+    memset(&AscUpdateData, 0, sizeof(AscUpdateData));
+
+    memset(&SubComponent, 0, sizeof(SubComponent));
+    SubComponent.f_num = 0;
+    SubComponent.flow_usage = OpenAPI_flow_usage_AF_SIGNALLING;
+
+    SubComponentMap = OpenAPI_map_create((char *)"0", &SubComponent);
+    ogs_assert(SubComponentMap);
+
+    memset(&MediaComponent, 0, sizeof(MediaComponent));
+    MediaComponent.med_comp_n = 0;
+    MediaComponent.med_sub_comps = OpenAPI_list_create();
+    ogs_assert(MediaComponent.med_sub_comps);
+    OpenAPI_list_add(MediaComponent.med_sub_comps, SubComponentMap);
+
+    MediaComponentMap = OpenAPI_map_create((char *)"0", &MediaComponent);
+    ogs_assert(MediaComponentMap);
+
+    AscUpdateData.med_components = OpenAPI_list_create();
+    ogs_assert(AscUpdateData.med_components);
+    OpenAPI_list_add(AscUpdateData.med_components, MediaComponentMap);
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    OpenAPI_list_free(AscUpdateData.med_components);
+    ogs_free(MediaComponentMap);
+    OpenAPI_list_free(MediaComponent.med_sub_comps);
+    ogs_free(SubComponentMap);
+
+    return request;
+}

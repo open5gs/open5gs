@@ -5039,6 +5039,45 @@ static void test_arp_update_func(abts_case *tc, void *data)
     test_af_qos_reference_cleanup(tc, test_ue, ngap, gtpu);
 }
 
+/*
+ * Issue #4899
+ * Subscription to Notification of Signalling Path Status (no medType)
+ * is accepted by create and update, and no QoS flow is added.
+ */
+static void test_issue4899_func(abts_case *tc, void *data)
+{
+    ogs_socknode_t *ngap = NULL;
+    ogs_socknode_t *gtpu = NULL;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    af_sess_t *af_sess = NULL;
+
+    test_af_qos_reference_setup(tc, "0000004899",
+            &test_ue, &sess, &af_sess, &ngap, &gtpu);
+
+    af_local_send_to_pcf(af_sess, NULL,
+            af_npcf_policyauthorization_build_create_signalling);
+
+    ogs_msleep(100);
+    ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_CREATED,
+            af_sess->last_pcf_status);
+
+    af_local_send_to_pcf(af_sess, NULL,
+            af_npcf_policyauthorization_build_update_signalling);
+
+    ogs_msleep(100);
+    ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_OK, af_sess->last_pcf_status);
+
+    ABTS_TRUE(tc, test_qos_flow_find_by_qfi(sess, 2) == NULL);
+
+    af_local_send_to_pcf(af_sess, NULL,
+            af_npcf_policyauthorization_build_delete);
+
+    ogs_msleep(100);
+
+    test_af_qos_reference_cleanup(tc, test_ue, ngap, gtpu);
+}
+
 abts_suite *test_af(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -5065,6 +5104,7 @@ abts_suite *test_af(abts_suite *suite)
     abts_run_test(suite, test13_func, NULL);
     abts_run_test(suite, test_issue4672_func, NULL);
     abts_run_test(suite, test_arp_update_func, NULL);
+    abts_run_test(suite, test_issue4899_func, NULL);
 
     return suite;
 }
