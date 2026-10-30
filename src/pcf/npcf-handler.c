@@ -742,6 +742,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     OpenAPI_app_session_context_req_data_t *AscReqData = NULL;
 
     uint64_t supported_features = 0;
+    uint64_t negotiated_features = 0;
 
     ogs_sbi_server_t *server = NULL;
     ogs_sbi_header_t header;
@@ -838,12 +839,18 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     supported_features = ogs_uint64_from_string_hexadecimal(
             AscReqData->supp_feat);
-    sess->policyauthorization_features &= supported_features;
 
-    if (sess->policyauthorization_features != supported_features) {
+    /*
+     * Negotiate features for each application session. Do not narrow the
+     * PCF's supported feature set for subsequent AF requests.
+     */
+    negotiated_features =
+        sess->policyauthorization_features & supported_features;
+
+    if (negotiated_features != supported_features) {
         ogs_free(AscReqData->supp_feat);
         AscReqData->supp_feat =
-            ogs_uint64_to_string(sess->policyauthorization_features);
+            ogs_uint64_to_string(negotiated_features);
         ogs_assert(AscReqData->supp_feat);
     }
 
@@ -1196,6 +1203,22 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     header.resource.component[1] = (char *)app_session->app_session_id;
     sendmsg.http.location = ogs_sbi_server_uri(server, &header);
     ogs_assert(sendmsg.http.location);
+
+    /*
+     * TS 29.514 requires the negotiated features in ascRespData.suppFeat.
+     * Keep the existing ascReqData.suppFeat echo for older AF clients.
+     * The new response data is owned and freed by recvmsg.
+     */
+    if (AppSessionContext->asc_resp_data)
+        OpenAPI_app_session_context_resp_data_free(
+                AppSessionContext->asc_resp_data);
+
+    AppSessionContext->asc_resp_data =
+        OpenAPI_app_session_context_resp_data_create(
+                OpenAPI_serv_auth_info_NULL, NULL, NULL,
+                ogs_uint64_to_string(negotiated_features));
+    ogs_assert(AppSessionContext->asc_resp_data);
+    ogs_assert(AppSessionContext->asc_resp_data->supp_feat);
 
     sendmsg.AppSessionContext = recvmsg->AppSessionContext;
 

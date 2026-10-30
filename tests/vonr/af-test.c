@@ -672,6 +672,9 @@ static void test1_func(abts_case *tc, void *data)
     /* Wait for PCF-Discovery */
     ogs_msleep(100);
 
+    /* Offer 0x72 so the PCF must negotiate it down to 0x12. */
+    af_sess->policyauthorization_features |= 0x60;
+
     /* Send AF-Session : CREATE */
     memset(&af_param, 0, sizeof(af_param));
     af_param.med_type = OpenAPI_media_type_AUDIO;
@@ -721,6 +724,8 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Wait for PDU session resource modify complete */
     ogs_msleep(100);
+
+    ABTS_INT_EQUAL(tc, 0x12, (int)af_sess->policyauthorization_features);
 
     /* Send GTP-U ICMP Packet */
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
