@@ -1275,6 +1275,7 @@ bool nrf_nnrf_handle_nf_discover(
         /* No Discovery, Try to find different PLMN */
 
         bool rc;
+        bool nf_instance_created = false;
         ogs_sbi_nf_instance_t *nf_instance = NULL;
         ogs_sbi_client_t *client = NULL;
         ogs_sbi_request_t *request = NULL;
@@ -1314,6 +1315,7 @@ bool nrf_nnrf_handle_nf_discover(
                         recvmsg, "Insufficient space", NULL, NULL));
                 goto cleanup;
             }
+            nf_instance_created = true;
             ogs_sbi_nf_instance_set_type(nf_instance, OpenAPI_nf_type_NRF);
 
             /*
@@ -1398,7 +1400,20 @@ bool nrf_nnrf_handle_nf_discover(
         }
 
         client = NF_INSTANCE_CLIENT(nf_instance);
-        ogs_assert(client);
+        if (!client) {
+            /* Client allocation may fail when client_pool is exhausted,
+             * and an existing NRF may lack an instance-level client.
+             * Only remove a placeholder created by this request. */
+            ogs_error("No SBI client available for Home NRF [%s]",
+                    nf_instance->fqdn ? nf_instance->fqdn : "NULL");
+            if (nf_instance_created)
+                ogs_sbi_nf_instance_remove(nf_instance);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    recvmsg, "No SBI client available", NULL, NULL));
+            goto cleanup;
+        }
 
         /*
          * TS29.510
