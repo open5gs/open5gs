@@ -3287,7 +3287,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_packet_filter =
         &ogs_pfcp_tlv_desc_c_tag,
         &ogs_pfcp_tlv_desc_s_tag,
         &ogs_pfcp_tlv_desc_sdf_filter,
-        &ogs_tlv_desc_more8,
+        &ogs_tlv_desc_more15,
         NULL,
     }
 };
@@ -3390,7 +3390,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi =
         &ogs_pfcp_tlv_desc_n6_routing_information,
         &ogs_pfcp_tlv_desc_traffic_endpoint_id,
         &ogs_pfcp_tlv_desc_sdf_filter,
-        &ogs_tlv_desc_more8,
+        &ogs_tlv_desc_more15,
         &ogs_pfcp_tlv_desc_application_id,
         &ogs_pfcp_tlv_desc_ethernet_pdu_session_information,
         &ogs_pfcp_tlv_desc_ethernet_packet_filter,
@@ -3910,7 +3910,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_urr =
         &ogs_pfcp_tlv_desc_number_of_reports,
         &ogs_pfcp_tlv_desc_application_id,
         &ogs_pfcp_tlv_desc_sdf_filter,
-        &ogs_tlv_desc_more8,
+        &ogs_tlv_desc_more15,
         &ogs_pfcp_tlv_desc_user_plane_inactivity_timer,
         NULL,
     }
@@ -4048,7 +4048,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_urr =
         &ogs_pfcp_tlv_desc_number_of_reports,
         &ogs_pfcp_tlv_desc_application_id,
         &ogs_pfcp_tlv_desc_sdf_filter,
-        &ogs_tlv_desc_more8,
+        &ogs_tlv_desc_more15,
         &ogs_pfcp_tlv_desc_user_plane_inactivity_timer,
         NULL,
     }

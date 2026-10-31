@@ -377,7 +377,7 @@ def get_cells(cells):
     if ie_type == 'User Plane IP Resource Information':
         tlv_more = "3"
     if ie_type == 'SDF Filter':
-        tlv_more = "7"
+        tlv_more = "14"  # OGS_MAX_NUM_OF_FLOW_IN_PDR
     if (ie_type == 'Framed-Route' or
         ie_type == 'Framed-IPv6-Route'):
         tlv_more = "7"
