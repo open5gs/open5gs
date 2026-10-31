@@ -3102,6 +3102,29 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             END
             break;
 
+        case OpenAPI_service_name_nudm_uecm:
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    /* Purge from a deregistration that the new
+                     * registration has overtaken */
+                    ogs_error("[%s] Ignore SBI message", amf_ue->supi);
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
         default:
             ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
             ogs_assert_if_reached();
@@ -3273,6 +3296,12 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                             amf_ue, state, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    /* Purge from a deregistration that the new
+                     * registration has overtaken */
+                    ogs_error("[%s] Ignore SBI message", amf_ue->supi);
                     break;
 
                 DEFAULT
