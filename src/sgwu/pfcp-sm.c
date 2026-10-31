@@ -316,6 +316,18 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
     case SGWU_EVT_SXA_NO_HEARTBEAT:
         ogs_warn("No Heartbeat from SGW-C %s",
                 ogs_sockaddr_to_string_static(node->addr_list));
+        /*
+         * Issue #4877
+         *
+         * Unlike the UPF, the sessions are kept here, although
+         * TS 23.007 16.1A.3 requires the SGW-U to delete them.
+         *
+         * The SGW-C keeps its sessions on heartbeat failure. If only
+         * the SGW-U deleted them, the SGW-C would keep using sessions
+         * that no longer exist after the association is set up again.
+         *
+         * This should be done together with the SGW-C.
+         */
         OGS_FSM_TRAN(s, sgwu_pfcp_state_will_associate);
         break;
     default:

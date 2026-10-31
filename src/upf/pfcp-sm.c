@@ -342,6 +342,15 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
     case UPF_EVT_N4_NO_HEARTBEAT:
         ogs_warn("No Heartbeat from SMF %s",
                 ogs_sockaddr_to_string_static(node->addr_list));
+
+        /*
+         * TS 23.527 4.4.3.1: Delete all sessions of the unreachable SMF.
+         *
+         * Otherwise they are removed only when the SMF comes back
+         * with a new Recovery Time Stamp, which may never happen.
+         */
+        pfcp_restoration(node);
+
         OGS_FSM_TRAN(s, upf_pfcp_state_will_associate);
         break;
     default:
