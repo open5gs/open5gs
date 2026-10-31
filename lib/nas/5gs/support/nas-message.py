@@ -667,6 +667,49 @@ f = open(outdir + 'decoder.c', 'w')
 output_header_to_file(f)
 f.write("""#include "ogs-nas-5gs.h"
 
+/*
+ * TS 24.007 11.2.4: An unknown IE is skipped using its IEI and length.
+ * - IEI 0x80-0xFF : Type 1 or Type 2 (one octet, already pulled)
+ * - IEI 0x70-0x7F : TLV-E (two-octet length)
+ * - IEI 0x00-0x6F : TLV (one-octet length)
+ */
+static int ogs_nas_5gs_skip_unknown_ie(uint8_t type, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+
+    if (type >= 0x80)
+        return 0;
+
+    if (type >= 0x70) {
+        uint16_t length = 0;
+
+        if (pkbuf->len < sizeof(length)) {
+           ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+           return OGS_ERROR;
+        }
+
+        memcpy(&length, pkbuf->data, sizeof(length));
+        size = sizeof(length) + be16toh(length);
+    } else {
+        uint8_t length = 0;
+
+        if (pkbuf->len < sizeof(length)) {
+           ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+           return OGS_ERROR;
+        }
+
+        length = *(uint8_t *)pkbuf->data;
+        size = sizeof(length) + length;
+    }
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", size);
+       return OGS_ERROR;
+    }
+
+    return size;
+}
+
 """)
 
 for (k, v) in sorted_msg_list:
@@ -732,7 +775,14 @@ for (k, v) in sorted_msg_list:
 
     if [ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]:
         f.write("""        default:
-            ogs_error("Unknown type(0x%x) or not implemented\\n", type);
+            ogs_warn("Unknown type(0x%x) or not implemented\\n", type);
+            size = ogs_nas_5gs_skip_unknown_ie(type, pkbuf);
+            if (size < 0) {
+               ogs_error("ogs_nas_5gs_skip_unknown_ie() failed");
+               return size;
+            }
+
+            decoded += size;
             break;
         }
     }
