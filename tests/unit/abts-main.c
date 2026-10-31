@@ -57,6 +57,7 @@ abts_suite *test_mme_enb_id(abts_suite *suite);
 abts_suite *test_amf_eir(abts_suite *suite);
 abts_suite *test_amf_registration(abts_suite *suite);
 abts_suite *test_amf_gnb_id(abts_suite *suite);
+abts_suite *test_amf_supi(abts_suite *suite);
 abts_suite *test_eir_config(abts_suite *suite);
 abts_suite *test_ipfw(abts_suite *suite);
 abts_suite *test_pfcp_rule(abts_suite *suite);
@@ -84,6 +85,7 @@ const struct testlist {
     {test_amf_eir},
     {test_amf_registration},
     {test_amf_gnb_id},
+    {test_amf_supi},
     {test_eir_config},
     {test_ipfw},
     {test_pfcp_rule},
