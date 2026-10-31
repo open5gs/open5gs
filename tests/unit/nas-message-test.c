@@ -580,11 +580,36 @@ static void imeisv_conversion_test(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0xa5, output.guard);
 }
 
+static void eps_message_container_length_test(abts_case *tc, void *data)
+{
+    ogs_nas_eps_message_container_t container;
+    ogs_pkbuf_t *pkbuf;
+    int size;
+
+    memset(&container, 0x5a, sizeof(container));
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
+
+    container.length = OGS_NAS_MAX_MESSAGE_CONTAINER_LEN;
+    size = ogs_nas_eps_encode_eps_message_container(pkbuf, &container);
+    ABTS_INT_EQUAL(tc, OGS_NAS_MAX_MESSAGE_CONTAINER_LEN + 1, size);
+
+    /* A length beyond the buffer must be refused, not encoded. */
+    container.length = OGS_NAS_MAX_MESSAGE_CONTAINER_LEN + 1;
+    size = ogs_nas_eps_encode_eps_message_container(pkbuf, &container);
+    ABTS_INT_EQUAL(tc, -1, size);
+
+    ogs_pkbuf_free(pkbuf);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, imeisv_conversion_test, NULL);
+    abts_run_test(suite, eps_message_container_length_test, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test1, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test2, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test3, NULL);

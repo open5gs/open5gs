@@ -531,6 +531,10 @@ for (k, v) in sorted_type_list:
         f.write("{\n")
         f.write("    int size = %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
         f.write("    ogs_nas_%s_t target;\n\n" % v_lower(k))
+        f.write("    if (sizeof(ogs_nas_%s_t) < size) {\n" % v_lower(k))
+        f.write("       ogs_error(\"%s too long [size:%%d]\", (int)size);\n" % v_upper(k))
+        f.write("       return -1;\n")
+        f.write("    }\n\n")
         f.write("    memcpy(&target, %s, sizeof(ogs_nas_%s_t));\n" % (v_lower(k), v_lower(k)))
         if "encode" in type_list[k]:
             f.write("%s" % type_list[k]["encode"])

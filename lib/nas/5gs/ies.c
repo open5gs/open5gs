@@ -79,6 +79,11 @@ int ogs_nas_5gs_encode_additional_information(ogs_pkbuf_t *pkbuf, ogs_nas_additi
     int size = additional_information->length + sizeof(additional_information->length);
     ogs_nas_additional_information_t target;
 
+    if (sizeof(ogs_nas_additional_information_t) < size) {
+       ogs_error("ADDITIONAL_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, additional_information, sizeof(ogs_nas_additional_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -223,6 +228,11 @@ int ogs_nas_5gs_encode_dnn(ogs_pkbuf_t *pkbuf, ogs_nas_dnn_t *dnn)
     int size = dnn->length + sizeof(dnn->length);
     ogs_nas_dnn_t target;
 
+    if (sizeof(ogs_nas_dnn_t) < size) {
+       ogs_error("DNN too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, dnn, sizeof(ogs_nas_dnn_t));
     target.length = ogs_fqdn_build(target.value, dnn->value, dnn->length);
     size = target.length + sizeof(target.length);
@@ -325,6 +335,11 @@ int ogs_nas_5gs_encode_unavailability_information(ogs_pkbuf_t *pkbuf, ogs_nas_un
     int size = unavailability_information->length + sizeof(unavailability_information->length);
     ogs_nas_unavailability_information_t target;
 
+    if (sizeof(ogs_nas_unavailability_information_t) < size) {
+       ogs_error("UNAVAILABILITY_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, unavailability_information, sizeof(ogs_nas_unavailability_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -370,6 +385,11 @@ int ogs_nas_5gs_encode_unavailability_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_
 {
     int size = unavailability_configuration->length + sizeof(unavailability_configuration->length);
     ogs_nas_unavailability_configuration_t target;
+
+    if (sizeof(ogs_nas_unavailability_configuration_t) < size) {
+       ogs_error("UNAVAILABILITY_CONFIGURATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, unavailability_configuration, sizeof(ogs_nas_unavailability_configuration_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -451,6 +471,11 @@ int ogs_nas_5gs_encode_gprs_timer_2(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_2_t *
     int size = gprs_timer_2->length + sizeof(gprs_timer_2->length);
     ogs_nas_gprs_timer_2_t target;
 
+    if (sizeof(ogs_nas_gprs_timer_2_t) < size) {
+       ogs_error("GPRS_TIMER_2 too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, gprs_timer_2, sizeof(ogs_nas_gprs_timer_2_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -496,6 +521,11 @@ int ogs_nas_5gs_encode_gprs_timer_3(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_3_t *
 {
     int size = gprs_timer_3->length + sizeof(gprs_timer_3->length);
     ogs_nas_gprs_timer_3_t target;
+
+    if (sizeof(ogs_nas_gprs_timer_3_t) < size) {
+       ogs_error("GPRS_TIMER_3 too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, gprs_timer_3, sizeof(ogs_nas_gprs_timer_3_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -543,6 +573,11 @@ int ogs_nas_5gs_encode_s_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_s_nssai_t *s_nssai)
     int size = s_nssai->length + sizeof(s_nssai->length);
     ogs_nas_s_nssai_t target;
 
+    if (sizeof(ogs_nas_s_nssai_t) < size) {
+       ogs_error("S_NSSAI too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, s_nssai, sizeof(ogs_nas_s_nssai_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -589,6 +624,11 @@ int ogs_nas_5gs_encode_5gmm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gmm_capabili
     int size = gmm_capability->length + sizeof(gmm_capability->length);
     ogs_nas_5gmm_capability_t target;
 
+    if (sizeof(ogs_nas_5gmm_capability_t) < size) {
+       ogs_error("5GMM_CAPABILITY too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, gmm_capability, sizeof(ogs_nas_5gmm_capability_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -634,6 +674,11 @@ int ogs_nas_5gs_encode_abba(ogs_pkbuf_t *pkbuf, ogs_nas_abba_t *abba)
 {
     int size = abba->length + sizeof(abba->length);
     ogs_nas_abba_t target;
+
+    if (sizeof(ogs_nas_abba_t) < size) {
+       ogs_error("ABBA too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, abba, sizeof(ogs_nas_abba_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -734,6 +779,11 @@ int ogs_nas_5gs_encode_s_nssai_time_validity_information(ogs_pkbuf_t *pkbuf, ogs
     int size = s_nssai_time_validity_information->length + sizeof(s_nssai_time_validity_information->length);
     ogs_nas_s_nssai_time_validity_information_t target;
 
+    if (sizeof(ogs_nas_s_nssai_time_validity_information_t) < size) {
+       ogs_error("S_NSSAI_TIME_VALIDITY_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, s_nssai_time_validity_information, sizeof(ogs_nas_s_nssai_time_validity_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -779,6 +829,11 @@ int ogs_nas_5gs_encode_non_3gpp_path_switching_information(ogs_pkbuf_t *pkbuf, o
 {
     int size = non_3gpp_path_switching_information->length + sizeof(non_3gpp_path_switching_information->length);
     ogs_nas_non_3gpp_path_switching_information_t target;
+
+    if (sizeof(ogs_nas_non_3gpp_path_switching_information_t) < size) {
+       ogs_error("NON_3GPP_PATH_SWITCHING_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, non_3gpp_path_switching_information, sizeof(ogs_nas_non_3gpp_path_switching_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -879,6 +934,11 @@ int ogs_nas_5gs_encode_aun3_indication(ogs_pkbuf_t *pkbuf, ogs_nas_aun3_indicati
     int size = aun3_indication->length + sizeof(aun3_indication->length);
     ogs_nas_aun3_indication_t target;
 
+    if (sizeof(ogs_nas_aun3_indication_t) < size) {
+       ogs_error("AUN3_INDICATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, aun3_indication, sizeof(ogs_nas_aun3_indication_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -924,6 +984,11 @@ int ogs_nas_5gs_encode_feature_authorization_indication(ogs_pkbuf_t *pkbuf, ogs_
 {
     int size = feature_authorization_indication->length + sizeof(feature_authorization_indication->length);
     ogs_nas_feature_authorization_indication_t target;
+
+    if (sizeof(ogs_nas_feature_authorization_indication_t) < size) {
+       ogs_error("FEATURE_AUTHORIZATION_INDICATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, feature_authorization_indication, sizeof(ogs_nas_feature_authorization_indication_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -1003,6 +1068,11 @@ int ogs_nas_5gs_encode_aun3_device_security_key(ogs_pkbuf_t *pkbuf, ogs_nas_aun3
     int size = aun3_device_security_key->length + sizeof(aun3_device_security_key->length);
     ogs_nas_aun3_device_security_key_t target;
 
+    if (sizeof(ogs_nas_aun3_device_security_key_t) < size) {
+       ogs_error("AUN3_DEVICE_SECURITY_KEY too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, aun3_device_security_key, sizeof(ogs_nas_aun3_device_security_key_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1048,6 +1118,11 @@ int ogs_nas_5gs_encode_on_demand_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_on_demand_nss
 {
     int size = on_demand_nssai->length + sizeof(on_demand_nssai->length);
     ogs_nas_on_demand_nssai_t target;
+
+    if (sizeof(ogs_nas_on_demand_nssai_t) < size) {
+       ogs_error("ON_DEMAND_NSSAI too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, on_demand_nssai, sizeof(ogs_nas_on_demand_nssai_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -1095,6 +1170,11 @@ int ogs_nas_5gs_encode_extended_5gmm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_extended_
     int size = extended_gmm_cause->length + sizeof(extended_gmm_cause->length);
     ogs_nas_extended_5gmm_cause_t target;
 
+    if (sizeof(ogs_nas_extended_5gmm_cause_t) < size) {
+       ogs_error("EXTENDED_5GMM_CAUSE too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, extended_gmm_cause, sizeof(ogs_nas_extended_5gmm_cause_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1141,6 +1221,11 @@ int ogs_nas_5gs_encode_access_technology_utilization_control(ogs_pkbuf_t *pkbuf,
     int size = access_technology_utilization_control->length + sizeof(access_technology_utilization_control->length);
     ogs_nas_access_technology_utilization_control_t target;
 
+    if (sizeof(ogs_nas_access_technology_utilization_control_t) < size) {
+       ogs_error("ACCESS_TECHNOLOGY_UTILIZATION_CONTROL too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, access_technology_utilization_control, sizeof(ogs_nas_access_technology_utilization_control_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1186,6 +1271,11 @@ int ogs_nas_5gs_encode_lp_wusps_assistance_information(ogs_pkbuf_t *pkbuf, ogs_n
 {
     int size = lp_wusps_assistance_information->length + sizeof(lp_wusps_assistance_information->length);
     ogs_nas_lp_wusps_assistance_information_t target;
+
+    if (sizeof(ogs_nas_lp_wusps_assistance_information_t) < size) {
+       ogs_error("LP_WUSPS_ASSISTANCE_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, lp_wusps_assistance_information, sizeof(ogs_nas_lp_wusps_assistance_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -1265,6 +1355,11 @@ int ogs_nas_5gs_encode_additional_5g_security_information(ogs_pkbuf_t *pkbuf, og
     int size = additional_security_information->length + sizeof(additional_security_information->length);
     ogs_nas_additional_5g_security_information_t target;
 
+    if (sizeof(ogs_nas_additional_5g_security_information_t) < size) {
+       ogs_error("ADDITIONAL_5G_SECURITY_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, additional_security_information, sizeof(ogs_nas_additional_5g_security_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1310,6 +1405,11 @@ int ogs_nas_5gs_encode_additional_information_requested(ogs_pkbuf_t *pkbuf, ogs_
 {
     int size = additional_information_requested->length + sizeof(additional_information_requested->length);
     ogs_nas_additional_information_requested_t target;
+
+    if (sizeof(ogs_nas_additional_information_requested_t) < size) {
+       ogs_error("ADDITIONAL_INFORMATION_REQUESTED too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, additional_information_requested, sizeof(ogs_nas_additional_information_requested_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -1359,6 +1459,11 @@ int ogs_nas_5gs_encode_allowed_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_al
     int size = allowed_pdu_session_status->length + sizeof(allowed_pdu_session_status->length);
     ogs_nas_allowed_pdu_session_status_t target;
 
+    if (sizeof(ogs_nas_allowed_pdu_session_status_t) < size) {
+       ogs_error("ALLOWED_PDU_SESSION_STATUS too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, allowed_pdu_session_status, sizeof(ogs_nas_allowed_pdu_session_status_t));
     target.psi = htobe16(allowed_pdu_session_status->psi);
 
@@ -1407,6 +1512,11 @@ int ogs_nas_5gs_encode_authentication_failure_parameter(ogs_pkbuf_t *pkbuf, ogs_
     int size = authentication_failure_parameter->length + sizeof(authentication_failure_parameter->length);
     ogs_nas_authentication_failure_parameter_t target;
 
+    if (sizeof(ogs_nas_authentication_failure_parameter_t) < size) {
+       ogs_error("AUTHENTICATION_FAILURE_PARAMETER too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, authentication_failure_parameter, sizeof(ogs_nas_authentication_failure_parameter_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1452,6 +1562,11 @@ int ogs_nas_5gs_encode_authentication_parameter_autn(ogs_pkbuf_t *pkbuf, ogs_nas
 {
     int size = authentication_parameter_autn->length + sizeof(authentication_parameter_autn->length);
     ogs_nas_authentication_parameter_autn_t target;
+
+    if (sizeof(ogs_nas_authentication_parameter_autn_t) < size) {
+       ogs_error("AUTHENTICATION_PARAMETER_AUTN too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, authentication_parameter_autn, sizeof(ogs_nas_authentication_parameter_autn_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -1532,6 +1647,11 @@ int ogs_nas_5gs_encode_authentication_response_parameter(ogs_pkbuf_t *pkbuf, ogs
 {
     int size = authentication_response_parameter->length + sizeof(authentication_response_parameter->length);
     ogs_nas_authentication_response_parameter_t target;
+
+    if (sizeof(ogs_nas_authentication_response_parameter_t) < size) {
+       ogs_error("AUTHENTICATION_RESPONSE_PARAMETER too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, authentication_response_parameter, sizeof(ogs_nas_authentication_response_parameter_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -1717,6 +1837,11 @@ int ogs_nas_5gs_encode_daylight_saving_time(ogs_pkbuf_t *pkbuf, ogs_nas_daylight
     int size = daylight_saving_time->length + sizeof(daylight_saving_time->length);
     ogs_nas_daylight_saving_time_t target;
 
+    if (sizeof(ogs_nas_daylight_saving_time_t) < size) {
+       ogs_error("DAYLIGHT_SAVING_TIME too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, daylight_saving_time, sizeof(ogs_nas_daylight_saving_time_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1831,6 +1956,11 @@ int ogs_nas_5gs_encode_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_emergen
     int size = emergency_number_list->length + sizeof(emergency_number_list->length);
     ogs_nas_emergency_number_list_t target;
 
+    if (sizeof(ogs_nas_emergency_number_list_t) < size) {
+       ogs_error("EMERGENCY_NUMBER_LIST too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, emergency_number_list, sizeof(ogs_nas_emergency_number_list_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1876,6 +2006,11 @@ int ogs_nas_5gs_encode_eps_bearer_context_status(ogs_pkbuf_t *pkbuf, ogs_nas_eps
 {
     int size = eps_bearer_context_status->length + sizeof(eps_bearer_context_status->length);
     ogs_nas_eps_bearer_context_status_t target;
+
+    if (sizeof(ogs_nas_eps_bearer_context_status_t) < size) {
+       ogs_error("EPS_BEARER_CONTEXT_STATUS too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, eps_bearer_context_status, sizeof(ogs_nas_eps_bearer_context_status_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -2063,6 +2198,11 @@ int ogs_nas_5gs_encode_extended_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_exten
     int size = extended_drx_parameters->length + sizeof(extended_drx_parameters->length);
     ogs_nas_extended_drx_parameters_t target;
 
+    if (sizeof(ogs_nas_extended_drx_parameters_t) < size) {
+       ogs_error("EXTENDED_DRX_PARAMETERS too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, extended_drx_parameters, sizeof(ogs_nas_extended_drx_parameters_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -2193,6 +2333,11 @@ int ogs_nas_5gs_encode_5gs_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_drx_pa
 {
     int size = drx_parameters->length + sizeof(drx_parameters->length);
     ogs_nas_5gs_drx_parameters_t target;
+
+    if (sizeof(ogs_nas_5gs_drx_parameters_t) < size) {
+       ogs_error("5GS_DRX_PARAMETERS too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, drx_parameters, sizeof(ogs_nas_5gs_drx_parameters_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -2391,6 +2536,11 @@ int ogs_nas_5gs_encode_mapped_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_mapped_nssai_t *
     int size = mapped_nssai->length + sizeof(mapped_nssai->length);
     ogs_nas_mapped_nssai_t target;
 
+    if (sizeof(ogs_nas_mapped_nssai_t) < size) {
+       ogs_error("MAPPED_NSSAI too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, mapped_nssai, sizeof(ogs_nas_mapped_nssai_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -2436,6 +2586,11 @@ int ogs_nas_5gs_encode_mobile_station_classmark_2(ogs_pkbuf_t *pkbuf, ogs_nas_mo
 {
     int size = mobile_station_classmark_2->length + sizeof(mobile_station_classmark_2->length);
     ogs_nas_mobile_station_classmark_2_t target;
+
+    if (sizeof(ogs_nas_mobile_station_classmark_2_t) < size) {
+       ogs_error("MOBILE_STATION_CLASSMARK_2 too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, mobile_station_classmark_2, sizeof(ogs_nas_mobile_station_classmark_2_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -2602,6 +2757,11 @@ int ogs_nas_5gs_encode_network_name(ogs_pkbuf_t *pkbuf, ogs_nas_network_name_t *
     int size = network_name->length + sizeof(network_name->length);
     ogs_nas_network_name_t target;
 
+    if (sizeof(ogs_nas_network_name_t) < size) {
+       ogs_error("NETWORK_NAME too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, network_name, sizeof(ogs_nas_network_name_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -2711,6 +2871,11 @@ int ogs_nas_5gs_encode_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_t *nssai)
 {
     int size = nssai->length + sizeof(nssai->length);
     ogs_nas_nssai_t target;
+
+    if (sizeof(ogs_nas_nssai_t) < size) {
+       ogs_error("NSSAI too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, nssai, sizeof(ogs_nas_nssai_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -3017,6 +3182,11 @@ int ogs_nas_5gs_encode_pdu_session_reactivation_result(ogs_pkbuf_t *pkbuf, ogs_n
     int size = pdu_session_reactivation_result->length + sizeof(pdu_session_reactivation_result->length);
     ogs_nas_pdu_session_reactivation_result_t target;
 
+    if (sizeof(ogs_nas_pdu_session_reactivation_result_t) < size) {
+       ogs_error("PDU_SESSION_REACTIVATION_RESULT too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, pdu_session_reactivation_result, sizeof(ogs_nas_pdu_session_reactivation_result_t));
     target.psi = htobe16(pdu_session_reactivation_result->psi);
 
@@ -3120,6 +3290,11 @@ int ogs_nas_5gs_encode_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_sessio
     int size = pdu_session_status->length + sizeof(pdu_session_status->length);
     ogs_nas_pdu_session_status_t target;
 
+    if (sizeof(ogs_nas_pdu_session_status_t) < size) {
+       ogs_error("PDU_SESSION_STATUS too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, pdu_session_status, sizeof(ogs_nas_pdu_session_status_t));
     target.psi = htobe16(pdu_session_status->psi);
 
@@ -3168,6 +3343,11 @@ int ogs_nas_5gs_encode_plmn_list(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_list_t *plmn_l
     int size = plmn_list->length + sizeof(plmn_list->length);
     ogs_nas_plmn_list_t target;
 
+    if (sizeof(ogs_nas_plmn_list_t) < size) {
+       ogs_error("PLMN_LIST too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, plmn_list, sizeof(ogs_nas_plmn_list_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -3213,6 +3393,11 @@ int ogs_nas_5gs_encode_rejected_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_rejected_nssai
 {
     int size = rejected_nssai->length + sizeof(rejected_nssai->length);
     ogs_nas_rejected_nssai_t target;
+
+    if (sizeof(ogs_nas_rejected_nssai_t) < size) {
+       ogs_error("REJECTED_NSSAI too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, rejected_nssai, sizeof(ogs_nas_rejected_nssai_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -3324,6 +3509,11 @@ int ogs_nas_5gs_encode_s1_ue_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_s1_u
     int size = s1_ue_network_capability->length + sizeof(s1_ue_network_capability->length);
     ogs_nas_s1_ue_network_capability_t target;
 
+    if (sizeof(ogs_nas_s1_ue_network_capability_t) < size) {
+       ogs_error("S1_UE_NETWORK_CAPABILITY too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, s1_ue_network_capability, sizeof(ogs_nas_s1_ue_network_capability_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -3369,6 +3559,11 @@ int ogs_nas_5gs_encode_s1_ue_security_capability(ogs_pkbuf_t *pkbuf, ogs_nas_s1_
 {
     int size = s1_ue_security_capability->length + sizeof(s1_ue_security_capability->length);
     ogs_nas_s1_ue_security_capability_t target;
+
+    if (sizeof(ogs_nas_s1_ue_security_capability_t) < size) {
+       ogs_error("S1_UE_SECURITY_CAPABILITY too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, s1_ue_security_capability, sizeof(ogs_nas_s1_ue_security_capability_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -3416,6 +3611,11 @@ int ogs_nas_5gs_encode_service_area_list(ogs_pkbuf_t *pkbuf, ogs_nas_service_are
     int size = service_area_list->length + sizeof(service_area_list->length);
     ogs_nas_service_area_list_t target;
 
+    if (sizeof(ogs_nas_service_area_list_t) < size) {
+       ogs_error("SERVICE_AREA_LIST too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, service_area_list, sizeof(ogs_nas_service_area_list_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -3461,6 +3661,11 @@ int ogs_nas_5gs_encode_5gs_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_5
 {
     int size = network_feature_support->length + sizeof(network_feature_support->length);
     ogs_nas_5gs_network_feature_support_t target;
+
+    if (sizeof(ogs_nas_5gs_network_feature_support_t) < size) {
+       ogs_error("5GS_NETWORK_FEATURE_SUPPORT too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, network_feature_support, sizeof(ogs_nas_5gs_network_feature_support_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -3593,6 +3798,11 @@ int ogs_nas_5gs_encode_supported_codec_list(ogs_pkbuf_t *pkbuf, ogs_nas_supporte
     int size = supported_codec_list->length + sizeof(supported_codec_list->length);
     ogs_nas_supported_codec_list_t target;
 
+    if (sizeof(ogs_nas_supported_codec_list_t) < size) {
+       ogs_error("SUPPORTED_CODEC_LIST too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, supported_codec_list, sizeof(ogs_nas_supported_codec_list_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -3707,6 +3917,11 @@ int ogs_nas_5gs_encode_ue_security_capability(ogs_pkbuf_t *pkbuf, ogs_nas_ue_sec
     int size = ue_security_capability->length + sizeof(ue_security_capability->length);
     ogs_nas_ue_security_capability_t target;
 
+    if (sizeof(ogs_nas_ue_security_capability_t) < size) {
+       ogs_error("UE_SECURITY_CAPABILITY too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, ue_security_capability, sizeof(ogs_nas_ue_security_capability_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -3753,6 +3968,11 @@ int ogs_nas_5gs_encode_ue_usage_setting(ogs_pkbuf_t *pkbuf, ogs_nas_ue_usage_set
     int size = ue_usage_setting->length + sizeof(ue_usage_setting->length);
     ogs_nas_ue_usage_setting_t target;
 
+    if (sizeof(ogs_nas_ue_usage_setting_t) < size) {
+       ogs_error("UE_USAGE_SETTING too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, ue_usage_setting, sizeof(ogs_nas_ue_usage_setting_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -3798,6 +4018,11 @@ int ogs_nas_5gs_encode_ue_status(ogs_pkbuf_t *pkbuf, ogs_nas_ue_status_t *ue_sta
 {
     int size = ue_status->length + sizeof(ue_status->length);
     ogs_nas_ue_status_t target;
+
+    if (sizeof(ogs_nas_ue_status_t) < size) {
+       ogs_error("UE_STATUS too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, ue_status, sizeof(ogs_nas_ue_status_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -3847,6 +4072,11 @@ int ogs_nas_5gs_encode_uplink_data_status(ogs_pkbuf_t *pkbuf, ogs_nas_uplink_dat
     int size = uplink_data_status->length + sizeof(uplink_data_status->length);
     ogs_nas_uplink_data_status_t target;
 
+    if (sizeof(ogs_nas_uplink_data_status_t) < size) {
+       ogs_error("UPLINK_DATA_STATUS too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, uplink_data_status, sizeof(ogs_nas_uplink_data_status_t));
     target.psi = htobe16(uplink_data_status->psi);
 
@@ -3895,6 +4125,11 @@ int ogs_nas_5gs_encode_5gs_registration_result(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_r
     int size = registration_result->length + sizeof(registration_result->length);
     ogs_nas_5gs_registration_result_t target;
 
+    if (sizeof(ogs_nas_5gs_registration_result_t) < size) {
+       ogs_error("5GS_REGISTRATION_RESULT too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, registration_result, sizeof(ogs_nas_5gs_registration_result_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -3940,6 +4175,11 @@ int ogs_nas_5gs_encode_ue_radio_capability_id(ogs_pkbuf_t *pkbuf, ogs_nas_ue_rad
 {
     int size = ue_radio_capability_id->length + sizeof(ue_radio_capability_id->length);
     ogs_nas_ue_radio_capability_id_t target;
+
+    if (sizeof(ogs_nas_ue_radio_capability_id_t) < size) {
+       ogs_error("UE_RADIO_CAPABILITY_ID too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, ue_radio_capability_id, sizeof(ogs_nas_ue_radio_capability_id_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -4053,6 +4293,11 @@ int ogs_nas_5gs_encode_truncated_5g_s_tmsi_configuration(ogs_pkbuf_t *pkbuf, ogs
     int size = truncated_s_tmsi_configuration->length + sizeof(truncated_s_tmsi_configuration->length);
     ogs_nas_truncated_5g_s_tmsi_configuration_t target;
 
+    if (sizeof(ogs_nas_truncated_5g_s_tmsi_configuration_t) < size) {
+       ogs_error("TRUNCATED_5G_S_TMSI_CONFIGURATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, truncated_s_tmsi_configuration, sizeof(ogs_nas_truncated_5g_s_tmsi_configuration_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4098,6 +4343,11 @@ int ogs_nas_5gs_encode_wus_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_wu
 {
     int size = wus_assistance_information->length + sizeof(wus_assistance_information->length);
     ogs_nas_wus_assistance_information_t target;
+
+    if (sizeof(ogs_nas_wus_assistance_information_t) < size) {
+       ogs_error("WUS_ASSISTANCE_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, wus_assistance_information, sizeof(ogs_nas_wus_assistance_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -4177,6 +4427,11 @@ int ogs_nas_5gs_encode_nb_n1_mode_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_nb_
     int size = nb_n1_mode_drx_parameters->length + sizeof(nb_n1_mode_drx_parameters->length);
     ogs_nas_nb_n1_mode_drx_parameters_t target;
 
+    if (sizeof(ogs_nas_nb_n1_mode_drx_parameters_t) < size) {
+       ogs_error("NB_N1_MODE_DRX_PARAMETERS too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, nb_n1_mode_drx_parameters, sizeof(ogs_nas_nb_n1_mode_drx_parameters_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4255,6 +4510,11 @@ int ogs_nas_5gs_encode_extended_rejected_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_exten
     int size = extended_rejected_nssai->length + sizeof(extended_rejected_nssai->length);
     ogs_nas_extended_rejected_nssai_t target;
 
+    if (sizeof(ogs_nas_extended_rejected_nssai_t) < size) {
+       ogs_error("EXTENDED_REJECTED_NSSAI too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, extended_rejected_nssai, sizeof(ogs_nas_extended_rejected_nssai_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4300,6 +4560,11 @@ int ogs_nas_5gs_encode_ue_request_type(ogs_pkbuf_t *pkbuf, ogs_nas_ue_request_ty
 {
     int size = ue_request_type->length + sizeof(ue_request_type->length);
     ogs_nas_ue_request_type_t target;
+
+    if (sizeof(ogs_nas_ue_request_type_t) < size) {
+       ogs_error("UE_REQUEST_TYPE too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, ue_request_type, sizeof(ogs_nas_ue_request_type_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -4347,6 +4612,11 @@ int ogs_nas_5gs_encode_paging_restriction(ogs_pkbuf_t *pkbuf, ogs_nas_paging_res
     int size = paging_restriction->length + sizeof(paging_restriction->length);
     ogs_nas_paging_restriction_t target;
 
+    if (sizeof(ogs_nas_paging_restriction_t) < size) {
+       ogs_error("PAGING_RESTRICTION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, paging_restriction, sizeof(ogs_nas_paging_restriction_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4392,6 +4662,11 @@ int ogs_nas_5gs_encode_nid(ogs_pkbuf_t *pkbuf, ogs_nas_nid_t *nid)
 {
     int size = nid->length + sizeof(nid->length);
     ogs_nas_nid_t target;
+
+    if (sizeof(ogs_nas_nid_t) < size) {
+       ogs_error("NID too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, nid, sizeof(ogs_nas_nid_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -4477,6 +4752,11 @@ int ogs_nas_5gs_encode_peips_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_
     int size = peips_assistance_information->length + sizeof(peips_assistance_information->length);
     ogs_nas_peips_assistance_information_t target;
 
+    if (sizeof(ogs_nas_peips_assistance_information_t) < size) {
+       ogs_error("PEIPS_ASSISTANCE_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, peips_assistance_information, sizeof(ogs_nas_peips_assistance_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4522,6 +4802,11 @@ int ogs_nas_5gs_encode_5gs_additional_request_result(ogs_pkbuf_t *pkbuf, ogs_nas
 {
     int size = additional_request_result->length + sizeof(additional_request_result->length);
     ogs_nas_5gs_additional_request_result_t target;
+
+    if (sizeof(ogs_nas_5gs_additional_request_result_t) < size) {
+       ogs_error("5GS_ADDITIONAL_REQUEST_RESULT too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, additional_request_result, sizeof(ogs_nas_5gs_additional_request_result_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -4622,6 +4907,11 @@ int ogs_nas_5gs_encode_list_of_plmns_to_be_used_in_disaster_condition(ogs_pkbuf_
     int size = list_of_plmns_to_be_used_in_disaster_condition->length + sizeof(list_of_plmns_to_be_used_in_disaster_condition->length);
     ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t target;
 
+    if (sizeof(ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t) < size) {
+       ogs_error("LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, list_of_plmns_to_be_used_in_disaster_condition, sizeof(ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4668,6 +4958,11 @@ int ogs_nas_5gs_encode_registration_wait_range(ogs_pkbuf_t *pkbuf, ogs_nas_regis
     int size = registration_wait_range->length + sizeof(registration_wait_range->length);
     ogs_nas_registration_wait_range_t target;
 
+    if (sizeof(ogs_nas_registration_wait_range_t) < size) {
+       ogs_error("REGISTRATION_WAIT_RANGE too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, registration_wait_range, sizeof(ogs_nas_registration_wait_range_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4713,6 +5008,11 @@ int ogs_nas_5gs_encode_plmn_identity(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_identity_t
 {
     int size = plmn_identity->length + sizeof(plmn_identity->length);
     ogs_nas_plmn_identity_t target;
+
+    if (sizeof(ogs_nas_plmn_identity_t) < size) {
+       ogs_error("PLMN_IDENTITY too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, plmn_identity, sizeof(ogs_nas_plmn_identity_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -4866,6 +5166,11 @@ int ogs_nas_5gs_encode_5gs_tracking_area_identity_list(ogs_pkbuf_t *pkbuf, ogs_n
     int size = tracking_area_identity_list->length + sizeof(tracking_area_identity_list->length);
     ogs_nas_5gs_tracking_area_identity_list_t target;
 
+    if (sizeof(ogs_nas_5gs_tracking_area_identity_list_t) < size) {
+       ogs_error("5GS_TRACKING_AREA_IDENTITY_LIST too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, tracking_area_identity_list, sizeof(ogs_nas_5gs_tracking_area_identity_list_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4944,6 +5249,11 @@ int ogs_nas_5gs_encode_snpn_list(ogs_pkbuf_t *pkbuf, ogs_nas_snpn_list_t *snpn_l
     int size = snpn_list->length + sizeof(snpn_list->length);
     ogs_nas_snpn_list_t target;
 
+    if (sizeof(ogs_nas_snpn_list_t) < size) {
+       ogs_error("SNPN_LIST too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, snpn_list, sizeof(ogs_nas_snpn_list_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -4989,6 +5299,11 @@ int ogs_nas_5gs_encode_n3iwf_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_n3iwf_identi
 {
     int size = n3iwf_identifier->length + sizeof(n3iwf_identifier->length);
     ogs_nas_n3iwf_identifier_t target;
+
+    if (sizeof(ogs_nas_n3iwf_identifier_t) < size) {
+       ogs_error("N3IWF_IDENTIFIER too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, n3iwf_identifier, sizeof(ogs_nas_n3iwf_identifier_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -5036,6 +5351,11 @@ int ogs_nas_5gs_encode_tnan_information(ogs_pkbuf_t *pkbuf, ogs_nas_tnan_informa
     int size = tnan_information->length + sizeof(tnan_information->length);
     ogs_nas_tnan_information_t target;
 
+    if (sizeof(ogs_nas_tnan_information_t) < size) {
+       ogs_error("TNAN_INFORMATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, tnan_information, sizeof(ogs_nas_tnan_information_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -5081,6 +5401,11 @@ int ogs_nas_5gs_encode_ran_timing_synchronization(ogs_pkbuf_t *pkbuf, ogs_nas_ra
 {
     int size = ran_timing_synchronization->length + sizeof(ran_timing_synchronization->length);
     ogs_nas_ran_timing_synchronization_t target;
+
+    if (sizeof(ogs_nas_ran_timing_synchronization_t) < size) {
+       ogs_error("RAN_TIMING_SYNCHRONIZATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, ran_timing_synchronization, sizeof(ogs_nas_ran_timing_synchronization_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -5181,6 +5506,11 @@ int ogs_nas_5gs_encode_alternative_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_alternative
     int size = alternative_nssai->length + sizeof(alternative_nssai->length);
     ogs_nas_alternative_nssai_t target;
 
+    if (sizeof(ogs_nas_alternative_nssai_t) < size) {
+       ogs_error("ALTERNATIVE_NSSAI too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, alternative_nssai, sizeof(ogs_nas_alternative_nssai_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -5280,6 +5610,11 @@ int ogs_nas_5gs_encode_non_3gpp_access_path_switching_indication(ogs_pkbuf_t *pk
     int size = non_3gpp_access_path_switching_indication->length + sizeof(non_3gpp_access_path_switching_indication->length);
     ogs_nas_non_3gpp_access_path_switching_indication_t target;
 
+    if (sizeof(ogs_nas_non_3gpp_access_path_switching_indication_t) < size) {
+       ogs_error("NON_3GPP_ACCESS_PATH_SWITCHING_INDICATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, non_3gpp_access_path_switching_indication, sizeof(ogs_nas_non_3gpp_access_path_switching_indication_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -5325,6 +5660,11 @@ int ogs_nas_5gs_encode_5gs_update_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_update_ty
 {
     int size = update_type->length + sizeof(update_type->length);
     ogs_nas_5gs_update_type_t target;
+
+    if (sizeof(ogs_nas_5gs_update_type_t) < size) {
+       ogs_error("5GS_UPDATE_TYPE too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, update_type, sizeof(ogs_nas_5gs_update_type_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -5372,6 +5712,11 @@ int ogs_nas_5gs_encode_5gsm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_capabili
     int size = gsm_capability->length + sizeof(gsm_capability->length);
     ogs_nas_5gsm_capability_t target;
 
+    if (sizeof(ogs_nas_5gsm_capability_t) < size) {
+       ogs_error("5GSM_CAPABILITY too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, gsm_capability, sizeof(ogs_nas_5gsm_capability_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -5417,6 +5762,11 @@ int ogs_nas_5gs_encode_pdu_address(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_address_t *pd
 {
     int size = pdu_address->length + sizeof(pdu_address->length);
     ogs_nas_pdu_address_t target;
+
+    if (sizeof(ogs_nas_pdu_address_t) < size) {
+       ogs_error("PDU_ADDRESS too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, pdu_address, sizeof(ogs_nas_pdu_address_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -5611,6 +5961,11 @@ int ogs_nas_5gs_encode_session_ambr(ogs_pkbuf_t *pkbuf, ogs_nas_session_ambr_t *
     int size = session_ambr->length + sizeof(session_ambr->length);
     ogs_nas_session_ambr_t target;
 
+    if (sizeof(ogs_nas_session_ambr_t) < size) {
+       ogs_error("SESSION_AMBR too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, session_ambr, sizeof(ogs_nas_session_ambr_t));
     target.downlink.value = htobe16(session_ambr->downlink.value);
     target.uplink.value = htobe16(session_ambr->uplink.value);
@@ -5659,6 +6014,11 @@ int ogs_nas_5gs_encode_sm_pdu_dn_request_container(ogs_pkbuf_t *pkbuf, ogs_nas_s
 {
     int size = sm_pdu_dn_request_container->length + sizeof(sm_pdu_dn_request_container->length);
     ogs_nas_sm_pdu_dn_request_container_t target;
+
+    if (sizeof(ogs_nas_sm_pdu_dn_request_container_t) < size) {
+       ogs_error("SM_PDU_DN_REQUEST_CONTAINER too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, sm_pdu_dn_request_container, sizeof(ogs_nas_sm_pdu_dn_request_container_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -5738,6 +6098,11 @@ int ogs_nas_5gs_encode_re_attempt_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_re_attem
     int size = re_attempt_indicator->length + sizeof(re_attempt_indicator->length);
     ogs_nas_re_attempt_indicator_t target;
 
+    if (sizeof(ogs_nas_re_attempt_indicator_t) < size) {
+       ogs_error("RE_ATTEMPT_INDICATOR too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, re_attempt_indicator, sizeof(ogs_nas_re_attempt_indicator_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -5783,6 +6148,11 @@ int ogs_nas_5gs_encode_5gsm_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_
 {
     int size = gsm_network_feature_support->length + sizeof(gsm_network_feature_support->length);
     ogs_nas_5gsm_network_feature_support_t target;
+
+    if (sizeof(ogs_nas_5gsm_network_feature_support_t) < size) {
+       ogs_error("5GSM_NETWORK_FEATURE_SUPPORT too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, gsm_network_feature_support, sizeof(ogs_nas_5gsm_network_feature_support_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -5864,6 +6234,11 @@ int ogs_nas_5gs_encode_serving_plmn_rate_control(ogs_pkbuf_t *pkbuf, ogs_nas_ser
     int size = serving_plmn_rate_control->length + sizeof(serving_plmn_rate_control->length);
     ogs_nas_serving_plmn_rate_control_t target;
 
+    if (sizeof(ogs_nas_serving_plmn_rate_control_t) < size) {
+       ogs_error("SERVING_PLMN_RATE_CONTROL too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, serving_plmn_rate_control, sizeof(ogs_nas_serving_plmn_rate_control_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -5909,6 +6284,11 @@ int ogs_nas_5gs_encode_5gsm_congestion_re_attempt_indicator(ogs_pkbuf_t *pkbuf, 
 {
     int size = gsm_congestion_re_attempt_indicator->length + sizeof(gsm_congestion_re_attempt_indicator->length);
     ogs_nas_5gsm_congestion_re_attempt_indicator_t target;
+
+    if (sizeof(ogs_nas_5gsm_congestion_re_attempt_indicator_t) < size) {
+       ogs_error("5GSM_CONGESTION_RE_ATTEMPT_INDICATOR too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, gsm_congestion_re_attempt_indicator, sizeof(ogs_nas_5gsm_congestion_re_attempt_indicator_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -6041,6 +6421,11 @@ int ogs_nas_5gs_encode_ip_header_compression_configuration(ogs_pkbuf_t *pkbuf, o
     int size = ip_header_compression_configuration->length + sizeof(ip_header_compression_configuration->length);
     ogs_nas_ip_header_compression_configuration_t target;
 
+    if (sizeof(ogs_nas_ip_header_compression_configuration_t) < size) {
+       ogs_error("IP_HEADER_COMPRESSION_CONFIGURATION too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, ip_header_compression_configuration, sizeof(ogs_nas_ip_header_compression_configuration_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -6088,6 +6473,11 @@ int ogs_nas_5gs_encode_header_compression_configuration(ogs_pkbuf_t *pkbuf, ogs_
 {
     int size = header_compression_configuration->length + sizeof(header_compression_configuration->length);
     ogs_nas_header_compression_configuration_t target;
+
+    if (sizeof(ogs_nas_header_compression_configuration_t) < size) {
+       ogs_error("HEADER_COMPRESSION_CONFIGURATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, header_compression_configuration, sizeof(ogs_nas_header_compression_configuration_t));
     target.max_cid = htobe16(header_compression_configuration->max_cid);
@@ -6137,6 +6527,11 @@ int ogs_nas_5gs_encode_ds_tt_ethernet_port_mac_address(ogs_pkbuf_t *pkbuf, ogs_n
     int size = ds_tt_ethernet_port_mac_address->length + sizeof(ds_tt_ethernet_port_mac_address->length);
     ogs_nas_ds_tt_ethernet_port_mac_address_t target;
 
+    if (sizeof(ogs_nas_ds_tt_ethernet_port_mac_address_t) < size) {
+       ogs_error("DS_TT_ETHERNET_PORT_MAC_ADDRESS too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, ds_tt_ethernet_port_mac_address, sizeof(ogs_nas_ds_tt_ethernet_port_mac_address_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -6182,6 +6577,11 @@ int ogs_nas_5gs_encode_ue_ds_tt_residence_time(ogs_pkbuf_t *pkbuf, ogs_nas_ue_ds
 {
     int size = ue_ds_tt_residence_time->length + sizeof(ue_ds_tt_residence_time->length);
     ogs_nas_ue_ds_tt_residence_time_t target;
+
+    if (sizeof(ogs_nas_ue_ds_tt_residence_time_t) < size) {
+       ogs_error("UE_DS_TT_RESIDENCE_TIME too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, ue_ds_tt_residence_time, sizeof(ogs_nas_ue_ds_tt_residence_time_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -6281,6 +6681,11 @@ int ogs_nas_5gs_encode_ethernet_header_compression_configuration(ogs_pkbuf_t *pk
 {
     int size = ethernet_header_compression_configuration->length + sizeof(ethernet_header_compression_configuration->length);
     ogs_nas_ethernet_header_compression_configuration_t target;
+
+    if (sizeof(ogs_nas_ethernet_header_compression_configuration_t) < size) {
+       ogs_error("ETHERNET_HEADER_COMPRESSION_CONFIGURATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, ethernet_header_compression_configuration, sizeof(ogs_nas_ethernet_header_compression_configuration_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -6466,6 +6871,11 @@ int ogs_nas_5gs_encode_pdu_session_pair_id(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_sessi
     int size = pdu_session_pair_id->length + sizeof(pdu_session_pair_id->length);
     ogs_nas_pdu_session_pair_id_t target;
 
+    if (sizeof(ogs_nas_pdu_session_pair_id_t) < size) {
+       ogs_error("PDU_SESSION_PAIR_ID too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, pdu_session_pair_id, sizeof(ogs_nas_pdu_session_pair_id_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -6511,6 +6921,11 @@ int ogs_nas_5gs_encode_rsn(ogs_pkbuf_t *pkbuf, ogs_nas_rsn_t *rsn)
 {
     int size = rsn->length + sizeof(rsn->length);
     ogs_nas_rsn_t target;
+
+    if (sizeof(ogs_nas_rsn_t) < size) {
+       ogs_error("RSN too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, rsn, sizeof(ogs_nas_rsn_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -6664,6 +7079,11 @@ int ogs_nas_5gs_encode_ursp_rule_enforcement_reports(ogs_pkbuf_t *pkbuf, ogs_nas
     int size = ursp_rule_enforcement_reports->length + sizeof(ursp_rule_enforcement_reports->length);
     ogs_nas_ursp_rule_enforcement_reports_t target;
 
+    if (sizeof(ogs_nas_ursp_rule_enforcement_reports_t) < size) {
+       ogs_error("URSP_RULE_ENFORCEMENT_REPORTS too long [size:%d]", (int)size);
+       return -1;
+    }
+
     memcpy(&target, ursp_rule_enforcement_reports, sizeof(ogs_nas_ursp_rule_enforcement_reports_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -6794,6 +7214,11 @@ int ogs_nas_5gs_encode_ecn_marking_for_l4s_indication(ogs_pkbuf_t *pkbuf, ogs_na
 {
     int size = ecn_marking_for_l4s_indication->length + sizeof(ecn_marking_for_l4s_indication->length);
     ogs_nas_ecn_marking_for_l4s_indication_t target;
+
+    if (sizeof(ogs_nas_ecn_marking_for_l4s_indication_t) < size) {
+       ogs_error("ECN_MARKING_FOR_L4S_INDICATION too long [size:%d]", (int)size);
+       return -1;
+    }
 
     memcpy(&target, ecn_marking_for_l4s_indication, sizeof(ogs_nas_ecn_marking_for_l4s_indication_t));
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
