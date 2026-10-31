@@ -398,8 +398,8 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
                                     }
                                     spt_index++;
                                 }
-                                ims_data->ifc->trigger_point.num_of_spt =
-                                    spt_index;
+                                ims_data->ifc[ifc_index]
+                                    .trigger_point.num_of_spt = spt_index;
                             }
                         }
                     }
