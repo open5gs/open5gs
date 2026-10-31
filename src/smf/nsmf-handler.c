@@ -632,6 +632,9 @@ bool smf_nsmf_handle_update_sm_context(
 
     memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
 
+    if (SmContextUpdateData->rat_type)
+        sess->sbi_rat_type = SmContextUpdateData->rat_type;
+
     /* Remove N1 SM Message From UE */
     if (sess->n1SmBufFromUe) {
         ogs_pkbuf_free(sess->n1SmBufFromUe);

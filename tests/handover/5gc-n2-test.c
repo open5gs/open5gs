@@ -489,6 +489,8 @@ static void direct_complete_func(abts_case *tc, void *data)
 
     test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000002");
     ogs_assert(test_ue);
+    test_ue->redcap_indication = OGS_POINTER_TO_UINT(data) == 1;
+    test_ue->redcap_indication_in_handover = OGS_POINTER_TO_UINT(data) == 2;
 
     test_ue->nr_cgi.cell_id = 0x40001;
 
@@ -3085,6 +3087,9 @@ abts_suite *test_5gc_n2(abts_suite *suite)
 
     abts_run_test(suite, failure_func, NULL);
     abts_run_test(suite, direct_complete_func, NULL);
+    /* Retain RedCap across NR handover, or learn it at the target. */
+    abts_run_test(suite, direct_complete_func, OGS_UINT_TO_POINTER(1));
+    abts_run_test(suite, direct_complete_func, OGS_UINT_TO_POINTER(2));
     abts_run_test(suite, direct_cancel_func, NULL);
     abts_run_test(suite, indirect_complete_func, NULL);
     abts_run_test(suite, indirect_cancel_func, NULL);

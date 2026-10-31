@@ -314,6 +314,8 @@ typedef struct test_ue_s {
 
     ogs_eps_tai_t e_tai;
     ogs_e_cgi_t e_cgi;
+    bool redcap_indication;
+    bool redcap_indication_in_handover;
     ogs_5gs_tai_t nr_tai;
     ogs_nr_cgi_t nr_cgi;
 
