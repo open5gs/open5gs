@@ -1057,7 +1057,8 @@ int upf_gtp_open(void)
     /* Open Tun interface */
     ogs_list_for_each(&ogs_pfcp_self()->dev_list, dev) {
         dev->is_tap = strstr(dev->ifname, "tap");
-        dev->fd = ogs_tun_open(dev->ifname, OGS_MAX_IFNAME_LEN, dev->is_tap);
+        dev->fd = ogs_tun_open(dev->ifname, OGS_MAX_IFNAME_LEN, dev->is_tap,
+                ogs_global_conf()->parameter.tun_backpressure);
         if (dev->fd == INVALID_SOCKET) {
             ogs_error("tun_open(dev:%s) failed", dev->ifname);
             return OGS_ERROR;

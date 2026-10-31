@@ -22,7 +22,7 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_sock_domain
 
-ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap)
+ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap, int backpressure)
 {
     ogs_error("Not implemented");
     ogs_assert_if_reached();

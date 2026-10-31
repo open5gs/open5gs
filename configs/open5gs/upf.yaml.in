@@ -7,6 +7,10 @@ global:
   max:
     ue: 1024  # The number of UE can be increased depending on memory size.
 #    peer: 64
+#  parameter:
+#    tun_backpressure: true  # Set IFF_BACKPRESSURE on the TUN device
+#                            # (Linux 7.3+), can reduce throughput with
+#                            # many parallel senders
 
 upf:
   pfcp:

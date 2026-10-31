@@ -84,6 +84,8 @@ typedef struct ogs_global_conf_s {
 
         int no_pfcp_rr_select;
         int no_time_zone_information;
+
+        int tun_backpressure;
     } parameter;
 
     struct {
