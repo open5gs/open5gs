@@ -812,6 +812,13 @@ static uint8_t *tlv_get_element_desc(ogs_tlv_t *tlv, uint8_t *blk,
     tlv_tag_pos = 0; /* All tags with same instance should use the same tlv_desc, so take the first one */
     tlv_desc = tlv_find_desc_by_type_inst(&desc_index, &tlv_offset, desc, tlv_tag, instance, tlv_tag_pos);
     if (!tlv_desc) {
+        /*
+         * TS 29.060 11.1.9: An unknown TLV IE (type >= 128) is skipped
+         * using its length. An unknown TV IE has no length to skip.
+         */
+        if (tlv_tag >= 128)
+            return tlv_get_element(tlv, blk, size, msg_mode);
+
         ogs_error("Can't parse find TLV description for type %u", tlv_tag);
         return NULL;
     }
