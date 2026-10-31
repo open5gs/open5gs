@@ -4050,6 +4050,7 @@ void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
     int service_name_id = OpenAPI_service_name_NULL;
+    int r;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -4061,9 +4062,11 @@ void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+        /*
+         * Tear down in order: SM Policy -> UDM SDM subscription -> Reject.
+         * UECM registration is not done yet at this point.
+         */
         if (PCF_SM_POLICY_ASSOCIATED(sess)) {
-            int r = 0;
-
             memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
 
             sess->nsmf_param.ue_location = true;
@@ -4074,6 +4077,12 @@ void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e)
                     smf_npcf_smpolicycontrol_build_delete,
                     sess, NULL,
                     OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, NULL);
+            ogs_expect(r == OGS_OK);
+        } else if (UDM_SDM_SUBSCRIBED(sess)) {
+            r = smf_sbi_discover_and_send(
+                    OpenAPI_service_name_nudm_sdm, NULL,
+                    smf_nudm_sdm_build_subscription_delete,
+                    sess, NULL, 0, NULL);
             ogs_expect(r == OGS_OK);
         } else {
             smf_namf_comm_send_n1_n2_pdu_establishment_reject(sess, NULL);
@@ -4116,8 +4125,16 @@ void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e)
                                sessions. */
                         }
 
-                        smf_namf_comm_send_n1_n2_pdu_establishment_reject(
-                                sess, NULL);
+                        if (UDM_SDM_SUBSCRIBED(sess)) {
+                            r = smf_sbi_discover_and_send(
+                                    OpenAPI_service_name_nudm_sdm, NULL,
+                                    smf_nudm_sdm_build_subscription_delete,
+                                    sess, NULL, 0, NULL);
+                            ogs_expect(r == OGS_OK);
+                        } else {
+                            smf_namf_comm_send_n1_n2_pdu_establishment_reject(
+                                    sess, NULL);
+                        }
                         break;
                     DEFAULT
                         ogs_error("[%s:%d] Unknown resource name [%s]",
@@ -4132,6 +4149,33 @@ void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e)
                 ogs_error("[%s:%d] Invalid resource name [%s]",
                         smf_ue->supi, sess->psi,
                         sbi_message->h.resource.component[0]);
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            END
+            break;
+
+        case OpenAPI_service_name_nudm_sdm:
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                UDM_SDM_CLEAR(sess);
+
+                if (sbi_message->res_status !=
+                        OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                    ogs_error("[%s:%d] HTTP response error [%d]",
+                            smf_ue->supi, sess->psi,
+                            sbi_message->res_status);
+                    /* In spite of error from UDM, continue with
+                       session teardown, so as to not leave stale
+                       sessions. */
+                }
+
+                smf_namf_comm_send_n1_n2_pdu_establishment_reject(
+                        sess, NULL);
+                break;
+
+            DEFAULT
+                ogs_error("[%s:%d] Invalid resource name [%s]",
+                        smf_ue->supi, sess->psi,
+                        sbi_message->h.resource.component[1]);
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
             END
             break;
