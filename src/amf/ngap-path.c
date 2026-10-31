@@ -486,6 +486,7 @@ int ngap_send_ran_ue_context_release_command(
 
     ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
     ran_ue->ue_ctx_rel_action = action;
+    ran_ue->ue_ctx_rel_command_sent = true;
 
     ogs_debug("    Group[%d] Cause[%d] Action[%d] Duration[%d]",
             group, (int)cause, action, (int)duration);
