@@ -270,7 +270,32 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
-    ogs_s1ap_ENB_ID_to_uint32(Global_ENB_ID->eNB_ID, &enb_id);
+    /*
+     * ENB-ID is an extensible CHOICE.  In addition to macroENB-ID and
+     * homeENB-ID, TS 36.413 Release 17 defines the extension alternatives
+     * short-macroENB-ID (18 bits) and long-macroENB-ID (21 bits).  This MME
+     * maps only the two root alternatives to a uint32_t identity, so reject
+     * any other legal alternative with a protocol cause instead of passing
+     * it to ogs_s1ap_ENB_ID_to_uint32(), whose unsupported value is a
+     * process-fatal assertion.
+     */
+    switch (Global_ENB_ID->eNB_ID->present) {
+    case S1AP_ENB_ID_PR_macroENB_ID:
+    case S1AP_ENB_ID_PR_homeENB_ID:
+        ogs_s1ap_ENB_ID_to_uint32(Global_ENB_ID->eNB_ID, &enb_id);
+        break;
+    default:
+        ogs_error("Unsupported Global-ENB-ID eNB-ID choice[%d]",
+                Global_ENB_ID->eNB_ID->present);
+        group = S1AP_Cause_PR_protocol;
+        cause = S1AP_CauseProtocol_semantic_error;
+
+        r = s1ap_send_s1_setup_failure(enb, group, cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->sctp.addr, buf), enb_id);
 
     mme_enb_set_enb_id(enb, enb_id);
