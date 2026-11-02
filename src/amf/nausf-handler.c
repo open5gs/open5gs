@@ -165,12 +165,16 @@ int amf_nausf_auth_handle_authenticate(
     /* Clear Security Context */
     CLEAR_SECURITY_CONTEXT(amf_ue);
 
-    if (amf_ue->nas.amf.ksi < (OGS_NAS_KSI_NO_KEY_IS_AVAILABLE - 1))
-        amf_ue->nas.amf.ksi++;
-    else
-        amf_ue->nas.amf.ksi = 0;
-
-    amf_ue->nas.ue.ksi = amf_ue->nas.amf.ksi;
+    /* Allocate a native ngKSI different from the stored and received values.
+     * nas.ue retains the initial request's ngKSI across authentication
+     * retries. */
+    amf_ue->nas.amf.tsc = 0;
+    do {
+        if (amf_ue->nas.amf.ksi < (OGS_NAS_KSI_NO_KEY_IS_AVAILABLE - 1))
+            amf_ue->nas.amf.ksi++;
+        else
+            amf_ue->nas.amf.ksi = 0;
+    } while (amf_ue->nas.amf.ksi == amf_ue->nas.ue.ksi);
 
     r = nas_5gs_send_authentication_request(amf_ue);
     ogs_expect(r == OGS_OK);

@@ -12,6 +12,7 @@
 #include "amf/event.h"
 #include "amf/timer.h"
 #include "amf/gmm-handler.h"
+#include "amf/gmm-build.h"
 #include "amf/nas-path.h"
 #include "amf/ngap-path.h"
 #include "amf/nausf-handler.h"
@@ -35,6 +36,11 @@ static struct {
     ogs_timer_mgr_t *timers;
     amf_m_tmsi_t m_tmsi;
     int auth, releases, continuation, eir, rejects, smc, ran_releases;
+    int service_accepts, deregistration_accepts;
+    uint8_t auth_tsc, auth_ksi;
+    ogs_sbi_client_t ausf_client;
+    int auth_packets, auth_decode_result;
+    ogs_nas_key_set_identifier_t auth_ngksi;
     int eir_result;
     ogs_nas_5gmm_cause_t reject_cause;
     int num_of_integrity_order;
@@ -72,10 +78,13 @@ static int registration_send(OpenAPI_service_name_e service,
 {
     if (service == OpenAPI_service_name_nausf_auth) {
         f->auth++;
-        /* Model the local effects of a subsequent AUSF vector response. */
+        f->auth_tsc = ue->nas.amf.tsc;
+        f->auth_ksi = ue->nas.amf.ksi;
+        /* Model a subsequent AUSF vector response without changing
+         * the ngKSI declared in the initial request. */
         CLEAR_SECURITY_CONTEXT(ue);
-        ue->nas.ue.ksi = ue->nas.amf.ksi = 3;
-        ue->nas.ue.tsc = ue->nas.amf.tsc = 0;
+        ue->nas.amf.ksi = 3;
+        ue->nas.amf.tsc = 0;
     } else if (service == OpenAPI_service_name_nudm_uecm)
         f->continuation++;
     return OGS_OK;
@@ -122,6 +131,10 @@ static int registration_ran_release(ran_ue_t *ran,
 }
 static int registration_sbi_reject(amf_ue_t *ue, int status)
 { f->rejects++; return OGS_OK; }
+static int registration_service_accept(amf_ue_t *ue)
+{ f->service_accepts++; return OGS_OK; }
+static int registration_deregistration_accept(amf_ue_t *ue)
+{ f->deregistration_accepts++; return OGS_OK; }
 static void registration_metric(amf_metric_type_global_t metric) { }
 static void registration_cause(uint8_t cause,
         amf_metric_type_by_cause_t metric, int value) { }
@@ -141,6 +154,9 @@ static void registration_cause(uint8_t cause,
 #define nas_5gs_send_registration_reject registration_gmm_reject
 #define nas_5gs_send_gmm_reject registration_gmm_reject
 #define nas_5gs_send_security_mode_command registration_smc
+#define nas_5gs_send_service_accept registration_service_accept
+#define nas_5gs_send_service_reject registration_gmm_reject
+#define nas_5gs_send_de_registration_accept registration_deregistration_accept
 #define amf_metrics_inst_global_inc registration_metric
 #define amf_metrics_inst_by_cause_add registration_cause
 #define amf_sbi_cancel_registration_session_release registration_cancel
@@ -148,6 +164,7 @@ static void registration_cause(uint8_t cause,
 #define ngap_send_ran_ue_context_release_command registration_ran_release
 #define nas_5gs_send_gmm_reject_from_sbi registration_sbi_reject
 
+#define gmm_check_ngksi registration_check_ngksi
 #define gmm_handle_registration_request registration_request
 #define gmm_handle_registration_update registration_update
 #define gmm_registration_request_from_old_amf registration_old_amf
@@ -229,6 +246,43 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e);
 #include "../../src/amf/nsmf-handler.c"
 #include "../../src/amf/gmm-sm.c"
 
+/* Exercise the real AUSF response handler and NAS encoder. Only the
+ * client pool and outbound transport are substituted. */
+static ogs_sbi_client_t *registration_client_find(
+        OpenAPI_uri_scheme_e scheme, char *fqdn, uint16_t fqdn_port,
+        ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6)
+{ return &f->ausf_client; }
+static void registration_client_remove(ogs_sbi_client_t *client)
+{
+    ogs_assert(client == &f->ausf_client);
+    ogs_assert(client->reference_count);
+    client->reference_count--;
+}
+static int registration_authentication_request(amf_ue_t *ue)
+{
+    ogs_nas_5gs_message_t message = {0};
+    ogs_pkbuf_t *pkbuf = gmm_build_authentication_request(ue);
+    f->auth_packets++;
+    f->auth_decode_result = pkbuf ?
+        ogs_nas_5gmm_decode(&message, pkbuf) : OGS_ERROR;
+    f->auth_ngksi = message.gmm.authentication_request.ngksi;
+    if (pkbuf) ogs_pkbuf_free(pkbuf);
+    return OGS_OK;
+}
+#define ogs_sbi_client_find registration_client_find
+#define ogs_sbi_client_remove registration_client_remove
+#define nas_5gs_send_authentication_request registration_authentication_request
+#define amf_nausf_auth_handle_authenticate registration_ausf_authenticate
+#define amf_nausf_auth_handle_authenticate_confirmation registration_ausf_confirmation
+#undef AMF_NAUSF_HANDLER_H
+#include "amf/nausf-handler.h"
+#include "../../src/amf/nausf-handler.c"
+#undef amf_nausf_auth_handle_authenticate_confirmation
+#undef amf_nausf_auth_handle_authenticate
+#undef nas_5gs_send_authentication_request
+#undef ogs_sbi_client_remove
+#undef ogs_sbi_client_find
+
 static void timer_unused(void *data) { }
 
 static void fixture_init(int sessions)
@@ -286,6 +340,9 @@ static void fixture_init(int sessions)
 
 static void fixture_final(void)
 {
+    CLEAR_5G_AKA_CONFIRMATION(&f->ue);
+    if (f->ue.confirmation_for_5g_aka.client)
+        registration_client_remove(f->ue.confirmation_for_5g_aka.client);
 #define TIMER(name) ogs_timer_delete(f->ue.name.timer)
     TIMER(t3513); TIMER(t3522); TIMER(t3550); TIMER(t3555);
     TIMER(t3560); TIMER(t3570); TIMER(mobile_reachable);
@@ -302,7 +359,8 @@ static void fixture_final(void)
     f = NULL;
 }
 
-static void dispatch(uint8_t type, bool protected, bool invalid)
+static void dispatch_ngksi(uint8_t type, bool protected, bool invalid,
+        uint8_t tsc, uint8_t ksi)
 {
     amf_event_t event = {0};
     ogs_nas_5gs_message_t message = {0}, inner = {0};
@@ -320,10 +378,20 @@ static void dispatch(uint8_t type, bool protected, bool invalid)
     if (type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
         message.gmm.registration_request.registration_type.value =
             OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
-        message.gmm.registration_request.registration_type.ksi = protected ? 2 : 7;
+        message.gmm.registration_request.registration_type.tsc = tsc;
+        message.gmm.registration_request.registration_type.ksi = ksi;
         guti.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_GUTI;
         message.gmm.registration_request.mobile_identity.length = sizeof(guti);
         message.gmm.registration_request.mobile_identity.buffer = &guti;
+    } else if (type == OGS_NAS_5GS_SERVICE_REQUEST) {
+        message.gmm.service_request.ngksi.type = OGS_NAS_SERVICE_TYPE_DATA;
+        message.gmm.service_request.ngksi.tsc = tsc;
+        message.gmm.service_request.ngksi.value = ksi;
+    } else if (type == OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE) {
+        message.gmm.deregistration_request_from_ue.de_registration_type.tsc = tsc;
+        message.gmm.deregistration_request_from_ue.de_registration_type.ksi = ksi;
+        message.gmm.deregistration_request_from_ue.de_registration_type.access_type =
+            OGS_ACCESS_TYPE_3GPP;
     } else if (type == OGS_NAS_5GS_AUTHENTICATION_RESPONSE) {
         message.gmm.authentication_response.authentication_response_parameter
             .length = OGS_MAX_RES_LEN;
@@ -334,8 +402,7 @@ static void dispatch(uint8_t type, bool protected, bool invalid)
     else if (type == OGS_NAS_5GS_SECURITY_MODE_COMPLETE && !invalid) {
         inner.gmm.h.extended_protocol_discriminator = OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
         inner.gmm.h.message_type = OGS_NAS_5GS_REGISTRATION_REQUEST;
-        inner.gmm.registration_request.registration_type.value =
-            OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+        inner.gmm.registration_request.registration_type = f->ue.nas.registration;
         guti.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_GUTI;
         inner.gmm.registration_request.mobile_identity.length = sizeof(guti);
         inner.gmm.registration_request.mobile_identity.buffer = &guti;
@@ -348,6 +415,43 @@ static void dispatch(uint8_t type, bool protected, bool invalid)
     }
     ogs_fsm_dispatch(&f->ue.sm, &event);
     if (container) ogs_pkbuf_free(container);
+}
+
+static void dispatch(uint8_t type, bool protected, bool invalid)
+{
+    dispatch_ngksi(type, protected, invalid,
+            protected ? f->ue.nas.amf.tsc : 0,
+            protected ? f->ue.nas.amf.ksi : 7);
+}
+
+static void registration_checks_ngksi(abts_case *tc, void *data)
+{
+    int tsc, ksi, matches, sessions = *(int *)data;
+
+    for (tsc = 0; tsc < 2; tsc++) {
+        for (ksi = 0; ksi <= OGS_NAS_KSI_NO_KEY_IS_AVAILABLE; ksi++) {
+            fixture_init(sessions);
+            f->ue.nas.ue.tsc = f->ue.nas.amf.tsc = 0;
+            f->ue.nas.ue.ksi = f->ue.nas.amf.ksi = 5;
+            matches = tsc == 0 && ksi == 5;
+
+            dispatch_ngksi(OGS_NAS_5GS_REGISTRATION_REQUEST,
+                    true, false, tsc, ksi);
+            ABTS_INT_EQUAL(tc, !matches, f->auth);
+            if (!matches) {
+                ABTS_INT_EQUAL(tc, 0, f->auth_tsc);
+                ABTS_INT_EQUAL(tc, 5, f->auth_ksi);
+            }
+            ABTS_INT_EQUAL(tc, tsc, f->ue.nas.ue.tsc);
+            ABTS_INT_EQUAL(tc, ksi, f->ue.nas.ue.ksi);
+            ABTS_INT_EQUAL(tc, matches, f->continuation);
+            ABTS_INT_EQUAL(tc, 0, f->releases);
+            ABTS_INT_EQUAL(tc, sessions, ogs_list_count(&f->ue.sess_list));
+            ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, (matches ?
+                        gmm_state_initial_context_setup : gmm_state_authentication)));
+            fixture_final();
+        }
+    }
 }
 
 static void assert_preserved(abts_case *tc, int sessions)
@@ -866,12 +970,217 @@ static void late_release_does_not_restart_authentication(abts_case *tc, void *da
     }
 }
 
+
+static void mismatched_registration_failure_restores_context(
+        abts_case *tc, void *data)
+{
+    int tsc, sessions = *(int *)data;
+    for (tsc = 0; tsc < 2; tsc++) {
+        fixture_init(sessions);
+        /* The fixture's original context is mapped 1/2. */
+        dispatch_ngksi(OGS_NAS_5GS_REGISTRATION_REQUEST,
+                true, false, tsc, 4);
+        ABTS_INT_EQUAL(tc, 1, f->auth);
+        ABTS_INT_EQUAL(tc, 1, f->auth_tsc);
+        ABTS_INT_EQUAL(tc, 2, f->auth_ksi);
+        dispatch(OGS_NAS_5GS_AUTHENTICATION_FAILURE, false, false);
+        assert_restored(tc, sessions);
+        fixture_final();
+    }
+}
+
+static void service_checks_received_ngksi(abts_case *tc, void *data)
+{
+    const struct {
+        uint8_t tsc, ksi;
+        bool protected, mac_failed, accepted;
+    } cases[] = {
+        { 0, 5, true, false, true },
+        { 0, 4, true, false, false },
+        { 1, 5, true, false, false },
+        { 0, 7, true, false, false },
+        { 0, 5, false, false, false },
+        { 0, 5, true, true, false },
+    };
+    int i, sessions = *(int *)data;
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        fixture_init(sessions);
+        f->ue.nas.amf.tsc = f->ue.nas.ue.tsc = 0;
+        f->ue.nas.amf.ksi = f->ue.nas.ue.ksi = 5;
+        f->ue.mac_failed = cases[i].mac_failed;
+        f->ue.gnb_ostream_id = 1;
+        f->ran.gnb_ostream_id = 2;
+        f->ue.nr_tai.tac.v = 1;
+        f->ran.saved.nr_tai.tac.v = 2;
+        f->ue.t3513.pkbuf = ogs_pkbuf_alloc(NULL, 8);
+        ogs_assert(f->ue.t3513.pkbuf);
+        f->ue.t3513.retry_count = 2;
+        ogs_timer_start(f->ue.t3513.timer, ogs_time_from_sec(1));
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
+        dispatch_ngksi(OGS_NAS_5GS_SERVICE_REQUEST,
+                cases[i].protected, false, cases[i].tsc, cases[i].ksi);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
+        ABTS_TRUE(tc, !f->ue.t3513.timer->running);
+        ABTS_INT_EQUAL(tc, 0, f->ue.t3513.retry_count);
+        ABTS_PTR_EQUAL(tc, NULL, f->ue.t3513.pkbuf);
+        ABTS_INT_EQUAL(tc, cases[i].accepted, f->service_accepts);
+        ABTS_INT_EQUAL(tc, !cases[i].accepted, f->rejects);
+        if (!cases[i].accepted)
+            ABTS_INT_EQUAL(tc,
+                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                f->reject_cause);
+        ABTS_INT_EQUAL(tc, 0, f->auth);
+        ABTS_INT_EQUAL(tc, 0, f->ue.nas.amf.tsc);
+        ABTS_INT_EQUAL(tc, 5, f->ue.nas.amf.ksi);
+        ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, gmm_state_registered));
+        assert_preserved(tc, sessions);
+
+        /* A rejected Service Request must not relabel the context used
+         * to check a subsequent Registration Request. */
+        if (!cases[i].accepted && cases[i].protected && !cases[i].mac_failed) {
+            ABTS_INT_EQUAL(tc, 1, f->ue.gnb_ostream_id);
+            ABTS_INT_EQUAL(tc, 1, f->ue.nr_tai.tac.v);
+            dispatch_ngksi(OGS_NAS_5GS_REGISTRATION_REQUEST,
+                    true, false, cases[i].tsc, cases[i].ksi);
+            ABTS_INT_EQUAL(tc, 1, f->auth);
+            ABTS_INT_EQUAL(tc, 0, f->auth_tsc);
+            ABTS_INT_EQUAL(tc, 5, f->auth_ksi);
+            assert_preserved(tc, sessions);
+        }
+        CLEAR_AMF_UE_TIMER(f->ue.t3513);
+        fixture_final();
+    }
+}
+
+static void deregistration_checks_current_message(abts_case *tc, void *data)
+{
+    const struct { uint8_t tsc, ksi; bool accepted; } cases[] = {
+        { 0, 5, true }, { 0, 4, false },
+        { 1, 5, false }, { 0, 7, false },
+    };
+    int state, i, sessions = *(int *)data;
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
+    for (state = 0; state < 3; state++) {
+        for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+            fixture_init(sessions);
+            f->ue.nas.amf.tsc = 0;
+            f->ue.nas.amf.ksi = 5;
+            /* Check the current message, not a matching/stale previous one. */
+            f->ue.nas.ue.tsc = cases[i].accepted ? 1 : 0;
+            f->ue.nas.ue.ksi = cases[i].accepted ? 7 : 5;
+            f->ue.can_restore_context = true;
+            if (state)
+                OGS_FSM_TRAN(&f->ue.sm, (state == 1 ?
+                            gmm_state_authentication : gmm_state_security_mode));
+            if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
+            dispatch_ngksi(OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE,
+                    true, false, cases[i].tsc, cases[i].ksi);
+            ogs_log_set_domain_level(__gmm_log_domain, level);
+            ABTS_INT_EQUAL(tc, cases[i].accepted, f->releases);
+            ABTS_INT_EQUAL(tc, sessions, ogs_list_count(&f->ue.sess_list));
+            ABTS_INT_EQUAL(tc, 0, f->ue.nas.amf.tsc);
+            ABTS_INT_EQUAL(tc, 5, f->ue.nas.amf.ksi);
+            ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, (cases[i].accepted ?
+                        gmm_state_de_registered : (state == 0 ?
+                        gmm_state_registered : (state == 1 ?
+                        gmm_state_authentication : gmm_state_security_mode)))));
+            fixture_final();
+        }
+    }
+    /* Preserve cancellation before a protected transaction exists. */
+    for (state = 1; state < 3; state++) {
+        fixture_init(sessions);
+        CLEAR_SECURITY_CONTEXT(&f->ue);
+        f->ue.can_restore_context = false;
+        OGS_FSM_TRAN(&f->ue.sm, (state == 1 ?
+                    gmm_state_authentication : gmm_state_security_mode));
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
+        dispatch_ngksi(OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE,
+                false, false, 0, 7);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
+        ABTS_INT_EQUAL(tc, 1, f->releases);
+        ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, gmm_state_de_registered));
+        fixture_final();
+    }
+}
+
+static void aka_allocates_native_ngksi(abts_case *tc, void *data)
+{
+    const struct {
+        uint8_t amf_tsc, amf_ksi, ue_tsc, ue_ksi, expected[3];
+    } cases[] = {
+        { 0, 5, 0, 4, { 6, 0, 1 } },
+        { 0, 5, 0, 6, { 0, 1, 2 } },
+        { 0, 7, 0, 0, { 1, 2, 3 } },
+        { 1, 5, 1, 0, { 6, 1, 2 } },
+        { 0, 6, 0, 1, { 0, 2, 3 } },
+    };
+    ogs_sbi_message_t message = {0};
+    OpenAPI_ue_authentication_ctx_t context = {0};
+    OpenAPI_ue_authentication_ctx_5g_auth_data_t auth_data = {0};
+    OpenAPI_av5g_aka_t vector = {0};
+    OpenAPI_links_value_schema_t link = {0};
+    OpenAPI_map_t map = {0};
+    OpenAPI_lnode_t node = {0};
+    OpenAPI_list_t links = {0};
+    int i, attempt;
+
+    message.http.location = "http://127.0.0.1:7777/nausf-auth/v1/ue-authentications/test";
+    message.UeAuthenticationCtx = &context;
+    context.auth_type = OpenAPI_auth_type_5G_AKA;
+    context._5g_auth_data = &auth_data;
+    context._links = &links;
+    auth_data.av5g_aka = &vector;
+    vector.rand = "00112233445566778899aabbccddeeff";
+    vector.hxres_star = "ffeeddccbbaa99887766554433221100";
+    vector.autn = "0123456789abcdef0123456789abcdef";
+    link.href = "http://127.0.0.1:7777/nausf-auth/v1/ue-authentications/test/5g-aka-confirmation";
+    map.key = OGS_SBI_RESOURCE_NAME_5G_AKA;
+    map.value = &link;
+    node.data = &map;
+    links.first = links.last = &node;
+    links.count = 1;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        fixture_init(0);
+        f->ue.abba_len = 2;
+        f->ue.nas.amf.tsc = cases[i].amf_tsc;
+        f->ue.nas.amf.ksi = cases[i].amf_ksi;
+        f->ue.nas.ue.tsc = cases[i].ue_tsc;
+        f->ue.nas.ue.ksi = cases[i].ue_ksi;
+        for (attempt = 0; attempt < 3; attempt++) {
+            ABTS_INT_EQUAL(tc, OGS_OK,
+                    registration_ausf_authenticate(&f->ue, &message));
+            ABTS_INT_EQUAL(tc, 0, f->ue.security_context_available);
+            ABTS_INT_EQUAL(tc, 0, f->ue.nas.amf.tsc);
+            ABTS_INT_EQUAL(tc, cases[i].expected[attempt], f->ue.nas.amf.ksi);
+            ABTS_INT_EQUAL(tc, cases[i].ue_tsc, f->ue.nas.ue.tsc);
+            ABTS_INT_EQUAL(tc, cases[i].ue_ksi, f->ue.nas.ue.ksi);
+            ABTS_INT_EQUAL(tc, attempt + 1, f->auth_packets);
+            ABTS_INT_EQUAL(tc, OGS_OK, f->auth_decode_result);
+            ABTS_INT_EQUAL(tc, 0, f->auth_ngksi.tsc);
+            ABTS_INT_EQUAL(tc, f->ue.nas.amf.ksi, f->auth_ngksi.value);
+        }
+        fixture_final();
+    }
+}
+
 abts_suite *test_amf_registration(abts_suite *suite)
 {
     int sessions[] = { 1, 2 };
     int i;
     suite = ADD_SUITE(suite)
+    abts_run_test(suite, aka_allocates_native_ngksi, NULL);
     for (i = 0; i < OGS_ARRAY_SIZE(sessions); i++) {
+        abts_run_test(suite, mismatched_registration_failure_restores_context,
+                &sessions[i]);
+        abts_run_test(suite, service_checks_received_ngksi, &sessions[i]);
+        abts_run_test(suite, deregistration_checks_current_message, &sessions[i]);
+        abts_run_test(suite, registration_checks_ngksi, &sessions[i]);
         abts_run_test(suite, failures_preserve_sessions, &sessions[i]);
         abts_run_test(suite, unverified_nas_is_discarded, &sessions[i]);
         abts_run_test(suite, eir_and_last_release, &sessions[i]);

@@ -1669,6 +1669,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
     amf_sess_t *sess = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
+    ogs_nas_de_registration_type_t *de_registration_type = NULL;
 
     amf_nsmf_pdusession_sm_context_param_t param;
 
@@ -2021,7 +2022,11 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
             ogs_info("[%s] Deregistration request", amf_ue->supi);
 
-            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+            de_registration_type = &nas_message->gmm.
+                deregistration_request_from_ue.de_registration_type;
+            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue) ||
+                !gmm_check_ngksi(amf_ue, de_registration_type->tsc,
+                    de_registration_type->ksi)) {
                 ogs_error("No Security Context");
                 AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
@@ -2127,6 +2132,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
+    ogs_nas_de_registration_type_t *de_registration_type = NULL;
 
     ogs_nas_5gs_authentication_failure_t *authentication_failure = NULL;
     ogs_nas_authentication_failure_parameter_t
@@ -2301,9 +2307,13 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
+            de_registration_type = &nas_message->gmm.
+                deregistration_request_from_ue.de_registration_type;
             if (amf_ue->can_restore_context &&
                     (!h.integrity_protected ||
-                     !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                     !SECURITY_CONTEXT_IS_VALID(amf_ue) ||
+                     !gmm_check_ngksi(amf_ue, de_registration_type->tsc,
+                         de_registration_type->ksi))) {
                 ogs_warn("[%s] Ignore unverified Deregistration request "
                         "during authentication", amf_ue->supi);
                 break;
@@ -2756,6 +2766,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
     ran_ue_t *ran_ue = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
+    ogs_nas_de_registration_type_t *de_registration_type = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
     ogs_sbi_xact_t *xact = NULL, *next_xact = NULL;
     int service_name_id = OpenAPI_service_name_NULL;
@@ -2962,9 +2973,13 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
+            de_registration_type = &nas_message->gmm.
+                deregistration_request_from_ue.de_registration_type;
             if ((amf_ue->can_restore_context || amf_ue->eir_check_pending) &&
                     (!h.integrity_protected ||
-                     !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                     !SECURITY_CONTEXT_IS_VALID(amf_ue) ||
+                     !gmm_check_ngksi(amf_ue, de_registration_type->tsc,
+                         de_registration_type->ksi))) {
                 ogs_warn("[%s] Ignore unverified Deregistration request "
                         "during security mode", amf_ue->supi);
                 break;

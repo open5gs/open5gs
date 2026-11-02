@@ -27,6 +27,8 @@
 extern "C" {
 #endif
 
+bool gmm_check_ngksi(const amf_ue_t *amf_ue, uint8_t tsc, uint8_t ksi);
+
 ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         ogs_nas_security_header_type_t h, NGAP_ProcedureCode_t ngap_code,
         ogs_nas_5gs_registration_request_t *registration_request);
