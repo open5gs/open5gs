@@ -1451,6 +1451,30 @@ static ogs_pfcp_node_t *selected_upf_node(
     return ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
 }
 
+/*
+ * Whether smf_sess_select_upf() can select an associated UPF other than
+ * node for this session.
+ */
+bool smf_sess_other_upf_available(smf_sess_t *sess, ogs_pfcp_node_t *node)
+{
+    ogs_pfcp_node_t *iter = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(node);
+
+    ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, iter) {
+        if (iter == node)
+            continue;
+        if (!OGS_FSM_CHECK(&iter->sm, smf_pfcp_state_associated))
+            continue;
+        if (ogs_global_conf()->parameter.no_pfcp_rr_select == 0 ||
+            compare_ue_info(iter, sess) == true)
+            return true;
+    }
+
+    return false;
+}
+
 void smf_sess_select_upf(smf_sess_t *sess)
 {
     ogs_assert(sess);

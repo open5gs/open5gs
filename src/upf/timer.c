@@ -28,6 +28,8 @@ const char *upf_timer_get_name(upf_timer_e id)
         return "UPF_TIMER_ASSOCIATION";
     case UPF_TIMER_NO_HEARTBEAT:
         return "UPF_TIMER_NO_HEARTBEAT";
+    case UPF_TIMER_RELEASE_AFTER_PEER_FAILURE:
+        return "UPF_TIMER_RELEASE_AFTER_PEER_FAILURE";
     default: 
        break;
     }
@@ -60,4 +62,9 @@ void upf_timer_association(void *data)
 void upf_timer_no_heartbeat(void *data)
 {
     timer_send_event(UPF_TIMER_NO_HEARTBEAT, data);
+}
+
+void upf_timer_release_after_peer_failure(void *data)
+{
+    timer_send_event(UPF_TIMER_RELEASE_AFTER_PEER_FAILURE, data);
 }

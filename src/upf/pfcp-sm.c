@@ -44,6 +44,10 @@ void upf_pfcp_state_initial(ogs_fsm_t *s, upf_event_t *e)
             upf_timer_no_heartbeat, node);
     ogs_assert(node->t_no_heartbeat);
 
+    node->t_release_after_peer_failure = ogs_timer_add(ogs_app()->timer_mgr,
+            upf_timer_release_after_peer_failure, node);
+    ogs_assert(node->t_release_after_peer_failure);
+
     OGS_FSM_TRAN(s, &upf_pfcp_state_will_associate);
 }
 
@@ -59,6 +63,7 @@ void upf_pfcp_state_final(ogs_fsm_t *s, upf_event_t *e)
     ogs_assert(node);
 
     ogs_timer_delete(node->t_no_heartbeat);
+    ogs_timer_delete(node->t_release_after_peer_failure);
 }
 
 void upf_pfcp_state_will_associate(ogs_fsm_t *s, upf_event_t *e)
@@ -76,6 +81,12 @@ void upf_pfcp_state_will_associate(ogs_fsm_t *s, upf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        if (node->was_associated == true) {
+            /* The heartbeat towards the SMF has failed or it has restarted */
+            node->was_associated = false;
+            ogs_pfcp_node_start_release_after_peer_failure(node);
+        }
+
         if (node->t_association) {
             ogs_timer_start(node->t_association,
                 ogs_local_conf()->time.message.pfcp.association_interval);
@@ -101,6 +112,25 @@ void upf_pfcp_state_will_associate(ogs_fsm_t *s, upf_event_t *e)
                 ogs_local_conf()->time.message.pfcp.association_interval);
 
             ogs_pfcp_up_send_association_setup_request(node, node_timeout);
+            break;
+        case UPF_TIMER_RELEASE_AFTER_PEER_FAILURE:
+            /*
+             * The timer only queues this event. Events queued before it
+             * are dispatched first: if they have associated the node and
+             * then taken it back to will_associate (e.g. a Heartbeat with
+             * a newer Recovery Time Stamp), the timer runs again and this
+             * event is stale.
+             */
+            if (node->t_release_after_peer_failure->running == true)
+                break;
+
+            if (ogs_pfcp_self()->release_after_peer_failure)
+                ogs_warn("SMF %s not associated again within "
+                        "release_after_peer_failure",
+                        ogs_sockaddr_to_string_static(node->addr_list));
+
+            /* TS 23.527 4.4.3.1: Delete all sessions of the SMF */
+            pfcp_restoration(node);
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
@@ -167,6 +197,8 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         ogs_info("PFCP associated %s",
                 ogs_sockaddr_to_string_static(node->addr_list));
+        /* Associated again: keep the sessions of this SMF */
+        ogs_timer_stop(node->t_release_after_peer_failure);
         ogs_timer_start(node->t_no_heartbeat,
                 ogs_local_conf()->time.message.pfcp.no_heartbeat_duration);
         ogs_assert(OGS_OK ==
@@ -184,6 +216,8 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
         ogs_info("PFCP de-associated %s",
                 ogs_sockaddr_to_string_static(node->addr_list));
         ogs_timer_stop(node->t_no_heartbeat);
+        /* See OGS_FSM_ENTRY_SIG of upf_pfcp_state_will_associate() */
+        node->was_associated = true;
 
         upf_metrics_inst_global_dec(UPF_METR_GLOB_GAUGE_PFCP_PEERS_ACTIVE);
         break;
@@ -333,6 +367,14 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
             ogs_assert(OGS_OK ==
                 ogs_pfcp_send_heartbeat_request(node, node_timeout));
             break;
+        case UPF_TIMER_RELEASE_AFTER_PEER_FAILURE:
+            /*
+             * The timer expired while the node was associated again
+             * and the event was still queued. Nothing to delete.
+             */
+            ogs_warn("SMF %s associated again, sessions kept",
+                    ogs_sockaddr_to_string_static(node->addr_list));
+            break;
         default:
             ogs_error("Unknown timer[%s:%d]",
                     upf_timer_get_name(e->timer_id), e->timer_id);
@@ -348,8 +390,15 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
          *
          * Otherwise they are removed only when the SMF comes back
          * with a new Recovery Time Stamp, which may never happen.
+         *
+         * They are deleted when t_release_after_peer_failure expires
+         * (see OGS_FSM_ENTRY_SIG of upf_pfcp_state_will_associate()).
+         * With pfcp.release_after_peer_failure, they are kept until then,
+         * so that the data path is not cut while the SMF may still come
+         * back. The UPF value should not be shorter than the SMF value
+         * plus the heartbeat detection skew, otherwise the SMF keeps
+         * sessions that no longer exist here.
          */
-        pfcp_restoration(node);
 
         OGS_FSM_TRAN(s, upf_pfcp_state_will_associate);
         break;

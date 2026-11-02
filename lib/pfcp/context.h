@@ -57,6 +57,15 @@ typedef struct ogs_pfcp_context_s {
 
     uint32_t        local_recovery; /* UTC time */
 
+    /*
+     * pfcp.release_after_peer_failure (seconds, default 0)
+     *
+     * How long the sessions of a PFCP peer are kept after the heartbeat
+     * towards it has failed. 0 releases/deletes them at once (on the next
+     * ogs_timer_mgr_expire()).
+     */
+    ogs_time_t      release_after_peer_failure;
+
     /* CP Function Features */
     ogs_pfcp_cp_function_features_t cp_function_features;
     /* UP Function Features */
@@ -105,6 +114,8 @@ typedef struct ogs_pfcp_node_s {
     ogs_fsm_t       sm;             /* A state machine */
     ogs_timer_t     *t_association; /* timer to retry to associate peer node */
     ogs_timer_t     *t_no_heartbeat; /* heartbeat timer to check aliveness */
+    ogs_timer_t     *t_release_after_peer_failure; /* release sessions */
+    bool            was_associated; /* will_associate entered from associated */
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
@@ -117,6 +128,8 @@ typedef struct ogs_pfcp_node_s {
 
     uint32_t        remote_recovery; /* UTC time */
     bool            restoration_required;
+    /* Incremented on each entry to associated (see the SMF reselect_upf()) */
+    uint32_t        num_of_associations;
 
     ogs_pfcp_up_function_features_t up_function_features;
     int up_function_features_len;
@@ -438,6 +451,7 @@ void ogs_pfcp_node_remove(ogs_list_t *list, ogs_pfcp_node_t *node);
 void ogs_pfcp_node_remove_all(ogs_list_t *list);
 bool ogs_pfcp_node_id_compare(
         const ogs_pfcp_node_id_t *id1, const ogs_pfcp_node_id_t *id2);
+void ogs_pfcp_node_start_release_after_peer_failure(ogs_pfcp_node_t *node);
 
 ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,
         char *dnn, ogs_pfcp_interface_t source_interface);
