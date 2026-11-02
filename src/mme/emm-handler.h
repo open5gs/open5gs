@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+bool emm_check_ksi(const mme_ue_t *mme_ue, uint8_t tsc, uint8_t ksi);
+
 int emm_handle_attach_request(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf);

@@ -526,6 +526,7 @@ ogs_pkbuf_t *testemm_build_service_request(test_ue_t *test_ue)
         OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE;
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
+    ksi_and_sequence_number->ksi = test_ue->nas.ksi;
     ksi_and_sequence_number->sequence_number = test_ue->ul_count;
 
     pkbuf = ogs_nas_eps_plain_encode(&message);
@@ -830,6 +831,7 @@ ogs_pkbuf_t *testemm_build_extended_service_request(
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST;
 
+    service_type->nas_key_set_identifier = test_ue->nas.ksi;
     service_type->value = type;
 
     mobile_identity->length = 5;

@@ -884,6 +884,13 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             break;
 
         case OGS_NAS_EPS_DETACH_REQUEST:
+            if (SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+                !emm_check_ksi(mme_ue,
+                    message->emm.detach_request_from_ue.detach_type.tsc,
+                    message->emm.detach_request_from_ue.detach_type.
+                        nas_key_set_identifier))
+                break;
+
             ogs_info("[%s] Detach request", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
                     enb_ue, mme_ue, &message->emm.detach_request_from_ue);
@@ -1176,6 +1183,13 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                         mme_ue->imsi_bcd);
                 break;
             }
+            if (SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+                !emm_check_ksi(mme_ue,
+                    message->emm.detach_request_from_ue.detach_type.tsc,
+                    message->emm.detach_request_from_ue.detach_type.
+                        nas_key_set_identifier))
+                break;
+
             ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
                     enb_ue, mme_ue, &message->emm.detach_request_from_ue);
@@ -1442,6 +1456,13 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                         "during security mode control", mme_ue->imsi_bcd);
                 break;
             }
+            if (SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+                !emm_check_ksi(mme_ue,
+                    message->emm.detach_request_from_ue.detach_type.tsc,
+                    message->emm.detach_request_from_ue.detach_type.
+                        nas_key_set_identifier))
+                break;
+
             ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
                     enb_ue, mme_ue, &message->emm.detach_request_from_ue);
@@ -1724,6 +1745,13 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->imsi_bcd, message->emm.emm_status.emm_cause);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
+            if (SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+                !emm_check_ksi(mme_ue,
+                    message->emm.detach_request_from_ue.detach_type.tsc,
+                    message->emm.detach_request_from_ue.detach_type.
+                        nas_key_set_identifier))
+                break;
+
             ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
                     enb_ue, mme_ue, &message->emm.detach_request_from_ue);

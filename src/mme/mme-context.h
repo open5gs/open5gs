@@ -500,6 +500,9 @@ struct mme_ue_s {
 #define MME_EPS_TYPE_DETACH_REQUEST_TO_UE           6
         uint8_t     type;
 
+        /* mme identifies the stored EPS NAS security context. ue records
+         * the received identifier; short Service Request infers its TSC
+         * from the current context because the message carries only KSI. */
         struct {
         ED3(uint8_t tsc:1;,
             uint8_t ksi:3;,
@@ -616,7 +619,7 @@ struct mme_ue_s {
     ((__mME) && \
     ((__mME)->security_context_available == 1) && \
      ((__mME)->mac_failed == 0) && \
-     ((__mME)->nas_eps.ue.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
+     ((__mME)->nas_eps.mme.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
 #define CLEAR_SECURITY_CONTEXT(__mME) \
     do { \
         ogs_assert((__mME)); \

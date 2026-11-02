@@ -34,6 +34,27 @@
 
 static uint8_t emm_cause_from_access_control(mme_ue_t *mme_ue);
 
+/* Compare the current message's eKSI without changing the stored context. */
+bool emm_check_ksi(const mme_ue_t *mme_ue, uint8_t tsc, uint8_t ksi)
+{
+    ogs_assert(mme_ue);
+
+    if (ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        ogs_debug("UE indicates no EPS NAS security context");
+        return false;
+    }
+
+    if (tsc != mme_ue->nas_eps.mme.tsc || ksi != mme_ue->nas_eps.mme.ksi) {
+        ogs_warn("[%s] eKSI mismatch "
+                "TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+                MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown UE",
+                tsc, mme_ue->nas_eps.mme.tsc, ksi, mme_ue->nas_eps.mme.ksi);
+        return false;
+    }
+
+    return true;
+}
+
 int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf)
 {
@@ -91,16 +112,16 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
 
     mme_ue->nas_eps.ue.tsc = eps_attach_type->tsc;
     mme_ue->nas_eps.ue.ksi = eps_attach_type->nas_key_set_identifier;
-    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+    ogs_debug("    TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
             mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
             mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
-    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
-        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
-        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+
+    /* TS 24.301 4.4.2.3: Check eKSI before reusing the stored context. */
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+        !emm_check_ksi(mme_ue, eps_attach_type->tsc,
+            eps_attach_type->nas_key_set_identifier)) {
+        CLEAR_SECURITY_CONTEXT(mme_ue);
     }
-    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
-            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
-            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
     switch(mme_ue->nas_eps.attach.value){
         case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
@@ -572,14 +593,7 @@ int emm_handle_detach_request(
 
     mme_ue->nas_eps.ue.tsc = detach_type->tsc;
     mme_ue->nas_eps.ue.ksi = detach_type->nas_key_set_identifier;
-    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
-            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
-            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
-    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
-        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
-        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
-    }
-    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+    ogs_debug("    TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
             mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
             mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
@@ -626,6 +640,7 @@ int emm_handle_service_request(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_eps_service_request_t *service_request)
 {
+    int r;
     ogs_nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
                     &service_request->ksi_and_sequence_number;
 
@@ -640,15 +655,10 @@ int emm_handle_service_request(
             mme_ue->nas_eps.service.nas_key_set_identifier,
             mme_ue->nas_eps.service.value);
 
+    /* Short Service Request carries no TSC; use the current context's type. */
+    mme_ue->nas_eps.ue.tsc = mme_ue->nas_eps.mme.tsc;
     mme_ue->nas_eps.ue.ksi = ksi_and_sequence_number->ksi;
-    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
-            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
-            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
-    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
-        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
-        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
-    }
-    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+    ogs_debug("    TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
             mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
             mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
@@ -660,6 +670,16 @@ int emm_handle_service_request(
      *   Clear Timer and Message
      */
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+        !emm_check_ksi(mme_ue, mme_ue->nas_eps.mme.tsc,
+            ksi_and_sequence_number->ksi)) {
+        r = nas_eps_send_service_reject(enb_ue, mme_ue,
+            OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
@@ -745,16 +765,16 @@ int emm_handle_tau_request(
 
     mme_ue->nas_eps.ue.tsc = eps_update_type->tsc;
     mme_ue->nas_eps.ue.ksi = eps_update_type->nas_key_set_identifier;
-    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+    ogs_debug("    TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
             mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
             mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
-    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
-        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
-        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+
+    /* TS 24.301 4.4.2.3: Check eKSI before reusing the stored context. */
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+        !emm_check_ksi(mme_ue, eps_update_type->tsc,
+            eps_update_type->nas_key_set_identifier)) {
+        CLEAR_SECURITY_CONTEXT(mme_ue);
     }
-    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
-            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
-            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
     /*
      * ATTACH_REQUEST
@@ -902,14 +922,7 @@ int emm_handle_extended_service_request(
 
     mme_ue->nas_eps.ue.tsc = service_type->tsc;
     mme_ue->nas_eps.ue.ksi = service_type->nas_key_set_identifier;
-    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
-            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
-            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
-    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
-        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
-        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
-    }
-    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+    ogs_debug("    TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
             mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
             mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
@@ -921,6 +934,16 @@ int emm_handle_extended_service_request(
      *   Clear Timer and Message
      */
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+        !emm_check_ksi(mme_ue, service_type->tsc,
+            service_type->nas_key_set_identifier)) {
+        r = nas_eps_send_service_reject(enb_ue, mme_ue,
+            OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
