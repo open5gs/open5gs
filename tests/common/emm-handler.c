@@ -42,7 +42,6 @@ void testemm_handle_authentication_request(test_ue_t *test_ue,
         NULL;
     ogs_nas_authentication_parameter_autn_t *authentication_parameter_autn =
         NULL;
-    ogs_nas_key_set_identifier_t *ksi = NULL;
 
     ogs_assert(test_ue);
     ogs_assert(authentication_request);
@@ -51,10 +50,11 @@ void testemm_handle_authentication_request(test_ue_t *test_ue,
         authentication_parameter_rand;
     authentication_parameter_autn = &authentication_request->
         authentication_parameter_autn;
-    ksi = &authentication_request->nas_key_set_identifierasme;
 
-    test_ue->nas.ksi = ksi->value;
-
+    /*
+     * Authentication may fail, so keep the current KSI and NAS keys.
+     * The Security Mode Command activates the new security context.
+     */
     memcpy(test_ue->rand, authentication_parameter_rand->rand, OGS_RAND_LEN);
     memcpy(test_ue->autn, authentication_parameter_autn->autn, OGS_AUTN_LEN);
 }

@@ -13,6 +13,7 @@
 #include "mme/s1ap-handler.h"
 #include "mme/mme-gn-handler.h"
 #include "mme/mme-fd-path.h"
+#include "mme/mme-s6a-handler.h"
 #include "mme/mme-s13-handler.h"
 #include "mme/emm-handler.h"
 #include "mme/emm-build.h"
@@ -33,10 +34,14 @@ static struct {
     mme_sess_t sess[2];
     mme_bearer_t bearer[2];
     sgw_ue_t sgw;
+    mme_csmap_t csmap;
+    mme_vlr_t vlr;
     ogs_timer_mgr_t *timers;
     int air, deletes, continuation, eir, smc, rejects, delete_action, releases;
     int xacts;
     int pages, modifies;
+    int setups, tau_accepts, csfb;
+    uint8_t air_tsc, air_ksi;
     uint8_t reject_cause;
     uint32_t m_tmsi;
 } *f;
@@ -49,6 +54,8 @@ static void attach_air(enb_ue_t *enb, mme_ue_t *ue,
         ogs_nas_authentication_failure_parameter_t *auts)
 {
     /* Model only the local effects of the outbound AIR boundary. */
+    f->air_tsc = ue->nas_eps.mme.tsc;
+    f->air_ksi = ue->nas_eps.mme.ksi;
     CLEAR_SECURITY_CONTEXT(ue);
     ue->xres_len = 0;
     f->air++;
@@ -113,7 +120,13 @@ static int attach_reject(enb_ue_t *enb, mme_ue_t *ue,
         uint8_t emm_cause, uint8_t esm_cause)
 { f->rejects++; f->reject_cause = emm_cause; return OGS_OK; }
 static int attach_service_reject(enb_ue_t *enb, mme_ue_t *ue, uint8_t cause)
-{ f->rejects++; return OGS_OK; }
+{ f->rejects++; f->reject_cause = cause; return OGS_OK; }
+static int attach_setup(mme_ue_t *ue)
+{ f->setups++; return OGS_OK; }
+static int attach_tau_send(mme_ue_t *ue, S1AP_ProcedureCode_t code)
+{ f->tau_accepts++; return OGS_OK; }
+static int attach_csfb(mme_ue_t *ue)
+{ f->csfb++; return OGS_OK; }
 void attach_continue(enb_ue_t *, mme_ue_t *);
 void attach_tau_accept(enb_ue_t *, mme_ue_t *);
 void attach_delete_or_detach(enb_ue_t *, mme_ue_t *);
@@ -135,13 +148,36 @@ void attach_delete_or_detach(enb_ue_t *, mme_ue_t *);
 #define mme_gtp_send_delete_all_sessions attach_delete
 #define mme_ue_xact_count attach_xact_count
 #define mme_send_delete_session_or_update_location_request attach_continue
+#define mme_send_tau_accept_and_check_release attach_tau_accept
 #define mme_ue_new_guti attach_guti
 #define nas_eps_send_security_mode_command attach_command
 #define nas_eps_send_authentication_request attach_auth_request
 #define nas_eps_send_authentication_reject attach_auth_reject
 #define nas_eps_send_attach_reject attach_reject
 #define nas_eps_send_service_reject attach_service_reject
+#define nas_eps_send_tau_reject attach_service_reject
+#define nas_eps_send_tau_accept attach_tau_send
+#define s1ap_send_initial_context_setup_request attach_setup
+#define sgsap_send_mo_csfb_indication attach_csfb
+#define sgw_ue_find_by_id attach_sgw
 #define mme_send_delete_session_or_detach attach_delete_or_detach
+
+/* Use the real receive handlers, including rejection and timer cleanup. */
+#define emm_check_ksi attach_check_ksi
+#define emm_handle_attach_request attach_request
+#define emm_handle_attach_complete attach_complete
+#define emm_handle_authentication_response attach_auth_response
+#define emm_handle_identity_response attach_identity_response
+#define emm_handle_detach_request attach_detach_request
+#define emm_handle_service_request attach_service_request
+#define emm_handle_tau_request attach_tau_request
+#define emm_handle_extended_service_request attach_extended_service_request
+#define emm_handle_security_mode_complete attach_security_complete
+#define emm_tau_request_ue_comes_from_gb_or_iu attach_tau_from_sgsn
+#undef EMM_HANDLER_H
+#include "mme/emm-handler.h"
+#include "../../src/mme/emm-handler.c"
+
 void emm_state_initial(ogs_fsm_t *, mme_event_t *);
 void emm_state_final(ogs_fsm_t *, mme_event_t *);
 void emm_state_de_registered(ogs_fsm_t *, mme_event_t *);
@@ -161,7 +197,6 @@ void emm_state_exception(ogs_fsm_t *, mme_event_t *);
 #define mme_send_release_access_bearer_or_ue_context_release attach_access_release
 #define mme_send_after_paging attach_after_paging
 #define mme_send_delete_session_or_tau_accept attach_delete_or_tau
-#define mme_send_tau_accept_and_check_release attach_tau_accept
 #include "../../src/mme/mme-path.c"
 #define mme_sess_find_by_id attach_sess
 #define sgw_ue_find_by_id attach_sgw
@@ -309,6 +344,7 @@ static void fixture_final(void)
 {
     int i;
     OGS_NAS_CLEAR_DATA(&f->ue.pdn_connectivity_request);
+    OGS_ASN_CLEAR_DATA(&f->ue.ueRadioCapability);
 #define TIMER(name) ogs_timer_delete(f->ue.name.timer)
     TIMER(t3413); TIMER(t3422); TIMER(t3450); TIMER(t3460);
     TIMER(t3470); TIMER(t_mobile_reachable); TIMER(t_implicit_detach);
@@ -320,7 +356,10 @@ static void fixture_final(void)
     f = NULL;
 }
 
-static void dispatch(uint8_t type, uint8_t security_type, bool invalid_mac)
+/* The short Service Request has no EMM message type octet. */
+#define SHORT_SERVICE_REQUEST 0
+static void dispatch_ksi(uint8_t type, uint8_t security_type, bool invalid_mac,
+        uint8_t tsc, uint8_t ksi)
 {
     mme_event_t event = {0};
     ogs_nas_eps_message_t message = {0};
@@ -333,20 +372,40 @@ static void dispatch(uint8_t type, uint8_t security_type, bool invalid_mac)
     event.enb_ue_id = f->enb.id;
     event.nas_message = &message;
     event.pkbuf = pkbuf;
+    event.s1ap_code = S1AP_ProcedureCode_id_initialUEMessage;
     header.integrity_protected = security_type;
     event.nas_type = header.type;
     message.emm.h.message_type = type;
     if (type == OGS_NAS_EPS_ATTACH_REQUEST) {
         message.emm.attach_request.eps_attach_type.value =
             OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
-        message.emm.attach_request.eps_attach_type.nas_key_set_identifier =
-            security_type ? 2 : 7;
+        message.emm.attach_request.eps_attach_type.tsc = tsc;
+        message.emm.attach_request.eps_attach_type.nas_key_set_identifier = ksi;
         message.emm.attach_request.eps_mobile_identity.guti.type =
             OGS_NAS_EPS_MOBILE_IDENTITY_GUTI;
         message.emm.attach_request.ue_network_capability.eia = 0x20;
         message.emm.attach_request.ue_network_capability.eea = 0x20;
         message.emm.attach_request.esm_message_container.length = sizeof(esm);
         message.emm.attach_request.esm_message_container.buffer = esm;
+    } else if (type == OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST) {
+        message.emm.tracking_area_update_request.eps_update_type.tsc = tsc;
+        message.emm.tracking_area_update_request.eps_update_type
+            .nas_key_set_identifier = ksi;
+        message.emm.tracking_area_update_request.eps_update_type.active_flag = 1;
+        message.emm.tracking_area_update_request.old_guti.guti.type =
+            OGS_NAS_EPS_MOBILE_IDENTITY_GUTI;
+    } else if (type == SHORT_SERVICE_REQUEST) {
+        message.emm.h.security_header_type =
+            OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE;
+        message.emm.service_request.ksi_and_sequence_number.ksi = ksi;
+    } else if (type == OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST) {
+        message.emm.extended_service_request.service_type.tsc = tsc;
+        message.emm.extended_service_request.service_type
+            .nas_key_set_identifier = ksi;
+        message.emm.extended_service_request.service_type.value =
+            OGS_NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE;
+        message.emm.extended_service_request.m_tmsi.tmsi.type =
+            OGS_NAS_MOBILE_IDENTITY_TMSI;
     } else if (type == OGS_NAS_EPS_AUTHENTICATION_RESPONSE) {
         message.emm.authentication_response.authentication_response_parameter
             .length = 8;
@@ -357,20 +416,36 @@ static void dispatch(uint8_t type, uint8_t security_type, bool invalid_mac)
     } else if (type == OGS_NAS_EPS_DETACH_REQUEST) {
         message.emm.detach_request_from_ue.detach_type.value =
             OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH;
-        message.emm.detach_request_from_ue.detach_type.nas_key_set_identifier = 2;
+        message.emm.detach_request_from_ue.detach_type.tsc = tsc;
+        message.emm.detach_request_from_ue.detach_type.nas_key_set_identifier = ksi;
+        message.emm.detach_request_from_ue.detach_type.switch_off = 1;
     }
     f->ue.mac_failed = invalid_mac;
     ogs_fsm_dispatch(&f->ue.sm, &event);
     ogs_pkbuf_free(pkbuf);
 }
 
+static void dispatch(uint8_t type, uint8_t security_type, bool invalid_mac)
+{
+    dispatch_ksi(type, security_type, invalid_mac, 1, security_type ? 2 : 7);
+}
+
+static uint8_t receive_aia(void)
+{
+    ogs_diam_s6a_message_t message = {0};
+    ogs_diam_e_utran_vector_t *vector = &message.aia_message.e_utran_vector;
+    message.result_code = ER_DIAMETER_SUCCESS;
+    vector->xres_len = 8;
+    memset(vector->xres, 0x33, vector->xres_len);
+    memset(vector->kasme, 0x44, sizeof(vector->kasme));
+    memset(vector->rand, 0x55, sizeof(vector->rand));
+    memset(vector->autn, 0x66, sizeof(vector->autn));
+    return mme_s6a_handle_aia(&f->ue, &message);
+}
+
 static void authenticate(void)
 {
-    /* A successful AIA installs a fresh vector and assigns its KSI. */
-    memset(f->ue.kasme, 0x44, sizeof(f->ue.kasme));
-    memset(f->ue.xres, 0x33, 8);
-    f->ue.xres_len = 8;
-    f->ue.nas_eps.ue.ksi = f->ue.nas_eps.mme.ksi = 3;
+    ogs_assert(receive_aia() == OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED);
     dispatch(OGS_NAS_EPS_AUTHENTICATION_RESPONSE, 0, false);
 }
 
@@ -882,6 +957,222 @@ static void update_bearer_holding_expiry(abts_case *tc, void *data)
     fixture_final();
 }
 
+static void request_ksi_selects_authentication(abts_case *tc, void *data)
+{
+    static const struct {
+        uint8_t stored_tsc, stored_ksi, tsc, ksi, protected, bad_mac, authenticate;
+    } cases[] = {
+        { 0, 5, 0, 5, 1, 0, 0 }, { 1, 5, 1, 5, 1, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0 }, { 0, 5, 0, 4, 1, 0, 1 },
+        { 0, 5, 0, 6, 1, 0, 1 }, { 0, 5, 0, 7, 1, 0, 1 },
+        { 0, 5, 1, 5, 1, 0, 1 }, { 1, 5, 0, 5, 1, 0, 1 },
+        { 0, 5, 0, 5, 0, 0, 1 }, { 0, 5, 0, 5, 1, 1, 1 },
+        { 0, 7, 0, 5, 1, 0, 1 }
+    };
+    int i;
+    uint8_t type = OGS_POINTER_TO_UINT(data);
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        fixture_init(true);
+        f->ue.sgw_ue_id = 6;
+        f->sgw.sgw_s11_teid = 1;
+        f->ue.nas_eps.mme.tsc = cases[i].stored_tsc;
+        f->ue.nas_eps.mme.ksi = cases[i].stored_ksi;
+        /* A previous received identifier is not the stored key's identity. */
+        f->ue.nas_eps.ue.tsc = 1;
+        f->ue.nas_eps.ue.ksi = 7;
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
+        dispatch_ksi(type, cases[i].protected, cases[i].bad_mac,
+                cases[i].tsc, cases[i].ksi);
+        ogs_log_set_domain_level(__emm_log_domain, level);
+        ABTS_INT_EQUAL(tc, cases[i].authenticate, f->air);
+        ABTS_INT_EQUAL(tc, cases[i].stored_tsc, f->ue.nas_eps.mme.tsc);
+        ABTS_INT_EQUAL(tc, cases[i].stored_ksi, f->ue.nas_eps.mme.ksi);
+        ABTS_INT_EQUAL(tc, cases[i].tsc, f->ue.nas_eps.ue.tsc);
+        ABTS_INT_EQUAL(tc, cases[i].ksi, f->ue.nas_eps.ue.ksi);
+        if (cases[i].authenticate) {
+            ABTS_INT_EQUAL(tc, cases[i].stored_tsc, f->air_tsc);
+            ABTS_INT_EQUAL(tc, cases[i].stored_ksi, f->air_ksi);
+            ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, emm_state_authentication));
+            assert_sessions(tc);
+        } else if (type == OGS_NAS_EPS_ATTACH_REQUEST) {
+            ABTS_INT_EQUAL(tc, 1, f->deletes);
+            ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, emm_state_initial_context_setup));
+        } else {
+            ABTS_INT_EQUAL(tc, 1, f->tau_accepts);
+            ABTS_INT_EQUAL(tc, 0, f->deletes);
+            ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, emm_state_registered));
+        }
+        fixture_final();
+    }
+}
+
+static void service_ksi_and_paging_timer(abts_case *tc, void *data)
+{
+    static const struct { uint8_t stored_tsc, ksi, tsc, accepted; } cases[] = {
+        { 0, 5, 0, 1 }, { 1, 5, 1, 1 },
+        { 0, 4, 0, 0 }, { 1, 4, 1, 0 },
+        { 0, 7, 0, 0 }, { 1, 7, 1, 0 },
+        { 0, 5, 1, 0 }, { 1, 5, 0, 0 }
+    };
+    int i, accepted;
+    uint8_t type = OGS_POINTER_TO_UINT(data);
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        fixture_init(true);
+        f->ue.sgw_ue_id = 6;
+        f->sgw.sgw_s11_teid = 1;
+        f->ue.current.p_tmsi = 1;
+        f->ue.csmap = &f->csmap;
+        f->csmap.vlr = &f->vlr;
+        OGS_FSM_TRAN(&f->vlr.sm, sgsap_state_connected);
+        f->ue.nas_eps.mme.tsc = cases[i].stored_tsc;
+        f->ue.nas_eps.mme.ksi = 5;
+        f->ue.nas_eps.ue.tsc = !cases[i].stored_tsc;
+        f->ue.nas_eps.ue.ksi = 7;
+        f->ue.enb_ostream_id = 1;
+        f->enb.enb_ostream_id = 2;
+        f->ue.tai.tac = 99;
+        f->ue.t3413.pkbuf = ogs_pkbuf_alloc(NULL, 8);
+        ogs_assert(f->ue.t3413.pkbuf);
+        f->ue.t3413.retry_count = 2;
+        ogs_timer_start(f->ue.t3413.timer, ogs_time_from_sec(1));
+        /* Short Service Requests do not transmit a TSC bit. */
+        accepted = type == SHORT_SERVICE_REQUEST ?
+            cases[i].ksi == 5 : cases[i].accepted;
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
+        dispatch_ksi(type, 1, false, cases[i].tsc, cases[i].ksi);
+        ogs_log_set_domain_level(__emm_log_domain, level);
+        ABTS_INT_EQUAL(tc, accepted, f->setups);
+        ABTS_INT_EQUAL(tc,
+                accepted && type == OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST,
+                f->csfb);
+        ABTS_INT_EQUAL(tc, !accepted, f->rejects);
+        if (!accepted) {
+            ABTS_INT_EQUAL(tc,
+                OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                f->reject_cause);
+            ABTS_INT_EQUAL(tc, 1, f->ue.enb_ostream_id);
+            ABTS_INT_EQUAL(tc, 99, f->ue.tai.tac);
+        }
+        ABTS_TRUE(tc, !f->ue.t3413.timer->running);
+        ABTS_INT_EQUAL(tc, 0, f->ue.t3413.retry_count);
+        ABTS_PTR_EQUAL(tc, NULL, f->ue.t3413.pkbuf);
+        ABTS_INT_EQUAL(tc, cases[i].stored_tsc, f->ue.nas_eps.mme.tsc);
+        ABTS_INT_EQUAL(tc, 5, f->ue.nas_eps.mme.ksi);
+        ABTS_INT_EQUAL(tc, 0, f->air);
+        ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, emm_state_registered));
+        assert_sessions(tc);
+        CLEAR_MME_UE_TIMER(f->ue.t3413);
+        fixture_final();
+    }
+}
+
+static void detach_uses_current_ksi(abts_case *tc, void *data)
+{
+    static const struct { uint8_t tsc, ksi, accepted; } cases[] = {
+        { 0, 5, 1 }, { 0, 4, 0 }, { 1, 5, 0 }, { 0, 7, 0 }
+    };
+    ogs_fsm_handler_t states[] = {
+        emm_state_registered, emm_state_authentication,
+        emm_state_security_mode, emm_state_initial_context_setup
+    };
+    int i, state, restore;
+    ogs_log_level_e level = ogs_log_get_domain_level(__emm_log_domain);
+
+    for (state = 0; state < OGS_ARRAY_SIZE(states); state++) {
+        for (restore = 0; restore < 2; restore++) {
+            for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+                uint8_t *capability;
+                fixture_init(true);
+                f->ue.nas_eps.mme.tsc = 0;
+                f->ue.nas_eps.mme.ksi = 5;
+                f->ue.nas_eps.ue.tsc = 1;
+                f->ue.nas_eps.ue.ksi = 7;
+                f->ue.nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
+                f->ue.detach_type = MME_DETACH_TYPE_MME_IMPLICIT;
+                f->ue.ueRadioCapability.size = 4;
+                capability = f->ue.ueRadioCapability.buf = ogs_calloc(1, 4);
+                ogs_assert(capability);
+                f->ue.can_restore_context = restore;
+                mme_ue_save_memento(&f->ue, &f->ue.memento);
+                OGS_FSM_TRAN(&f->ue.sm, states[state]);
+                if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+                    ogs_log_set_domain_level(__emm_log_domain, OGS_LOG_FATAL);
+                dispatch_ksi(OGS_NAS_EPS_DETACH_REQUEST, 1, false,
+                        cases[i].tsc, cases[i].ksi);
+                ogs_log_set_domain_level(__emm_log_domain, level);
+                ABTS_INT_EQUAL(tc, cases[i].accepted, f->deletes);
+                ABTS_INT_EQUAL(tc, 0, f->rejects);
+                ABTS_INT_EQUAL(tc, 0, f->ue.nas_eps.mme.tsc);
+                ABTS_INT_EQUAL(tc, 5, f->ue.nas_eps.mme.ksi);
+                if (cases[i].accepted) {
+                    ABTS_TRUE(tc, OGS_FSM_CHECK(&f->ue.sm, emm_state_de_registered));
+                } else {
+                    ABTS_TRUE(tc, OGS_FSM_STATE(&f->ue.sm) == states[state]);
+                    ABTS_INT_EQUAL(tc, MME_EPS_TYPE_ATTACH_REQUEST, f->ue.nas_eps.type);
+                    ABTS_INT_EQUAL(tc, MME_DETACH_TYPE_MME_IMPLICIT, f->ue.detach_type);
+                    ABTS_INT_EQUAL(tc, 1, f->ue.nas_eps.ue.tsc);
+                    ABTS_INT_EQUAL(tc, 7, f->ue.nas_eps.ue.ksi);
+                    ABTS_PTR_EQUAL(tc, capability, f->ue.ueRadioCapability.buf);
+                    assert_sessions(tc);
+                }
+                fixture_final();
+            }
+        }
+    }
+}
+
+static void aia_allocates_native_ksi(abts_case *tc, void *data)
+{
+    static const struct {
+        uint8_t stored_ksi, received_ksi, expected[8];
+    } cases[] = {
+        { 5, 4, { 6, 0, 1, 2, 3, 5, 6, 0 } },
+        { 5, 6, { 0, 1, 2, 3, 4, 5, 0, 1 } },
+        { 6, 0, { 1, 2, 3, 4, 5, 6, 1, 2 } },
+        { 7, 7, { 0, 1, 2, 3, 4, 5, 6, 0 } }
+    };
+    int i, attempt;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        fixture_init(true);
+        f->ue.nas_eps.mme.ksi = cases[i].stored_ksi;
+        f->ue.nas_eps.ue.ksi = cases[i].received_ksi;
+        for (attempt = 0; attempt < OGS_ARRAY_SIZE(cases[i].expected); attempt++) {
+            ogs_nas_eps_message_t decoded;
+            ogs_pkbuf_t *pkbuf;
+            CLEAR_SECURITY_CONTEXT(&f->ue);
+            ogs_timer_start(f->ue.t3460.timer, ogs_time_from_sec(1));
+            ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED, receive_aia());
+            ABTS_TRUE(tc, !f->ue.t3460.timer->running);
+            ABTS_INT_EQUAL(tc, 0, f->ue.nas_eps.mme.tsc);
+            ABTS_INT_EQUAL(tc, cases[i].expected[attempt], f->ue.nas_eps.mme.ksi);
+            ABTS_INT_EQUAL(tc, 1, f->ue.nas_eps.ue.tsc);
+            ABTS_INT_EQUAL(tc, cases[i].received_ksi, f->ue.nas_eps.ue.ksi);
+            pkbuf = emm_build_authentication_request(&f->ue);
+            ogs_assert(pkbuf);
+            ABTS_INT_EQUAL(tc, OGS_OK, ogs_nas_emm_decode(&decoded, pkbuf));
+            ABTS_INT_EQUAL(tc, 0,
+                decoded.emm.authentication_request.nas_key_set_identifierasme.tsc);
+            ABTS_INT_EQUAL(tc, cases[i].expected[attempt],
+                decoded.emm.authentication_request.nas_key_set_identifierasme.value);
+            ogs_pkbuf_free(pkbuf);
+            /* SMC installs a usable context even while the original UE KSI
+             * remains 7 ("no key available"). */
+            pkbuf = emm_build_security_mode_command(&f->ue);
+            ogs_assert(pkbuf);
+            ABTS_TRUE(tc, SECURITY_CONTEXT_IS_VALID(&f->ue));
+            ogs_pkbuf_free(pkbuf);
+        }
+        fixture_final();
+    }
+}
+
 abts_suite *test_mme_attach(abts_suite *suite)
 {
     int i;
@@ -908,6 +1199,16 @@ abts_suite *test_mme_attach(abts_suite *suite)
     abts_run_test(suite, eir_policy_completes_attach, NULL);
     abts_run_test(suite, delete_timeout_cancels_attach, NULL);
     abts_run_test(suite, update_bearer_holding_expiry, NULL);
+    abts_run_test(suite, request_ksi_selects_authentication,
+            OGS_UINT_TO_POINTER(OGS_NAS_EPS_ATTACH_REQUEST));
+    abts_run_test(suite, request_ksi_selects_authentication,
+            OGS_UINT_TO_POINTER(OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST));
+    abts_run_test(suite, service_ksi_and_paging_timer,
+            OGS_UINT_TO_POINTER(SHORT_SERVICE_REQUEST));
+    abts_run_test(suite, service_ksi_and_paging_timer,
+            OGS_UINT_TO_POINTER(OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST));
+    abts_run_test(suite, detach_uses_current_ksi, NULL);
+    abts_run_test(suite, aia_allocates_native_ksi, NULL);
     *mme_self() = *saved;
     ogs_free(saved);
     return suite;

@@ -447,6 +447,8 @@ int mme_gn_handle_sgsn_context_response(
              ogs_min(gtp1_mm_ctx.ms_network_capability_len, sizeof(mme_ue->ms_network_capability) - 1));
     /* TODO: how to fill first byte of mme_ue->ms_network_capability ? */
 
+    /* The KASME derived from the SGSN context is a mapped EPS context. */
+    mme_ue->nas_eps.mme.tsc = 1;
     mme_ue->nas_eps.mme.ksi = gtp1_mm_ctx.ksi;
     /* 3GPP TS 33.401 A.10, A.11: */
     mme_ue->noncemme = ogs_random32();

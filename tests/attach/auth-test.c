@@ -22,6 +22,7 @@
 static void test1_func(abts_case *tc, void *data)
 {
     int rv;
+    uint8_t active_ksi;
     ogs_socknode_t *s1ap;
     ogs_socknode_t *gtpu;
     ogs_pkbuf_t *emmbuf;
@@ -135,6 +136,9 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+
+    /* Preserve this active KSI across the failed authentication attempts. */
+    active_ksi = test_ue->nas.ksi;
 
     /* Send Security mode complete */
     test_ue->mobile_identity_imeisv_presence = true;
@@ -299,6 +303,7 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, active_ksi, test_ue->nas.ksi);
 
     /* Send Authentication failure - SYNCH failure */
     emmbuf = testemm_build_authentication_failure(
@@ -313,6 +318,7 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, active_ksi, test_ue->nas.ksi);
 
     /* Send Authentication failure - SYNCH failure */
     emmbuf = testemm_build_authentication_failure(
@@ -327,6 +333,7 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, active_ksi, test_ue->nas.ksi);
 
     /* Send Attach Request - No Integrity */
     sess->pdn_connectivity_param.eit = 1;
@@ -368,6 +375,7 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, active_ksi, test_ue->nas.ksi);
 
     /* Send Authentication failure - MAC failure */
     emmbuf = testemm_build_authentication_failure(
@@ -382,6 +390,7 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, active_ksi, test_ue->nas.ksi);
 
     /*
      * --- Immediately Re-attach Test ---
@@ -454,6 +463,7 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, active_ksi, test_ue->nas.ksi);
 
     /* Send Authentication failure - MAC failure */
     emmbuf = testemm_build_authentication_failure(
@@ -468,6 +478,7 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, active_ksi, test_ue->nas.ksi);
 
     /* Send Detach Request */
     emmbuf = testemm_build_detach_request(test_ue, 1, true, false);
