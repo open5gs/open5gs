@@ -832,7 +832,7 @@ ED3(uint8_t ext:1;,
 } ogs_pco_t;
 
 int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len);
-int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco);
+int ogs_pco_build(unsigned char *data, unsigned int data_len, const ogs_pco_t *pco);
 
 /*
  * PFCP Specification
