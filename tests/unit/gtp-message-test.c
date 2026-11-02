@@ -150,10 +150,11 @@ static void gtp_message_test1(abts_case *tc, void *data)
     pco.ids[2].id = OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING;
     pco.ids[2].len = 0;
 
+    rv = ogs_pco_build(pcobuf, OGS_MAX_PCO_LEN, &pco);
+    ogs_assert(rv > 0);
     req.protocol_configuration_options.presence = 1;
     req.protocol_configuration_options.data = &pcobuf;
-    req.protocol_configuration_options.len =
-        ogs_pco_build(pcobuf, OGS_MAX_PCO_LEN, &pco);
+    req.protocol_configuration_options.len = rv;
 
     req.bearer_contexts_to_be_created[0].presence = 1;
     req.bearer_contexts_to_be_created[0].eps_bearer_id.presence = 1;

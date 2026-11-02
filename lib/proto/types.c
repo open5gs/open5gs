@@ -798,38 +798,38 @@ int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
 
     return size;
 }
-int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco)
+int ogs_pco_build(unsigned char *data, unsigned int data_len, const ogs_pco_t *pco)
 {
-    ogs_pco_t target;
-    int size = 0;
-    int i = 0;
+    unsigned int i;
+    unsigned int size;
 
     ogs_assert(pco);
     ogs_assert(data);
-    ogs_assert(data_len);
 
-    memcpy(&target, pco, sizeof(ogs_pco_t));
+    if (data_len < 1)
+        return -ENOBUFS;
 
-    ogs_assert(size + 1 <= data_len);
-    memcpy(data + size, &target, 1);
-    size += 1;
+    memcpy(data, pco, 1);
+    size = 1;
 
-    ogs_assert(target.num_of_id <= OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID);
-    for (i = 0; i < target.num_of_id; i++) {
-        ogs_pco_id_t *id = &target.ids[i];
+    ogs_assert(pco->num_of_id <= OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID);
+    for (i = 0; i < pco->num_of_id; i++) {
+        const ogs_pco_id_t *id = &pco->ids[i];
+        const uint16_t id_val = htobe16(id->id);
 
-        ogs_assert(size + sizeof(id->id) <= data_len);
-        id->id = htobe16(id->id);
-        memcpy(data + size, &id->id, sizeof(id->id));
-        size += sizeof(id->id);
+        if (size + sizeof(id_val) + sizeof(id->len) + id->len > data_len)
+            return -ENOBUFS;
 
-        ogs_assert(size + sizeof(id->len) <= data_len);
+        memcpy(data + size, &id_val, sizeof(id_val));
+        size += sizeof(id_val);
+
         memcpy(data + size, &id->len, sizeof(id->len));
         size += sizeof(id->len);
 
-        ogs_assert(size + id->len <= data_len);
-        memcpy(data + size, id->data, id->len);
-        size += id->len;
+        if (id->len > 0) {
+            memcpy(data + size, id->data, id->len);
+            size += id->len;
+        }
     }
 
     return size;
