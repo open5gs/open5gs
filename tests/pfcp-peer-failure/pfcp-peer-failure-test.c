@@ -33,6 +33,11 @@
  * failed, and the sessions must still be there: they are released by
  * the SMF no earlier than 7.5 + 40 seconds, and deleted by the UPF no
  * earlier than 7.5 + 30 seconds.
+ *
+ * A stopped process loses no PFCP message: the messages sent to it are
+ * queued and handled when it resumes. Whether the SMF has restored the
+ * sessions on the UPF (TS 23.527 4.3.2) is read from the metrics server
+ * of the UPF, which counts the PFCP Session Establishment Requests.
  */
 
 #include "test-common.h"
@@ -40,6 +45,9 @@
 #include <arpa/inet.h>
 #include <poll.h>
 #include <signal.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #define PEER_DOWN               25      /* seconds */
 #define SMF_RELEASE_AFTER       40      /* seconds, pfcp-peer-failure.yaml */
@@ -122,6 +130,58 @@ static bool ping(ogs_socknode_t *gtpu, test_bearer_t *qos_flow)
     return true;
 }
 
+/*
+ * Number of PFCP Session Establishment Requests received by the UPF
+ * (metrics server of the UPF, port 9090 in pfcp-peer-failure.yaml), or -1
+ * if it cannot be read. Not to be called while the UPF is stopped.
+ */
+#define UPF_ESTABLISHMENT_REQUESTS "fivegs_upffunction_sm_n4sessionestabreq"
+
+static long upf_establishment_requests(const char *upf_addr)
+{
+    static char buf[256 * 1024];
+    static const char request[] = "GET /metrics HTTP/1.0\r\n\r\n";
+    const char *name = "\n" UPF_ESTABLISHMENT_REQUESTS " ";
+    struct sockaddr_in sin;
+    struct timeval tv;
+    size_t len = 0;
+    ssize_t n;
+    char *p;
+    int fd;
+
+    memset(&sin, 0, sizeof(sin));
+    sin.sin_family = AF_INET;
+    sin.sin_port = htons(9090);
+    ogs_assert(inet_pton(AF_INET, upf_addr, &sin.sin_addr) == 1);
+
+    fd = socket(AF_INET, SOCK_STREAM, 0);
+    ogs_assert(fd >= 0);
+    tv.tv_sec = 2;
+    tv.tv_usec = 0;
+    ogs_assert(setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == 0);
+
+    if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) != 0 ||
+        send(fd, request, sizeof(request) - 1, 0) !=
+            (ssize_t)(sizeof(request) - 1)) {
+        ogs_error("Cannot read the metrics of UPF %s", upf_addr);
+        close(fd);
+        return -1;
+    }
+    while (len < sizeof(buf) - 1 &&
+            (n = recv(fd, buf + len, sizeof(buf) - 1 - len, 0)) > 0)
+        len += (size_t)n;
+    close(fd);
+    buf[len] = '\0';
+
+    p = strstr(buf, name);
+    if (!p) {
+        ogs_error("No %s in the metrics of UPF %s",
+                UPF_ESTABLISHMENT_REQUESTS, upf_addr);
+        return -1;
+    }
+    return (long)strtod(p + strlen(name), NULL);
+}
+
 static test_ue_t *ue_add(const char *msin)
 {
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
@@ -154,9 +214,9 @@ static test_ue_t *ue_add(const char *msin)
     return test_ue;
 }
 
-/* NG Setup and registration */
+/* NG Setup (first UE of the gNB) and registration */
 static void ue_register(abts_case *tc, test_ue_t *test_ue,
-        ogs_socknode_t *ngap)
+        ogs_socknode_t *ngap, bool ng_setup)
 {
     int rv;
     ogs_pkbuf_t *gmmbuf;
@@ -165,16 +225,18 @@ static void ue_register(abts_case *tc, test_ue_t *test_ue,
     ogs_pkbuf_t *recvbuf;
     bson_t *doc = NULL;
 
-    /* Send NG-Setup Reqeust */
-    sendbuf = testngap_build_ng_setup_request(0x4000, 22);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    if (ng_setup == true) {
+        /* Send NG-Setup Reqeust */
+        sendbuf = testngap_build_ng_setup_request(0x4000, 22);
+        ABTS_PTR_NOTNULL(tc, sendbuf);
+        rv = testgnb_ngap_send(ngap, sendbuf);
+        ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive NG-Setup Response */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
+        /* Receive NG-Setup Response */
+        recvbuf = testgnb_ngap_read(ngap);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        testngap_recv(test_ue, recvbuf);
+    }
 
     /********** Insert Subscriber in Database */
     doc = test_db_new_simple(test_ue);
@@ -338,7 +400,7 @@ static test_bearer_t *ue_attach(abts_case *tc, test_ue_t *test_ue,
     test_sess_t *sess = NULL;
     test_bearer_t *qos_flow = NULL;
 
-    ue_register(tc, test_ue, ngap);
+    ue_register(tc, test_ue, ngap, true);
     sess = pdu_session_establish(tc, test_ue, ngap, 5);
 
     qos_flow = test_qos_flow_find_by_qfi(sess, 1);
@@ -388,8 +450,8 @@ static void pdu_session_release_complete(abts_case *tc, test_ue_t *test_ue,
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 }
 
-static void ue_detach(abts_case *tc, test_ue_t *test_ue,
-        ogs_socknode_t *ngap, ogs_socknode_t *gtpu)
+static void ue_deregister(abts_case *tc, test_ue_t *test_ue,
+        ogs_socknode_t *ngap)
 {
     int rv;
     ogs_pkbuf_t *gmmbuf;
@@ -423,20 +485,28 @@ static void ue_detach(abts_case *tc, test_ue_t *test_ue,
     /********** Remove Subscriber in Database */
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
+    /* Clear Test UE Context */
+    test_ue_remove(test_ue);
+}
+
+static void ue_detach(abts_case *tc, test_ue_t *test_ue,
+        ogs_socknode_t *ngap, ogs_socknode_t *gtpu)
+{
+    ue_deregister(tc, test_ue, ngap);
+
     /* gNB disonncect from UPF */
     testgnb_gtpu_close(gtpu);
 
     /* gNB disonncect from AMF */
     testgnb_ngap_close(ngap);
-
-    /* Clear Test UE Context */
-    test_ue_remove(test_ue);
 }
 
 /*
  * The UPF is unreachable for PEER_DOWN seconds and comes back before
  * release_after_peer_failure expires on the SMF: the PDU session is
- * kept, and it is not released later either.
+ * kept, and it is not released later either. The SMF asks the UPF to
+ * retain it (PFCP Session Retention Information) and does not restore
+ * it: the UPF receives no PFCP Session Establishment Request.
  */
 static void test1_func(abts_case *tc, void *data)
 {
@@ -444,6 +514,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_socknode_t *gtpu;
     test_ue_t *test_ue = NULL;
     test_bearer_t *qos_flow = NULL;
+    long requests;
 
     test_ue = ue_add("0000203190");
 
@@ -453,6 +524,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gtpu);
 
     qos_flow = ue_attach(tc, test_ue, ngap, gtpu);
+
+    requests = upf_establishment_requests("127.0.0.7");
+    ABTS_TRUE(tc, requests > 0);
 
     /* UPF unreachable: the SMF must not release the PDU session */
     test_child_signal_with_name("upf", 0, SIGSTOP);
@@ -466,12 +540,21 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_TRUE(tc, ngap_silent(test_ue, ngap, SMF_RELEASE_AFTER));
     ABTS_TRUE(tc, ping(gtpu, qos_flow));
 
+    /* Retained by the UPF, not restored by the SMF */
+    ABTS_INT_EQUAL(tc, (int)requests,
+            (int)upf_establishment_requests("127.0.0.7"));
+
     ue_detach(tc, test_ue, ngap, gtpu);
 }
 
 /*
  * The UPF stays unreachable: the SMF keeps the PDU session until
  * release_after_peer_failure expires, then releases it.
+ *
+ * The PFCP Session Deletion cannot reach the UPF at that time. When the
+ * SMF associates again, it no longer asks the UPF to retain the sessions
+ * (PFCP Session Retention Information), so the UPF deletes the session
+ * left over from the released PDU session.
  */
 static void test2_func(abts_case *tc, void *data)
 {
@@ -479,6 +562,7 @@ static void test2_func(abts_case *tc, void *data)
     ogs_socknode_t *gtpu;
     test_ue_t *test_ue = NULL;
     test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
 
     test_ue = ue_add("0000203191");
 
@@ -487,7 +571,7 @@ static void test2_func(abts_case *tc, void *data)
     gtpu = test_gtpu_server(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, gtpu);
 
-    ue_attach(tc, test_ue, ngap, gtpu);
+    qos_flow = ue_attach(tc, test_ue, ngap, gtpu);
     sess = test_sess_find_by_psi(test_ue, 5);
     ogs_assert(sess);
 
@@ -509,6 +593,9 @@ static void test2_func(abts_case *tc, void *data)
 
     /* Let the SMF associate with the UPF again (association interval 11 s) */
     ogs_msleep(25000);
+
+    /* No session left over in the UPF */
+    ABTS_INT_EQUAL(tc, OGS_GTPU_MSGTYPE_ERR_IND, ping_answer(gtpu, qos_flow));
 
     ue_detach(tc, test_ue, ngap, gtpu);
 }
@@ -544,7 +631,7 @@ static void test3_func(abts_case *tc, void *data)
     gtpu = test_gtpu_server(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, gtpu);
 
-    ue_register(tc, test_ue, ngap);
+    ue_register(tc, test_ue, ngap, true);
     sess = pdu_session_establish(tc, test_ue, ngap, 5);
 
     /* The UPF instance of the PDU session goes down, the other stays up */
@@ -578,6 +665,159 @@ static void test3_func(abts_case *tc, void *data)
 }
 
 /*
+ * Two PDU sessions on the UPF, and the UPF is unreachable: the SMF keeps
+ * the one of the first UE (cell 0x40001, no other UPF) and releases the
+ * one of the second UE (cell 0x40002, see test3_func) at once.
+ *
+ * The PFCP Session Deletion of the released session may not have reached
+ * the UPF, so the SMF does not ask the UPF to retain the sessions when it
+ * associates again: the UPF deletes both, and the SMF restores the kept
+ * one (TS 23.527 4.3.2). The data path of the kept session works again,
+ * and the UPF has no session left over from the released one.
+ */
+static void test4_func(abts_case *tc, void *data)
+{
+    ogs_socknode_t *ngap;
+    ogs_socknode_t *gtpu;
+    test_ue_t *test_ue = NULL, *test_ue2 = NULL;
+    test_sess_t *sess2 = NULL;
+    test_bearer_t *qos_flow = NULL, *qos_flow2 = NULL;
+    uint32_t upf_addr;
+    uint8_t psi;
+    long requests;
+
+    ogs_assert(inet_pton(AF_INET, "127.0.0.7", &upf_addr) == 1);
+
+    test_ue = ue_add("0000203194");
+    test_ue2 = ue_add("0000203195");
+    test_ue2->nr_cgi.cell_id = 0x40002;
+
+    ngap = testngap_client(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, ngap);
+    gtpu = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu);
+
+    /* First UE: PDU session on 127.0.0.7 */
+    qos_flow = ue_attach(tc, test_ue, ngap, gtpu);
+
+    /*
+     * Second UE: PDU session on 127.0.0.7 as well. The SMF selects the
+     * two UPFs in turn for cell 0x40002.
+     */
+    test_ue2->ran_ue_ngap_id = test_ue->ran_ue_ngap_id;
+    ue_register(tc, test_ue2, ngap, false);
+    for (psi = 5; psi <= 6; psi++) {
+        sess2 = pdu_session_establish(tc, test_ue2, ngap, psi);
+        if (sess2->upf_n3_ip.addr == upf_addr)
+            break;
+    }
+    ABTS_INT_EQUAL(tc, upf_addr, sess2->upf_n3_ip.addr);
+    qos_flow2 = test_qos_flow_find_by_qfi(sess2, 1);
+    ogs_assert(qos_flow2);
+    ABTS_TRUE(tc, ping(gtpu, qos_flow2));
+
+    requests = upf_establishment_requests("127.0.0.7");
+    ABTS_TRUE(tc, requests > 0);
+
+    test_child_signal_with_name("upf", 0, SIGSTOP);
+
+    /* Receive PDUSessionResourceReleaseCommand +
+     * DL NAS transport +
+     * PDU session release command
+     * of the second UE once the heartbeat has given up */
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceRelease,
+            ngap_wait(test_ue2, ngap, (HEARTBEAT_GIVE_UP_MAX + 3) * 1000));
+
+    pdu_session_release_complete(tc, test_ue2, ngap, sess2);
+
+    /* Let the SMF remove the released session */
+    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, 3));
+
+    test_child_signal_with_name("upf", 0, SIGCONT);
+
+    /*
+     * The SMF associates again within the association interval (11 s),
+     * and the session of the first UE is kept.
+     */
+    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, 25));
+
+    /* Deleted by the UPF and restored by the SMF */
+    ABTS_INT_EQUAL(tc, (int)(requests + 1),
+            (int)upf_establishment_requests("127.0.0.7"));
+    ABTS_TRUE(tc, ping(gtpu, qos_flow));
+
+    /* No session left over in the UPF */
+    ABTS_INT_EQUAL(tc,
+            OGS_GTPU_MSGTYPE_ERR_IND, ping_answer(gtpu, qos_flow2));
+
+    ue_deregister(tc, test_ue2, ngap);
+    ue_detach(tc, test_ue, ngap, gtpu);
+}
+
+/*
+ * As in test2_func, but the PDU session is still being released when the
+ * UPF comes back: release_after_peer_failure has expired, and the UE has
+ * not answered the PDU Session Release Command yet. A session released on
+ * expiry is neither retained nor restored, also while its release is
+ * still in progress: the UPF deletes it when the SMF associates again,
+ * and the SMF does not set it up again.
+ */
+static void test6_func(abts_case *tc, void *data)
+{
+    ogs_socknode_t *ngap;
+    ogs_socknode_t *gtpu;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+    long requests;
+
+    test_ue = ue_add("0000203196");
+
+    ngap = testngap_client(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, ngap);
+    gtpu = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu);
+
+    qos_flow = ue_attach(tc, test_ue, ngap, gtpu);
+    sess = test_sess_find_by_psi(test_ue, 5);
+    ogs_assert(sess);
+
+    requests = upf_establishment_requests("127.0.0.7");
+    ABTS_TRUE(tc, requests > 0);
+
+    test_child_signal_with_name("upf", 0, SIGSTOP);
+
+    /* Kept after the heartbeat has given up */
+    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, PEER_DOWN));
+
+    /* Receive PDUSessionResourceReleaseCommand +
+     * DL NAS transport +
+     * PDU session release command */
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceRelease,
+            ngap_wait(test_ue, ngap, (SMF_RELEASE_AFTER + 15) * 1000));
+
+    test_child_signal_with_name("upf", 0, SIGCONT);
+
+    /* Let the SMF associate with the UPF again (association interval 11 s) */
+    ogs_msleep(25000);
+
+    /* Not retained by the UPF */
+    ABTS_INT_EQUAL(tc, OGS_GTPU_MSGTYPE_ERR_IND, ping_answer(gtpu, qos_flow));
+
+    pdu_session_release_complete(tc, test_ue, ngap, sess);
+    ogs_msleep(1000);
+
+    /* Not restored by the SMF */
+    ABTS_INT_EQUAL(tc, OGS_GTPU_MSGTYPE_ERR_IND, ping_answer(gtpu, qos_flow));
+    ABTS_INT_EQUAL(tc, (int)requests,
+            (int)upf_establishment_requests("127.0.0.7"));
+
+    ue_detach(tc, test_ue, ngap, gtpu);
+}
+
+/*
  * The SMF is unreachable: the UPF keeps the sessions of the SMF after the
  * heartbeat has given up, so the data path keeps working, and deletes them
  * when release_after_peer_failure expires (TS 23.527 4.4.3.1).
@@ -585,7 +825,7 @@ static void test3_func(abts_case *tc, void *data)
  * This is the last test case: the SMF never noticed the outage and stays
  * associated, so the subscriber is only removed from the database.
  */
-static void test4_func(abts_case *tc, void *data)
+static void test5_func(abts_case *tc, void *data)
 {
     ogs_time_t start, now;
     ogs_socknode_t *ngap;
@@ -648,6 +888,8 @@ abts_suite *test_pfcp_peer_failure(abts_suite *suite)
     abts_run_test(suite, test2_func, NULL);
     abts_run_test(suite, test3_func, NULL);
     abts_run_test(suite, test4_func, NULL);
+    abts_run_test(suite, test6_func, NULL);
+    abts_run_test(suite, test5_func, NULL);
 
     return suite;
 }

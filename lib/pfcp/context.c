@@ -1217,12 +1217,59 @@ void ogs_pfcp_node_start_release_after_peer_failure(ogs_pfcp_node_t *node)
     if (duration == 0 && node->restoration_required == true)
         return;
 
-    if (duration != 0)
+    if (duration != 0) {
         ogs_warn("Keep sessions of %s for %lld seconds",
                 ogs_sockaddr_to_string_static(node->addr_list),
                 (long long)ogs_time_sec(duration));
 
+        /*
+         * TS 29.244 6.2.6.2: see ogs_pfcp_cp_send_association_setup_request().
+         * If the sessions of a previous failure have not been agreed on
+         * yet, no session has been bound since: the count and whether
+         * they are still kept (not released on expiry) stay.
+         */
+        if (node->num_of_sessions_kept == 0) {
+            node->num_of_sessions_kept = node->num_of_sessions;
+            node->sessions_kept = node->num_of_sessions_kept != 0;
+        }
+    }
+
     ogs_timer_start(node->t_release_after_peer_failure, duration);
+}
+
+/*
+ * CP function: whether to include the PFCP Session Retention Information
+ * IE in the PFCP Association Setup Request (TS 29.244 6.2.6.2.1), i.e.
+ * whether the sessions kept after the failure of the node are all still
+ * there (pfcp.release_after_peer_failure).
+ *
+ * Not if one of them has been removed meanwhile: its PFCP Session Deletion
+ * may not have reached the UP function, and the IE selects the sessions
+ * per CP PFCP entity only (TS 29.244 Table 7.4.4.1-2), so the UP function
+ * would retain it as well. Without the IE, the UP function deletes the
+ * sessions (TS 29.244 6.2.6.2.2), and the remaining ones are restored.
+ */
+bool ogs_pfcp_node_retain_sessions(ogs_pfcp_node_t *node)
+{
+    ogs_assert(node);
+
+    return node->sessions_kept == true &&
+        node->num_of_sessions != 0 &&
+        node->num_of_sessions == node->num_of_sessions_kept;
+}
+
+/*
+ * CP function: whether the CP and the UP function still have to agree on
+ * the sessions kept after the failure of the node. Until then, the CP
+ * function sets up the association itself (also after one set up by the
+ * UP function, which carries no retention information), and a node with
+ * a pending retention decision is not selectable for new sessions.
+ */
+bool ogs_pfcp_node_retention_pending(ogs_pfcp_node_t *node)
+{
+    ogs_assert(node);
+
+    return node->num_of_sessions_kept != 0;
 }
 
 ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,

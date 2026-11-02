@@ -277,7 +277,11 @@ int ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
         return OGS_ERROR;
     }
 
-    pkbuf = ogs_pfcp_cp_build_association_setup_request(h.type);
+    node->assoc_xact_id = xact->id;
+    node->retention_requested = ogs_pfcp_node_retain_sessions(node);
+
+    pkbuf = ogs_pfcp_cp_build_association_setup_request(h.type,
+            node->retention_requested);
     if (!pkbuf) {
         ogs_error("ogs_pfcp_cp_build_association_setup_request() failed");
         return OGS_ERROR;
@@ -377,7 +381,9 @@ int ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
     h.type = OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE;
     h.seid = 0;
 
-    pkbuf = ogs_pfcp_up_build_association_setup_response(h.type, cause);
+    ogs_assert(xact->node);
+    pkbuf = ogs_pfcp_up_build_association_setup_response(h.type, cause,
+            xact->node->psrei_requested);
     if (!pkbuf) {
         ogs_error("ogs_pfcp_up_build_association_setup_response() failed");
         return OGS_ERROR;

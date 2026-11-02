@@ -26,6 +26,8 @@
 #include "n4-handler.h"
 
 static void pfcp_restoration(ogs_pfcp_node_t *node);
+static void retain_or_delete_sessions(ogs_pfcp_node_t *node,
+        ogs_pfcp_association_setup_request_t *req);
 static void node_timeout(ogs_pfcp_xact_t *xact, void *data);
 
 void upf_pfcp_state_initial(ogs_fsm_t *s, upf_event_t *e)
@@ -156,6 +158,8 @@ void upf_pfcp_state_will_associate(ogs_fsm_t *s, upf_event_t *e)
                     &message->pfcp_heartbeat_response));
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
+            retain_or_delete_sessions(node,
+                    &message->pfcp_association_setup_request);
             ogs_pfcp_up_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
             OGS_FSM_TRAN(s, upf_pfcp_state_associated);
@@ -305,6 +309,8 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
             ogs_warn("PFCP[REQ] has already been associated %s",
                     ogs_sockaddr_to_string_static(node->addr_list));
+            retain_or_delete_sessions(node,
+                    &message->pfcp_association_setup_request);
             ogs_pfcp_up_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
             break;
@@ -440,6 +446,45 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
                 sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
             upf_sess_remove(sess);
         }
+    }
+}
+
+/*
+ * TS 29.244 6.2.6.2.2: If the PFCP Association Setup Request contains a
+ * Node ID for which a PFCP association was already established, the UP
+ * function shall ... retain the PFCP sessions that were established with
+ * the existing PFCP association and that are requested to be retained, if
+ * the PFCP Session Retention Information IE was received in the request;
+ * otherwise, delete the PFCP sessions that were established with the
+ * existing PFCP association.
+ *
+ * The sessions of the node belong to that association, also while they
+ * are kept in will_associate after a heartbeat failure
+ * (pfcp.release_after_peer_failure).
+ *
+ * Retention per CP PFCP entity (CP PFCP Entity IP Address) is not
+ * implemented: Open5GS CP functions have a single PFCP entity, which
+ * lists its own address, so all sessions of the node are retained.
+ */
+static void retain_or_delete_sessions(ogs_pfcp_node_t *node,
+        ogs_pfcp_association_setup_request_t *req)
+{
+    ogs_assert(node);
+    ogs_assert(req);
+
+    node->psrei_requested = false;
+
+    if (upf_node_has_sessions(node) == false)
+        return;
+
+    if (req->pfcp_session_retention_information.presence) {
+        ogs_info("Retain sessions of %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
+        node->psrei_requested = true;
+    } else {
+        ogs_warn("Delete sessions of %s: no PFCP Session Retention "
+                "Information", ogs_sockaddr_to_string_static(node->addr_list));
+        pfcp_restoration(node);
     }
 }
 

@@ -1411,6 +1411,25 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, smf_sess_t *sess)
     return false;
 }
 
+/*
+ * An associated UPF without a pending retention decision: the UPF deletes
+ * the sessions of the SMF on an Association Setup Request without PFCP
+ * Session Retention Information (TS 29.244 6.2.6.2.2), and a new session
+ * would not be counted against the kept ones.
+ */
+static bool upf_selectable(ogs_pfcp_node_t *node)
+{
+    ogs_assert(node);
+
+    if (!OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated))
+        return false;
+
+    if (ogs_pfcp_node_retention_pending(node) == true)
+        return false;
+
+    return true;
+}
+
 static ogs_pfcp_node_t *selected_upf_node(
         ogs_pfcp_node_t *current, smf_sess_t *sess)
 {
@@ -1422,13 +1441,13 @@ static ogs_pfcp_node_t *selected_upf_node(
     /* continue search from current position */
     next = ogs_list_next(current);
     for (node = next; node; node = ogs_list_next(node)) {
-        if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
+        if (upf_selectable(node) == true &&
             compare_ue_info(node, sess) == true) return node;
     }
     /* cyclic search from top to current position */
     for (node = ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
             node != next; node = ogs_list_next(node)) {
-        if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
+        if (upf_selectable(node) == true &&
             compare_ue_info(node, sess) == true) return node;
     }
 
@@ -1436,13 +1455,13 @@ static ogs_pfcp_node_t *selected_upf_node(
         /* continue search from current position */
         next = ogs_list_next(current);
         for (node = next; node; node = ogs_list_next(node)) {
-            if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated))
+            if (upf_selectable(node) == true)
                 return node;
         }
         /* cyclic search from top to current position */
         for (node = ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
                 node != next; node = ogs_list_next(node)) {
-            if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated))
+            if (upf_selectable(node) == true)
                 return node;
         }
     }
@@ -1465,7 +1484,7 @@ bool smf_sess_other_upf_available(smf_sess_t *sess, ogs_pfcp_node_t *node)
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, iter) {
         if (iter == node)
             continue;
-        if (!OGS_FSM_CHECK(&iter->sm, smf_pfcp_state_associated))
+        if (upf_selectable(iter) == false)
             continue;
         if (ogs_global_conf()->parameter.no_pfcp_rr_select == 0 ||
             compare_ue_info(iter, sess) == true)
@@ -1492,6 +1511,20 @@ void smf_sess_select_upf(smf_sess_t *sess)
         ogs_pfcp_self()->pfcp_node =
             selected_upf_node(ogs_pfcp_self()->pfcp_node, sess);
         ogs_assert(ogs_pfcp_self()->pfcp_node);
+
+        /*
+         * selected_upf_node() falls back to a UPF that is not selectable.
+         * A session bound to a node with a pending retention decision
+         * would be counted against the kept ones.
+         */
+        if (ogs_pfcp_node_retention_pending(
+                    ogs_pfcp_self()->pfcp_node) == true) {
+            ogs_error("No UPF available: retention decision pending for %s",
+                    ogs_sockaddr_to_string_static(
+                        ogs_pfcp_self()->pfcp_node->addr_list));
+            return;
+        }
+
         OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
         ogs_debug("UE using UPF on IP %s",
                 ogs_sockaddr_to_string_static(
@@ -2102,6 +2135,9 @@ void smf_sess_remove(smf_sess_t *sess)
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
     ogs_list_remove(&smf_ue->sess_list, sess);
+
+    /* TS 29.244 6.2.6.2: see ogs_pfcp_cp_send_association_setup_request() */
+    OGS_CLEAR_PFCP_NODE(sess);
 
     memset(&e, 0, sizeof(e));
     e.sess_id = sess->id;

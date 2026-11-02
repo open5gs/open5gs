@@ -42,6 +42,7 @@ testunit_unit_sources = files('''
     eir-config-test.c
     ipfw-test.c
     pfcp-rule-test.c
+    pfcp-retention-test.c
 '''.split())
 
 testunit_unit_exe = executable('unit',

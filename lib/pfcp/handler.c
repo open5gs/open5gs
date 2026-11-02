@@ -127,6 +127,16 @@ bool ogs_pfcp_cp_handle_association_setup_response(
     ogs_assert(node);
     ogs_assert(rsp);
 
+    /* TS 29.244 8.2.134: PSREI */
+    node->psrei_requested = false;
+    if (rsp->pfcpasrsp_flags.presence &&
+        rsp->pfcpasrsp_flags.data && rsp->pfcpasrsp_flags.len >= 1) {
+        ogs_pfcp_asrsp_flags_t asrsp_flags;
+
+        asrsp_flags.value = *(uint8_t *)rsp->pfcpasrsp_flags.data;
+        node->psrei_requested = asrsp_flags.psrei;
+    }
+
     if (rsp->up_function_features.presence) {
         if (rsp->up_function_features.data && rsp->up_function_features.len) {
             node->up_function_features_len =
