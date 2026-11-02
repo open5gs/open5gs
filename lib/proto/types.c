@@ -735,7 +735,6 @@ int ogs_fqdn_parse(char *dst, const char *src, int length)
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 */
 int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
 {
-    ogs_pco_t *source = (ogs_pco_t *)data;
     int size = 0;
     int i = 0;
 
@@ -750,8 +749,8 @@ int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
         return -EINVAL;
     }
 
-    pco->ext = source->ext;
-    pco->configuration_protocol = source->configuration_protocol;
+    pco->ext = *data >> 7;
+    pco->configuration_protocol = *data & 0x7;
     size++;
 
     while(size < data_len && i < OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID) {
