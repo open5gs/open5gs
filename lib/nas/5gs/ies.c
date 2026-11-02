@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-10-31 12:24:40.622917 by acetcom
+ * Created on: 2026-11-03 18:19:22.788574 by pespin
  * from r19.6.2/24501-j62-ch8-ch9.docx
  ******************************************************************************/
 
@@ -93,25 +93,23 @@ int ogs_nas_5gs_encode_additional_information(ogs_pkbuf_t *pkbuf, ogs_nas_additi
  * O TLV-E 4-65538 */
 int ogs_nas_5gs_decode_service_level_aa_container(ogs_nas_service_level_aa_container_t *service_level_aa_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_service_level_aa_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_service_level_aa_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    service_level_aa_container->length = be16toh(len_be);
+    service_level_aa_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    service_level_aa_container->length = be16toh(source->length);
-    size = service_level_aa_container->length + sizeof(service_level_aa_container->length);
-
+    size = sizeof(uint16_t) + service_level_aa_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    service_level_aa_container->buffer = pkbuf->data - size + sizeof(service_level_aa_container->length);
 
     ogs_trace("  SERVICE_LEVEL_AA_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)service_level_aa_container->buffer, service_level_aa_container->length);
@@ -240,25 +238,23 @@ int ogs_nas_5gs_encode_dnn(ogs_pkbuf_t *pkbuf, ogs_nas_dnn_t *dnn)
  * O TLV-E 7-1503 */
 int ogs_nas_5gs_decode_eap_message(ogs_nas_eap_message_t *eap_message, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_eap_message_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_eap_message_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    eap_message->length = be16toh(len_be);
+    eap_message->buffer = pkbuf->data + sizeof(uint16_t);
 
-    eap_message->length = be16toh(source->length);
-    size = eap_message->length + sizeof(eap_message->length);
-
+    size = sizeof(uint16_t) + eap_message->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    eap_message->buffer = pkbuf->data - size + sizeof(eap_message->length);
 
     ogs_trace("  EAP_MESSAGE - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)eap_message->buffer, eap_message->length);
@@ -649,25 +645,23 @@ int ogs_nas_5gs_encode_abba(ogs_pkbuf_t *pkbuf, ogs_nas_abba_t *abba)
  * O TLV-E 17-38611  */
 int ogs_nas_5gs_decode_s_nssai_location_validity_information(ogs_nas_s_nssai_location_validity_information_t *s_nssai_location_validity_information, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_s_nssai_location_validity_information_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_s_nssai_location_validity_information_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    s_nssai_location_validity_information->length = be16toh(len_be);
+    s_nssai_location_validity_information->buffer = pkbuf->data + sizeof(uint16_t);
 
-    s_nssai_location_validity_information->length = be16toh(source->length);
-    size = s_nssai_location_validity_information->length + sizeof(s_nssai_location_validity_information->length);
-
+    size = sizeof(uint16_t) + s_nssai_location_validity_information->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    s_nssai_location_validity_information->buffer = pkbuf->data - size + sizeof(s_nssai_location_validity_information->length);
 
     ogs_trace("  S_NSSAI_LOCATION_VALIDITY_INFORMATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)s_nssai_location_validity_information->buffer, s_nssai_location_validity_information->length);
@@ -794,25 +788,23 @@ int ogs_nas_5gs_encode_non_3gpp_path_switching_information(ogs_pkbuf_t *pkbuf, o
  * O TLV-E 3-808 */
 int ogs_nas_5gs_decode_partial_nssai(ogs_nas_partial_nssai_t *partial_nssai, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_partial_nssai_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_partial_nssai_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    partial_nssai->length = be16toh(len_be);
+    partial_nssai->buffer = pkbuf->data + sizeof(uint16_t);
 
-    partial_nssai->length = be16toh(source->length);
-    size = partial_nssai->length + sizeof(partial_nssai->length);
-
+    size = sizeof(uint16_t) + partial_nssai->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    partial_nssai->buffer = pkbuf->data - size + sizeof(partial_nssai->length);
 
     ogs_trace("  PARTIAL_NSSAI - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)partial_nssai->buffer, partial_nssai->length);
@@ -1579,25 +1571,23 @@ int ogs_nas_5gs_encode_configuration_update_indication(ogs_pkbuf_t *pkbuf, ogs_n
  * O TLV-E 3-n */
 int ogs_nas_5gs_decode_cag_information_list(ogs_nas_cag_information_list_t *cag_information_list, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_cag_information_list_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_cag_information_list_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    cag_information_list->length = be16toh(len_be);
+    cag_information_list->buffer = pkbuf->data + sizeof(uint16_t);
 
-    cag_information_list->length = be16toh(source->length);
-    size = cag_information_list->length + sizeof(cag_information_list->length);
-
+    size = sizeof(uint16_t) + cag_information_list->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    cag_information_list->buffer = pkbuf->data - size + sizeof(cag_information_list->length);
 
     ogs_trace("  CAG_INFORMATION_LIST - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)cag_information_list->buffer, cag_information_list->length);
@@ -1632,25 +1622,23 @@ int ogs_nas_5gs_encode_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas_cag_info
  * O TLV-E 34-n */
 int ogs_nas_5gs_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_key_data, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_ciphering_key_data_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_ciphering_key_data_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    ciphering_key_data->length = be16toh(len_be);
+    ciphering_key_data->buffer = pkbuf->data + sizeof(uint16_t);
 
-    ciphering_key_data->length = be16toh(source->length);
-    size = ciphering_key_data->length + sizeof(ciphering_key_data->length);
-
+    size = sizeof(uint16_t) + ciphering_key_data->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    ciphering_key_data->buffer = pkbuf->data - size + sizeof(ciphering_key_data->length);
 
     ogs_trace("  CIPHERING_KEY_DATA - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)ciphering_key_data->buffer, ciphering_key_data->length);
@@ -1891,25 +1879,23 @@ int ogs_nas_5gs_encode_eps_bearer_context_status(ogs_pkbuf_t *pkbuf, ogs_nas_eps
  * O TLV-E 4-n */
 int ogs_nas_5gs_decode_eps_nas_message_container(ogs_nas_eps_nas_message_container_t *eps_nas_message_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_eps_nas_message_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_eps_nas_message_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    eps_nas_message_container->length = be16toh(len_be);
+    eps_nas_message_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    eps_nas_message_container->length = be16toh(source->length);
-    size = eps_nas_message_container->length + sizeof(eps_nas_message_container->length);
-
+    size = sizeof(uint16_t) + eps_nas_message_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    eps_nas_message_container->buffer = pkbuf->data - size + sizeof(eps_nas_message_container->length);
 
     ogs_trace("  EPS_NAS_MESSAGE_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)eps_nas_message_container->buffer, eps_nas_message_container->length);
@@ -1978,25 +1964,23 @@ int ogs_nas_5gs_encode_eps_nas_security_algorithms(ogs_pkbuf_t *pkbuf, ogs_nas_e
  * O TLV-E 7-65538 */
 int ogs_nas_5gs_decode_extended_emergency_number_list(ogs_nas_extended_emergency_number_list_t *extended_emergency_number_list, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_extended_emergency_number_list_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_extended_emergency_number_list_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    extended_emergency_number_list->length = be16toh(len_be);
+    extended_emergency_number_list->buffer = pkbuf->data + sizeof(uint16_t);
 
-    extended_emergency_number_list->length = be16toh(source->length);
-    size = extended_emergency_number_list->length + sizeof(extended_emergency_number_list->length);
-
+    size = sizeof(uint16_t) + extended_emergency_number_list->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    extended_emergency_number_list->buffer = pkbuf->data - size + sizeof(extended_emergency_number_list->length);
 
     ogs_trace("  EXTENDED_EMERGENCY_NUMBER_LIST - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)extended_emergency_number_list->buffer, extended_emergency_number_list->length);
@@ -2109,25 +2093,23 @@ int ogs_nas_5gs_encode_imeisv_request(ogs_pkbuf_t *pkbuf, ogs_nas_imeisv_request
  * O TLV-E 3-811 */
 int ogs_nas_5gs_decode_ladn_indication(ogs_nas_ladn_indication_t *ladn_indication, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_ladn_indication_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_ladn_indication_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    ladn_indication->length = be16toh(len_be);
+    ladn_indication->buffer = pkbuf->data + sizeof(uint16_t);
 
-    ladn_indication->length = be16toh(source->length);
-    size = ladn_indication->length + sizeof(ladn_indication->length);
-
+    size = sizeof(uint16_t) + ladn_indication->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    ladn_indication->buffer = pkbuf->data - size + sizeof(ladn_indication->length);
 
     ogs_trace("  LADN_INDICATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)ladn_indication->buffer, ladn_indication->length);
@@ -2242,25 +2224,23 @@ int ogs_nas_5gs_encode_5gs_identity_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_identit
  * O TLV-E 13-1715 */
 int ogs_nas_5gs_decode_ladn_information(ogs_nas_ladn_information_t *ladn_information, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_ladn_information_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_ladn_information_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    ladn_information->length = be16toh(len_be);
+    ladn_information->buffer = pkbuf->data + sizeof(uint16_t);
 
-    ladn_information->length = be16toh(source->length);
-    size = ladn_information->length + sizeof(ladn_information->length);
-
+    size = sizeof(uint16_t) + ladn_information->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    ladn_information->buffer = pkbuf->data - size + sizeof(ladn_information->length);
 
     ogs_trace("  LADN_INFORMATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)ladn_information->buffer, ladn_information->length);
@@ -2483,25 +2463,23 @@ int ogs_nas_5gs_encode_key_set_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_key_set_id
  * O TLV-E 4-n */
 int ogs_nas_5gs_decode_message_container(ogs_nas_message_container_t *message_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_message_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_message_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    message_container->length = be16toh(len_be);
+    message_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    message_container->length = be16toh(source->length);
-    size = message_container->length + sizeof(message_container->length);
-
+    size = sizeof(uint16_t) + message_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    message_container->buffer = pkbuf->data - size + sizeof(message_container->length);
 
     ogs_trace("  MESSAGE_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)message_container->buffer, message_container->length);
@@ -2758,25 +2736,23 @@ int ogs_nas_5gs_encode_nssai_inclusion_mode(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_in
  * O TLV-E 3-8323 */
 int ogs_nas_5gs_decode_operator_defined_access_category_definitions(ogs_nas_operator_defined_access_category_definitions_t *operator_defined_access_category_definitions, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_operator_defined_access_category_definitions_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_operator_defined_access_category_definitions_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    operator_defined_access_category_definitions->length = be16toh(len_be);
+    operator_defined_access_category_definitions->buffer = pkbuf->data + sizeof(uint16_t);
 
-    operator_defined_access_category_definitions->length = be16toh(source->length);
-    size = operator_defined_access_category_definitions->length + sizeof(operator_defined_access_category_definitions->length);
-
+    size = sizeof(uint16_t) + operator_defined_access_category_definitions->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    operator_defined_access_category_definitions->buffer = pkbuf->data - size + sizeof(operator_defined_access_category_definitions->length);
 
     ogs_trace("  OPERATOR_DEFINED_ACCESS_CATEGORY_DEFINITIONS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)operator_defined_access_category_definitions->buffer, operator_defined_access_category_definitions->length);
@@ -2811,25 +2787,23 @@ int ogs_nas_5gs_encode_operator_defined_access_category_definitions(ogs_pkbuf_t 
  * O TLV-E 4-65538 */
 int ogs_nas_5gs_decode_payload_container(ogs_nas_payload_container_t *payload_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_payload_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_payload_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    payload_container->length = be16toh(len_be);
+    payload_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    payload_container->length = be16toh(source->length);
-    size = payload_container->length + sizeof(payload_container->length);
-
+    size = sizeof(uint16_t) + payload_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    payload_container->buffer = pkbuf->data - size + sizeof(payload_container->length);
 
     ogs_trace("  PAYLOAD_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)payload_container->buffer, payload_container->length);
@@ -2864,25 +2838,23 @@ int ogs_nas_5gs_encode_payload_container(ogs_pkbuf_t *pkbuf, ogs_nas_payload_con
  * M LV-E 6-n */
 int ogs_nas_5gs_decode_5gs_mobile_identity(ogs_nas_5gs_mobile_identity_t *mobile_identity, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_5gs_mobile_identity_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_5gs_mobile_identity_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    mobile_identity->length = be16toh(len_be);
+    mobile_identity->buffer = pkbuf->data + sizeof(uint16_t);
 
-    mobile_identity->length = be16toh(source->length);
-    size = mobile_identity->length + sizeof(mobile_identity->length);
-
+    size = sizeof(uint16_t) + mobile_identity->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    mobile_identity->buffer = pkbuf->data - size + sizeof(mobile_identity->length);
 
     ogs_trace("  5GS_MOBILE_IDENTITY - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)mobile_identity->buffer, mobile_identity->length);
@@ -3033,25 +3005,23 @@ int ogs_nas_5gs_encode_pdu_session_reactivation_result(ogs_pkbuf_t *pkbuf, ogs_n
  * O TLV-E 5-515 */
 int ogs_nas_5gs_decode_pdu_session_reactivation_result_error_cause(ogs_nas_pdu_session_reactivation_result_error_cause_t *pdu_session_reactivation_result_error_cause, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_pdu_session_reactivation_result_error_cause_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_pdu_session_reactivation_result_error_cause_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    pdu_session_reactivation_result_error_cause->length = be16toh(len_be);
+    pdu_session_reactivation_result_error_cause->buffer = pkbuf->data + sizeof(uint16_t);
 
-    pdu_session_reactivation_result_error_cause->length = be16toh(source->length);
-    size = pdu_session_reactivation_result_error_cause->length + sizeof(pdu_session_reactivation_result_error_cause->length);
-
+    size = sizeof(uint16_t) + pdu_session_reactivation_result_error_cause->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    pdu_session_reactivation_result_error_cause->buffer = pkbuf->data - size + sizeof(pdu_session_reactivation_result_error_cause->length);
 
     ogs_trace("  PDU_SESSION_REACTIVATION_RESULT_ERROR_CAUSE - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)pdu_session_reactivation_result_error_cause->buffer, pdu_session_reactivation_result_error_cause->length);
@@ -3508,25 +3478,23 @@ int ogs_nas_5gs_encode_sms_indication(ogs_pkbuf_t *pkbuf, ogs_nas_sms_indication
  * O TLV-E 20-n */
 int ogs_nas_5gs_decode_sor_transparent_container(ogs_nas_sor_transparent_container_t *sor_transparent_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_sor_transparent_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_sor_transparent_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    sor_transparent_container->length = be16toh(len_be);
+    sor_transparent_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    sor_transparent_container->length = be16toh(source->length);
-    size = sor_transparent_container->length + sizeof(sor_transparent_container->length);
-
+    size = sizeof(uint16_t) + sor_transparent_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    sor_transparent_container->buffer = pkbuf->data - size + sizeof(sor_transparent_container->length);
 
     ogs_trace("  SOR_TRANSPARENT_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)sor_transparent_container->buffer, sor_transparent_container->length);
@@ -4537,25 +4505,23 @@ int ogs_nas_5gs_encode_5gs_additional_request_result(ogs_pkbuf_t *pkbuf, ogs_nas
  * O TLV-E 7-4099 */
 int ogs_nas_5gs_decode_nssrg_information(ogs_nas_nssrg_information_t *nssrg_information, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_nssrg_information_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_nssrg_information_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    nssrg_information->length = be16toh(len_be);
+    nssrg_information->buffer = pkbuf->data + sizeof(uint16_t);
 
-    nssrg_information->length = be16toh(source->length);
-    size = nssrg_information->length + sizeof(nssrg_information->length);
-
+    size = sizeof(uint16_t) + nssrg_information->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    nssrg_information->buffer = pkbuf->data - size + sizeof(nssrg_information->length);
 
     ogs_trace("  NSSRG_INFORMATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)nssrg_information->buffer, nssrg_information->length);
@@ -4728,25 +4694,23 @@ int ogs_nas_5gs_encode_plmn_identity(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_identity_t
  * O TLV-E 3-n */
 int ogs_nas_5gs_decode_extended_cag_information_list(ogs_nas_extended_cag_information_list_t *extended_cag_information_list, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_extended_cag_information_list_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_extended_cag_information_list_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    extended_cag_information_list->length = be16toh(len_be);
+    extended_cag_information_list->buffer = pkbuf->data + sizeof(uint16_t);
 
-    extended_cag_information_list->length = be16toh(source->length);
-    size = extended_cag_information_list->length + sizeof(extended_cag_information_list->length);
-
+    size = sizeof(uint16_t) + extended_cag_information_list->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    extended_cag_information_list->buffer = pkbuf->data - size + sizeof(extended_cag_information_list->length);
 
     ogs_trace("  EXTENDED_CAG_INFORMATION_LIST - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)extended_cag_information_list->buffer, extended_cag_information_list->length);
@@ -4781,25 +4745,23 @@ int ogs_nas_5gs_encode_extended_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas
  * O TLV-E 9-3143 */
 int ogs_nas_5gs_decode_nsag_information(ogs_nas_nsag_information_t *nsag_information, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_nsag_information_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_nsag_information_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    nsag_information->length = be16toh(len_be);
+    nsag_information->buffer = pkbuf->data + sizeof(uint16_t);
 
-    nsag_information->length = be16toh(source->length);
-    size = nsag_information->length + sizeof(nsag_information->length);
-
+    size = sizeof(uint16_t) + nsag_information->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    nsag_information->buffer = pkbuf->data - size + sizeof(nsag_information->length);
 
     ogs_trace("  NSAG_INFORMATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)nsag_information->buffer, nsag_information->length);
@@ -5096,25 +5058,23 @@ int ogs_nas_5gs_encode_ran_timing_synchronization(ogs_pkbuf_t *pkbuf, ogs_nas_ra
  * O TLV-E 3-1787 */
 int ogs_nas_5gs_decode_extended_ladn_information(ogs_nas_extended_ladn_information_t *extended_ladn_information, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_extended_ladn_information_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_extended_ladn_information_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    extended_ladn_information->length = be16toh(len_be);
+    extended_ladn_information->buffer = pkbuf->data + sizeof(uint16_t);
 
-    extended_ladn_information->length = be16toh(source->length);
-    size = extended_ladn_information->length + sizeof(extended_ladn_information->length);
-
+    size = sizeof(uint16_t) + extended_ladn_information->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    extended_ladn_information->buffer = pkbuf->data - size + sizeof(extended_ladn_information->length);
 
     ogs_trace("  EXTENDED_LADN_INFORMATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)extended_ladn_information->buffer, extended_ladn_information->length);
@@ -5195,25 +5155,23 @@ int ogs_nas_5gs_encode_alternative_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_alternative
  * O TLV-E 6-65538 */
 int ogs_nas_5gs_decode_type_6_ie_container(ogs_nas_type_6_ie_container_t *type_6_ie_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_type_6_ie_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_type_6_ie_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    type_6_ie_container->length = be16toh(len_be);
+    type_6_ie_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    type_6_ie_container->length = be16toh(source->length);
-    size = type_6_ie_container->length + sizeof(type_6_ie_container->length);
-
+    size = sizeof(uint16_t) + type_6_ie_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    type_6_ie_container->buffer = pkbuf->data - size + sizeof(type_6_ie_container->length);
 
     ogs_trace("  TYPE_6_IE_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)type_6_ie_container->buffer, type_6_ie_container->length);
@@ -5464,25 +5422,23 @@ int ogs_nas_5gs_encode_pdu_session_type(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_
  * O TLV-E 6-65538 */
 int ogs_nas_5gs_decode_qos_flow_descriptions(ogs_nas_qos_flow_descriptions_t *qos_flow_descriptions, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_qos_flow_descriptions_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_qos_flow_descriptions_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    qos_flow_descriptions->length = be16toh(len_be);
+    qos_flow_descriptions->buffer = pkbuf->data + sizeof(uint16_t);
 
-    qos_flow_descriptions->length = be16toh(source->length);
-    size = qos_flow_descriptions->length + sizeof(qos_flow_descriptions->length);
-
+    size = sizeof(uint16_t) + qos_flow_descriptions->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    qos_flow_descriptions->buffer = pkbuf->data - size + sizeof(qos_flow_descriptions->length);
 
     ogs_trace("  QOS_FLOW_DESCRIPTIONS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)qos_flow_descriptions->buffer, qos_flow_descriptions->length);
@@ -5517,25 +5473,23 @@ int ogs_nas_5gs_encode_qos_flow_descriptions(ogs_pkbuf_t *pkbuf, ogs_nas_qos_flo
  * M LV-E 6-65538 */
 int ogs_nas_5gs_decode_qos_rules(ogs_nas_qos_rules_t *qos_rules, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_qos_rules_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_qos_rules_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    qos_rules->length = be16toh(len_be);
+    qos_rules->buffer = pkbuf->data + sizeof(uint16_t);
 
-    qos_rules->length = be16toh(source->length);
-    size = qos_rules->length + sizeof(qos_rules->length);
-
+    size = sizeof(uint16_t) + qos_rules->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    qos_rules->buffer = pkbuf->data - size + sizeof(qos_rules->length);
 
     ogs_trace("  QOS_RULES - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)qos_rules->buffer, qos_rules->length);
@@ -5924,25 +5878,23 @@ int ogs_nas_5gs_encode_5gsm_congestion_re_attempt_indicator(ogs_pkbuf_t *pkbuf, 
  * O TLV-E 3-65538 */
 int ogs_nas_5gs_decode_atsss_container(ogs_nas_atsss_container_t *atsss_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_atsss_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_atsss_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    atsss_container->length = be16toh(len_be);
+    atsss_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    atsss_container->length = be16toh(source->length);
-    size = atsss_container->length + sizeof(atsss_container->length);
-
+    size = sizeof(uint16_t) + atsss_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    atsss_container->buffer = pkbuf->data - size + sizeof(atsss_container->length);
 
     ogs_trace("  ATSSS_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)atsss_container->buffer, atsss_container->length);
@@ -6197,25 +6149,23 @@ int ogs_nas_5gs_encode_ue_ds_tt_residence_time(ogs_pkbuf_t *pkbuf, ogs_nas_ue_ds
  * O TLV-E 8-65538 */
 int ogs_nas_5gs_decode_port_management_information_container(ogs_nas_port_management_information_container_t *port_management_information_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_port_management_information_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_port_management_information_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    port_management_information_container->length = be16toh(len_be);
+    port_management_information_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    port_management_information_container->length = be16toh(source->length);
-    size = port_management_information_container->length + sizeof(port_management_information_container->length);
-
+    size = sizeof(uint16_t) + port_management_information_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    port_management_information_container->buffer = pkbuf->data - size + sizeof(port_management_information_container->length);
 
     ogs_trace("  PORT_MANAGEMENT_INFORMATION_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)port_management_information_container->buffer, port_management_information_container->length);
@@ -6328,25 +6278,23 @@ int ogs_nas_5gs_encode_always_on_pdu_session_indication(ogs_pkbuf_t *pkbuf, ogs_
  * O TLV-E 8-65538 */
 int ogs_nas_5gs_decode_requested_mbs_container(ogs_nas_requested_mbs_container_t *requested_mbs_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_requested_mbs_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_requested_mbs_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    requested_mbs_container->length = be16toh(len_be);
+    requested_mbs_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    requested_mbs_container->length = be16toh(source->length);
-    size = requested_mbs_container->length + sizeof(requested_mbs_container->length);
-
+    size = sizeof(uint16_t) + requested_mbs_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    requested_mbs_container->buffer = pkbuf->data - size + sizeof(requested_mbs_container->length);
 
     ogs_trace("  REQUESTED_MBS_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)requested_mbs_container->buffer, requested_mbs_container->length);
@@ -6381,25 +6329,23 @@ int ogs_nas_5gs_encode_requested_mbs_container(ogs_pkbuf_t *pkbuf, ogs_nas_reque
  * O TLV-E 9-65538 */
 int ogs_nas_5gs_decode_received_mbs_container(ogs_nas_received_mbs_container_t *received_mbs_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_received_mbs_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_received_mbs_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    received_mbs_container->length = be16toh(len_be);
+    received_mbs_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    received_mbs_container->length = be16toh(source->length);
-    size = received_mbs_container->length + sizeof(received_mbs_container->length);
-
+    size = sizeof(uint16_t) + received_mbs_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    received_mbs_container->buffer = pkbuf->data - size + sizeof(received_mbs_container->length);
 
     ogs_trace("  RECEIVED_MBS_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)received_mbs_container->buffer, received_mbs_container->length);
@@ -6526,25 +6472,23 @@ int ogs_nas_5gs_encode_rsn(ogs_pkbuf_t *pkbuf, ogs_nas_rsn_t *rsn)
  * O TLV-E 9-n */
 int ogs_nas_5gs_decode_n3qai(ogs_nas_n3qai_t *n3qai, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_n3qai_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_n3qai_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    n3qai->length = be16toh(len_be);
+    n3qai->buffer = pkbuf->data + sizeof(uint16_t);
 
-    n3qai->length = be16toh(source->length);
-    size = n3qai->length + sizeof(n3qai->length);
-
+    size = sizeof(uint16_t) + n3qai->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    n3qai->buffer = pkbuf->data - size + sizeof(n3qai->length);
 
     ogs_trace("  N3QAI - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)n3qai->buffer, n3qai->length);
@@ -6579,25 +6523,23 @@ int ogs_nas_5gs_encode_n3qai(ogs_pkbuf_t *pkbuf, ogs_nas_n3qai_t *n3qai)
  * O TLV-E 6-n */
 int ogs_nas_5gs_decode_non_3gpp_delay_budget(ogs_nas_non_3gpp_delay_budget_t *non_3gpp_delay_budget, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_non_3gpp_delay_budget_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_non_3gpp_delay_budget_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    non_3gpp_delay_budget->length = be16toh(len_be);
+    non_3gpp_delay_budget->buffer = pkbuf->data + sizeof(uint16_t);
 
-    non_3gpp_delay_budget->length = be16toh(source->length);
-    size = non_3gpp_delay_budget->length + sizeof(non_3gpp_delay_budget->length);
-
+    size = sizeof(uint16_t) + non_3gpp_delay_budget->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    non_3gpp_delay_budget->buffer = pkbuf->data - size + sizeof(non_3gpp_delay_budget->length);
 
     ogs_trace("  NON_3GPP_DELAY_BUDGET - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)non_3gpp_delay_budget->buffer, non_3gpp_delay_budget->length);
@@ -6678,25 +6620,23 @@ int ogs_nas_5gs_encode_ursp_rule_enforcement_reports(ogs_pkbuf_t *pkbuf, ogs_nas
  * O TLV-E 6-n */
 int ogs_nas_5gs_decode_protocol_description(ogs_nas_protocol_description_t *protocol_description, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_protocol_description_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_protocol_description_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    protocol_description->length = be16toh(len_be);
+    protocol_description->buffer = pkbuf->data + sizeof(uint16_t);
 
-    protocol_description->length = be16toh(source->length);
-    size = protocol_description->length + sizeof(protocol_description->length);
-
+    size = sizeof(uint16_t) + protocol_description->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    protocol_description->buffer = pkbuf->data - size + sizeof(protocol_description->length);
 
     ogs_trace("  PROTOCOL_DESCRIPTION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)protocol_description->buffer, protocol_description->length);
@@ -6809,25 +6749,23 @@ int ogs_nas_5gs_encode_ecn_marking_for_l4s_indication(ogs_pkbuf_t *pkbuf, ogs_na
  * O TLV-E 7-n */
 int ogs_nas_5gs_decode_non_3gpp_device_information(ogs_nas_non_3gpp_device_information_t *non_3gpp_device_information, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_non_3gpp_device_information_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_non_3gpp_device_information_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    non_3gpp_device_information->length = be16toh(len_be);
+    non_3gpp_device_information->buffer = pkbuf->data + sizeof(uint16_t);
 
-    non_3gpp_device_information->length = be16toh(source->length);
-    size = non_3gpp_device_information->length + sizeof(non_3gpp_device_information->length);
-
+    size = sizeof(uint16_t) + non_3gpp_device_information->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    non_3gpp_device_information->buffer = pkbuf->data - size + sizeof(non_3gpp_device_information->length);
 
     ogs_trace("  NON_3GPP_DEVICE_INFORMATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)non_3gpp_device_information->buffer, non_3gpp_device_information->length);
@@ -6894,25 +6832,23 @@ int ogs_nas_5gs_encode_allowed_ssc_mode(ogs_pkbuf_t *pkbuf, ogs_nas_allowed_ssc_
  * O TLV-E 4-65538 */
 int ogs_nas_5gs_decode_extended_protocol_configuration_options(ogs_nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_extended_protocol_configuration_options_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_extended_protocol_configuration_options_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    extended_protocol_configuration_options->length = be16toh(len_be);
+    extended_protocol_configuration_options->buffer = pkbuf->data + sizeof(uint16_t);
 
-    extended_protocol_configuration_options->length = be16toh(source->length);
-    size = extended_protocol_configuration_options->length + sizeof(extended_protocol_configuration_options->length);
-
+    size = sizeof(uint16_t) + extended_protocol_configuration_options->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    extended_protocol_configuration_options->buffer = pkbuf->data - size + sizeof(extended_protocol_configuration_options->length);
 
     ogs_trace("  EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)extended_protocol_configuration_options->buffer, extended_protocol_configuration_options->length);
@@ -6981,25 +6917,23 @@ int ogs_nas_5gs_encode_integrity_protection_maximum_data_rate(ogs_pkbuf_t *pkbuf
  * O TLV-E 7-65538 */
 int ogs_nas_5gs_decode_mapped_eps_bearer_contexts(ogs_nas_mapped_eps_bearer_contexts_t *mapped_eps_bearer_contexts, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_mapped_eps_bearer_contexts_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_mapped_eps_bearer_contexts_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    mapped_eps_bearer_contexts->length = be16toh(len_be);
+    mapped_eps_bearer_contexts->buffer = pkbuf->data + sizeof(uint16_t);
 
-    mapped_eps_bearer_contexts->length = be16toh(source->length);
-    size = mapped_eps_bearer_contexts->length + sizeof(mapped_eps_bearer_contexts->length);
-
+    size = sizeof(uint16_t) + mapped_eps_bearer_contexts->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    mapped_eps_bearer_contexts->buffer = pkbuf->data - size + sizeof(mapped_eps_bearer_contexts->length);
 
     ogs_trace("  MAPPED_EPS_BEARER_CONTEXTS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)mapped_eps_bearer_contexts->buffer, mapped_eps_bearer_contexts->length);

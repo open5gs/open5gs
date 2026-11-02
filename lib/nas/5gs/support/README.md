@@ -123,7 +123,7 @@ Example:
 typedef struct ogs_nas_example_ie_s {
     uint16_t length;
     void *buffer;
-} __attribute__ ((packed)) ogs_nas_example_ie_t;
+} ogs_nas_example_ie_t;
 ```
 
 Final check
