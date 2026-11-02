@@ -1129,10 +1129,6 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     OpenAPI_pdu_session_context_t *PduSessionContext = NULL;
     OpenAPI_lnode_t *node = NULL;
     OpenAPI_ue_context_t UeContext;
-    OpenAPI_seaf_data_t SeafData;
-    OpenAPI_ng_ksi_t Ng_ksi;
-    OpenAPI_key_amf_t Key_amf;
-    OpenAPI_sc_type_e Tsc_type;
 
     OpenAPI_ue_context_transfer_req_data_t *UeContextTransferReqData = NULL;
     OpenAPI_ue_context_transfer_rsp_data_t UeContextTransferRspData;
@@ -1141,7 +1137,6 @@ int amf_namf_comm_handle_ue_context_transfer_request(
 
     char *encoded_gmm_capability = NULL;
     int status = OGS_SBI_HTTP_STATUS_OK;
-    char hxkamf_string[OGS_KEYSTRLEN(OGS_SHA256_DIGEST_SIZE)];
     char *strerror = NULL;
 
     ogs_assert(stream);
@@ -1208,26 +1203,12 @@ int amf_namf_comm_handle_ue_context_transfer_request(
         UeContext.sub_ue_ambr = UeAmbr;
     }
 
-    if ((amf_ue->nas.ue.ksi != 0) && (amf_ue->nas.ue.tsc != 0)) {
-        memset(&SeafData, 0, sizeof(SeafData));
-        Tsc_type = (amf_ue->nas.ue.tsc == 0) ?
-            OpenAPI_sc_type_NATIVE : OpenAPI_sc_type_MAPPED;
-
-        memset(&Ng_ksi, 0, sizeof(Ng_ksi));
-        SeafData.ng_ksi = &Ng_ksi;
-        Ng_ksi.tsc = Tsc_type;
-        Ng_ksi.ksi = (int)amf_ue->nas.ue.ksi;
-
-        memset(&Key_amf, 0, sizeof(Key_amf));
-        SeafData.key_amf = &Key_amf;
-        OpenAPI_key_amf_type_e temp_key_type =
-                (OpenAPI_key_amf_type_e)OpenAPI_key_amf_type_KAMF;
-        Key_amf.key_type = temp_key_type;
-        ogs_hex_to_ascii(amf_ue->kamf, sizeof(amf_ue->kamf),
-                hxkamf_string, sizeof(hxkamf_string));
-        Key_amf.key_val = hxkamf_string;
-        UeContext.seaf_data = &SeafData;
-    }
+    /*
+     * TODO: Validate the transfer request and forwarded Registration Request
+     * before exporting SEAF key material. Local context validity alone does
+     * not authorize its disclosure. Omit seafData until that is implemented;
+     * the receiving Open5GS AMF performs fresh authentication after transfer.
+     */
 
     encoded_gmm_capability =
         amf_namf_comm_base64_encode_5gmm_capability(amf_ue);
@@ -1368,10 +1349,10 @@ int amf_namf_comm_handle_ue_context_transfer_response(
 
     if (UeContext->seaf_data) {
         if (UeContext->seaf_data->ng_ksi->tsc != OpenAPI_sc_type_NULL) {
-            amf_ue->nas.ue.tsc =
+            amf_ue->nas.amf.tsc =
                 (UeContext->seaf_data->ng_ksi->tsc ==
                  OpenAPI_sc_type_NATIVE) ? 0 : 1;
-            amf_ue->nas.ue.ksi = (uint8_t)UeContext->seaf_data->ng_ksi->ksi;
+            amf_ue->nas.amf.ksi = (uint8_t)UeContext->seaf_data->ng_ksi->ksi;
 
             ogs_ascii_to_hex(
                 UeContext->seaf_data->key_amf->key_val,

@@ -353,6 +353,8 @@ struct amf_ue_s {
         uint8_t message_type; /* Type of last specific NAS message received */
         int access_type; /* 3GPP or Non-3GPP */
 
+        /* AMF-selected context identifier and the last received request's
+         * identifier. Authentication must not overwrite the received value. */
         struct {
         ED3(uint8_t tsc:1;,
             uint8_t ksi:3;,
@@ -461,11 +463,12 @@ struct amf_ue_s {
         bool s1_mode;
     } gmm_capability;
 
+/* Received ngKSI values are checked separately by the NAS procedures. */
 #define SECURITY_CONTEXT_IS_VALID(__aMF) \
     ((__aMF) && \
     ((__aMF)->security_context_available == 1) && \
      ((__aMF)->mac_failed == 0) && \
-     ((__aMF)->nas.ue.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
+     ((__aMF)->nas.amf.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
 #define CLEAR_SECURITY_CONTEXT(__aMF) \
     do { \
         ogs_assert((__aMF)); \
