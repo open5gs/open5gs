@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-10-31 12:25:30.890682 by acetcom
+ * Created on: 2026-11-03 19:00:58.092332 by pespin
  * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
@@ -843,25 +843,23 @@ int ogs_nas_eps_encode_eps_update_type(ogs_pkbuf_t *pkbuf, ogs_nas_eps_update_ty
  * M LV-E 5-n */
 int ogs_nas_eps_decode_esm_message_container(ogs_nas_esm_message_container_t *esm_message_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_esm_message_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_esm_message_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    esm_message_container->length = be16toh(len_be);
+    esm_message_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    esm_message_container->length = be16toh(source->length);
-    size = esm_message_container->length + sizeof(esm_message_container->length);
-
+    size = sizeof(uint16_t) + esm_message_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    esm_message_container->buffer = pkbuf->data - size + sizeof(esm_message_container->length);
 
     ogs_trace("  ESM_MESSAGE_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)esm_message_container->buffer, esm_message_container->length);
@@ -2052,25 +2050,23 @@ int ogs_nas_eps_encode_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_emergen
  * O TLV-E 7-65538 */
 int ogs_nas_eps_decode_extended_emergency_number_list(ogs_nas_extended_emergency_number_list_t *extended_emergency_number_list, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_extended_emergency_number_list_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_extended_emergency_number_list_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    extended_emergency_number_list->length = be16toh(len_be);
+    extended_emergency_number_list->buffer = pkbuf->data + sizeof(uint16_t);
 
-    extended_emergency_number_list->length = be16toh(source->length);
-    size = extended_emergency_number_list->length + sizeof(extended_emergency_number_list->length);
-
+    size = sizeof(uint16_t) + extended_emergency_number_list->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    extended_emergency_number_list->buffer = pkbuf->data - size + sizeof(extended_emergency_number_list->length);
 
     ogs_trace("  EXTENDED_EMERGENCY_NUMBER_LIST - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)extended_emergency_number_list->buffer, extended_emergency_number_list->length);
@@ -2391,25 +2387,23 @@ int ogs_nas_eps_encode_generic_message_container_type(ogs_pkbuf_t *pkbuf, ogs_na
  * M LV-E 3-n */
 int ogs_nas_eps_decode_generic_message_container(ogs_nas_generic_message_container_t *generic_message_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_generic_message_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_generic_message_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    generic_message_container->length = be16toh(len_be);
+    generic_message_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    generic_message_container->length = be16toh(source->length);
-    size = generic_message_container->length + sizeof(generic_message_container->length);
-
+    size = sizeof(uint16_t) + generic_message_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    generic_message_container->buffer = pkbuf->data - size + sizeof(generic_message_container->length);
 
     ogs_trace("  GENERIC_MESSAGE_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)generic_message_container->buffer, generic_message_container->length);
@@ -2788,25 +2782,23 @@ int ogs_nas_eps_encode_hashmme(ogs_pkbuf_t *pkbuf, ogs_nas_hashmme_t *hashmme)
  * O TLV-E 3-n */
 int ogs_nas_eps_decode_replayed_nas_message_container(ogs_nas_replayed_nas_message_container_t *replayed_nas_message_container, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_replayed_nas_message_container_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_replayed_nas_message_container_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    replayed_nas_message_container->length = be16toh(len_be);
+    replayed_nas_message_container->buffer = pkbuf->data + sizeof(uint16_t);
 
-    replayed_nas_message_container->length = be16toh(source->length);
-    size = replayed_nas_message_container->length + sizeof(replayed_nas_message_container->length);
-
+    size = sizeof(uint16_t) + replayed_nas_message_container->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    replayed_nas_message_container->buffer = pkbuf->data - size + sizeof(replayed_nas_message_container->length);
 
     ogs_trace("  REPLAYED_NAS_MESSAGE_CONTAINER - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)replayed_nas_message_container->buffer, replayed_nas_message_container->length);
@@ -2999,25 +2991,23 @@ int ogs_nas_eps_encode_additional_information_requested(ogs_pkbuf_t *pkbuf, ogs_
  * O TLV-E 35-2291 */
 int ogs_nas_eps_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_key_data, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_ciphering_key_data_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_ciphering_key_data_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    ciphering_key_data->length = be16toh(len_be);
+    ciphering_key_data->buffer = pkbuf->data + sizeof(uint16_t);
 
-    ciphering_key_data->length = be16toh(source->length);
-    size = ciphering_key_data->length + sizeof(ciphering_key_data->length);
-
+    size = sizeof(uint16_t) + ciphering_key_data->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    ciphering_key_data->buffer = pkbuf->data - size + sizeof(ciphering_key_data->length);
 
     ogs_trace("  CIPHERING_KEY_DATA - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)ciphering_key_data->buffer, ciphering_key_data->length);
@@ -4562,25 +4552,23 @@ int ogs_nas_eps_encode_control_plane_only_indication(ogs_pkbuf_t *pkbuf, ogs_nas
  * O TLV-E 4-65538 */
 int ogs_nas_eps_decode_extended_protocol_configuration_options(ogs_nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options, ogs_pkbuf_t *pkbuf)
 {
-    int size = 0;
-    ogs_nas_extended_protocol_configuration_options_t *source = NULL;
+    size_t size = 0;
+    uint16_t len_be;
 
-    if (pkbuf->len < 2) {
+    if (pkbuf->len < sizeof(uint16_t)) {
        ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
        return -1;
     }
 
-    source = (ogs_nas_extended_protocol_configuration_options_t *)pkbuf->data;
+    memcpy(&len_be, pkbuf->data, sizeof(uint16_t));
+    extended_protocol_configuration_options->length = be16toh(len_be);
+    extended_protocol_configuration_options->buffer = pkbuf->data + sizeof(uint16_t);
 
-    extended_protocol_configuration_options->length = be16toh(source->length);
-    size = extended_protocol_configuration_options->length + sizeof(extended_protocol_configuration_options->length);
-
+    size = sizeof(uint16_t) + extended_protocol_configuration_options->length;
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
-       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       ogs_error("ogs_pkbuf_pull() failed [size:%zu]", size);
        return -1;
     }
-
-    extended_protocol_configuration_options->buffer = pkbuf->data - size + sizeof(extended_protocol_configuration_options->length);
 
     ogs_trace("  EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)extended_protocol_configuration_options->buffer, extended_protocol_configuration_options->length);
