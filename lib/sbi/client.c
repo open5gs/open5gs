@@ -79,6 +79,10 @@ static void connection_free(connection_t *conn);
 static void connection_remove_all(ogs_sbi_client_t *client);
 static void connection_timer_expired(void *data);
 
+/* dead-connection self-heal helpers (see connection_timer_expired()) */
+static CURLM *client_multi_new(ogs_sbi_client_t *client);
+static void client_connection_reset(ogs_sbi_client_t *client);
+
 void ogs_sbi_client_init(int num_of_sockinfo_pool, int num_of_connection_pool)
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -99,6 +103,31 @@ void ogs_sbi_client_final(void)
     ogs_pool_final(&connection_pool);
 
     curl_global_cleanup();
+}
+
+/* Create and configure the CURL multi handle */
+static CURLM *client_multi_new(ogs_sbi_client_t *client)
+{
+    CURLM *multi = NULL;
+
+    ogs_assert(client);
+
+    multi = curl_multi_init();
+    if (!multi) {
+        ogs_error("curl_multi_init() failed");
+        return NULL;
+    }
+
+    curl_multi_setopt(multi, CURLMOPT_SOCKETFUNCTION, sock_cb);
+    curl_multi_setopt(multi, CURLMOPT_SOCKETDATA, client);
+    curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, multi_timer_cb);
+    curl_multi_setopt(multi, CURLMOPT_TIMERDATA, client);
+#if CURL_AT_LEAST_VERSION(7,67,0)
+    curl_multi_setopt(multi, CURLMOPT_MAX_CONCURRENT_STREAMS,
+                        ogs_app()->pool.stream);
+#endif
+
+    return multi;
 }
 
 ogs_sbi_client_t *ogs_sbi_client_add(
@@ -157,16 +186,8 @@ ogs_sbi_client_t *ogs_sbi_client_add(
         return NULL;
     }
 
-    multi = client->multi = curl_multi_init();
+    multi = client->multi = client_multi_new(client);
     ogs_assert(multi);
-    curl_multi_setopt(multi, CURLMOPT_SOCKETFUNCTION, sock_cb);
-    curl_multi_setopt(multi, CURLMOPT_SOCKETDATA, client);
-    curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, multi_timer_cb);
-    curl_multi_setopt(multi, CURLMOPT_TIMERDATA, client);
-#if CURL_AT_LEAST_VERSION(7,67,0)
-    curl_multi_setopt(multi, CURLMOPT_MAX_CONCURRENT_STREAMS,
-                        ogs_app()->pool.stream);
-#endif
 
     ogs_list_init(&client->connection_list);
 
@@ -648,10 +669,47 @@ static void connection_remove_all(ogs_sbi_client_t *client)
         connection_remove(conn);
 }
 
+/*
+ * Dead-connection self-heal.
+ *
+ * When an SBI peer stops answering on an established HTTP/2 connection
+ * (observed after a request-rate overload), libcurl keeps reusing that
+ * connection: aborting individual transfers does not close a multiplexed
+ * connection, so the client never recovers without a restart. Recreating
+ * the multi handle after a burst of consecutive timeouts is the only way
+ * to make libcurl forget and close cached connections; in-flight requests
+ * are failed explicitly so upper layers get a visible result instead of
+ * hanging.
+ */
+static void client_connection_reset(ogs_sbi_client_t *client)
+{
+    connection_t *conn = NULL, *next_conn = NULL;
+
+    ogs_assert(client);
+
+    ogs_warn("Connection reset (self-heal) [timeouts:%d]",
+            client->num_of_consecutive_timeouts);
+
+    ogs_list_for_each_safe(&client->connection_list, next_conn, conn) {
+        ogs_assert(conn->client_cb);
+        conn->client_cb(OGS_TIMEUP, NULL, conn->data);
+        connection_remove(conn);
+    }
+
+    ogs_assert(client->multi);
+    curl_multi_cleanup(client->multi);
+    client->multi = client_multi_new(client);
+    ogs_assert(client->multi);
+
+    client->num_of_consecutive_timeouts = 0;
+    client->last_connection_reset = ogs_time_now();
+}
+
 static void connection_timer_expired(void *data)
 {
     ogs_pool_id_t conn_id = OGS_POINTER_TO_UINT(data);
     connection_t *conn = NULL;
+    ogs_sbi_client_t *client = NULL;
     CURLcode res;
     char *effective_url = NULL;
 
@@ -673,10 +731,24 @@ static void connection_timer_expired(void *data)
     else
         ogs_error("curl_easy_getinfo() failed [%s]", curl_easy_strerror(res));
 
+    client = conn->client;
+    ogs_assert(client);
+
     ogs_assert(conn->client_cb);
     conn->client_cb(OGS_TIMEUP, NULL, conn->data);
 
     connection_remove(conn);
+
+    /*
+     * Consecutive timeouts without a single successful response mean the
+     * cached connection is (half-)dead -> reset it (rate-limited).
+     */
+    client->num_of_consecutive_timeouts++;
+    if (client->num_of_consecutive_timeouts >= 3 &&
+        ogs_time_now() - client->last_connection_reset >
+                OGS_USEC_PER_SEC * 5) {
+        client_connection_reset(client);
+    }
 }
 
 static void check_multi_info(ogs_sbi_client_t *client)
@@ -714,6 +786,9 @@ static void check_multi_info(ogs_sbi_client_t *client)
             res = resource->data.result;
             if (res == CURLE_OK) {
                 ogs_log_level_e level = OGS_LOG_DEBUG;
+
+                /* a successful response proves the connection is alive again */
+                client->num_of_consecutive_timeouts = 0;
 
                 response = ogs_sbi_response_new();
                 ogs_assert(response);
