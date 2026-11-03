@@ -193,7 +193,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 if (!message.h.resource.component[1]) {
                     if (message.SmPolicyContextData &&
                         message.SmPolicyContextData->supi &&
-                        message.SmPolicyContextData->pdu_session_id) {
+                        message.SmPolicyContextData->pdu_session_id > 0 &&
+                        message.SmPolicyContextData->pdu_session_id <= 255) {
 
                         pcf_ue_sm = pcf_ue_sm_find_by_supi(
                                     message.SmPolicyContextData->supi);
