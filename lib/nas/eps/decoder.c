@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-10-31 12:25:30.908362 by acetcom
+ * Created on: 2026-11-03 18:30:04.777353 by pespin
  * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
@@ -5558,7 +5558,7 @@ int ogs_nas_emm_decode(ogs_nas_eps_message_t *message, ogs_pkbuf_t *pkbuf)
         decoded += size;
         break;
     default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->emm.h.message_type);
         break;
     }
@@ -5779,7 +5779,7 @@ int ogs_nas_esm_decode(ogs_nas_eps_message_t *message, ogs_pkbuf_t *pkbuf)
         decoded += size;
         break;
     default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                message->esm.h.message_type);
         break;
     }

@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-10-31 12:25:30.922542 by acetcom
+ * Created on: 2026-11-03 18:30:04.786334 by pespin
  * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
@@ -4067,7 +4067,7 @@ ogs_pkbuf_t *ogs_nas_emm_encode(ogs_nas_eps_message_t *message)
         encoded += size;
         break;
     default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                message->emm.h.message_type);
         ogs_pkbuf_free(pkbuf);
         return NULL;
@@ -4213,7 +4213,7 @@ ogs_pkbuf_t *ogs_nas_esm_encode(ogs_nas_eps_message_t *message)
         encoded += size;
         break;
    default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->esm.h.message_type);
         ogs_pkbuf_free(pkbuf);
         return NULL;
@@ -4232,10 +4232,10 @@ ogs_pkbuf_t *ogs_nas_eps_plain_encode(ogs_nas_eps_message_t *message)
     ogs_assert(message->emm.h.protocol_discriminator ==
             message->esm.h.protocol_discriminator);
 
-    if (message->emm.h.protocol_discriminator == 
+    if (message->emm.h.protocol_discriminator ==
             OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM)
         return ogs_nas_emm_encode(message);
-    else if (message->emm.h.protocol_discriminator == 
+    else if (message->emm.h.protocol_discriminator ==
             OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM)
         return ogs_nas_esm_encode(message);
 
