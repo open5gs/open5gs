@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-10-31 12:24:40.651846 by acetcom
+ * Created on: 2026-11-03 17:52:26.746747 by pespin
  * from r19.6.2/24501-j62-ch8-ch9.docx
  ******************************************************************************/
 
@@ -4263,7 +4263,7 @@ ogs_pkbuf_t *ogs_nas_5gmm_encode(ogs_nas_5gs_message_t *message)
         encoded += size;
         break;
     default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->gmm.h.message_type);
         ogs_pkbuf_free(pkbuf);
         return NULL;
@@ -4381,7 +4381,7 @@ ogs_pkbuf_t *ogs_nas_5gsm_encode(ogs_nas_5gs_message_t *message)
         encoded += size;
         break;
     default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->gsm.h.message_type);
         ogs_pkbuf_free(pkbuf);
         return NULL;
@@ -4400,10 +4400,10 @@ ogs_pkbuf_t *ogs_nas_5gs_plain_encode(ogs_nas_5gs_message_t *message)
     ogs_assert(message->gmm.h.extended_protocol_discriminator ==
             message->gsm.h.extended_protocol_discriminator);
 
-    if (message->gmm.h.extended_protocol_discriminator == 
+    if (message->gmm.h.extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM)
         return ogs_nas_5gmm_encode(message);
-    else if (message->gmm.h.extended_protocol_discriminator == 
+    else if (message->gmm.h.extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM)
         return ogs_nas_5gsm_encode(message);
 
