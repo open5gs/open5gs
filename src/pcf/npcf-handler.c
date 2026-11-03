@@ -359,9 +359,11 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    if (!SmPolicyContextData->pdu_session_id) {
-        strerror = ogs_msprintf("[%s:%d] No pduSessionId",
-                pcf_ue_sm->supi, sess->psi);
+    if (ogs_pdu_session_id_is_valid(
+            SmPolicyContextData->pdu_session_id) == false) {
+        strerror = ogs_msprintf("[%s:%d] Invalid pduSessionId [%d]",
+                pcf_ue_sm->supi, sess->psi,
+                SmPolicyContextData->pdu_session_id);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }

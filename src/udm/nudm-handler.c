@@ -578,11 +578,12 @@ bool udm_nudm_uecm_handle_smf_registration(
         return false;
     }
 
-    if (!SmfRegistration->pdu_session_id) {
-        ogs_error("[%s:%d] No pduSessionId", udm_ue->supi, sess->psi);
+    if (SmfRegistration->pdu_session_id != sess->psi) {
+        ogs_error("[%s:%d] pduSessionId mismatch [%d]",
+                udm_ue->supi, sess->psi, SmfRegistration->pdu_session_id);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No pduSessionId", udm_ue->supi, NULL));
+                message, "pduSessionId mismatch", udm_ue->supi, NULL));
         return false;
     }
 

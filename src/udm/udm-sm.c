@@ -40,7 +40,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     int service_name_id = OpenAPI_service_name_NULL;
     const char *api_version = NULL;
     char *supi = NULL;
-    uint8_t psi = OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
+    int psi = OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
@@ -223,14 +223,15 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                     break;
                 }
 
-                psi = atoi(message.h.resource.component[3]);
-                if (psi == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
-                    ogs_error("PDU Session Identitiy unassigned [%s]",
+                psi = ogs_pdu_session_id_from_string(
+                        message.h.resource.component[3]);
+                if (ogs_pdu_session_id_is_valid(psi) == false) {
+                    ogs_error("Invalid PDU Session Identity [%s]",
                             message.h.resource.component[3]);
                     ogs_assert(true ==
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                            &message, "PDU Session Identitiy unassigned",
+                            &message, "Invalid PDU Session Identity",
                             message.h.resource.component[3], NULL));
                     break;
                 }
