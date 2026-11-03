@@ -192,8 +192,17 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
                 if (!message.h.resource.component[1]) {
                     if (message.SmPolicyContextData &&
-                        message.SmPolicyContextData->supi &&
-                        message.SmPolicyContextData->pdu_session_id) {
+                        message.SmPolicyContextData->supi) {
+
+                        if (ogs_pdu_session_id_is_valid(
+                                message.SmPolicyContextData->
+                                    pdu_session_id) == false) {
+                            ogs_error("[%s:%d] Invalid PDU session identity",
+                                    message.SmPolicyContextData->supi,
+                                    message.SmPolicyContextData->
+                                        pdu_session_id);
+                            break;
+                        }
 
                         pcf_ue_sm = pcf_ue_sm_find_by_supi(
                                     message.SmPolicyContextData->supi);

@@ -492,6 +492,26 @@ bool ogs_pdu_session_id_is_valid(int psi)
            psi <= OGS_NAS_PDU_SESSION_IDENTITY_MAX;
 }
 
+int ogs_pdu_session_id_from_string(const char *str)
+{
+    int psi = OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
+
+    if (!str || !*str)
+        return OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
+
+    for (; *str; str++) {
+        if (*str < '0' || *str > '9')
+            return OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
+
+        /* Bound each step so even an arbitrarily long input cannot overflow. */
+        psi = psi * 10 + (*str - '0');
+        if (psi > OGS_NAS_PDU_SESSION_IDENTITY_MAX)
+            return OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
+    }
+
+    return psi;
+}
+
 /*
  * ogs_bcd_to_buffer() only converts bytes. It does not validate that
  * the input is a bounded decimal IMSI string, so check it first.

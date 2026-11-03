@@ -69,6 +69,12 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_error("No PDU Session Identity");
         return OGS_ERROR;
     }
+    if (ogs_pdu_session_id_is_valid(
+            N1N2MessageTransferReqData->pdu_session_id) == false) {
+        ogs_error("Invalid PDU Session Identity [%d]",
+                N1N2MessageTransferReqData->pdu_session_id);
+        return OGS_ERROR;
+    }
     pdu_session_id = N1N2MessageTransferReqData->pdu_session_id;
 
     supi = recvmsg->h.resource.component[1];
@@ -519,7 +525,7 @@ int amf_namf_callback_handle_sm_context_status(
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
 
-    uint8_t pdu_session_identity;
+    int pdu_session_identity;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -549,10 +555,12 @@ int amf_namf_callback_handle_sm_context_status(
         goto cleanup;
     }
 
-    pdu_session_identity = atoi(recvmsg->h.resource.component[2]);
-    if (pdu_session_identity == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+    pdu_session_identity = ogs_pdu_session_id_from_string(
+            recvmsg->h.resource.component[2]);
+    if (ogs_pdu_session_id_is_valid(pdu_session_identity) == false) {
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        ogs_error("[%s] PDU Session Identity is unassigned", amf_ue->supi);
+        ogs_error("[%s] Invalid PDU Session Identity [%s]",
+                amf_ue->supi, recvmsg->h.resource.component[2]);
         goto cleanup;
     }
 
@@ -1776,6 +1784,13 @@ static void amf_namf_comm_decode_ue_session_context_list(
         char *fqdn = NULL;
         uint16_t fqdn_port = 0;
         ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
+        if (ogs_pdu_session_id_is_valid(
+                PduSessionContext->pdu_session_id) == false) {
+            ogs_error("Invalid PDU Session Identity [PSI:%d]",
+                    PduSessionContext->pdu_session_id);
+            continue;
+        }
 
         if (!PduSessionContext->sm_context_ref) {
             ogs_error("No smContextRef [PSI:%d]",

@@ -153,6 +153,8 @@ extern "C" {
 #define OGS_NAS_PDU_SESSION_IDENTITY_MAX 255
 
 bool ogs_pdu_session_id_is_valid(int psi);
+/* Return unassigned for malformed or out-of-range decimal input. */
+int ogs_pdu_session_id_from_string(const char *str);
 
 #define OGS_ACCESS_TYPE_3GPP 1
 #define OGS_ACCESS_TYPE_NON_3GPP 2
