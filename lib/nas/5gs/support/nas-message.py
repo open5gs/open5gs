@@ -277,7 +277,7 @@ for key in msg_list.keys():
         print("Read from " + cachefile)
     else:
         document = Document(filename)
-        f = open(cachefile, 'w') 
+        f = open(cachefile, 'w')
 
         ies = []
         write_file(f, "ies = []\n")
@@ -786,7 +786,7 @@ for (k, v) in sorted_msg_list:
         f.write("        break;\n")
 
 f.write("""    default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->gmm.h.message_type);
         break;
     }
@@ -832,7 +832,7 @@ for (k, v) in sorted_msg_list:
         f.write("        break;\n")
 
 f.write("""    default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->gsm.h.message_type);
         break;
     }
@@ -939,7 +939,7 @@ for (k, v) in sorted_msg_list:
         f.write("        break;\n")
 
 f.write("""    default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->gmm.h.message_type);
         ogs_pkbuf_free(pkbuf);
         return NULL;
@@ -992,7 +992,7 @@ for (k, v) in sorted_msg_list:
         f.write("        break;\n")
 
 f.write("""    default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->gsm.h.message_type);
         ogs_pkbuf_free(pkbuf);
         return NULL;
@@ -1011,10 +1011,10 @@ ogs_pkbuf_t *ogs_nas_5gs_plain_encode(ogs_nas_5gs_message_t *message)
     ogs_assert(message->gmm.h.extended_protocol_discriminator ==
             message->gsm.h.extended_protocol_discriminator);
 
-    if (message->gmm.h.extended_protocol_discriminator == 
+    if (message->gmm.h.extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM)
         return ogs_nas_5gmm_encode(message);
-    else if (message->gmm.h.extended_protocol_discriminator == 
+    else if (message->gmm.h.extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM)
         return ogs_nas_5gsm_encode(message);
 
