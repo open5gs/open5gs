@@ -932,7 +932,7 @@ static void update_bearer_holding_expiry(abts_case *tc, void *data)
     ABTS_TRUE(tc, !xact->tm_peer->running);
 
     /* The UE answers paging after the GTP holding timer has deleted xact. */
-    ogs_timer_start(xact->tm_holding, -1);
+    ogs_timer_start(xact->tm_holding, 0);
     ogs_timer_mgr_expire(ogs_app()->timer_mgr);
     ABTS_PTR_EQUAL(tc, NULL, ogs_gtp_xact_find_by_id(id));
     ABTS_TRUE(tc, ogs_list_empty(&node.remote_list));
