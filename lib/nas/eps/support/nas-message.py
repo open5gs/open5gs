@@ -118,7 +118,7 @@ def v_lower(v):
     return re.sub(
             r'_+', '_',
             re.sub('3gpp', '', c_identifier(v).lower())).strip('_')
- 
+
 def get_cells(cells):
     iei = cells[0].text
     value = cells[1].text.encode('ascii', 'ignore').decode('utf-8')
@@ -291,7 +291,7 @@ for key in msg_list.keys():
         print("Read from " + cachefile)
     else:
         document = Document(filename)
-        f = open(cachefile, 'w') 
+        f = open(cachefile, 'w')
 
         ies = []
         write_file(f, "ies = []\n")
@@ -815,7 +815,7 @@ for (k, v) in sorted_msg_list:
         f.write("        break;\n")
 
 f.write("""    default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->emm.h.message_type);
         break;
     }
@@ -862,7 +862,7 @@ for (k, v) in sorted_msg_list:
         f.write("        break;\n")
 
 f.write("""    default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                message->esm.h.message_type);
         break;
     }
@@ -980,7 +980,7 @@ for (k, v) in sorted_msg_list:
         f.write("        break;\n")
 
 f.write("""    default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                message->emm.h.message_type);
         ogs_pkbuf_free(pkbuf);
         return NULL;
@@ -1034,7 +1034,7 @@ for (k, v) in sorted_msg_list:
         f.write("        break;\n")
 
 f.write("""   default:
-        ogs_error("Unknown message type (0x%x) or not implemented", 
+        ogs_error("Unknown message type (0x%x) or not implemented",
                 message->esm.h.message_type);
         ogs_pkbuf_free(pkbuf);
         return NULL;
@@ -1053,10 +1053,10 @@ ogs_pkbuf_t *ogs_nas_eps_plain_encode(ogs_nas_eps_message_t *message)
     ogs_assert(message->emm.h.protocol_discriminator ==
             message->esm.h.protocol_discriminator);
 
-    if (message->emm.h.protocol_discriminator == 
+    if (message->emm.h.protocol_discriminator ==
             OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM)
         return ogs_nas_emm_encode(message);
-    else if (message->emm.h.protocol_discriminator == 
+    else if (message->emm.h.protocol_discriminator ==
             OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM)
         return ogs_nas_esm_encode(message);
 
