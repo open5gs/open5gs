@@ -210,7 +210,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                 nf_instance->id, nf_instance->time.heartbeat_interval);
         if (nf_instance->time.heartbeat_interval) {
             ogs_timer_start(nf_instance->t_no_heartbeat,
-                    ogs_time_from_sec(
+                    ogs_time_from_sec((ogs_time_t)
                         nf_instance->time.heartbeat_interval +
                         ogs_local_conf()->time.nf_instance.
                         no_heartbeat_margin));
@@ -259,7 +259,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_PATCH)
                     if (nf_instance->time.heartbeat_interval) {
                         ogs_timer_start(nf_instance->t_no_heartbeat,
-                            ogs_time_from_sec(
+                            ogs_time_from_sec((ogs_time_t)
                                 nf_instance->time.heartbeat_interval +
                                 ogs_local_conf()->time.nf_instance.
                                     no_heartbeat_margin));
