@@ -113,6 +113,12 @@ int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info)
         } else if (!strcmp(key, OGS_SQN_STRING) &&
                 BSON_ITER_HOLDS_INT64(&inner_iter)) {
             auth_info->sqn = bson_iter_int64(&inner_iter);
+        } else if (!strcmp(key, OGS_AUTHENTICATION_METHOD_STRING) &&
+                BSON_ITER_HOLDS_UTF8(&inner_iter)) {
+            utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
+            ogs_cpystrn(auth_info->authentication_method, utf8,
+                    ogs_min(length + 1,
+                        sizeof(auth_info->authentication_method)));
         }
     }
 

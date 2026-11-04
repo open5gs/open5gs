@@ -167,6 +167,123 @@ void ogs_kdf_hxres_star(uint8_t *rand, uint8_t *xres_star, uint8_t *hxres_star)
     memcpy(hxres_star, output+OGS_KEY_LEN, OGS_KEY_LEN);
 }
 
+/*
+ * RFC 5448 3.3 (TS33.402 Annex A) : CK'/IK' derivation for EAP-AKA'
+ *
+ * CK'||IK' = KDF(CK||IK, FC=0x20, P0=serving network name, P1=SQN xor AK)
+ */
+void ogs_kdf_ck_ik_prime(
+        uint8_t *ck, uint8_t *ik,
+        char *serving_network_name, uint8_t *autn,
+        uint8_t *ck_prime, uint8_t *ik_prime)
+{
+    kdf_param_t param;
+    uint8_t key[OGS_KEY_LEN*2];
+    uint8_t output[OGS_SHA256_DIGEST_SIZE];
+
+    ogs_assert(ck);
+    ogs_assert(ik);
+    ogs_assert(serving_network_name);
+    ogs_assert(autn);
+    ogs_assert(ck_prime);
+    ogs_assert(ik_prime);
+
+    memcpy(key, ck, OGS_KEY_LEN);
+    memcpy(key+OGS_KEY_LEN, ik, OGS_KEY_LEN);
+
+    memset(param, 0, sizeof(param));
+    param[0].buf = (uint8_t *)serving_network_name;
+    param[0].len = strlen(serving_network_name);
+    param[1].buf = autn; /* first 6 octets of AUTN carry SQN xor AK */
+    param[1].len = OGS_SQN_XOR_AK_LEN;
+
+    ogs_kdf_common(key, OGS_KEY_LEN*2,
+            FC_FOR_CK_PRIME_IK_PRIME_DERIVATION, param, output);
+
+    memcpy(ck_prime, output, OGS_KEY_LEN);
+    memcpy(ik_prime, output+OGS_KEY_LEN, OGS_KEY_LEN);
+}
+
+/*
+ * RFC 5448 3.4.1 : EAP-AKA' PRF' key derivation
+ *
+ * MK = PRF'(IK'|CK', "EAP-AKA'"|Identity) split into
+ * K_encr(16) | K_aut(32) | K_re(32) | MSK(64) | EMSK(64) = 208 octets.
+ *
+ * PRF'(K,S) = T1|T2|...  with
+ *   T1 = HMAC-SHA-256(K, S|0x01)
+ *   Tn = HMAC-SHA-256(K, T(n-1)|S|n)
+ */
+void ogs_kdf_eap_aka_prime_prf(
+        const uint8_t *ck_prime, const uint8_t *ik_prime,
+        const char *identity, size_t identity_len,
+        uint8_t *k_encr, uint8_t *k_aut, uint8_t *k_re,
+        uint8_t *msk, uint8_t *emsk)
+{
+#define OGS_EAP_AKA_PRIME_MK_LEN        208
+#define OGS_EAP_AKA_PRIME_PRF_ROUNDS    7 /* ceil(208/32) */
+    static const char *label = "EAP-AKA'";
+    const size_t label_len = 8; /* strlen("EAP-AKA'") */
+
+    uint8_t key[OGS_KEY_LEN*2];
+    uint8_t *s = NULL;
+    size_t s_len;
+    uint8_t mk[OGS_EAP_AKA_PRIME_PRF_ROUNDS * OGS_SHA256_DIGEST_SIZE];
+    uint8_t t[OGS_SHA256_DIGEST_SIZE];
+    uint8_t *msg = NULL;
+    size_t msg_len;
+    int n;
+
+    ogs_assert(ck_prime);
+    ogs_assert(ik_prime);
+    ogs_assert(identity);
+
+    /* PRF' key K = IK' | CK' (note the order defined by RFC 5448) */
+    memcpy(key, ik_prime, OGS_KEY_LEN);
+    memcpy(key+OGS_KEY_LEN, ck_prime, OGS_KEY_LEN);
+
+    /* S = "EAP-AKA'" | Identity */
+    s_len = label_len + identity_len;
+    s = ogs_malloc(s_len);
+    ogs_assert(s);
+    memcpy(s, label, label_len);
+    memcpy(s+label_len, identity, identity_len);
+
+    /* Working buffer: T(n-1) | S | n */
+    msg = ogs_malloc(OGS_SHA256_DIGEST_SIZE + s_len + 1);
+    ogs_assert(msg);
+
+    for (n = 1; n <= OGS_EAP_AKA_PRIME_PRF_ROUNDS; n++) {
+        size_t pos = 0;
+        if (n > 1) {
+            memcpy(msg, t, OGS_SHA256_DIGEST_SIZE);
+            pos += OGS_SHA256_DIGEST_SIZE;
+        }
+        memcpy(msg+pos, s, s_len);
+        pos += s_len;
+        msg[pos++] = (uint8_t)n;
+        msg_len = pos;
+
+        ogs_hmac_sha256(key, sizeof(key), msg, msg_len,
+                t, OGS_SHA256_DIGEST_SIZE);
+        memcpy(mk + (n-1)*OGS_SHA256_DIGEST_SIZE, t, OGS_SHA256_DIGEST_SIZE);
+    }
+
+    if (k_encr)
+        memcpy(k_encr, mk, OGS_EAP_AKA_PRIME_K_ENCR_LEN);
+    if (k_aut)
+        memcpy(k_aut, mk + 16, OGS_EAP_AKA_PRIME_K_AUT_LEN);
+    if (k_re)
+        memcpy(k_re, mk + 48, OGS_EAP_AKA_PRIME_K_RE_LEN);
+    if (msk)
+        memcpy(msk, mk + 80, OGS_EAP_AKA_PRIME_MSK_LEN);
+    if (emsk)
+        memcpy(emsk, mk + 144, OGS_EAP_AKA_PRIME_EMSK_LEN);
+
+    ogs_free(msg);
+    ogs_free(s);
+}
+
 /* TS33.501 Annex A.6 : Kseaf derivation function */
 void ogs_kdf_kseaf(char *serving_network_name, const uint8_t *kausf, uint8_t *kseaf)
 {

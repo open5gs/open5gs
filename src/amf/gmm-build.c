@@ -374,30 +374,76 @@ ogs_pkbuf_t *gmm_build_authentication_request(amf_ue_t *amf_ue)
     authentication_request->abba.length = amf_ue->abba_len;
     memcpy(authentication_request->abba.value, amf_ue->abba, amf_ue->abba_len);
 
-    authentication_request->presencemask |=
-    OGS_NAS_5GS_AUTHENTICATION_REQUEST_AUTHENTICATION_PARAMETER_RAND_PRESENT;
-    authentication_request->presencemask |=
-    OGS_NAS_5GS_AUTHENTICATION_REQUEST_AUTHENTICATION_PARAMETER_AUTN_PRESENT;
+    if (amf_ue->auth_type == OpenAPI_auth_type_EAP_AKA_PRIME) {
+        /* EAP-AKA' : carry the EAP-Request in the EAP message IE */
+        authentication_request->presencemask |=
+        OGS_NAS_5GS_AUTHENTICATION_REQUEST_EAP_MESSAGE_PRESENT;
+        authentication_request->eap_message.length = amf_ue->eap_len;
+        authentication_request->eap_message.buffer = amf_ue->eap;
+    } else {
+        authentication_request->presencemask |=
+        OGS_NAS_5GS_AUTHENTICATION_REQUEST_AUTHENTICATION_PARAMETER_RAND_PRESENT;
+        authentication_request->presencemask |=
+        OGS_NAS_5GS_AUTHENTICATION_REQUEST_AUTHENTICATION_PARAMETER_AUTN_PRESENT;
 
-    memcpy(authentication_request->authentication_parameter_rand.rand,
-            amf_ue->rand, OGS_RAND_LEN);
-    memcpy(authentication_request->authentication_parameter_autn.autn,
-            amf_ue->autn, OGS_AUTN_LEN);
-    authentication_request->authentication_parameter_autn.length =
-            OGS_AUTN_LEN;
+        memcpy(authentication_request->authentication_parameter_rand.rand,
+                amf_ue->rand, OGS_RAND_LEN);
+        memcpy(authentication_request->authentication_parameter_autn.autn,
+                amf_ue->autn, OGS_AUTN_LEN);
+        authentication_request->authentication_parameter_autn.length =
+                OGS_AUTN_LEN;
+    }
 
     return ogs_nas_5gs_plain_encode(&message);
 }
 
-ogs_pkbuf_t *gmm_build_authentication_reject(void)
+ogs_pkbuf_t *gmm_build_authentication_result(amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_authentication_result_t *authentication_result =
+        &message.gmm.authentication_result;
+
+    ogs_assert(amf_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.gmm.h.extended_protocol_discriminator =
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_AUTHENTICATION_RESULT;
+
+    authentication_result->ngksi.tsc = amf_ue->nas.amf.tsc;
+    authentication_result->ngksi.value = amf_ue->nas.amf.ksi;
+
+    /* EAP message IE carries the terminating EAP-Success */
+    authentication_result->eap_message.length = amf_ue->eap_len;
+    authentication_result->eap_message.buffer = amf_ue->eap;
+
+    authentication_result->presencemask |=
+        OGS_NAS_5GS_AUTHENTICATION_RESULT_ABBA_PRESENT;
+    authentication_result->abba.length = amf_ue->abba_len;
+    memcpy(authentication_result->abba.value, amf_ue->abba, amf_ue->abba_len);
+
+    return ogs_nas_5gs_plain_encode(&message);
+}
+
+ogs_pkbuf_t *gmm_build_authentication_reject(uint8_t *eap, uint16_t eap_len)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_authentication_reject_t *authentication_reject =
+        &message.gmm.authentication_reject;
 
     memset(&message, 0, sizeof(message));
 
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_AUTHENTICATION_REJECT;
+
+    /* EAP-AKA' : deliver the terminating EAP-Failure (TS 24.501 8.2.5) */
+    if (eap && eap_len) {
+        authentication_reject->presencemask |=
+            OGS_NAS_5GS_AUTHENTICATION_REJECT_EAP_MESSAGE_PRESENT;
+        authentication_reject->eap_message.length = eap_len;
+        authentication_reject->eap_message.buffer = eap;
+    }
 
     return ogs_nas_5gs_plain_encode(&message);
 }
