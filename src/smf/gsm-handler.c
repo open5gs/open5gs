@@ -110,6 +110,21 @@ static int reconfigure_packet_filter(
 
     memset(&pf->ipfw_rule, 0, sizeof(ogs_ipfw_rule_t));
     pf->direction = qos_rule->pf[i].direction;
+
+    /*
+     * TS 24.501 9.11.4.13: the packet filter direction is two bits,
+     * 00 is reserved, 01 downlink only, 10 uplink only and 11
+     * bi-directional.  A reserved value is UE input; store only the
+     * three defined values.  smf_bearer_tft_update() has no branch
+     * for the reserved value and aborts the SMF on it.
+     */
+    if (pf->direction != OGS_FLOW_DOWNLINK_ONLY &&
+            pf->direction != OGS_FLOW_UPLINK_ONLY &&
+            pf->direction != OGS_FLOW_BIDIRECTIONAL) {
+        ogs_error("Reserved packet filter direction [%d]", pf->direction);
+        return OGS_ERROR;
+    }
+
     for (j = 0; j < qos_rule->pf[i].content.num_of_component; j++) {
         switch(qos_rule->pf[i].content.component[j].type) {
         case OGS_PACKET_FILTER_MATCH_ALL:
