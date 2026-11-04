@@ -477,6 +477,25 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
             ogs_assert(sess);
 
             if (node == sess->pfcp_node) {
+                /*
+                 * Restore only operational sessions after a UPF restart.
+                 *
+                 * Sessions still being established are not yet ready for
+                 * restoration. Sessions being released may be cleared
+                 * without a subsequent PFCP Session Deletion, leaving
+                 * stale PFCP state with the old UE IP in the restarted UPF
+                 * if they are restored here.
+                 */
+                if (!OGS_FSM_CHECK(&sess->sm, smf_gsm_state_operational)) {
+                    if (sess->epc)
+                        ogs_warn("[%s:%s] Skip restoration: not operational",
+                                smf_ue->imsi_bcd, sess->session.name);
+                    else
+                        ogs_warn("[%s:%d] Skip restoration: not operational",
+                                smf_ue->supi, sess->psi);
+                    continue;
+                }
+
                 if (sess->epc) {
                     ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
                         smf_ue->imsi_bcd, sess->session.name,
