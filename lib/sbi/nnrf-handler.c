@@ -1572,8 +1572,13 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     ogs_assert(SearchResult);
-    ogs_assert(SearchResult->validity_period);
     ogs_assert(SearchResult->nf_instances);
+
+    if (SearchResult->validity_period <= 0) {
+        ogs_error("Invalid SearchResult.validityPeriod [%d]",
+                SearchResult->validity_period);
+        return;
+    }
 
     OpenAPI_list_for_each(SearchResult->nf_instances, node) {
         OpenAPI_nf_profile_t *NFProfile = NULL;
