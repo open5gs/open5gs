@@ -151,6 +151,54 @@ __DNN/APN Requested by UE not present in UDM/HSS:__
 Ensure the DNNs/APNs requested by the UE are present in the UDM/HSS.
 
 
+#### UE Gets an IP Address but Cannot Reach the Internet
+If the UE registers and the PDU session is established (e.g. UERANSIM prints `PDU Session establishment is successful` and creates `uesimtun0`), but the UE cannot reach the Internet, first check that [IP forwarding and the NAT rule]({{ site.url }}{{ site.baseurl }}/docs/guide/01-quickstart#UEInternet) are configured on the UPF host.
+
+__UE simulator and UPF running on the same host:__
+If UERANSIM (or another UE simulator) runs on the same host as the UPF, the UE IP address (e.g. `10.45.0.2`) is assigned to `uesimtun0` on that host. When the UPF writes the decapsulated uplink packet to `ogstun`, the Linux kernel sees a packet whose source address belongs to the host itself and drops it as a *martian* packet. Uplink packets are visible on `ogstun`, but never leave the WAN interface.
+
+You can confirm this by enabling martian logging:
+```bash
+$ sudo sysctl -w net.ipv4.conf.all.log_martians=1
+$ sudo dmesg | grep martian
+IPv4: martian source 8.8.8.8 from 10.45.0.2, on dev ogstun
+```
+
+To avoid this, run the gNB/UE simulator on a separate machine/VM, or in a separate network namespace connected to the host with a veth pair:
+```bash
+$ sudo ip netns add ran
+$ sudo ip link add veth-core type veth peer name veth-ran
+$ sudo ip link set veth-ran netns ran
+$ sudo ip addr add 10.10.0.1/24 dev veth-core
+$ sudo ip link set veth-core up
+$ sudo ip netns exec ran ip addr add 10.10.0.2/24 dev veth-ran
+$ sudo ip netns exec ran ip link set veth-ran up
+$ sudo ip netns exec ran ip link set lo up
+```
+
+Bind the AMF NGAP server and the UPF GTP-U server to the host side of the veth pair, then restart `open5gs-amfd` and `open5gs-upfd`.
+
+```diff
+$ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
+   ngap:
+     server:
+-      - address: 127.0.0.5
++      - address: 10.10.0.1
+
+$ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
+   gtpu:
+     server:
+-      - address: 127.0.0.7
++      - address: 10.10.0.1
+```
+
+In the UERANSIM gNB configuration, set `ngapIp` and `gtpIp` to `10.10.0.2` and the AMF address to `10.10.0.1`. Then run the gNB, UE and test traffic inside the namespace:
+```bash
+$ sudo ip netns exec ran ./build/nr-gnb -c config/open5gs-gnb.yaml
+$ sudo ip netns exec ran ./build/nr-ue -c config/open5gs-ue.yaml
+$ sudo ip netns exec ran ping -I uesimtun0 8.8.8.8
+```
+
 ## Further Debugging
 ---
 
