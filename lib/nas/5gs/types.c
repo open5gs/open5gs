@@ -945,6 +945,14 @@ static int parse_qos_rules_packet_filter_list(
                     buffer+size+len,
                     sizeof(rule->pf[i].content.component[j].ipv6.prefixlen));
                 len += sizeof(rule->pf[i].content.component[j].ipv6.prefixlen);
+
+                if (rule->pf[i].content.component[j].ipv6.prefixlen >
+                        OGS_IPV6_128_PREFIX_LEN) {
+                    ogs_error("RuleId[%u] PF[%d] Invalid IPv6 prefix "
+                            "length[%d]", rule->identifier, i,
+                            rule->pf[i].content.component[j].ipv6.prefixlen);
+                    goto cleanup;
+                }
                 break;
             case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
             case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:

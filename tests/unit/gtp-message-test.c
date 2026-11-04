@@ -420,12 +420,48 @@ static void gtp1_mm_context_test(abts_case *tc, void *data)
             memcmp(redec.imeisv, dec.imeisv, dec.imeisv_len));
 }
 
+static void gtp2_tft_ipv6_prefix_length_test(abts_case *tc, void *data)
+{
+    ogs_gtp2_tft_t tft;
+    ogs_tlv_octet_t octet;
+    uint8_t ie[64];
+    unsigned int i, n = 0;
+    int id = ogs_log_get_domain_id("gtp");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
+
+    /* Create new TFT, one bi-directional packet filter whose only
+     * component is an IPv6 remote address/prefix length. */
+    ie[n++] = (OGS_GTP2_TFT_CODE_CREATE_NEW_TFT << 5) | 1;
+    ie[n++] = (OGS_FLOW_BIDIRECTIONAL << 4) | 0;
+    ie[n++] = 0x00; /* Precedence */
+    ie[n++] = 1 + OGS_IPV6_LEN + 1; /* Length of packet filter contents */
+    ie[n++] = OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+    for (i = 0; i < OGS_IPV6_LEN; i++)
+        ie[n++] = 0x20 + i;
+    ie[n++] = OGS_IPV6_128_PREFIX_LEN + 1;
+    octet.data = ie;
+    octet.len = n;
+
+    /* A prefix length above 128 is rejected. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
+    ABTS_TRUE(tc, ogs_gtp2_parse_tft(&tft, &octet) != n);
+    ogs_log_set_domain_level(id, level);
+
+    /* The largest valid prefix length is still accepted. */
+    ie[n-1] = OGS_IPV6_128_PREFIX_LEN;
+    ABTS_INT_EQUAL(tc, n, ogs_gtp2_parse_tft(&tft, &octet));
+    ABTS_INT_EQUAL(tc, OGS_IPV6_128_PREFIX_LEN,
+            tft.pf[0].content.component[0].ipv6.prefixlen);
+}
+
 abts_suite *test_gtp_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, gtp_message_test1, NULL);
     abts_run_test(suite, gtp1_mm_context_test, NULL);
+    abts_run_test(suite, gtp2_tft_ipv6_prefix_length_test, NULL);
 
     return suite;
 }
