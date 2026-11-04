@@ -39,6 +39,9 @@
 #define FC_FOR_KASME_DERIVATION_IDLE_MOBILITY   0x19
 #define FC_FOR_CK_IK_DERIVATION_IDLE_MOBILITY   0x1B
 
+/* TS33.102 Annex C.3 and C.4 : Delta = 2^28 */
+#define SQN_DELTA                               (1ULL << 28)
+
 typedef struct kdf_param_s {
     const uint8_t *buf;
     uint16_t len;
@@ -508,4 +511,57 @@ void ogs_auc_sqn(
     for (i = 0; i < OGS_SQN_LEN; i++)
         sqn_ms[i] = ak[i] ^ conc_sqn_ms[i];
     milenage_f1(opc, k, rand, sqn_ms, amf, NULL, mac_s);
+}
+
+/*
+ * TS33.102
+ * 6.3.5 Re-synchronisation procedure
+ *
+ * 2. The HE/AuC checks if SQN HE is in the correct range, i.e. if the next
+ *    sequence number generated SQN HE using would be accepted by the USIM.
+ * 3. If SQN HE is in the correct range then the HE/AuC continues with
+ *    step (6), otherwise it continues with step (4).
+ * 5. If the verification is successful the HE/AuC resets the value of
+ *    the counter SQN HE to SQN MS.
+ *
+ * SQN = SEQ || IND with a 5-bit IND (Annex C.3). SQN MS is the highest
+ * sequence number in the USIM array (Annex C.2), so the USIM accepts
+ * SQN HE, whatever its IND and array size, if SEQ HE is above SEQ MS
+ * (Annex C.2.2) by at most Delta (Annex C.2.1).
+ *
+ * A verified AUTS must not reset SQN HE when SQN HE is in range,
+ * otherwise a replayed RAND || AUTS would move SQN HE back.
+ */
+uint64_t ogs_auc_resync_sqn(uint64_t sqn_he, uint64_t sqn_ms)
+{
+    uint64_t seq_he, seq_ms;
+
+    sqn_he &= OGS_MAX_SQN;
+    sqn_ms &= OGS_MAX_SQN;
+
+    seq_he = sqn_he >> 5;
+    seq_ms = sqn_ms >> 5;
+
+    if (seq_he > seq_ms && seq_he - seq_ms <= SQN_DELTA)
+        return sqn_he;
+
+    /* 33.102 C.3.4 Guide : IND + 1
+     *
+     * General rule: index values IND used in the array scheme,
+     * according to Annex C.1.2, shall be allocated cyclically
+     * within its range 0, ... , a-1. This means that the index value IND
+     * used with the previously generated authentication vector is stored
+     * in SQN HE , and the next authentication vector shall use index
+     * value IND +1 mod a.
+     *
+     * In future releases there may be additional information
+     * about the requesting node identity. If this information is
+     * available it is recommended to use it in the following way:
+     *
+     * - If the new request comes from the same serving node
+     *   as the previous request, then the index value used for
+     *   the new request shall be the same as was used for
+     *   the previous request.
+     */
+    return (sqn_ms + 32 + 1) & OGS_MAX_SQN;
 }

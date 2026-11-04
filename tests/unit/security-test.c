@@ -492,6 +492,33 @@ static void security_test10(abts_case *tc, void *data)
     }
 }
 
+static void security_test11(abts_case *tc, void *data)
+{
+    uint64_t delta = 1ULL << 28;
+    uint64_t sqn_ms = 0x1234ULL << 5 | 7;
+
+    /* SQN HE in range : keep it */
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(sqn_ms + 32, sqn_ms) == sqn_ms + 32);
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(
+                sqn_ms + (delta << 5), sqn_ms) == sqn_ms + (delta << 5));
+
+    /* SQN HE not above SQN MS : reset to SQN MS, IND + 1 */
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(sqn_ms, sqn_ms) == sqn_ms + 33);
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(sqn_ms + 1, sqn_ms) == sqn_ms + 33);
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(sqn_ms - 32, sqn_ms) == sqn_ms + 33);
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(0, sqn_ms) == sqn_ms + 33);
+
+    /* SQN HE more than Delta above SQN MS : reset to SQN MS, IND + 1 */
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(
+                sqn_ms + ((delta + 1) << 5), sqn_ms) == sqn_ms + 33);
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(OGS_MAX_SQN, 0) == 33);
+
+    /* 48-bit SQN */
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(
+                (1ULL << 48) | (sqn_ms + 32), sqn_ms) == sqn_ms + 32);
+    ABTS_TRUE(tc, ogs_auc_resync_sqn(0, OGS_MAX_SQN) == 32);
+}
+
 abts_suite *test_security(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -506,6 +533,7 @@ abts_suite *test_security(abts_suite *suite)
     abts_run_test(suite, security_test8, NULL);
     abts_run_test(suite, security_test9, NULL);
     abts_run_test(suite, security_test10, NULL);
+    abts_run_test(suite, security_test11, NULL);
 
     return suite;
 }

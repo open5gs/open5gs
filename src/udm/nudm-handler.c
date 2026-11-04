@@ -91,7 +91,6 @@ bool udm_nudm_ueau_handle_get(
         uint8_t auts[OGS_AUTS_LEN];
         uint8_t sqn_ms[OGS_SQN_LEN];
         uint8_t mac_s[OGS_MAC_S_LEN];
-        uint64_t sqn = 0;
 
         if (!ResynchronizationInfo->rand) {
             ogs_error("[%s] No RAND", udm_ue->suci);
@@ -146,33 +145,12 @@ bool udm_nudm_ueau_handle_get(
 
         }
 
-        sqn = ogs_buffer_to_uint64(sqn_ms, OGS_SQN_LEN);
-
-        /* 33.102 C.3.4 Guide : IND + 1
-         *
-         * General rule: index values IND used in the array scheme,
-         * according to Annex C.1.2, shall be allocated cyclically
-         * within its range 0, ... , a-1. This means that the index value IND
-         * used with the previously generated authentication vector is stored
-         * in SQN HE , and the next authentication vector shall use index
-         * value IND +1 mod a.
-         *
-         * In future releases there may be additional information
-         * about the requesting node identity. If this information is
-         * available it is recommended to use it in the following way:
-         *
-         * - If the new request comes from the same serving node
-         *   as the previous request, then the index value used for
-         *   the new request shall be the same as was used for
-         *   the previous request.
-         */
-        sqn = (sqn + 32 + 1) & OGS_MAX_SQN;
-
-        ogs_uint64_to_buffer(sqn, OGS_SQN_LEN, udm_ue->sqn);
+        /* SQN HE is read from the UDR before deciding on the reset */
+        udm_ue->sqn_ms = ogs_buffer_to_uint64(sqn_ms, OGS_SQN_LEN);
 
         r = udm_ue_sbi_discover_and_send(OpenAPI_service_name_nudr_dr, NULL,
                 udm_nudr_dr_build_authentication_subscription,
-                udm_ue, stream, UDM_SBI_NO_STATE, udm_ue->sqn);
+                udm_ue, stream, UDM_SBI_UE_RESYNC, NULL);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
