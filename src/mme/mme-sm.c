@@ -561,6 +561,23 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
 
+        /*
+         * TS 24.301 5.5.1.2.4: ATTACH COMPLETE carries an ACTIVATE DEFAULT
+         * EPS BEARER CONTEXT ACCEPT. Its ESM container is handled with
+         * the attach action once the UE is EMM-REGISTERED, so a PDN
+         * CONNECTIVITY REQUEST in it would be taken as a second attach
+         * PDN. Drop it (TS 24.301 7.4).
+         */
+        if (e->create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST &&
+            OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered) &&
+            nas_message.esm.h.message_type ==
+                OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST) {
+            ogs_error("[%s] PDN Connectivity Request in Attach Complete",
+                    mme_ue->imsi_bcd);
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
+
         bearer = mme_bearer_find_or_add_by_message(
                     mme_ue, &nas_message, e->create_action);
         if (!bearer) {

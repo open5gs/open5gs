@@ -150,6 +150,18 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
+            /*
+             * The ESM information request procedure is used during the
+             * attach procedure only (TS 24.301 6.6.1.2.1), so a response
+             * from an attached UE answers no request. Ignore it instead of
+             * running the attach-only esm_handle_information_response().
+             */
+            if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+                ogs_error("[%s] Unexpected ESM information response",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+
             CLEAR_BEARER_TIMER(bearer->t3489);
 
             h.type = e->nas_type;
