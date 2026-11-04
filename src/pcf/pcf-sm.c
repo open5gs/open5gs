@@ -46,6 +46,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
+    OpenAPI_policy_association_request_t *PolicyAssociationRequest = NULL;
 
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_xact_t *sbi_xact = NULL;
@@ -140,6 +141,22 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             break;
 
         case OpenAPI_service_name_npcf_am_policy_control:
+            /* Reject an oversized list before finding or creating UE state. */
+            PolicyAssociationRequest = message.PolicyAssociationRequest;
+            if (PolicyAssociationRequest &&
+                PolicyAssociationRequest->allowed_snssais &&
+                PolicyAssociationRequest->allowed_snssais->count >
+                    OGS_MAX_NUM_OF_SLICE) {
+                ogs_error("Too many allowedSnssais [%ld:%d]",
+                        PolicyAssociationRequest->allowed_snssais->count,
+                        OGS_MAX_NUM_OF_SLICE);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                        "Too many allowedSnssais", NULL, NULL));
+                break;
+            }
+
             SWITCH(message.h.method)
             CASE(OGS_SBI_HTTP_METHOD_POST)
                 if (message.PolicyAssociationRequest &&

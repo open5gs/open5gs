@@ -283,6 +283,20 @@ void smf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
             ogs_plmn_id_to_string(plmn, plmn_id);
         }
 
+        /*
+         * Bound the lifetime series count shared by all per-slice metrics.
+         * Existing counters and gauges must remain updatable at the limit.
+         */
+        if (ogs_hash_count(metrics_hash_by_slice) >=
+                OGS_METRICS_MAX_SERIES_PER_HASH) {
+            ogs_debug("Too many SMF per-slice metric series [%u:%d] - "
+                    "ignore [PLMN_ID:%s,SST:%d,SD:0x%x,TYPE:%d]",
+                    ogs_hash_count(metrics_hash_by_slice),
+                    OGS_METRICS_MAX_SERIES_PER_HASH, plmn_id,
+                    slice_key.snssai.sst, slice_key.snssai.sd.v, t);
+            return;
+        }
+
         if (snssai) {
             s_nssai = ogs_sbi_s_nssai_to_string(snssai);
         } else {
@@ -296,6 +310,14 @@ void smf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_slice,
                 &slice_key, sizeof(slice_key), metrics);
+
+        /* This table only grows, so reaching the limit is a one-time event. */
+        if (ogs_hash_count(metrics_hash_by_slice) ==
+                OGS_METRICS_MAX_SERIES_PER_HASH) {
+            ogs_warn("Maximum SMF per-slice metric series reached [%d]; "
+                    "new series will be ignored",
+                    OGS_METRICS_MAX_SERIES_PER_HASH);
+        }
 
         if (s_nssai)
             ogs_free(s_nssai);
@@ -382,6 +404,21 @@ void smf_metrics_inst_by_5qi_add(ogs_plmn_id_t *plmn,
             ogs_plmn_id_to_string(plmn, plmn_id);
         }
 
+        /*
+         * Bound the lifetime series count shared by all per-5QI metrics.
+         * Existing gauges must remain updatable at the limit.
+         */
+        if (ogs_hash_count(metrics_hash_by_5qi) >=
+                OGS_METRICS_MAX_SERIES_PER_HASH) {
+            ogs_debug("Too many SMF per-5QI metric series [%u:%d] - "
+                    "ignore [PLMN_ID:%s,SST:%d,SD:0x%x,5QI:%d,TYPE:%d]",
+                    ogs_hash_count(metrics_hash_by_5qi),
+                    OGS_METRICS_MAX_SERIES_PER_HASH, plmn_id,
+                    fiveqi_key.snssai.sst, fiveqi_key.snssai.sd.v,
+                    fiveqi, t);
+            return;
+        }
+
         if (snssai) {
             s_nssai = ogs_sbi_s_nssai_to_string(snssai);
         } else {
@@ -397,6 +434,14 @@ void smf_metrics_inst_by_5qi_add(ogs_plmn_id_t *plmn,
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_5qi,
                 &fiveqi_key, sizeof(fiveqi_key), metrics);
+
+        /* This table only grows, so reaching the limit is a one-time event. */
+        if (ogs_hash_count(metrics_hash_by_5qi) ==
+                OGS_METRICS_MAX_SERIES_PER_HASH) {
+            ogs_warn("Maximum SMF per-5QI metric series reached [%d]; "
+                    "new series will be ignored",
+                    OGS_METRICS_MAX_SERIES_PER_HASH);
+        }
 
         if (s_nssai)
             ogs_free(s_nssai);
