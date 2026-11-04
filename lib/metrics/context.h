@@ -28,6 +28,12 @@
 extern "C" {
 #endif
 
+/*
+ * Limit persistent metric series with dynamic labels per hash table.
+ * This is independent of the number of configured UEs.
+ */
+#define OGS_METRICS_MAX_SERIES_PER_HASH 1024
+
 typedef struct ogs_metrics_server_s ogs_metrics_server_t;
 
 typedef enum ogs_metrics_metric_type_s  {

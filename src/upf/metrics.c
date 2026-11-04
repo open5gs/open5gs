@@ -295,6 +295,19 @@ void upf_metrics_inst_by_dnn_add(char *dnn,
             &dnn_key, sizeof(dnn_key));
 
     if (!metrics) {
+        /*
+         * Bound the lifetime series count shared by all per-DNN metrics.
+         * Existing gauges must remain updatable at the limit.
+         */
+        if (ogs_hash_count(metrics_hash_by_dnn) >=
+                OGS_METRICS_MAX_SERIES_PER_HASH) {
+            ogs_debug("Too many UPF per-DNN metric series [%u:%d] - "
+                    "ignore [DNN:%s,TYPE:%d]",
+                    ogs_hash_count(metrics_hash_by_dnn),
+                    OGS_METRICS_MAX_SERIES_PER_HASH, dnn_key.dnn, t);
+            return;
+        }
+
         metrics = ogs_metrics_inst_new(upf_metrics_spec_by_dnn[t],
                 upf_metrics_spec_def_by_dnn->num_labels,
                 (const char *[]){ dnn_key.dnn });
@@ -302,6 +315,14 @@ void upf_metrics_inst_by_dnn_add(char *dnn,
         ogs_assert(metrics);
         ogs_hash_set(metrics_hash_by_dnn,
                 &dnn_key, sizeof(dnn_key), metrics);
+
+        /* This table only grows, so reaching the limit is a one-time event. */
+        if (ogs_hash_count(metrics_hash_by_dnn) ==
+                OGS_METRICS_MAX_SERIES_PER_HASH) {
+            ogs_warn("Maximum UPF per-DNN metric series reached [%d]; "
+                    "new series will be ignored",
+                    OGS_METRICS_MAX_SERIES_PER_HASH);
+        }
     }
 
     ogs_metrics_inst_add(metrics, val);
