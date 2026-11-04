@@ -46,8 +46,14 @@ void ogs_nnrf_nfm_handle_nf_register(
     }
 
     /* TIME : Update heartbeat from NRF */
-    if (NFProfile->is_heart_beat_timer == true)
-        nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
+    if (NFProfile->is_heart_beat_timer == true) {
+        if (NFProfile->heart_beat_timer > 0)
+            nf_instance->time.heartbeat_interval =
+                NFProfile->heart_beat_timer;
+        else
+            ogs_error("Invalid NFProfile.heartBeatTimer [%d]",
+                    NFProfile->heart_beat_timer);
+    }
 
     if (NFProfile->plmn_list) {
         ogs_local_conf()->num_of_serving_plmn_id = 0;
