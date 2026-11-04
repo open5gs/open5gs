@@ -331,7 +331,7 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                 ogs_timer_start(nf_instance->t_heartbeat_interval,
                     ogs_time_from_sec(nf_instance->time.heartbeat_interval));
                 ogs_timer_start(nf_instance->t_no_heartbeat,
-                    ogs_time_from_sec(
+                    ogs_time_from_sec((ogs_time_t)
                         nf_instance->time.heartbeat_interval +
                         ogs_local_conf()->time.nf_instance.
                         no_heartbeat_margin));
@@ -392,7 +392,7 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
 
                             if (nf_instance->time.heartbeat_interval)
                                 ogs_timer_start(nf_instance->t_no_heartbeat,
-                                    ogs_time_from_sec(
+                                    ogs_time_from_sec((ogs_time_t)
                                         nf_instance->time.heartbeat_interval +
                                         ogs_local_conf()->time.nf_instance.
                                             no_heartbeat_margin));

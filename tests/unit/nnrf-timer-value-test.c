@@ -19,7 +19,8 @@
 
 /*
  * Timer values received from the NRF (or the SCP) are passed to
- * ogs_timer_start(): a non-positive validityPeriod is not used.
+ * ogs_timer_start(): a non-positive validityPeriod or heartBeatTimer is
+ * not used.
  */
 
 #include "ogs-sbi.h"
@@ -97,6 +98,38 @@ static void test_validity_period_not_positive(abts_case *tc, void *data)
     }
 }
 
+/*
+ * heartBeatTimer in the NRF response to the registration: a non-positive
+ * value is not used, the configured heartbeat interval stays
+ */
+static void test_heart_beat_timer(abts_case *tc, void *data)
+{
+    int heart_beat_timer[] = { -5, 0, 20 };
+    int expected[] = { 10, 10, 20 };
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    int i;
+
+    nf_instance = ogs_sbi_nf_instance_add();
+    ogs_assert(nf_instance);
+    nf_instance->time.heartbeat_interval = 10;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(heart_beat_timer); i++) {
+        ogs_sbi_message_t message;
+        OpenAPI_nf_profile_t NFProfile;
+
+        memset(&message, 0, sizeof(message));
+        memset(&NFProfile, 0, sizeof(NFProfile));
+        NFProfile.is_heart_beat_timer = true;
+        NFProfile.heart_beat_timer = heart_beat_timer[i];
+        message.NFProfile = &NFProfile;
+
+        ogs_nnrf_nfm_handle_nf_register(nf_instance, &message);
+        ABTS_INT_EQUAL(tc, expected[i], nf_instance->time.heartbeat_interval);
+    }
+
+    ogs_sbi_nf_instance_remove(nf_instance);
+}
+
 abts_suite *test_nnrf_timer_value(abts_suite *suite)
 {
     ogs_app_context_t saved_app = *ogs_app();
@@ -132,6 +165,7 @@ abts_suite *test_nnrf_timer_value(abts_suite *suite)
 
     abts_run_test(suite, test_validity_period, NULL);
     abts_run_test(suite, test_validity_period_not_positive, NULL);
+    abts_run_test(suite, test_heart_beat_timer, NULL);
 
     ogs_sbi_context_final();
     ogs_app_context_final();
