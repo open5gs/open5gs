@@ -438,6 +438,23 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 break;
             }
 
+            /*
+             * TS 24.301 5.4.4.2/5.4.4.4: the MME starts T3470 when it sends
+             * IDENTITY REQUEST and stops it when the IDENTITY RESPONSE
+             * arrives.  Discard a response while no identification procedure
+             * is pending, whatever its security header: applying it would
+             * relabel this UE context with the identity in the message, and
+             * enter the IMSI migration path when that identity already has
+             * a context.  The IMSI test is still needed:
+             * emm_state_exception() sends IDENTITY REQUEST and then enters
+             * DEREGISTERED, whose ENTRY clears T3470 with all other timers.
+             */
+            if (!mme_ue->t3470.pkbuf && MME_UE_HAVE_IMSI(mme_ue)) {
+                ogs_error("[%s] No pending identification procedure",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+
             ogs_info("Identity response");
             CLEAR_MME_UE_TIMER(mme_ue->t3470);
 
