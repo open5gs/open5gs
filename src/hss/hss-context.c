@@ -1172,6 +1172,32 @@ char *hss_cx_download_user_data(
                             ogs_diam_cx_xml_default_handling_e);
                 ogs_assert(user_data);
 
+                if (ims_data->ifc[n].application_server.
+                        include_register_request ||
+                    ims_data->ifc[n].application_server.
+                        include_register_response) {
+                    user_data = ogs_mstrcatf(user_data, "%s",
+                                ogs_diam_cx_xml_extension_s);
+                    ogs_assert(user_data);
+
+                    if (ims_data->ifc[n].application_server.
+                            include_register_request) {
+                        user_data = ogs_mstrcatf(user_data, "%s",
+                                ogs_diam_cx_xml_include_register_request);
+                        ogs_assert(user_data);
+                    }
+                    if (ims_data->ifc[n].application_server.
+                            include_register_response) {
+                        user_data = ogs_mstrcatf(user_data, "%s",
+                                ogs_diam_cx_xml_include_register_response);
+                        ogs_assert(user_data);
+                    }
+
+                    user_data = ogs_mstrcatf(user_data, "%s",
+                                ogs_diam_cx_xml_extension_e);
+                    ogs_assert(user_data);
+                }
+
               user_data = ogs_mstrcatf(user_data, "%s",
                           ogs_diam_cx_xml_app_server_e);
               ogs_assert(user_data);

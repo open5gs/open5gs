@@ -221,6 +221,20 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
                                 ims_data->ifc[ifc_index]
                                     .application_server.default_handling =
                                     bson_iter_int32(&child4_iter);
+                            } else if (!strcmp(child4_key,
+                                        "include_register_request") &&
+                                    BSON_ITER_HOLDS_BOOL(&child4_iter)) {
+                                ims_data->ifc[ifc_index]
+                                    .application_server.
+                                        include_register_request =
+                                    bson_iter_bool(&child4_iter);
+                            } else if (!strcmp(child4_key,
+                                        "include_register_response") &&
+                                    BSON_ITER_HOLDS_BOOL(&child4_iter)) {
+                                ims_data->ifc[ifc_index]
+                                    .application_server.
+                                        include_register_response =
+                                    bson_iter_bool(&child4_iter);
                             }
                         }
                     } else if (!strcmp(child3_key, "trigger_point") &&
