@@ -1191,6 +1191,8 @@ typedef struct ogs_trigger_point_s {
 typedef struct ogs_application_server_s {
     const char *server_name;
     int        default_handling;
+    bool       include_register_request;
+    bool       include_register_response;
 } ogs_application_server_t;
 
 /**************************************************
