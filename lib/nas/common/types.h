@@ -211,7 +211,7 @@ typedef struct ogs_nas_authentication_failure_parameter_s {
 typedef struct ogs_nas_authentication_parameter_autn_s {
     uint8_t length;
     uint8_t autn[OGS_AUTN_LEN];
-} ogs_nas_authentication_parameter_autn_t;
+} __attribute__ ((packed)) ogs_nas_authentication_parameter_autn_t;
 
 /* 9.9.3.3 Authentication parameter RAND
  * See subclause 10.5.3.1 in 3GPP TS 24.008 [13].
@@ -242,7 +242,7 @@ ED7(uint8_t spare2:2;,
 typedef struct ogs_nas_authentication_response_parameter_s {
     uint8_t length;
     uint8_t res[OGS_MAX_RES_LEN];
-} ogs_nas_authentication_response_parameter_t;
+} __attribute__ ((packed)) ogs_nas_authentication_response_parameter_t;
 
 /* 9.9.3.6 Daylight saving time
  * See subclause 10.5.3.12 in 3GPP TS 24.008 [13].
@@ -692,7 +692,7 @@ typedef struct ogs_nas_additional_information_requested_s {
     uint8_t length;
 ED2(uint8_t spare:7;,
     uint8_t cipher_key:1;)
-} ogs_nas_additional_information_requested_t;
+} __attribute__ ((packed)) ogs_nas_additional_information_requested_t;
 
 /* 9.9.3.56 Ciphering key data
  * O TLV-E 35-2291 *
@@ -709,7 +709,7 @@ typedef struct ogs_nas_ciphering_key_data_s {
 typedef struct ogs_nas_wus_assistance_information_s {
     uint8_t length;
     uint8_t buffer[OGS_MAX_NAS_WUS_ASSISTANCE_INFORAMTION_LEN];
-} ogs_nas_wus_assistance_information_t;
+} __attribute__ ((packed)) ogs_nas_wus_assistance_information_t;
 
 /* 9.11.3.36A Non-3GPP NW provided policies
  * See subclause 10.5.5.37 in 3GPP TS 24.008 [12].
@@ -754,7 +754,7 @@ ED2(uint8_t paging_time_window:4;,
 typedef struct ogs_nas_ue_radio_capability_id_s {
     uint8_t length;
     uint8_t buffer[OGS_NAS_MAX_UE_RADIO_CAPABILITY_ID_LEN];
-} ogs_nas_ue_radio_capability_id_t;
+} __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_t;
 
 /* 9.9.3.61 UE radio capability ID deletion indication
  * O TV 1
@@ -841,9 +841,10 @@ typedef struct ogs_nas_registration_wait_range_s {
 /* 9.9.3.76 List of PLMNs to be used in disaster condition
  * 9.11.3.83 List of PLMNs to be used in disaster condition
  * O TLV 2-n */
+#define OGS_NAS_MAX_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_LEN 255
 typedef struct ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_s {
     uint8_t length;
-    void *buffer;
+    uint8_t value[OGS_NAS_MAX_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_LEN];
 } __attribute__ ((packed)) ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t;
 
 /* 9.9.3.77 PLMN identity
