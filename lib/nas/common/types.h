@@ -152,7 +152,7 @@ ED2(uint8_t digit17:4;,
 typedef struct ogs_nas_mobile_station_classmark_2_t {
     uint8_t length;
 ED5(uint8_t spare1:1;,
-    uint8_t revision_level:2;, 
+    uint8_t revision_level:2;,
     uint8_t es_ind:1;,
     uint8_t a5_1:1;,
     uint8_t rf_power_capability:3;)
@@ -282,7 +282,7 @@ typedef struct ogs_nas_gprs_timer_2_s {
 #define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM    0
 #define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH     1
 #define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_HH    2
-#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS     3 
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS     3
 #define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_30_SS    4
 #define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM     5
 #define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_320_HH   6
@@ -407,9 +407,9 @@ typedef struct ogs_nas_time_zone_and_time_s {
     uint8_t min;
     uint8_t sec;
     /* The Time Zone indicates the difference, expressed in quarters of an hour,
-     * between the local time and GMT. In the first of the two semi-octets, 
-     * the first bit (bit 3 of the seventh octet of 
-     * the TP-Service-Centre-Time-Stamp field) represents 
+     * between the local time and GMT. In the first of the two semi-octets,
+     * the first bit (bit 3 of the seventh octet of
+     * the TP-Service-Centre-Time-Stamp field) represents
      * the algebraic sign of this difference (0: positive, 1: negative). */
     uint8_t timezone;
 } ogs_nas_time_zone_and_time_t;
@@ -439,7 +439,7 @@ typedef struct ogs_nas_time_zone_and_time_s {
  */
 typedef struct ogs_nas_ue_network_capability_s {
     uint8_t length;
-    union { 
+    union {
         struct {
         ED8(uint8_t eea0:1;,
             uint8_t eea1:1;,
@@ -450,9 +450,9 @@ typedef struct ogs_nas_ue_network_capability_s {
             uint8_t eea6:1;,
             uint8_t eea7:1;)
         };
-        uint8_t eea; 
+        uint8_t eea;
     };
-    union { 
+    union {
         struct {
         ED8(uint8_t eia0:1;,
             uint8_t eia1:1;,
@@ -463,9 +463,9 @@ typedef struct ogs_nas_ue_network_capability_s {
             uint8_t eia6:1;,
             uint8_t eia7:1;)
         };
-        uint8_t eia; 
+        uint8_t eia;
     };
-    union { 
+    union {
         struct {
         ED8(uint8_t uea0:1;,
             uint8_t uea1:1;,
@@ -476,9 +476,9 @@ typedef struct ogs_nas_ue_network_capability_s {
             uint8_t uea6:1;,
             uint8_t uea7:1;)
         };
-        uint8_t uea; 
+        uint8_t uea;
     };
-    union { 
+    union {
         struct {
         ED8(uint8_t ucs2:1;,
             uint8_t uia1:1;,
@@ -489,7 +489,7 @@ typedef struct ogs_nas_ue_network_capability_s {
             uint8_t uia6:1;,
             uint8_t uia7:1;)
         };
-        uint8_t uia; 
+        uint8_t uia;
     };
 ED8(uint8_t prose_direct_discovery:1;,
     uint8_t prose:1;,
