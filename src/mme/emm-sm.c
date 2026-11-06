@@ -77,6 +77,7 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        mme_ue_unpublish_next_guti(mme_ue);
         CLEAR_SERVICE_INDICATOR(mme_ue);
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
         break;
@@ -1861,6 +1862,10 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                         enb_ue_find_by_id(mme_ue->enb_ue_id), emmbuf);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+                if (r == OGS_OK &&
+                    mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST &&
+                    MME_NEXT_GUTI_IS_AVAILABLE(mme_ue))
+                    mme_ue_publish_next_guti(mme_ue);
             }
             break;
         default:
@@ -1934,6 +1939,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        mme_ue_unpublish_next_guti(mme_ue);
         CLEAR_SERVICE_INDICATOR(mme_ue);
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
         break;

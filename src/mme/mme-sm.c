@@ -306,7 +306,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          */
         if (mme_ue && MME_UE_HAVE_IMSI(mme_ue) &&
             nas_message.emm.h.message_type == OGS_NAS_EPS_ATTACH_REQUEST) {
-            mme_ue_t *attaching_ue = mme_ue_find_by_message(&nas_message);
+            mme_ue_t *attaching_ue = mme_ue_find_by_message(&nas_message, NULL);
 
             if (attaching_ue != mme_ue &&
                 (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered) ||
@@ -340,7 +340,26 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         if (!mme_ue) {
-            mme_ue = mme_ue_find_by_message(&nas_message);
+            bool pending_guti;
+            ogs_nas_security_header_type_t h;
+
+            h.type = e->nas_type;
+            mme_ue = mme_ue_find_by_message(&nas_message, &pending_guti);
+            if (pending_guti) {
+                const ogs_nas_eps_attach_type_t *type =
+                    &nas_message.emm.attach_request.eps_attach_type;
+
+                /* Verify the pending GUTI before rebinding the S1 context.
+                 * Fall back to identification if the context cannot be used. */
+                if (!h.integrity_protected ||
+                    !SECURITY_CONTEXT_IS_VALID(mme_ue) ||
+                    mme_ue->selected_int_algorithm ==
+                        OGS_NAS_SECURITY_ALGORITHMS_EIA0 ||
+                    !emm_check_ksi(mme_ue, type->tsc,
+                        type->nas_key_set_identifier))
+                    mme_ue = NULL;
+            }
+
             if (!mme_ue) {
                 mme_ue = mme_ue_add(enb_ue);
                 if (mme_ue == NULL) {
@@ -373,15 +392,24 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                  * TRACKING_AREA_UPDATE_REQUEST message
                  *
                  * Now, We will check the MAC in the NAS message*/
-                ogs_nas_security_header_type_t h;
-                h.type = e->nas_type;
                 if (h.integrity_protected) {
                     /* Decryption was performed in S1AP handler.
                      * So, we disabled 'ciphered'
                      * not to decrypt NAS message */
                     h.ciphered = 0;
-                    if (nas_eps_security_decode(mme_ue, h, pkbuf) != OGS_OK) {
-                        ogs_error("nas_security_decode() failed");
+                    if (nas_eps_security_decode(mme_ue, h, pkbuf) != OGS_OK ||
+                        (pending_guti && mme_ue->mac_failed)) {
+                        ogs_warn("nas_security_decode() failed");
+                        if (pending_guti) {
+                            /* Verification did not authorize rebinding. */
+                            mme_ue->mac_failed = 0;
+                            r = s1ap_send_ue_context_release_command(enb_ue,
+                                    S1AP_Cause_PR_nas,
+                                    S1AP_CauseNas_normal_release,
+                                    S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+                            if (r != OGS_OK)
+                                enb_ue_remove(enb_ue);
+                        }
                         ogs_pkbuf_free(pkbuf);
                         return;
                     }

@@ -1206,10 +1206,12 @@ static void test4_func(abts_case *tc, void *data)
     ogs_socknode_t *s1ap;
     ogs_socknode_t *gtpu;
     ogs_pkbuf_t *emmbuf;
+    ogs_pkbuf_t *invalid_emmbuf;
     ogs_pkbuf_t *esmbuf;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     ogs_s1ap_message_t message;
+    ogs_nas_eps_security_header_t *security_header;
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     test_ue_t *test_ue = NULL;
@@ -1348,6 +1350,8 @@ static void test4_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_EPS_ATTACH_ACCEPT, test_ue->emm_message_type);
+    ABTS_INT_NEQUAL(tc, 0, test_ue->nas_eps_guti.m_tmsi);
 
     /* Send UE Capability Info Indication */
     sendbuf = tests1ap_build_ue_radio_capability_info_indication(test_ue);
@@ -1355,7 +1359,7 @@ static void test4_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Attach Request */
+    /* Retry Attach with the new GUTI before sending Attach Complete */
     memset(&sess->pdn_connectivity_param,
             0, sizeof(sess->pdn_connectivity_param));
     sess->pdn_connectivity_param.eit_no_required = 1;
@@ -1368,9 +1372,10 @@ static void test4_func(abts_case *tc, void *data)
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
+    test_ue->attach_request_param.guti = 1;
     test_ue->attach_request_param.last_visited_registered_tai = 1;
     test_ue->attach_request_param.old_guti_type = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf, false, false);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
@@ -1379,9 +1384,38 @@ static void test4_func(abts_case *tc, void *data)
     test_ue->initial_ue_param.gummei.mme_code = 1;
     test_ue->initial_ue_param.gummei_type = 1;
     test_ue->initial_ue_param.gummei.type = S1AP_GUMMEIType_native;
+
+    /* An invalid MAC must release only the new S1 connection. */
+    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
+    invalid_emmbuf = ogs_pkbuf_alloc(NULL, emmbuf->len);
+    ABTS_PTR_NOTNULL(tc, invalid_emmbuf);
+    security_header = ogs_pkbuf_put_data(
+            invalid_emmbuf, emmbuf->data, emmbuf->len);
+    security_header->message_authentication_code ^= htobe32(1);
+    sendbuf = test_s1ap_build_initial_ue_message(test_ue, invalid_emmbuf,
+            S1AP_RRC_Establishment_Cause_mo_Signalling, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_UEContextRelease,
+            test_ue->s1ap_procedure_code);
+    ABTS_INT_EQUAL(tc, enb_ue_s1ap_id, test_ue->enb_ue_s1ap_id);
+    ABTS_TRUE(tc, mme_ue_s1ap_id != test_ue->mme_ue_s1ap_id);
+
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* The original MAC and NAS COUNT must still be accepted. */
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, false);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
@@ -1389,6 +1423,8 @@ static void test4_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_EPS_AUTHENTICATION_REQUEST,
+            test_ue->emm_message_type);
 
     /* Send Authentication response */
     emmbuf = testemm_build_authentication_response(test_ue);
@@ -1418,6 +1454,9 @@ static void test4_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_UEContextRelease,
+            test_ue->s1ap_procedure_code);
+    ABTS_TRUE(tc, mme_ue_s1ap_id == test_ue->mme_ue_s1ap_id);
 
     /* Send OLD UE Context Release Complete */
     sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
