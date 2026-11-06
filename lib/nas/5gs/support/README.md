@@ -115,7 +115,24 @@ structures must be added manually when TS 24.501 introduces new IEs.
 
 Use the existing definitions in `types.h` as references.
 
-Example:
+The structure layout depends on the IE format.
+
+LV/TLV (1-byte length): the decoder copies the whole IE into the
+structure, so the structure must be packed and hold the value itself.
+Multi-byte fields need byte-order conversion in `type-list.py`.
+
+```c
+/* 9.11.x.y Example IE
+ * O TLV 3-257 */
+#define OGS_NAS_MAX_EXAMPLE_IE_LEN 255
+typedef struct ogs_nas_example_ie_s {
+    uint8_t length;
+    uint8_t value[OGS_NAS_MAX_EXAMPLE_IE_LEN];
+} __attribute__ ((packed)) ogs_nas_example_ie_t;
+```
+
+LV-E/TLV-E (2-byte length): the decoder only sets `buffer` to the
+received data. The structure is not packed.
 
 ```c
 /* 9.11.x.y Example IE

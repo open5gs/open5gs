@@ -910,12 +910,13 @@ ED2(uint8_t type:4;,
 
 /* 9.11.3.107 AUN3 device security key
  * O TLV 36-257 */
+#define OGS_NAS_MAX_AUN3_DEVICE_SECURITY_KEY_CONTENT_LEN 253
 typedef struct ogs_nas_aun3_device_security_key_s {
     uint8_t length;
 ED2(uint8_t spare:6;,
     uint8_t askt:2;)
     uint8_t length_of_key_content;
-    void *key_content;
+    uint8_t key_content[OGS_NAS_MAX_AUN3_DEVICE_SECURITY_KEY_CONTENT_LEN];
 } __attribute__ ((packed)) ogs_nas_aun3_device_security_key_t;
 
 /* 9.11.3.108 On-demand NSSAI

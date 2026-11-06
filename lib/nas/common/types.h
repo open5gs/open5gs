@@ -1003,7 +1003,7 @@ ED3(uint8_t type:4;,
 typedef struct ogs_nas_extended_protocol_configuration_options_s {
     uint16_t length;
     void *buffer;
-} __attribute__ ((packed)) ogs_nas_extended_protocol_configuration_options_t;
+} ogs_nas_extended_protocol_configuration_options_t;
 
 /* 9.9.4.28 Serving PLMN rate control
  * O TLV 4 */

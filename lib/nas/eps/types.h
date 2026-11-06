@@ -693,7 +693,7 @@ ED3(uint8_t type:4;,
 typedef struct ogs_nas_dcn_id_s {
     uint8_t length;
     uint16_t value;
-} ogs_nas_dcn_id_t;
+} __attribute__ ((packed)) ogs_nas_dcn_id_t;
 
 /* 9.9.3.49 Non-3GPP NW provided policies
  * See subclause 10.5.5.37 in 3GPP TS 24.008.
@@ -852,10 +852,11 @@ typedef struct ogs_nas_ue_coarse_location_information_s {
 
 /* 9.9.3.73 S&F satellite operation parameters
  * O TLV 257 */
+#define OGS_NAS_MAX_S_F_SATELLITE_OPERATION_PARAMETERS_LEN 255
 typedef struct ogs_nas_s_f_satellite_operation_parameters_s {
     uint8_t length;
-    void *buffer;
-} ogs_nas_s_f_satellite_operation_parameters_t;
+    uint8_t value[OGS_NAS_MAX_S_F_SATELLITE_OPERATION_PARAMETERS_LEN];
+} __attribute__ ((packed)) ogs_nas_s_f_satellite_operation_parameters_t;
 
 /* 9.9.4.1 Access point name
  * See subclause 10.5.6.1 in 3GPP TS 24.008 [13].
