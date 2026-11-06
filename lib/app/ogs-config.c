@@ -283,6 +283,9 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
                             "no_time_zone_information")) {
                     global_conf.parameter.no_time_zone_information =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "tun_backpressure")) {
+                    global_conf.parameter.tun_backpressure =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else
                     ogs_warn("unknown key `%s`", parameter_key);
             }
