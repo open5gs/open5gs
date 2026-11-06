@@ -1226,7 +1226,7 @@ typedef struct ogs_pfcp_tlv_ethernet_packet_filter_s {
     ogs_pfcp_tlv_ethertype_t ethertype;
     ogs_pfcp_tlv_c_tag_t c_tag;
     ogs_pfcp_tlv_s_tag_t s_tag;
-    ogs_pfcp_tlv_sdf_filter_t sdf_filter[8];
+    ogs_pfcp_tlv_sdf_filter_t sdf_filter[15];
 } ogs_pfcp_tlv_ethernet_packet_filter_t;
 
 typedef struct ogs_pfcp_tlv_redundant_transmission_parameters_s {
@@ -1274,7 +1274,7 @@ typedef struct ogs_pfcp_tlv_pdi_s {
     ogs_pfcp_tlv_mapped_n6_ip_address_t mapped_n6_ip_address;
     ogs_pfcp_tlv_n6_routing_information_t n6_routing_information;
     ogs_pfcp_tlv_traffic_endpoint_id_t traffic_endpoint_id;
-    ogs_pfcp_tlv_sdf_filter_t sdf_filter[8];
+    ogs_pfcp_tlv_sdf_filter_t sdf_filter[15];
     ogs_pfcp_tlv_application_id_t application_id;
     ogs_pfcp_tlv_ethernet_pdu_session_information_t ethernet_pdu_session_information;
     ogs_pfcp_tlv_ethernet_packet_filter_t ethernet_packet_filter;
@@ -1554,7 +1554,7 @@ typedef struct ogs_pfcp_tlv_create_urr_s {
     ogs_pfcp_tlv_additional_monitoring_time_t additional_monitoring_time;
     ogs_pfcp_tlv_number_of_reports_t number_of_reports;
     ogs_pfcp_tlv_application_id_t exempted_application_id_for_quota_action;
-    ogs_pfcp_tlv_sdf_filter_t exempted_sdf_filter_for_quota_action[8];
+    ogs_pfcp_tlv_sdf_filter_t exempted_sdf_filter_for_quota_action[15];
     ogs_pfcp_tlv_user_plane_inactivity_timer_t user_plane_inactivity_timer;
 } ogs_pfcp_tlv_create_urr_t;
 
@@ -1646,7 +1646,7 @@ typedef struct ogs_pfcp_tlv_update_urr_s {
     ogs_pfcp_tlv_additional_monitoring_time_t additional_monitoring_time;
     ogs_pfcp_tlv_number_of_reports_t number_of_reports;
     ogs_pfcp_tlv_application_id_t exempted_application_id_for_quota_action;
-    ogs_pfcp_tlv_sdf_filter_t exempted_sdf_filter_for_quota_action[8];
+    ogs_pfcp_tlv_sdf_filter_t exempted_sdf_filter_for_quota_action[15];
     ogs_pfcp_tlv_user_plane_inactivity_timer_t user_plane_inactivity_timer;
 } ogs_pfcp_tlv_update_urr_t;
 
