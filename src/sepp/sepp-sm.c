@@ -318,8 +318,12 @@ void sepp_state_operational(ogs_fsm_t *s, sepp_event_t *e)
                          * at the beginning, it only performs initialization
                          * when the state variable(OGS_FSM_STATE()) is NULL.
                          */
-                        if (!OGS_FSM_STATE(&sepp_node->sm))
+                        if (!OGS_FSM_STATE(&sepp_node->sm)) {
                             sepp_handshake_fsm_init(sepp_node, true);
+                        } else {
+                            /* Make sure re-establishment is enabled if previously was initialized as server-side: */
+                            sepp_handshake_fsm_try_to_establish(sepp_node);
+                        }
                     }
                 }
                 break;
