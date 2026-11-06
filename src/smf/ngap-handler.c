@@ -525,6 +525,34 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
                 qos_flow = smf_qos_flow_find_by_qfi(sess,
                         qosFlowAddOrModifyResponseItem->qosFlowIdentifier);
                 if (qos_flow) {
+                    smf_bearer_t *iter = NULL;
+                    bool already_added = false;
+
+                    /*
+                     * TS 38.413 9.3.4.4: the QoS Flow Add or Modify
+                     * Response List is a SEQUENCE (SIZE(1..maxnoofQosFlows))
+                     * with no distinctness rule, so a repeated QFI is
+                     * comprehensible input.  Adding the same bearer node
+                     * to qos_flow_to_modify_list twice makes the list
+                     * circular; the following PDR/FAR build then runs
+                     * past update_far[] and the process dies.  Ignore the
+                     * repetition instead.
+                     */
+                    ogs_list_for_each_entry(
+                            &sess->qos_flow_to_modify_list,
+                            iter, to_modify_node) {
+                        if (iter == qos_flow) {
+                            already_added = true;
+                            break;
+                        }
+                    }
+                    if (already_added) {
+                        ogs_error("[%s:%d] Duplicate QoS flow [QFI:%d] "
+                                "in the Modify Response",
+                                smf_ue->supi, sess->psi, qos_flow->qfi);
+                        continue;
+                    }
+
                     dl_far = qos_flow->dl_far;
                     ogs_assert(dl_far);
 
