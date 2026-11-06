@@ -1083,21 +1083,65 @@ int pcf_instance_get_load(void)
             ogs_pool_size(&pcf_ue_sm_pool));
 }
 
-int pcf_get_session_data(const char *supi,
-                         const ogs_plmn_id_t *plmn_id,
-                         const ogs_s_nssai_t *s_nssai,
-                         const char *dnn,
+static void session_data_from_smf(
+        pcf_sess_t *sess, ogs_session_data_t *session_data)
+{
+    ogs_session_t *session = &session_data->session;
+    OpenAPI_subscribed_default_qos_t *SubsDefQos =
+        sess->subscribed_default_qos;
+
+    memset(&session->qos, 0, sizeof(session->qos));
+    memset(&session->ambr, 0, sizeof(session->ambr));
+
+    if (SubsDefQos) {
+        session->qos.index = SubsDefQos->_5qi;
+        session->qos.arp.priority_level = SubsDefQos->priority_level;
+        if (SubsDefQos->arp) {
+            session->qos.arp.priority_level = SubsDefQos->arp->priority_level;
+            session->qos.arp.pre_emption_capability =
+                SubsDefQos->arp->preempt_cap ==
+                    OpenAPI_preemption_capability_MAY_PREEMPT ?
+                OGS_5GC_PRE_EMPTION_ENABLED : OGS_5GC_PRE_EMPTION_DISABLED;
+            session->qos.arp.pre_emption_vulnerability =
+                SubsDefQos->arp->preempt_vuln ==
+                    OpenAPI_preemption_vulnerability_PREEMPTABLE ?
+                OGS_5GC_PRE_EMPTION_ENABLED : OGS_5GC_PRE_EMPTION_DISABLED;
+        }
+    }
+
+    if (sess->subscribed_sess_ambr) {
+        session->ambr.uplink = ogs_sbi_bitrate_from_string(
+                sess->subscribed_sess_ambr->uplink);
+        session->ambr.downlink = ogs_sbi_bitrate_from_string(
+                sess->subscribed_sess_ambr->downlink);
+    }
+}
+
+int pcf_get_session_data(pcf_sess_t *sess,
                          ogs_session_data_t *session_data,
                          int flags)
 {
     int rv = OGS_OK;
     ogs_app_policy_conf_t *policy_conf = NULL;
+    pcf_ue_sm_t *pcf_ue_sm = NULL;
+    const char *supi = NULL;
+    const ogs_plmn_id_t *plmn_id = NULL;
+    const ogs_s_nssai_t *s_nssai = NULL;
+    const char *dnn = NULL;
 
     /* Validate input parameters */
-    ogs_assert(supi);
-    ogs_assert(s_nssai);
-    ogs_assert(dnn);
+    ogs_assert(sess);
     ogs_assert(session_data);
+
+    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
+
+    supi = pcf_ue_sm->supi;
+    plmn_id = sess->home.presence == true ? &sess->home.plmn_id : NULL;
+    s_nssai = &sess->s_nssai;
+    dnn = sess->dnn;
+    ogs_assert(supi);
+    ogs_assert(dnn);
 
     /* Initialize the session data structure */
     memset(session_data, 0, sizeof(*session_data));
@@ -1115,12 +1159,15 @@ int pcf_get_session_data(const char *supi,
                         s_nssai->sst, s_nssai->sd.v, dnn);
         }
     } else {
+        /* PCC rules from DB, default QoS and Session-AMBR from SMF */
         rv = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
         if (rv != OGS_OK) {
             if (!(flags & PCF_SESSION_DATA_FLAG_NO_ERROR_LOG))
                 ogs_error("ogs_dbi_session_data() failed - "
                         "SUPI[%s] SST[%d] SD[0x%x] DNN[%s]",
                         supi, s_nssai->sst, s_nssai->sd.v, dnn);
+        } else {
+            session_data_from_smf(sess, session_data);
         }
     }
 

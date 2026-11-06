@@ -339,10 +339,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     ogs_assert(pcf_ue_sm->supi);
     ogs_assert(sess->dnn);
 
-    rv = pcf_get_session_data(
-            pcf_ue_sm->supi,
-            sess->home.presence == true ? &sess->home.plmn_id : NULL,
-            &sess->s_nssai, sess->dnn, &session_data, 0);
+    rv = pcf_get_session_data(sess, &session_data, 0);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
                 pcf_ue_sm->supi, sess->psi);
@@ -359,13 +356,6 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     }
     if (!session->qos.arp.priority_level) {
         strerror = ogs_msprintf("[%s:%d] No Priority Level",
-                pcf_ue_sm->supi, sess->psi);
-        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        goto cleanup;
-    }
-
-    if (!session->ambr.uplink && !session->ambr.downlink) {
-        strerror = ogs_msprintf("[%s:%d] No Session-AMBR",
                 pcf_ue_sm->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;

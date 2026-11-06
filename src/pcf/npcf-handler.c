@@ -989,10 +989,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     ogs_freeaddrinfo(addr);
     ogs_freeaddrinfo(addr6);
 
-    rv = pcf_get_session_data(
-            pcf_ue_sm->supi,
-            sess->home.presence == true ? &sess->home.plmn_id : NULL,
-            &sess->s_nssai, sess->dnn, &session_data, 0);
+    rv = pcf_get_session_data(sess, &session_data, 0);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
                 pcf_ue_sm->supi, sess->psi);
@@ -1497,10 +1494,7 @@ bool pcf_npcf_policyauthorization_handle_update(
         }
     }
 
-    rv = pcf_get_session_data(
-            pcf_ue_sm->supi,
-            sess->home.presence == true ? &sess->home.plmn_id : NULL,
-            &sess->s_nssai, sess->dnn, &session_data, 0);
+    rv = pcf_get_session_data(sess, &session_data, 0);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
                 pcf_ue_sm->supi, sess->psi);

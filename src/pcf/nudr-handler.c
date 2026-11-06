@@ -25,15 +25,13 @@ bool pcf_nudr_dr_handle_query_am_data(
     pcf_ue_am_t *pcf_ue_am,
     ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-    int rv, status = 0;
+    int status = 0;
     char *strerror = NULL;
     ogs_sbi_server_t *server = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_header_t header;
     ogs_sbi_response_t *response = NULL;
-
-    ogs_subscription_data_t subscription_data;
 
     ogs_assert(pcf_ue_am);
     ogs_assert(stream);
@@ -42,13 +40,9 @@ bool pcf_nudr_dr_handle_query_am_data(
 
     ogs_assert(recvmsg);
 
-    memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
-
     SWITCH(recvmsg->h.resource.component[3])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         OpenAPI_policy_association_t PolicyAssociation;
-        OpenAPI_ambr_t UeAmbr;
-        OpenAPI_list_t *TriggerList = NULL;
         OpenAPI_lnode_t *node = NULL;
 
         if (!recvmsg->AmPolicyData) {
@@ -64,60 +58,16 @@ bool pcf_nudr_dr_handle_query_am_data(
             goto cleanup;
         }
 
-        rv = ogs_dbi_subscription_data(pcf_ue_am->supi, &subscription_data);
-        if (rv != OGS_OK) {
-            strerror = ogs_msprintf("[%s] Cannot find SUPI in DB",
-                    pcf_ue_am->supi);
-            status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-            goto cleanup;
-        }
-
-        if (!subscription_data.ambr.uplink &&
-                !subscription_data.ambr.downlink) {
-            strerror = ogs_msprintf("[%s] No UE-AMBR", pcf_ue_am->supi);
-            status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-            goto cleanup;
-        }
-
         memset(&PolicyAssociation, 0, sizeof(PolicyAssociation));
         PolicyAssociation.request = pcf_ue_am->policy_association_request;
         PolicyAssociation.supp_feat =
             ogs_uint64_to_string(pcf_ue_am->am_policy_control_features);
         ogs_assert(PolicyAssociation.supp_feat);
 
-        TriggerList = OpenAPI_list_create();
-        ogs_assert(TriggerList);
-
-        memset(&UeAmbr, 0, sizeof(UeAmbr));
+        /* Authorize the subscribed UE-AMBR received from the AMF */
         if (OGS_SBI_FEATURES_IS_SET(pcf_ue_am->am_policy_control_features,
-                    OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION)) {
-            if (pcf_ue_am->subscribed_ue_ambr) {
-                ogs_bitrate_t subscribed_ue_ambr;
-
-                subscribed_ue_ambr.uplink = ogs_sbi_bitrate_from_string(
-                        pcf_ue_am->subscribed_ue_ambr->uplink);
-                subscribed_ue_ambr.downlink = ogs_sbi_bitrate_from_string(
-                        pcf_ue_am->subscribed_ue_ambr->downlink);
-
-                if (((subscribed_ue_ambr.uplink / 1000) !=
-                     (subscription_data.ambr.uplink / 1000)) ||
-                    ((subscribed_ue_ambr.downlink / 1000) !=
-                     (subscription_data.ambr.downlink / 1000))) {
-
-                    OpenAPI_list_add(TriggerList,
-                            (void *)OpenAPI_request_trigger_UE_AMBR_CH);
-                }
-
-                UeAmbr.uplink = ogs_sbi_bitrate_to_string(
-                        subscription_data.ambr.uplink, OGS_SBI_BITRATE_KBPS);
-                UeAmbr.downlink = ogs_sbi_bitrate_to_string(
-                        subscription_data.ambr.downlink, OGS_SBI_BITRATE_KBPS);
-                PolicyAssociation.ue_ambr = &UeAmbr;
-            }
-        }
-
-        if (TriggerList->count)
-            PolicyAssociation.triggers = TriggerList;
+                    OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION))
+            PolicyAssociation.ue_ambr = pcf_ue_am->subscribed_ue_ambr;
 
         memset(&header, 0, sizeof(header));
         header.service.name =
@@ -140,15 +90,6 @@ bool pcf_nudr_dr_handle_query_am_data(
         ogs_free(sendmsg.http.location);
 
         ogs_free(PolicyAssociation.supp_feat);
-
-        OpenAPI_list_free(TriggerList);
-
-        if (UeAmbr.uplink)
-            ogs_free(UeAmbr.uplink);
-        if (UeAmbr.downlink)
-            ogs_free(UeAmbr.downlink);
-
-        ogs_subscription_data_free(&subscription_data);
 
         OpenAPI_list_for_each(
                 PolicyAssociation.request->allowed_snssais, node) {
@@ -180,8 +121,6 @@ cleanup:
         ogs_sbi_server_send_error(stream, status, recvmsg, strerror,
                 NULL, NULL));
     ogs_free(strerror);
-
-    ogs_subscription_data_free(&subscription_data);
 
     return false;
 }
