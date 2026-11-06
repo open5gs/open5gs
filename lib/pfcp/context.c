@@ -747,6 +747,25 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                             YAML_SEQUENCE_NODE);
                                 }
                             }
+                        } else if (!strcmp(pfcp_key,
+                                    "release_after_peer_failure")) {
+                            const char *v = ogs_yaml_iter_value(&pfcp_iter);
+                            char *end = NULL;
+                            long sec;
+
+                            errno = 0;
+                            sec = v ? strtol(v, &end, 10) : -1;
+                            if (!v || end == v || *end != '\0' ||
+                                errno == ERANGE || sec < 0 ||
+                                /* the timeout has to fit ogs_time_t */
+                                sec > INT64_MAX / OGS_USEC_PER_SEC / 2) {
+                                ogs_error("Invalid release_after_peer_failure "
+                                        "[%s]: seconds, 0 or more",
+                                        v ? v : "");
+                                return OGS_ERROR;
+                            }
+                            self.release_after_peer_failure =
+                                ogs_time_from_sec(sec);
                         } else
                             ogs_warn("unknown key `%s`", pfcp_key);
                     }
@@ -1158,6 +1177,99 @@ bool ogs_pfcp_node_id_compare(
             ogs_abort();
             return false; /* Unknown types do not match */
     }
+}
+
+/*
+ * Called on entry to will_associate from associated, i.e. when the
+ * heartbeat towards the peer has failed or the peer has restarted.
+ *
+ * TS 23.527 4.5: If the N4 path to the UPF is down, the SMF should handle
+ * this as an UPF Failure without Restart. If the N4 path to the SMF is
+ * down, the UPF should handle this as a SMF Failure without Restart.
+ *
+ * TS 23.527 4.3.3: Procedures for PSA UPF failure without restart
+ * are implementation specific.
+ *
+ * TS 23.527 4.4.3.1: When a UPF detects that a peer PFCP entity in the SMF
+ * is not reachable for a preconfigured time, ... the UPF shall delete all
+ * the session contexts affected by the peer PFCP entity failure.
+ *
+ * pfcp.release_after_peer_failure is that time. The NF releases/deletes
+ * the sessions of the node when t_release_after_peer_failure expires,
+ * and stops it when the node is associated again. With 0 (default), it
+ * expires on the next ogs_timer_mgr_expire(), i.e. right after the events
+ * that are queued now.
+ *
+ * After a peer restart (TS 23.527 4.3.2, 4.4.2), the sessions are
+ * restored/deleted when the node is associated again, as before. With 0,
+ * the timer is therefore not started, otherwise it would release/delete
+ * them on the next ogs_timer_mgr_expire(). With N > 0, it bounds the
+ * wait: if the peer does not come back, they are released/deleted when
+ * the timer expires.
+ */
+void ogs_pfcp_node_start_release_after_peer_failure(ogs_pfcp_node_t *node)
+{
+    ogs_time_t duration = self.release_after_peer_failure;
+
+    ogs_assert(node);
+    ogs_assert(node->t_release_after_peer_failure);
+
+    if (duration == 0 && node->restoration_required == true)
+        return;
+
+    if (duration != 0) {
+        ogs_warn("Keep sessions of %s for %lld seconds",
+                ogs_sockaddr_to_string_static(node->addr_list),
+                (long long)ogs_time_sec(duration));
+
+        /*
+         * TS 29.244 6.2.6.2: see ogs_pfcp_cp_send_association_setup_request().
+         * If the sessions of a previous failure have not been agreed on
+         * yet, no session has been bound since: the count and whether
+         * they are still kept (not released on expiry) stay.
+         */
+        if (node->num_of_sessions_kept == 0) {
+            node->num_of_sessions_kept = node->num_of_sessions;
+            node->sessions_kept = node->num_of_sessions_kept != 0;
+        }
+    }
+
+    ogs_timer_start(node->t_release_after_peer_failure, duration);
+}
+
+/*
+ * CP function: whether to include the PFCP Session Retention Information
+ * IE in the PFCP Association Setup Request (TS 29.244 6.2.6.2.1), i.e.
+ * whether the sessions kept after the failure of the node are all still
+ * there (pfcp.release_after_peer_failure).
+ *
+ * Not if one of them has been removed meanwhile: its PFCP Session Deletion
+ * may not have reached the UP function, and the IE selects the sessions
+ * per CP PFCP entity only (TS 29.244 Table 7.4.4.1-2), so the UP function
+ * would retain it as well. Without the IE, the UP function deletes the
+ * sessions (TS 29.244 6.2.6.2.2), and the remaining ones are restored.
+ */
+bool ogs_pfcp_node_retain_sessions(ogs_pfcp_node_t *node)
+{
+    ogs_assert(node);
+
+    return node->sessions_kept == true &&
+        node->num_of_sessions != 0 &&
+        node->num_of_sessions == node->num_of_sessions_kept;
+}
+
+/*
+ * CP function: whether the CP and the UP function still have to agree on
+ * the sessions kept after the failure of the node. Until then, the CP
+ * function sets up the association itself (also after one set up by the
+ * UP function, which carries no retention information), and a node with
+ * a pending retention decision is not selectable for new sessions.
+ */
+bool ogs_pfcp_node_retention_pending(ogs_pfcp_node_t *node)
+{
+    ogs_assert(node);
+
+    return node->num_of_sessions_kept != 0;
 }
 
 ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,

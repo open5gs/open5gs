@@ -139,6 +139,7 @@ upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message);
 upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *f_seid);
 int upf_sess_remove(upf_sess_t *sess);
 void upf_sess_remove_all(void);
+bool upf_node_has_sessions(ogs_pfcp_node_t *node);
 upf_sess_t *upf_sess_find_by_smf_n4_f_seid(ogs_pfcp_f_seid_t *f_seid);
 upf_sess_t *upf_sess_find_by_upf_n4_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_ipv4(uint32_t addr);

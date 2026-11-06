@@ -43,6 +43,7 @@ example_conf = '''
     non3gpp.yaml
     transfer.yaml
     transfer-error-case.yaml
+    pfcp-peer-failure.yaml
 '''.split()
 
 foreach file : example_conf

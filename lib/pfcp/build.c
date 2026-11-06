@@ -75,7 +75,8 @@ ogs_pkbuf_t *ogs_pfcp_build_heartbeat_response(uint8_t type)
     return pkbuf;
 }
 
-ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
+ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type,
+        bool retain_sessions)
 {
     ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_association_setup_request_t *req = NULL;
@@ -83,6 +84,10 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
 
     ogs_pfcp_node_id_t node_id;
     int node_id_len = 0, rv;
+
+    ogs_pfcp_f_seid_t f_seid;
+    uint8_t cp_pfcp_entity_ip_address[1 + OGS_IPV4V6_LEN];
+    int f_seid_len = 0;
 
     ogs_debug("Association Setup Request");
 
@@ -109,6 +114,41 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
 
     req->cp_function_features.presence = 1;
     req->cp_function_features.u8 = ogs_pfcp_self()->cp_function_features.octet5;
+
+    /*
+     * TS 29.244 6.2.6.2.1: optionally, the PFCP Session Retention
+     * Information IE to request the UP function to retain all or part
+     * of the existing PFCP sessions if a PFCP association already exists
+     * in the UP function for the same Node ID.
+     *
+     * The grouped IE carries the CP PFCP Entity IP Address of this
+     * CP function (8.2.135), i.e. the address in its CP F-SEIDs: the
+     * TLV builder does not encode an empty grouped IE.
+     */
+    if (retain_sessions == true) {
+        rv = ogs_pfcp_sockaddr_to_f_seid(&f_seid, &f_seid_len);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_pfcp_sockaddr_to_f_seid() failed");
+            ogs_free(pfcp_message);
+            return NULL;
+        }
+
+        /* Same V4/V6 flags octet and addresses as the F-SEID (8.2.37),
+         * without the SEID */
+        cp_pfcp_entity_ip_address[0] = *(uint8_t *)&f_seid;
+        memcpy(cp_pfcp_entity_ip_address + 1,
+                (uint8_t *)&f_seid + 1 + sizeof(f_seid.seid),
+                f_seid_len - 1 - sizeof(f_seid.seid));
+
+        req->pfcp_session_retention_information.presence = 1;
+        req->pfcp_session_retention_information.
+            cp_pfcp_entity_ip_address.presence = 1;
+        req->pfcp_session_retention_information.
+            cp_pfcp_entity_ip_address.data = cp_pfcp_entity_ip_address;
+        req->pfcp_session_retention_information.
+            cp_pfcp_entity_ip_address.len =
+                f_seid_len - sizeof(f_seid.seid);
+    }
 
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);
@@ -214,7 +254,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
 }
 
 ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
-        uint8_t cause)
+        uint8_t cause, bool psrei)
 {
     ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_association_setup_response_t *rsp = NULL;
@@ -222,6 +262,8 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
 
     ogs_pfcp_node_id_t node_id;
     int node_id_len = 0, rv;
+
+    ogs_pfcp_asrsp_flags_t asrsp_flags;
 
     ogs_debug("Association Setup Response");
 
@@ -253,6 +295,17 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
     rsp->up_function_features.presence = 1;
     rsp->up_function_features.data = &ogs_pfcp_self()->up_function_features;
     rsp->up_function_features.len = ogs_pfcp_self()->up_function_features_len;
+
+    /* TS 29.244 6.2.6.2.2: set the PSREI flag to "1" ... if the requested
+     * PFCP sessions have been retained */
+    if (psrei == true) {
+        memset(&asrsp_flags, 0, sizeof(asrsp_flags));
+        asrsp_flags.psrei = 1;
+
+        rsp->pfcpasrsp_flags.presence = 1;
+        rsp->pfcpasrsp_flags.data = &asrsp_flags;
+        rsp->pfcpasrsp_flags.len = sizeof(asrsp_flags);
+    }
 
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);

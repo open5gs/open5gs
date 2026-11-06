@@ -32,6 +32,7 @@ typedef enum {
 
     SMF_TIMER_PFCP_ASSOCIATION,
     SMF_TIMER_PFCP_NO_HEARTBEAT,
+    SMF_TIMER_PFCP_RELEASE_AFTER_PEER_FAILURE,
     SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE,
     SMF_TIMER_PFCP_NO_DELETION_RESPONSE,
 
@@ -43,6 +44,7 @@ const char *smf_timer_get_name(int timer_id);
 
 void smf_timer_pfcp_association(void *data);
 void smf_timer_pfcp_no_heartbeat(void *data);
+void smf_timer_pfcp_release_after_peer_failure(void *data);
 
 #ifdef __cplusplus
 }

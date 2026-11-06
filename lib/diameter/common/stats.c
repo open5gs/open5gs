@@ -145,7 +145,7 @@ static void diam_stats_timer_cb(void *data)
     /* Avoid increasing drift: */
     if (since_prev > self.poll.t_interval) {
         if (since_prev - self.poll.t_interval >= self.poll.t_interval)
-            next_run = 1; /* 0 not accepted by ogs_timer_start() */
+            next_run = 0;
         else
             next_run = self.poll.t_interval - (since_prev - self.poll.t_interval);
     } else {

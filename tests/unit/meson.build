@@ -28,6 +28,7 @@ testunit_unit_sources = files('''
     nrf-discovery-test.c
     nrf-timer-test.c
     nnrf-subscription-test.c
+    nnrf-timer-value-test.c
     crash-test.c
     mme-dns-select-test.c
     mme-s13-test.c
@@ -41,6 +42,7 @@ testunit_unit_sources = files('''
     eir-config-test.c
     ipfw-test.c
     pfcp-rule-test.c
+    pfcp-retention-test.c
 '''.split())
 
 testunit_unit_exe = executable('unit',

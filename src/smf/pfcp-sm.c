@@ -25,6 +25,10 @@
 
 static void pfcp_restoration(ogs_pfcp_node_t *node);
 static void reselect_upf(ogs_pfcp_node_t *node);
+static void release_sessions(ogs_pfcp_node_t *node);
+static void associated_by_upf(ogs_pfcp_node_t *node);
+static bool association_setup_answered(
+        ogs_pfcp_node_t *node, ogs_pool_id_t xact_id);
 static void node_timeout(ogs_pfcp_xact_t *xact, void *data);
 
 void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e)
@@ -43,6 +47,10 @@ void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e)
             smf_timer_pfcp_no_heartbeat, node);
     ogs_assert(node->t_no_heartbeat);
 
+    node->t_release_after_peer_failure = ogs_timer_add(ogs_app()->timer_mgr,
+            smf_timer_pfcp_release_after_peer_failure, node);
+    ogs_assert(node->t_release_after_peer_failure);
+
     OGS_FSM_TRAN(s, &smf_pfcp_state_will_associate);
 }
 
@@ -58,12 +66,14 @@ void smf_pfcp_state_final(ogs_fsm_t *s, smf_event_t *e)
     ogs_assert(node);
 
     ogs_timer_delete(node->t_no_heartbeat);
+    ogs_timer_delete(node->t_release_after_peer_failure);
 }
 
 void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
 {
     ogs_pfcp_node_t *node = NULL;
     ogs_pfcp_xact_t *xact = NULL;
+    ogs_pool_id_t xact_id;
     ogs_pfcp_message_t *message = NULL;
 
     smf_sess_t *sess;
@@ -78,6 +88,12 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+        if (node->was_associated == true) {
+            /* The heartbeat towards the UPF has failed or it has restarted */
+            node->was_associated = false;
+            ogs_pfcp_node_start_release_after_peer_failure(node);
+        }
+
         if (node->t_association) {
             ogs_timer_start(node->t_association,
                     ogs_local_conf()->time.message.pfcp.association_interval);
@@ -106,6 +122,33 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
                 ogs_local_conf()->time.message.pfcp.association_interval);
 
             ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
+            break;
+        case SMF_TIMER_PFCP_RELEASE_AFTER_PEER_FAILURE:
+            node = e->pfcp_node;
+            ogs_assert(node);
+
+            /*
+             * The timer only queues this event. Events queued before it
+             * are dispatched first: if they have associated the node and
+             * then taken it back to will_associate (e.g. a Heartbeat with
+             * a newer Recovery Time Stamp), the timer runs again and this
+             * event is stale.
+             */
+            if (node->t_release_after_peer_failure->running == true)
+                break;
+
+            if (ogs_pfcp_self()->release_after_peer_failure)
+                ogs_warn("UPF %s not associated again within "
+                        "release_after_peer_failure",
+                        ogs_sockaddr_to_string_static(node->addr_list));
+
+            /*
+             * A restarted UPF that does not associate within the time
+             * cannot restore the sessions either: release them.
+             */
+            node->restoration_required = false;
+            node->sessions_kept = false;
+            release_sessions(node);
             break;
         case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
             sess = smf_sess_find_by_id(e->sess_id);
@@ -149,11 +192,15 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
             ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
+            associated_by_upf(node);
             OGS_FSM_TRAN(s, smf_pfcp_state_associated);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
+            xact_id = xact->id;
             ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
+            /* Restored on OGS_FSM_ENTRY_SIG of smf_pfcp_state_associated */
+            association_setup_answered(node, xact_id);
             OGS_FSM_TRAN(s, smf_pfcp_state_associated);
             break;
         default:
@@ -172,6 +219,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 {
     ogs_pfcp_node_t *node = NULL;
     ogs_pfcp_xact_t *xact = NULL;
+    ogs_pool_id_t xact_id;
     ogs_pfcp_message_t *message = NULL;
 
     smf_sess_t *sess = NULL;
@@ -188,6 +236,9 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         ogs_info("PFCP associated %s",
                 ogs_sockaddr_to_string_static(node->addr_list));
+        /* Associated again: keep the sessions of this UPF */
+        ogs_timer_stop(node->t_release_after_peer_failure);
+        node->num_of_associations++;
         ogs_timer_start(node->t_no_heartbeat,
                 ogs_local_conf()->time.message.pfcp.no_heartbeat_duration);
         ogs_assert(OGS_OK ==
@@ -205,6 +256,8 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         ogs_info("PFCP de-associated %s",
             ogs_sockaddr_to_string_static(node->addr_list));
         ogs_timer_stop(node->t_no_heartbeat);
+        /* See OGS_FSM_ENTRY_SIG of smf_pfcp_state_will_associate() */
+        node->was_associated = true;
 
         smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_PFCP_PEERS_ACTIVE);
         break;
@@ -304,12 +357,19 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                     ogs_sockaddr_to_string_static(node->addr_list));
             ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
+            associated_by_upf(node);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
             ogs_warn("PFCP[RSP] has already been associated %s",
                     ogs_sockaddr_to_string_static(node->addr_list));
+            xact_id = xact->id;
             ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
+            if (association_setup_answered(node, xact_id) == true) {
+                pfcp_restoration(node);
+                node->restoration_required = false;
+                ogs_error("PFCP restoration");
+            }
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             if (!message->h.seid_presence) ogs_error("No SEID");
@@ -399,6 +459,23 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
             ogs_assert(OGS_OK ==
                 ogs_pfcp_send_heartbeat_request(node, node_timeout));
+
+            /*
+             * The last Association Setup Request has not been answered
+             * (see association_setup_answered()): send it again.
+             */
+            if (ogs_pfcp_node_retention_pending(node) == true &&
+                ogs_pfcp_xact_find_by_id(node->assoc_xact_id) == NULL)
+                ogs_pfcp_cp_send_association_setup_request(
+                        node, node_timeout);
+            break;
+        case SMF_TIMER_PFCP_RELEASE_AFTER_PEER_FAILURE:
+            /*
+             * The timer expired while the node was associated again
+             * and the event was still queued. Nothing to release.
+             */
+            ogs_warn("UPF %s associated again, sessions kept",
+                    ogs_sockaddr_to_string_static(node->addr_list));
             break;
         case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
             sess = smf_sess_find_by_id(e->sess_id);
@@ -434,6 +511,14 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          */
         node = e->pfcp_node;
         ogs_assert(node);
+
+        /*
+         * Sessions for which another UPF is associated are released now,
+         * so that they are set up again on that UPF. The other sessions
+         * are released when t_release_after_peer_failure expires (see
+         * OGS_FSM_ENTRY_SIG of smf_pfcp_state_will_associate()), unless
+         * this UPF is associated again before.
+         */
         reselect_upf(node);
 
         OGS_FSM_TRAN(s, smf_pfcp_state_will_associate);
@@ -468,6 +553,12 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
 
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
+
+    ogs_assert(node);
+
+    /* The UPF has none of the sessions: nothing left to agree on */
+    node->num_of_sessions_kept = 0;
+    node->sessions_kept = false;
 
     ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
         smf_sess_t *sess = NULL;
@@ -524,10 +615,66 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
     }
 }
 
+static void release_session(smf_ue_t *smf_ue, smf_sess_t *sess)
+{
+    ogs_assert(smf_ue);
+    ogs_assert(sess);
+    ogs_assert(sess->pfcp_node);
+
+    /*
+     * Already released by reselect_upf() for this failure of the UPF.
+     * An EPC session stays operational until the Delete Bearer Response:
+     * do not send a second Delete Bearer Request when the timer expires.
+     */
+    if (sess->released_after_upf_failure != 0 &&
+        sess->released_after_upf_failure ==
+            sess->pfcp_node->num_of_associations)
+        return;
+
+    if (!OGS_FSM_CHECK(&sess->sm, smf_gsm_state_operational)) {
+        ogs_info("[%s:%s] Skip session release: not operational",
+                sess->epc ? smf_ue->imsi_bcd : smf_ue->supi,
+                sess->session.name);
+        return;
+    }
+
+    sess->released_after_upf_failure = sess->pfcp_node->num_of_associations;
+
+    if (sess->epc) {
+        smf_bearer_t *linked_bearer = smf_default_bearer_in_sess(sess);
+        ogs_assert(linked_bearer);
+
+        switch (sess->gtp.version) {
+        case 1:
+            /* smf_gtp1_send_delete_pdp_context_request(
+                sess,
+                OGS_GTP1_CAUSE_REACTIACTION_REQUESTED,
+                teardown_ind = true); */
+            ogs_error(
+                "[%s:%s] Tx GTPv1C Delete PDP Context Request (cause=Reactivation Requested, teardown_ind=1) not implemented!",
+                smf_ue->imsi_bcd, sess->session.name);
+            break;
+        case 2:
+            smf_gtp2_send_delete_bearer_request(
+                linked_bearer,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP2_CAUSE_REACTIVATION_REQUESTED);
+            break;
+        }
+    } else {
+        smf_trigger_session_release(
+                sess, NULL, OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED);
+    }
+}
+
+/*
+ * Release the sessions of the UPF for which another UPF is associated
+ * ("reactivation requested"), so that they are set up again on that UPF.
+ * Moving a session to another UPF is not implemented.
+ */
 static void reselect_upf(ogs_pfcp_node_t *node)
 {
     smf_ue_t *smf_ue = NULL;
-    ogs_pfcp_node_t *iter = NULL;
 
     ogs_assert(node);
 
@@ -536,68 +683,115 @@ static void reselect_upf(ogs_pfcp_node_t *node)
         return;
     }
 
-    ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, iter) {
-        if (iter == node)
-            continue;
-        if (OGS_FSM_CHECK(&iter->sm, smf_pfcp_state_associated))
-            break;
-    }
+    ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
+        smf_sess_t *sess = NULL, *next_sess = NULL;
 
-    if (iter == NULL)
-        ogs_warn("No UPF available");
+        ogs_list_for_each_safe(&smf_ue->sess_list, next_sess, sess) {
+            if (node != sess->pfcp_node)
+                continue;
+            /* No other UPF: kept until the timer expires */
+            if (smf_sess_other_upf_available(sess, node) == false)
+                continue;
+
+            /*
+             * Since moving the session to the other UPF is not
+             * implemented, release it: the UE sets it up again, and
+             * the new session selects the other UPF.
+             */
+
+            ogs_warn("[%s:%s] Reselect UPF",
+                    sess->epc ? smf_ue->imsi_bcd : smf_ue->supi,
+                    sess->session.name);
+            release_session(smf_ue, sess);
+        }
+    }
+}
+
+/* Release all sessions of the UPF ("reactivation requested") */
+static void release_sessions(ogs_pfcp_node_t *node)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_assert(node);
 
     ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
         smf_sess_t *sess = NULL, *next_sess = NULL;
 
         ogs_list_for_each_safe(&smf_ue->sess_list, next_sess, sess) {
-
-            if (node == sess->pfcp_node) {
-                if (sess->epc) {
-                    smf_bearer_t *linked_bearer = NULL;
-
-                    if (!OGS_FSM_CHECK(&sess->sm,
-                            smf_gsm_state_operational)) {
-                        ogs_info("[%s:%s] Skip EPC session release: "
-                                "not operational",
-                                smf_ue->imsi_bcd, sess->session.name);
-                        continue;
-                    }
-
-                    if (iter) {
-                        ogs_error("[%s:%s] EPC sess restoration is not implemented, releasing bearer",
-                            smf_ue->imsi_bcd, sess->session.name);
-                    }
-                    linked_bearer = smf_default_bearer_in_sess(sess);
-                    ogs_assert(linked_bearer);
-                    switch (sess->gtp.version) {
-                    case 1:
-                        /* smf_gtp1_send_delete_pdp_context_request(
-                            sess,
-                            OGS_GTP1_CAUSE_REACTIACTION_REQUESTED,
-                            teardown_ind = true); */
-                        ogs_error(
-                            "[%s:%s] Tx GTPv1C Delete PDP Context Request (cause=Reactivation Requested, teardown_ind=1) not implemented!",
-                            smf_ue->imsi_bcd, sess->session.name);
-                        break;
-                    case 2:
-                        smf_gtp2_send_delete_bearer_request(
-                            linked_bearer,
-                            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-                            OGS_GTP2_CAUSE_REACTIVATION_REQUESTED);
-                        break;
-                    }
-                } else {
-                    if (iter) {
-                        ogs_error("[%s:%s] AMF sess restoration is not implemented, releasing session",
-                            smf_ue->imsi_bcd, sess->session.name);
-                    }
-                    smf_trigger_session_release(
-                            sess, NULL,
-                            OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED);
-                }
-            }
+            if (node == sess->pfcp_node)
+                release_session(smf_ue, sess);
         }
     }
+}
+
+/*
+ * TS 29.244 6.2.6.2.2: on a PFCP Association Setup Request for a Node ID
+ * of an existing association, the UP function shall retain the PFCP
+ * sessions that are requested to be retained, if the PFCP Session
+ * Retention Information IE was received in the request; otherwise,
+ * delete the PFCP sessions that were established with the existing
+ * PFCP association. It sets PSREI if they have been retained.
+ *
+ * Called for an Association Setup Response. Only the response to the
+ * last request decides; a newer one is still pending otherwise. Returns
+ * true if the kept sessions have to be restored (TS 23.527 4.3.2).
+ */
+static bool association_setup_answered(
+        ogs_pfcp_node_t *node, ogs_pool_id_t xact_id)
+{
+    ogs_assert(node);
+
+    if (xact_id != node->assoc_xact_id)
+        return false;
+
+    if (node->retention_requested == true &&
+        node->psrei_requested == true) {
+        if (ogs_pfcp_node_retain_sessions(node) == true) {
+            /* The UPF has the kept sessions */
+            node->num_of_sessions_kept = 0;
+            node->sessions_kept = false;
+            return false;
+        }
+
+        /*
+         * The UPF retained sessions that have been released or removed
+         * since the request was sent. Set up the association again
+         * without the IE, so that it deletes them.
+         */
+        ogs_warn("UPF %s retained released sessions, associate again",
+                ogs_sockaddr_to_string_static(node->addr_list));
+        ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
+        return false;
+    }
+
+    /* The UPF has no sessions of this node (anymore) */
+    node->num_of_sessions_kept = 0;
+
+    if (node->sessions_kept == true) {
+        node->sessions_kept = false;
+        node->restoration_required = true;
+        return true;
+    }
+
+    return false;
+}
+
+/*
+ * An association set up by the UPF carries no retention information.
+ * If the SMF kept sessions, or removed some while the UPF was not
+ * associated, set up the association from the SMF as well, so that both
+ * sides agree on the sessions (see association_setup_answered()). After
+ * a UPF restart they are restored anyway.
+ */
+static void associated_by_upf(ogs_pfcp_node_t *node)
+{
+    ogs_assert(node);
+
+    if (node->restoration_required == true)
+        return;
+
+    if (ogs_pfcp_node_retention_pending(node) == true)
+        ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
 }
 
 static void node_timeout(ogs_pfcp_xact_t *xact, void *data)

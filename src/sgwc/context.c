@@ -475,6 +475,7 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
     ogs_assert(sgwc_ue);
 
     ogs_list_remove(&sgwc_ue->sess_list, sess);
+    OGS_CLEAR_PFCP_NODE(sess);
 
     ogs_hash_set(self.sgwc_sxa_seid_hash, &sess->sgwc_sxa_seid,
             sizeof(sess->sgwc_sxa_seid), NULL);

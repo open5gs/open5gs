@@ -36,3 +36,6 @@ subdir('310014')
 subdir('handover')
 subdir('non3gpp')
 subdir('transfer')
+if host_machine.system() != 'windows'
+  subdir('pfcp-peer-failure') # SIGSTOP/SIGCONT, poll()
+endif

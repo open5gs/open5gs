@@ -48,6 +48,7 @@ abts_suite *test_security(abts_suite *suite);
 abts_suite *test_nrf_discovery(abts_suite *suite);
 abts_suite *test_nrf_timer(abts_suite *suite);
 abts_suite *test_nnrf_subscription(abts_suite *suite);
+abts_suite *test_nnrf_timer_value(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
 abts_suite *test_mme_dns_select(abts_suite *suite);
 abts_suite *test_mme_s13(abts_suite *suite);
@@ -61,6 +62,7 @@ abts_suite *test_amf_gnb_id(abts_suite *suite);
 abts_suite *test_eir_config(abts_suite *suite);
 abts_suite *test_ipfw(abts_suite *suite);
 abts_suite *test_pfcp_rule(abts_suite *suite);
+abts_suite *test_pfcp_retention(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -76,6 +78,7 @@ const struct testlist {
     {test_nrf_discovery},
     {test_nrf_timer},
     {test_nnrf_subscription},
+    {test_nnrf_timer_value},
     {test_crash},
     {test_mme_dns_select},
     {test_mme_s13},
@@ -89,6 +92,7 @@ const struct testlist {
     {test_eir_config},
     {test_ipfw},
     {test_pfcp_rule},
+    {test_pfcp_retention},
     {NULL},
 };
 
