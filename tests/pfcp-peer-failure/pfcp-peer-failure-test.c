@@ -52,36 +52,27 @@
 #define PEER_DOWN               25      /* seconds */
 #define SMF_RELEASE_AFTER       40      /* seconds, pfcp-peer-failure.yaml */
 #define UPF_RELEASE_AFTER       30      /* seconds, pfcp-peer-failure.yaml */
+#define HEARTBEAT_GIVE_UP_MIN   7       /* seconds, see above */
 #define HEARTBEAT_GIVE_UP_MAX   19      /* seconds, see above */
 
-/* Wait up to msec for an NGAP message. Returns its procedure code or -1 */
-static int ngap_wait(test_ue_t *test_ue, ogs_socknode_t *ngap, int msec)
+/*
+ * Read the next NGAP message and return its procedure code.
+ *
+ * The NGAP socket of the test gNB cannot be polled: with usrsctp (macOS)
+ * it is not a file descriptor. The read waits as long as it takes, so it
+ * is only called where a message is expected. A message that must not
+ * come while the test case waits is caught by the next read, which
+ * expects another one.
+ */
+static int ngap_next(test_ue_t *test_ue, ogs_socknode_t *ngap)
 {
-    struct pollfd pfd;
     ogs_pkbuf_t *recvbuf = NULL;
-
-    pfd.fd = ngap->sock->fd;
-    pfd.events = POLLIN;
-    if (poll(&pfd, 1, msec) <= 0)
-        return -1;
 
     recvbuf = testgnb_ngap_read(ngap);
     ogs_assert(recvbuf);
     testngap_recv(test_ue, recvbuf);
 
     return test_ue->ngap_procedure_code;
-}
-
-/* No NGAP message for sec seconds */
-static bool ngap_silent(test_ue_t *test_ue, ogs_socknode_t *ngap, int sec)
-{
-    int code = ngap_wait(test_ue, ngap, sec * 1000);
-
-    if (code != -1) {
-        ogs_error("Unexpected NGAP procedure [%d]", code);
-        return false;
-    }
-    return true;
 }
 
 /*
@@ -530,14 +521,16 @@ static void test1_func(abts_case *tc, void *data)
 
     /* UPF unreachable: the SMF must not release the PDU session */
     test_child_signal_with_name("upf", 0, SIGSTOP);
-    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, PEER_DOWN));
+    ogs_msleep(PEER_DOWN * 1000);
     test_child_signal_with_name("upf", 0, SIGCONT);
 
     /*
      * The SMF associates again within the association interval and stops
-     * the timer: still no release after it would have expired.
+     * the timer: still no release after it would have expired. A released
+     * session would make ping() fail, and the release would be read by
+     * ue_detach() instead of the UE Context Release.
      */
-    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, SMF_RELEASE_AFTER));
+    ogs_msleep(SMF_RELEASE_AFTER * 1000);
     ABTS_TRUE(tc, ping(gtpu, qos_flow));
 
     /* Retained by the UPF, not restored by the SMF */
@@ -563,6 +556,7 @@ static void test2_func(abts_case *tc, void *data)
     test_ue_t *test_ue = NULL;
     test_sess_t *sess = NULL;
     test_bearer_t *qos_flow = NULL;
+    ogs_time_t start, elapsed;
 
     test_ue = ue_add("0000203191");
 
@@ -576,16 +570,20 @@ static void test2_func(abts_case *tc, void *data)
     ogs_assert(sess);
 
     test_child_signal_with_name("upf", 0, SIGSTOP);
-
-    /* Kept after the heartbeat has given up */
-    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, PEER_DOWN));
+    start = ogs_get_monotonic_time();
 
     /* Receive PDUSessionResourceReleaseCommand +
      * DL NAS transport +
-     * PDU session release command */
+     * PDU session release command
+     * when the timer expires: kept after the heartbeat has given up */
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_PDUSessionResourceRelease,
-            ngap_wait(test_ue, ngap, (SMF_RELEASE_AFTER + 15) * 1000));
+            ngap_next(test_ue, ngap));
+    elapsed = ogs_get_monotonic_time() - start;
+    ABTS_TRUE(tc, elapsed >= ogs_time_from_sec(
+                HEARTBEAT_GIVE_UP_MIN + SMF_RELEASE_AFTER));
+    ABTS_TRUE(tc, elapsed <= ogs_time_from_sec(
+                HEARTBEAT_GIVE_UP_MAX + SMF_RELEASE_AFTER + 15));
 
     pdu_session_release_complete(tc, test_ue, ngap, sess);
 
@@ -619,6 +617,7 @@ static void test3_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     uint32_t upf_addr[2];
     int down, up;
+    ogs_time_t start;
 
     ogs_assert(inet_pton(AF_INET, "127.0.0.7", &upf_addr[0]) == 1);
     ogs_assert(inet_pton(AF_INET, "127.0.0.17", &upf_addr[1]) == 1);
@@ -641,6 +640,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, upf_addr[down], sess->upf_n3_ip.addr);
 
     test_child_signal_with_name("upf", down, SIGSTOP);
+    start = ogs_get_monotonic_time();
 
     /* Receive PDUSessionResourceReleaseCommand +
      * DL NAS transport +
@@ -648,7 +648,9 @@ static void test3_func(abts_case *tc, void *data)
      * once the heartbeat has given up, not after the timer */
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_PDUSessionResourceRelease,
-            ngap_wait(test_ue, ngap, (HEARTBEAT_GIVE_UP_MAX + 3) * 1000));
+            ngap_next(test_ue, ngap));
+    ABTS_TRUE(tc, ogs_get_monotonic_time() - start <=
+            ogs_time_from_sec(HEARTBEAT_GIVE_UP_MAX + 3));
 
     pdu_session_release_complete(tc, test_ue, ngap, sess);
 
@@ -685,6 +687,7 @@ static void test4_func(abts_case *tc, void *data)
     uint32_t upf_addr;
     uint8_t psi;
     long requests;
+    ogs_time_t start;
 
     ogs_assert(inet_pton(AF_INET, "127.0.0.7", &upf_addr) == 1);
 
@@ -720,6 +723,7 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_TRUE(tc, requests > 0);
 
     test_child_signal_with_name("upf", 0, SIGSTOP);
+    start = ogs_get_monotonic_time();
 
     /* Receive PDUSessionResourceReleaseCommand +
      * DL NAS transport +
@@ -727,20 +731,23 @@ static void test4_func(abts_case *tc, void *data)
      * of the second UE once the heartbeat has given up */
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_PDUSessionResourceRelease,
-            ngap_wait(test_ue2, ngap, (HEARTBEAT_GIVE_UP_MAX + 3) * 1000));
+            ngap_next(test_ue2, ngap));
+    ABTS_TRUE(tc, ogs_get_monotonic_time() - start <=
+            ogs_time_from_sec(HEARTBEAT_GIVE_UP_MAX + 3));
 
     pdu_session_release_complete(tc, test_ue2, ngap, sess2);
 
     /* Let the SMF remove the released session */
-    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, 3));
+    ogs_msleep(3000);
 
     test_child_signal_with_name("upf", 0, SIGCONT);
 
     /*
      * The SMF associates again within the association interval (11 s),
-     * and the session of the first UE is kept.
+     * and the session of the first UE is kept: checked below by the
+     * PFCP Session Establishment Requests and ping().
      */
-    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, 25));
+    ogs_msleep(25000);
 
     /* Deleted by the UPF and restored by the SMF */
     ABTS_INT_EQUAL(tc, (int)(requests + 1),
@@ -771,6 +778,7 @@ static void test6_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *qos_flow = NULL;
     long requests;
+    ogs_time_t start, elapsed;
 
     test_ue = ue_add("0000203196");
 
@@ -787,16 +795,20 @@ static void test6_func(abts_case *tc, void *data)
     ABTS_TRUE(tc, requests > 0);
 
     test_child_signal_with_name("upf", 0, SIGSTOP);
-
-    /* Kept after the heartbeat has given up */
-    ABTS_TRUE(tc, ngap_silent(test_ue, ngap, PEER_DOWN));
+    start = ogs_get_monotonic_time();
 
     /* Receive PDUSessionResourceReleaseCommand +
      * DL NAS transport +
-     * PDU session release command */
+     * PDU session release command
+     * when the timer expires: kept after the heartbeat has given up */
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_PDUSessionResourceRelease,
-            ngap_wait(test_ue, ngap, (SMF_RELEASE_AFTER + 15) * 1000));
+            ngap_next(test_ue, ngap));
+    elapsed = ogs_get_monotonic_time() - start;
+    ABTS_TRUE(tc, elapsed >= ogs_time_from_sec(
+                HEARTBEAT_GIVE_UP_MIN + SMF_RELEASE_AFTER));
+    ABTS_TRUE(tc, elapsed <= ogs_time_from_sec(
+                HEARTBEAT_GIVE_UP_MAX + SMF_RELEASE_AFTER + 15));
 
     test_child_signal_with_name("upf", 0, SIGCONT);
 
