@@ -1117,6 +1117,8 @@ ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id);
 ran_ue_t *ran_ue_find_by_id(ogs_pool_id_t id);
 
 void amf_ue_new_guti(amf_ue_t *amf_ue);
+void amf_ue_publish_next_guti(amf_ue_t *amf_ue);
+void amf_ue_unpublish_next_guti(amf_ue_t *amf_ue);
 void amf_ue_confirm_guti(amf_ue_t *amf_ue);
 
 amf_ue_t *amf_ue_add(ran_ue_t *ran_ue);
@@ -1131,7 +1133,9 @@ amf_ue_t *amf_ue_find_by_suci(char *suci);
 amf_ue_t *amf_ue_find_by_supi(char *supi);
 amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id);
 
-amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message);
+/* pending_guti is an optional output for NAS Registration Request lookup. */
+amf_ue_t *amf_ue_find_by_message(
+        ogs_nas_5gs_message_t *message, bool *pending_guti);
 void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity);
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi);

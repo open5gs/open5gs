@@ -719,6 +719,9 @@ end:
     if (PduSessionCreatedData.ue_ipv6_prefix)
         ogs_free(PduSessionCreatedData.ue_ipv6_prefix);
 
+    if (n1SmBufToUe)
+        ogs_pkbuf_free(n1SmBufToUe);
+
     return success;
 }
 

@@ -494,6 +494,9 @@ end:
         sess->n1SmBufFromUe = NULL;
     }
 
+    if (n1SmBufFromUe)
+        ogs_pkbuf_free(n1SmBufFromUe);
+
     return request;
 }
 
@@ -768,6 +771,9 @@ end:
     CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(
             VsmfUpdateData.qos_flows_add_mod_request_list);
     CLEAR_QOS_FLOWS_REL_REQUEST_LIST(VsmfUpdateData.qos_flows_rel_request_list);
+
+    if (n1SmBufToUe)
+        ogs_pkbuf_free(n1SmBufToUe);
 
     return request;
 }
