@@ -152,45 +152,51 @@ void sepp_state_operational(ogs_fsm_t *s, sepp_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    if (message.SecNegotiateReqData &&
-                        message.SecNegotiateReqData->sender) {
+                    if (!message.SecNegotiateReqData ||
+                        !message.SecNegotiateReqData->sender)
+                        break; /* Answer with error below */
+                    /*
+                     * The JSON sender selects the peer to update.
+                     * Check that the verified client certificate covers
+                     * this name before looking up or creating the peer.
+                     * This prevents a client from modifying the state of
+                     * a peer identity its certificate does not cover.
+                     * PLMN authorization is a separate policy.
+                     */
+                    if (server->verify_client &&
+                        !ogs_sbi_server_verify_client_identity(stream,
+                            message.SecNegotiateReqData->sender)) {
+                        ogs_error("Certificate identity mismatch Sender [%s]",
+                                message.SecNegotiateReqData->sender);
+                        ogs_assert(true == ogs_sbi_server_send_error(stream,
+                                    OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
+                                    "Certificate identity mismatch",
+                                    message.SecNegotiateReqData->sender,
+                                    NULL));
                         /*
-                         * The JSON sender selects the peer to update.
-                         * Check that the verified client certificate covers
-                         * this name before looking up or creating the peer.
-                         * This prevents a client from modifying the state of
-                         * a peer identity its certificate does not cover.
-                         * PLMN authorization is a separate policy.
+                         * Return before peer dispatch; the common message
+                         * cleanup below will not run on this path.
                          */
-                        if (server->verify_client &&
-                            !ogs_sbi_server_verify_client_identity(stream,
-                                message.SecNegotiateReqData->sender)) {
-                            ogs_error("Certificate identity mismatch Sender [%s]",
-                                    message.SecNegotiateReqData->sender);
-                            ogs_assert(true == ogs_sbi_server_send_error(stream,
-                                        OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
-                                        "Certificate identity mismatch",
-                                        message.SecNegotiateReqData->sender,
-                                        NULL));
-                            /*
-                             * Return before peer dispatch; the common message
-                             * cleanup below will not run on this path.
-                             */
-                            ogs_sbi_message_free(&message);
-                            return;
-                        }
-                        sepp_node = sepp_node_find_by_receiver(
-                                message.SecNegotiateReqData->sender);
-                        if (!sepp_node) {
-                            sepp_node = sepp_node_add(
-                                message.SecNegotiateReqData->sender);
-                            if (!sepp_node)
-                                node_allocation_failed = true;
-                            else
-                                sepp_handshake_fsm_init(sepp_node, false);
-                        }
+                        ogs_sbi_message_free(&message);
+                        return;
                     }
-                    break;
+
+                    sepp_node = sepp_node_find_by_receiver(
+                            message.SecNegotiateReqData->sender);
+                    if (!sepp_node)
+                        sepp_node = sepp_node_add(message.SecNegotiateReqData->sender);
+                    if (!sepp_node) {
+                        node_allocation_failed = true;
+                        break; /* Answer with error below */
+                    }
+                    /*
+                    * Since FSM initialization only needs to be done once
+                    * at the beginning, it only performs initialization
+                    * when the state variable(OGS_FSM_STATE()) is NULL.
+                    */
+                    if (!OGS_FSM_STATE(&sepp_node->sm))
+                        sepp_handshake_fsm_init(sepp_node, false);
+                break;
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]", message.h.method);
