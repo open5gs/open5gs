@@ -176,6 +176,10 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
         }
     }
 
+    /* The UE may use this GUTI before sending Registration Complete. */
+    if (rv == OGS_OK && amf_ue->next.m_tmsi)
+        amf_ue_publish_next_guti(amf_ue);
+
     return rv;
 }
 

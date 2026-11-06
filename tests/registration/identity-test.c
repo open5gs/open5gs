@@ -294,20 +294,17 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Identity request */
+    /* A GUTI left pending by de-registration must require identification. */
+    test_ue->gmm_message_type = 0;
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
+    if (!recvbuf)
+        goto cleanup;
     testngap_recv(test_ue, recvbuf);
-
-    /* TODO :
-     *
-     * I can't remeber why do I add the following sleep
-     * At this point, this commented out.
-     * I'll need to analyze it later.
-     */
-#if 0
-    ogs_msleep(100);
-#endif
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_IDENTITY_REQUEST,
+            test_ue->gmm_message_type);
+    if (test_ue->gmm_message_type != OGS_NAS_5GS_IDENTITY_REQUEST)
+        goto cleanup;
 
     /* INVALID SUCI */
     ((uint8_t *)(test_ue->mobile_identity.buffer))[9] = 0x99;
@@ -341,6 +338,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+cleanup:
     /********** Remove Subscriber in Database */
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 

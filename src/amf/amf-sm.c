@@ -27,6 +27,7 @@
 #include "nsmf-handler.h"
 #include "nnssf-handler.h"
 #include "nas-security.h"
+#include "gmm-handler.h"
 
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
@@ -994,7 +995,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             (AMF_UE_HAVE_SUCI(amf_ue) || AMF_UE_HAVE_SUPI(amf_ue)) &&
             nas_message.gmm.h.message_type ==
                 OGS_NAS_5GS_REGISTRATION_REQUEST) {
-            amf_ue_t *registering_ue = amf_ue_find_by_message(&nas_message);
+            amf_ue_t *registering_ue =
+                amf_ue_find_by_message(&nas_message, NULL);
 
             if (registering_ue != amf_ue &&
                 (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) ||
@@ -1070,7 +1072,28 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         }
 
         if (!amf_ue) {
-            amf_ue = amf_ue_find_by_message(&nas_message);
+            bool pending_guti;
+            ogs_nas_security_header_type_t h;
+
+            h.type = e->nas.type;
+            amf_ue = amf_ue_find_by_message(&nas_message, &pending_guti);
+            if (pending_guti) {
+                const ogs_nas_5gs_registration_type_t *type =
+                    &nas_message.gmm.registration_request.registration_type;
+
+                /*
+                 * Resolve the pending GUTI without moving the UE to this
+                 * NG connection until its NAS security context is verified.
+                 * If it cannot be reused, fall back to identification.
+                 */
+                if (!h.integrity_protected ||
+                    !SECURITY_CONTEXT_IS_VALID(amf_ue) ||
+                    amf_ue->selected_int_algorithm ==
+                        OGS_NAS_SECURITY_ALGORITHMS_NIA0 ||
+                    !gmm_check_ngksi(amf_ue, type->tsc, type->ksi))
+                    amf_ue = NULL;
+            }
+
             if (!amf_ue) {
                 amf_ue = amf_ue_add(ran_ue);
                 if (amf_ue == NULL) {
@@ -1103,15 +1126,24 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                  * For example, REGISTRATION_REQUEST, SERVICE_REQUEST message
                  *
                  * Now, We will check the MAC in the NAS message*/
-                ogs_nas_security_header_type_t h;
-                h.type = e->nas.type;
                 if (h.integrity_protected) {
                     /* Decryption was performed in NGAP handler.
                      * So, we disabled 'ciphered' not to decrypt NAS message */
                     h.ciphered = 0;
-                    if (nas_5gs_security_decode(amf_ue, h, pkbuf) != OGS_OK) {
-                        ogs_error("[%s] nas_security_decode() failed",
+                    if (nas_5gs_security_decode(amf_ue, h, pkbuf) != OGS_OK ||
+                        (pending_guti && amf_ue->mac_failed)) {
+                        ogs_warn("[%s] nas_security_decode() failed",
                                 amf_ue->suci);
+                        if (pending_guti) {
+                            /* Verification did not authorize rebinding. */
+                            amf_ue->mac_failed = 0;
+                            r = ngap_send_ran_ue_context_release_command(
+                                    ran_ue, NGAP_Cause_PR_nas,
+                                    NGAP_CauseNas_normal_release,
+                                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                            if (r != OGS_OK)
+                                ran_ue_remove(ran_ue);
+                        }
                         ogs_pkbuf_free(pkbuf);
                         break;
                     }

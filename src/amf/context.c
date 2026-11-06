@@ -1652,6 +1652,20 @@ void amf_ue_new_guti(amf_ue_t *amf_ue)
     amf_ue->next.guti.m_tmsi = *(amf_ue->next.m_tmsi);
 }
 
+void amf_ue_publish_next_guti(amf_ue_t *amf_ue)
+{
+    ogs_assert(amf_ue->next.m_tmsi);
+    ogs_hash_set(self.guti_ue_hash,
+            &amf_ue->next.guti, sizeof(amf_ue->next.guti), amf_ue);
+}
+
+void amf_ue_unpublish_next_guti(amf_ue_t *amf_ue)
+{
+    if (amf_ue->next.m_tmsi)
+        ogs_hash_unset_if_owner(self.guti_ue_hash,
+                &amf_ue->next.guti, sizeof(amf_ue->next.guti), amf_ue);
+}
+
 void amf_ue_confirm_guti(amf_ue_t *amf_ue)
 {
     ogs_assert(amf_ue->next.m_tmsi);
@@ -1866,6 +1880,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
                 &amf_ue->current.guti, sizeof(ogs_nas_5gs_guti_t), amf_ue);
         ogs_assert(amf_m_tmsi_free(amf_ue->current.m_tmsi) == OGS_OK);
     }
+    amf_ue_unpublish_next_guti(amf_ue);
     if (amf_ue->next.m_tmsi) {
         ogs_assert(amf_m_tmsi_free(amf_ue->next.m_tmsi) == OGS_OK);
     }
@@ -1969,12 +1984,31 @@ void amf_ue_fsm_fini(amf_ue_t *amf_ue)
     ogs_fsm_fini(&amf_ue->sm, &e);
 }
 
-amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *guti)
+static amf_ue_t *find_ue_by_guti(
+        ogs_nas_5gs_guti_t *guti, bool allow_pending, bool *pending_guti)
 {
+    amf_ue_t *amf_ue = NULL;
+
     ogs_assert(guti);
 
-    return (amf_ue_t *)ogs_hash_get(
+    amf_ue = ogs_hash_get(
             self.guti_ue_hash, guti, sizeof(ogs_nas_5gs_guti_t));
+    if (!amf_ue || (amf_ue->current.m_tmsi &&
+            memcmp(guti, &amf_ue->current.guti, sizeof(*guti)) == 0))
+        return amf_ue;
+
+    /* Only a NAS Registration Request may look up a pending GUTI. */
+    if (!allow_pending)
+        return NULL;
+
+    if (pending_guti)
+        *pending_guti = true;
+    return amf_ue;
+}
+
+amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *guti)
+{
+    return find_ue_by_guti(guti, false, NULL);
 }
 
 amf_ue_t *amf_ue_find_by_suci(char *suci)
@@ -1989,7 +2023,8 @@ amf_ue_t *amf_ue_find_by_supi(char *supi)
     return (amf_ue_t *)ogs_hash_get(self.supi_hash, supi, strlen(supi));
 }
 
-amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
+amf_ue_t *amf_ue_find_by_message(
+        ogs_nas_5gs_message_t *message, bool *pending_guti)
 {
     amf_ue_t *amf_ue = NULL;
     ogs_nas_5gs_registration_request_t *registration_request = NULL;
@@ -2005,6 +2040,8 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
     char *suci = NULL;
 
     ogs_assert(message);
+    if (pending_guti)
+        *pending_guti = false;
     memset(&nas_guti, 0, sizeof(ogs_nas_5gs_guti_t));
 
     switch (message->gmm.h.message_type) {
@@ -2085,7 +2122,7 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             ogs_nas_5gs_mobile_identity_guti_to_nas_guti(
                 mobile_identity_guti, &nas_guti);
 
-            amf_ue = amf_ue_find_by_guti(&nas_guti);
+            amf_ue = find_ue_by_guti(&nas_guti, true, pending_guti);
             if (amf_ue) {
                 ogs_info("[%s] Known UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
                     amf_ue->suci ? amf_ue->suci : "Unknown",

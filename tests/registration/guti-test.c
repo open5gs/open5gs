@@ -341,26 +341,12 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Identity request */
+    /* Receive Authentication Request using the existing UE context. */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
-
-    /* TODO : we need to analyze it */
-    ogs_msleep(100);
-
-    /* Send Identity response */
-    gmmbuf = testgmm_build_identity_response(test_ue);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Authentication request */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_AUTHENTICATION_REQUEST,
+            test_ue->gmm_message_type);
 
     /* Send Authentication response */
     gmmbuf = testgmm_build_authentication_response(test_ue);
@@ -1860,6 +1846,186 @@ static void test_issues4174_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
+static bool complete_4949_authentication(
+        abts_case *tc, ogs_socknode_t *ngap, test_ue_t *test_ue)
+{
+    ogs_pkbuf_t *gmmbuf, *nasbuf, *sendbuf, *recvbuf;
+
+    test_ue->gmm_message_type = 0;
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    if (!recvbuf)
+        return false;
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_AUTHENTICATION_REQUEST,
+            test_ue->gmm_message_type);
+    if (test_ue->gmm_message_type != OGS_NAS_5GS_AUTHENTICATION_REQUEST)
+        return false;
+
+    gmmbuf = testgmm_build_authentication_response(test_ue);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    if (!recvbuf)
+        return false;
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_SECURITY_MODE_COMMAND,
+            test_ue->gmm_message_type);
+    if (test_ue->gmm_message_type != OGS_NAS_5GS_SECURITY_MODE_COMMAND)
+        return false;
+
+    test_ue->registration_request_param.gmm_capability = 1;
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
+    gmmbuf = testgmm_build_security_mode_complete(test_ue, nasbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    if (!recvbuf)
+        return false;
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_REGISTRATION_ACCEPT,
+            test_ue->gmm_message_type);
+    if (test_ue->ngap_procedure_code != NGAP_ProcedureCode_id_InitialContextSetup ||
+        test_ue->gmm_message_type != OGS_NAS_5GS_REGISTRATION_ACCEPT)
+        return false;
+
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    return true;
+}
+
+static bool complete_4949_ngap_release(
+        abts_case *tc, ogs_socknode_t *ngap, test_ue_t *test_ue)
+{
+    ogs_pkbuf_t *sendbuf, *recvbuf;
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    if (!recvbuf)
+        return false;
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+    if (test_ue->ngap_procedure_code != NGAP_ProcedureCode_id_UEContextRelease)
+        return false;
+
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    return true;
+}
+
+static void test_issue4949_func(abts_case *tc, void *data)
+{
+    ogs_socknode_t *ngap;
+    ogs_pkbuf_t *gmmbuf, *nasbuf, *sendbuf, *recvbuf;
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci = {0};
+    ogs_nas_5gs_security_header_t *security_header;
+    test_ue_t *test_ue;
+    bson_t *doc;
+    uint32_t ul_count;
+
+    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    mobile_identity_suci.routing_indicator2 = 0xf;
+    mobile_identity_suci.routing_indicator3 = 0xf;
+    mobile_identity_suci.routing_indicator4 = 0xf;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
+
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203199");
+    ogs_assert(test_ue);
+    test_ue->nr_cgi.cell_id = 0x40001;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.follow_on_request = 1;
+    test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
+
+    ngap = testngap_client(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, ngap);
+    sendbuf = testngap_build_ng_setup_request(0x4000, 22);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    doc = test_db_new_simple(test_ue);
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
+
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+            NGAP_RRCEstablishmentCause_mo_Signalling, false, true);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    if (!complete_4949_authentication(tc, ngap, test_ue))
+        goto cleanup;
+    ABTS_TRUE(tc, test_ue->nas_5gs_guti.m_tmsi != 0);
+
+    /* Lose the connection before sending Registration Complete. */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork,
+            NGAP_CauseRadioNetwork_radio_connection_with_ue_lost, false);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    if (!complete_4949_ngap_release(tc, ngap, test_ue))
+        goto cleanup;
+
+    /* Use the GUTI from the first Accept in both NAS and NGAP. */
+    test_ue->nas.registration.value =
+        OGS_NAS_5GS_REGISTRATION_TYPE_MOBILITY_UPDATING;
+    test_ue->registration_request_param.gmm_capability = 0;
+    test_ue->registration_request_param.guti = 1;
+
+    /* A bad MAC must not let the new NG connection claim the UE. */
+    ul_count = test_ue->ul_count;
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
+    gmmbuf = testgmm_build_registration_request(test_ue, nasbuf, true, false);
+    security_header = (ogs_nas_5gs_security_header_t *)gmmbuf->data;
+    security_header->message_authentication_code ^= htobe32(1);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+            NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    if (!complete_4949_ngap_release(tc, ngap, test_ue))
+        goto cleanup;
+
+    /* The rejected message must leave its uplink count available. */
+    test_ue->ul_count = ul_count;
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
+    gmmbuf = testgmm_build_registration_request(test_ue, nasbuf, true, false);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+            NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+
+    /* A new AMF UE context would need an Identity Request to obtain SUCI. */
+    if (!complete_4949_authentication(tc, ngap, test_ue))
+        goto cleanup;
+
+    gmmbuf = testgmm_build_registration_complete(test_ue);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND,
+            test_ue->gmm_message_type);
+
+    gmmbuf = testgmm_build_de_registration_request(test_ue, 1, true, true);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, testgnb_ngap_send(ngap, sendbuf));
+    if (!complete_4949_ngap_release(tc, ngap, test_ue))
+        goto cleanup;
+
+    ogs_msleep(300);
+
+cleanup:
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
+    testgnb_ngap_close(ngap);
+    test_ue_remove(test_ue);
+}
+
 #define CONTEXT_TRANSFER_TEST 0
 #define OLD_AMF_NOT_FOUND 0
 
@@ -2351,6 +2517,7 @@ abts_suite *test_guti(abts_suite *suite)
     abts_run_test(suite, test3_func, NULL);
     abts_run_test(suite, test_issues2839_func, NULL);
     abts_run_test(suite, test_issues4174_func, NULL);
+    abts_run_test(suite, test_issue4949_func, NULL);
 #else
     abts_run_test(suite, context_transfer_func, NULL);
 #endif
