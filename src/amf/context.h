@@ -235,6 +235,8 @@ struct ran_ue_s {
 #define NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL                  5
 #define NGAP_UE_CTX_REL_NG_HANDOVER_FAILURE                 6
     uint8_t         ue_ctx_rel_action;
+    /* UEContextReleaseCommand already sent; Complete pending */
+    bool            ue_ctx_rel_command_sent;
 
 /*
  * A RAN-NG context may outlive the procedure that created it. During
@@ -635,11 +637,13 @@ struct amf_ue_s {
                     (__hOLDER)->suci, \
                     (long long)ran_ue_holding->ran_ue_ngap_id, \
                     (long long)ran_ue_holding->amf_ue_ngap_id); \
-            r = ngap_send_ran_ue_context_release_command( \
-                    ran_ue_holding, \
-                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
-                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
-            ogs_expect(r == OGS_OK); \
+            if (!ran_ue_holding->ue_ctx_rel_command_sent) { \
+                r = ngap_send_ran_ue_context_release_command( \
+                        ran_ue_holding, \
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+            } \
         } else if ((__hOLDER)->ran_ue_holding_id != OGS_INVALID_POOL_ID) { \
             ogs_warn("[%s] Holding NG context has already been removed", \
                     (__hOLDER)->suci); \
@@ -686,12 +690,14 @@ struct amf_ue_s {
                     (long long)ran_ue_holding->ran_ue_ngap_id, \
                     (long long)ran_ue_holding->amf_ue_ngap_id); \
             \
-            r = ngap_send_ran_ue_context_release_command( \
-                    ran_ue_holding, \
-                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
-                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
-            ogs_expect(r == OGS_OK); \
-            ogs_assert(r != OGS_ERROR); \
+            if (!ran_ue_holding->ue_ctx_rel_command_sent) { \
+                r = ngap_send_ran_ue_context_release_command( \
+                        ran_ue_holding, \
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+                ogs_assert(r != OGS_ERROR); \
+            } \
         } \
         (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
     } while(0)
