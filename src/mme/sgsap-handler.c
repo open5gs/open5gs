@@ -765,6 +765,12 @@ void sgsap_handle_downlink_unitdata(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         ogs_error("Empty SGsAP NAS message container");
         return;
     }
+    if (nas_message_container_length > OGS_NAS_MAX_MESSAGE_CONTAINER_LEN) {
+        ogs_error("Invalid SGsAP NAS message container length [%d], "
+                "max [%d]", nas_message_container_length,
+                OGS_NAS_MAX_MESSAGE_CONTAINER_LEN);
+        return;
+    }
 
     ogs_nas_eps_imsi_to_bcd(nas_mobile_identity_imsi,
             nas_mobile_identity_imsi_len, imsi_bcd);

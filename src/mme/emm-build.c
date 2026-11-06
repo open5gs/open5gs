@@ -804,6 +804,12 @@ ogs_pkbuf_t *emm_build_downlink_nas_transport(
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_DOWNLINK_NAS_TRANSPORT;
 
+    if (length > sizeof(nas_message_container->buffer)) {
+        ogs_error("NAS message container too long [%d], max [%d]",
+                length, (int)sizeof(nas_message_container->buffer));
+        return NULL;
+    }
+
     nas_message_container->length = length;
     memcpy(nas_message_container->buffer, buffer, length);
 
