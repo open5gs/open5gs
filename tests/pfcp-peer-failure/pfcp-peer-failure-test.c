@@ -845,6 +845,7 @@ static void test5_func(abts_case *tc, void *data)
     test_ue_t *test_ue = NULL;
     test_bearer_t *qos_flow = NULL;
     uint8_t type = 0;
+    bool lost = false;
 
     test_ue = ue_add("0000203192");
 
@@ -865,17 +866,30 @@ static void test5_func(abts_case *tc, void *data)
         now = ogs_get_monotonic_time();
     } while (now - start < ogs_time_from_sec(PEER_DOWN));
 
-    /* Deleted when the timer expires */
+    /*
+     * Deleted when the timer expires, not before. The echo reply of a
+     * request that is on its way when the session is deleted gets no
+     * answer; after that, the next request must get an Error Indication.
+     */
     do {
         type = ping_answer(gtpu, qos_flow);
         if (type == OGS_GTPU_MSGTYPE_ERR_IND)
             break;
-        ABTS_INT_EQUAL(tc, OGS_GTPU_MSGTYPE_GPDU, type);
+        if (lost) {
+            ABTS_INT_EQUAL(tc, OGS_GTPU_MSGTYPE_ERR_IND, type);
+            break;
+        }
+        if (type == 0)
+            lost = true;
+        else
+            ABTS_INT_EQUAL(tc, OGS_GTPU_MSGTYPE_GPDU, type);
         ogs_msleep(1000);
         now = ogs_get_monotonic_time();
     } while (now - start < ogs_time_from_sec(
                 HEARTBEAT_GIVE_UP_MAX + UPF_RELEASE_AFTER + 10));
     ABTS_INT_EQUAL(tc, OGS_GTPU_MSGTYPE_ERR_IND, type);
+    ABTS_TRUE(tc, ogs_get_monotonic_time() - start >= ogs_time_from_sec(
+                HEARTBEAT_GIVE_UP_MIN + UPF_RELEASE_AFTER));
 
     test_child_signal_with_name("smf", 0, SIGCONT);
 
