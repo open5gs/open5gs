@@ -153,11 +153,19 @@ void ogs_sbi_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance)
 
     if (NF_INSTANCE_TYPE_IS_NRF(nf_instance) &&
         OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_registered)) {
-        ogs_assert(true ==
+        ogs_expect(true ==
                 ogs_nnrf_nfm_send_nf_de_register(nf_instance));
     }
 
     ogs_fsm_fini(&nf_instance->sm, &e);
+}
+
+void ogs_sbi_nf_fsm_fini_all(void)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance)
+        ogs_sbi_nf_fsm_fini(nf_instance);
 }
 
 void ogs_sbi_nf_state_initial(ogs_fsm_t *s, ogs_event_t *e)

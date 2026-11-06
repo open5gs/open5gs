@@ -57,43 +57,13 @@ int sepp_initialize(void)
     return OGS_OK;
 }
 
-static ogs_timer_t *t_termination_holding = NULL;
-
-static void event_termination(void)
-{
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-    sepp_node_t *sepp_node = NULL;
-
-    /* Sending NF Instance De-registration to NRF */
-    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance)
-        ogs_sbi_nf_fsm_fini(nf_instance);
-
-    /* Sending N32 Termination to Peer SMF */
-    ogs_list_for_each(&sepp_self()->peer_list, sepp_node)
-        sepp_handshake_fsm_fini(sepp_node);
-
-    /* Gracefully shutdown the server by sending GOAWAY to each session. */
-    ogs_sbi_server_graceful_shutdown_all();
-
-    /* Starting holding timer */
-    t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
-    ogs_assert(t_termination_holding);
-#define TERMINATION_HOLDING_TIME ogs_time_from_msec(300)
-    ogs_timer_start(t_termination_holding, TERMINATION_HOLDING_TIME);
-
-    /* Sending termination event to the queue */
-    ogs_queue_term(ogs_app()->queue);
-    ogs_pollset_notify(ogs_app()->pollset);
-}
-
 void sepp_terminate(void)
 {
     if (!initialized) return;
 
-    /* Daemon terminating */
-    event_termination();
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
     ogs_thread_destroy(thread);
-    ogs_timer_delete(t_termination_holding);
 
     sepp_sbi_close();
 
@@ -104,6 +74,7 @@ void sepp_terminate(void)
 static void sepp_main(void *data)
 {
     ogs_fsm_t sepp_sm;
+    sepp_node_t *sepp_node = NULL;
     int rv;
 
     ogs_fsm_init(&sepp_sm, sepp_state_initial, sepp_state_final, 0);
@@ -143,6 +114,12 @@ static void sepp_main(void *data)
         }
     }
 done:
+    ogs_sbi_nf_fsm_fini_all();
 
+    /* Send N32 termination to each peer SEPP. */
+    ogs_list_for_each(&sepp_self()->peer_list, sepp_node)
+        sepp_handshake_fsm_fini(sepp_node);
+
+    ogs_sbi_graceful_shutdown();
     ogs_fsm_fini(&sepp_sm, 0);
 }

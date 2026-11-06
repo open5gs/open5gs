@@ -42,6 +42,8 @@ int ngap_open(void)
 
 void ngap_close(void)
 {
+    /* Remove per-gNB poll registrations as well as the listening sockets. */
+    amf_gnb_remove_all();
     ogs_socknode_remove_all(&amf_self()->ngap_list);
     ogs_socknode_remove_all(&amf_self()->ngap_list6);
 }
