@@ -183,6 +183,8 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 
     rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
+    if (rv == OGS_OK && MME_NEXT_GUTI_IS_AVAILABLE(mme_ue))
+        mme_ue_publish_next_guti(mme_ue);
 
     return rv;
 }
