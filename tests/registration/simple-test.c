@@ -56,6 +56,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
+    test_ue->redcap_indication = data != NULL;
     test_ue->nr_cgi.cell_id = 0x40001;
 
     test_ue->nas.registration.tsc = 0;
@@ -363,6 +364,7 @@ abts_suite *test_simple(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, NULL);
+    abts_run_test(suite, test1_func, OGS_UINT_TO_POINTER(1));
 
     return suite;
 }

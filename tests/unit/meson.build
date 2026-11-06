@@ -38,6 +38,7 @@ testunit_unit_sources = files('''
     amf-registration-test.c
     amf-namf-test.c
     amf-gnb-id-test.c
+    amf-redcap-test.c
     eir-config-test.c
     ipfw-test.c
     pfcp-rule-test.c

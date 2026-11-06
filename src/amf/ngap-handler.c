@@ -655,6 +655,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     NGAP_UserLocationInformationNR_t *UserLocationInformationNR = NULL;
     NGAP_FiveG_S_TMSI_t *FiveG_S_TMSI = NULL;
     NGAP_UEContextRequest_t *UEContextRequest = NULL;
+    NGAP_RedCapIndication_t *RedCapIndication = NULL;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -684,6 +685,9 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             break;
         case NGAP_ProtocolIE_ID_id_UEContextRequest:
             UEContextRequest = ie->value.choice.UEContextRequest;
+            break;
+        case NGAP_ProtocolIE_ID_id_RedCapIndication:
+            RedCapIndication = ie->value.choice.RedCapIndication;
             break;
         default:
             break;
@@ -832,6 +836,9 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ran_ue_remove(ran_ue);
         return;
     }
+
+    ran_ue->redcap_indication = RedCapIndication &&
+        *RedCapIndication == NGAP_RedCapIndication_redcap;
 
     /*
      * If the message is malformed, do not replace the old NG context
@@ -3014,6 +3021,7 @@ void ngap_handle_path_switch_request(
     NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
     NGAP_UserLocationInformationNR_t *UserLocationInformationNR = NULL;
     NGAP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
+    NGAP_RedCapIndication_t *RedCapIndication = NULL;
     NGAP_PDUSessionResourceToBeSwitchedDLList_t
         *PDUSessionResourceToBeSwitchedDLList = NULL;
 
@@ -3064,6 +3072,9 @@ void ngap_handle_path_switch_request(
             break;
         case NGAP_ProtocolIE_ID_id_PDUSessionResourceToBeSwitchedDLList:
             PDUSessionResourceToBeSwitchedDLList = ie->value.choice.PDUSessionResourceToBeSwitchedDLList;
+            break;
+        case NGAP_ProtocolIE_ID_id_RedCapIndication:
+            RedCapIndication = ie->value.choice.RedCapIndication;
             break;
         default:
             break;
@@ -3354,6 +3365,12 @@ void ngap_handle_path_switch_request(
 
     /* Change ran_ue to the NEW gNB after mandatory IE validation */
     ran_ue_switch_to_gnb(ran_ue, gnb);
+
+    if (RedCapIndication &&
+            *RedCapIndication == NGAP_RedCapIndication_redcap) {
+        ran_ue->redcap_indication = true;
+        amf_ue->redcap_indication = true;
+    }
 
     ogs_info("    [NEW] RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld] ",
         (long long)ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
@@ -3937,6 +3954,7 @@ void ngap_handle_handover_request_ack(
     NGAP_HandoverRequestAcknowledge_t *HandoverRequestAcknowledge = NULL;
 
     NGAP_HandoverRequestAcknowledgeIEs_t *ie = NULL;
+    NGAP_RedCapIndication_t *RedCapIndication = NULL;
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_PDUSessionResourceAdmittedList_t *PDUSessionList = NULL;
@@ -3971,6 +3989,9 @@ void ngap_handle_handover_request_ack(
             break;
         case NGAP_ProtocolIE_ID_id_TargetToSource_TransparentContainer:
             TargetToSource_TransparentContainer = ie->value.choice.TargetToSource_TransparentContainer;
+            break;
+        case NGAP_ProtocolIE_ID_id_RedCapIndication:
+            RedCapIndication = ie->value.choice.RedCapIndication;
             break;
         default:
             break;
@@ -4101,6 +4122,11 @@ void ngap_handle_handover_request_ack(
         ogs_assert(r != OGS_ERROR);
         return;
     }
+
+    /* Commit the target indication only when HandoverNotify associates it. */
+    if (RedCapIndication &&
+            *RedCapIndication == NGAP_RedCapIndication_redcap)
+        target_ue->redcap_indication = true;
 
     /* Store Container */
     OGS_ASN_STORE_DATA(&amf_ue->handover.container,
