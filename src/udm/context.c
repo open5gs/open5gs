@@ -281,7 +281,10 @@ udm_sess_t *udm_sess_add(udm_ue_t *udm_ue, uint8_t psi)
     ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
 
     ogs_pool_id_calloc(&udm_sess_pool, &sess);
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("No memory pool [%s:%d]", udm_ue->supi, psi);
+        return NULL;
+    }
 
     /* SBI Type */
     sess->sbi.type = OGS_SBI_OBJ_SESS_TYPE;

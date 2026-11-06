@@ -40,6 +40,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     int service_name_id = OpenAPI_service_name_NULL;
     const char *api_version = NULL;
     char *supi = NULL;
+    bool ue_allocation_failed = false;
     int psi = OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
 
     ogs_sbi_stream_t *stream = NULL;
@@ -185,30 +186,39 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 if (supi) {
                     udm_ue = udm_ue_find_by_supi(supi);
                 }
-                ogs_free(supi);
-                if (!udm_ue) {
+                if (supi && !udm_ue) {
                     SWITCH(message.h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
                     CASE(OGS_SBI_HTTP_METHOD_GET)
                         udm_ue = udm_ue_add(message.h.resource.component[0]);
-                        if (!udm_ue) {
-                            ogs_error("Invalid Request [%s]",
-                                    message.h.resource.component[0]);
-                        }
+                        if (!udm_ue)
+                            ue_allocation_failed = true;
                         break;
 
                     DEFAULT
                         ogs_error("Invalid HTTP method [%s]", message.h.method);
                     END
                 }
+                ogs_free(supi);
             }
 
             if (!udm_ue) {
-                ogs_error("Not found [%s]", message.h.method);
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                        &message, "Not found", message.h.method, NULL));
+                if (ue_allocation_failed) {
+                    ogs_error("Cannot allocate UDM UE context [%s]",
+                            message.h.resource.component[0]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                            &message, "Insufficient resources",
+                            "Cannot allocate UE context",
+                            "INSUFFICIENT_RESOURCES"));
+                } else {
+                    ogs_error("Not found [%s]", message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                            &message, "Not found", message.h.method, NULL));
+                }
                 break;
             }
 
@@ -258,7 +268,17 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 sess = udm_sess_find_by_psi(udm_ue, psi);
                 if (!sess) {
                     sess = udm_sess_add(udm_ue, psi);
-                    ogs_assert(sess);
+                    if (!sess) {
+                        ogs_error("[%s:%d] Cannot allocate UDM session context",
+                                udm_ue->supi, psi);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                                &message, "Insufficient resources",
+                                "Cannot allocate session context",
+                                "INSUFFICIENT_RESOURCES"));
+                        break;
+                    }
                     ogs_debug("[%s:%d] UDM session added",
                             udm_ue->supi, sess->psi);
                 }

@@ -1446,9 +1446,10 @@ bool ogs_nnrf_nfm_handle_nf_status_notify(
                         "due to insufficient space",
                         message.h.resource.component[1]);
                 ogs_assert(true == ogs_sbi_server_send_error(
-                        stream, OGS_SBI_HTTP_STATUS_PAYLOAD_TOO_LARGE,
-                        recvmsg, "Insufficient space",
-                        message.h.resource.component[1], NULL));
+                        stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                        recvmsg, "Insufficient resources",
+                        message.h.resource.component[1],
+                        "INSUFFICIENT_RESOURCES"));
                 ogs_sbi_header_free(&header);
                 return false;
             }

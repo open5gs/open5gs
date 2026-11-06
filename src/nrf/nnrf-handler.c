@@ -1311,8 +1311,9 @@ bool nrf_nnrf_handle_nf_discover(
             if (!nf_instance) {
                 ogs_error("Can't add NRF instance due to insufficient space");
                 ogs_assert(true == ogs_sbi_server_send_error(
-                        stream, OGS_SBI_HTTP_STATUS_PAYLOAD_TOO_LARGE,
-                        recvmsg, "Insufficient space", NULL, NULL));
+                        stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                        recvmsg, "Insufficient resources", NULL,
+                        "INSUFFICIENT_RESOURCES"));
                 goto cleanup;
             }
             nf_instance_created = true;

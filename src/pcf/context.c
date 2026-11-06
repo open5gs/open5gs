@@ -533,7 +533,10 @@ pcf_ue_am_t *pcf_ue_am_add(char *supi)
     ogs_assert(supi);
 
     ogs_pool_id_calloc(&pcf_ue_am_pool, &pcf_ue_am);
-    ogs_assert(pcf_ue_am);
+    if (!pcf_ue_am) {
+        ogs_error("No PCF AM UE context available");
+        return NULL;
+    }
 
     /* SBI Type */
     pcf_ue_am->sbi.type = OGS_SBI_OBJ_UE_TYPE;
@@ -629,7 +632,10 @@ pcf_ue_sm_t *pcf_ue_sm_add(char *supi)
     ogs_assert(supi);
 
     ogs_pool_id_calloc(&pcf_ue_sm_pool, &pcf_ue_sm);
-    ogs_assert(pcf_ue_sm);
+    if (!pcf_ue_sm) {
+        ogs_error("No PCF SM UE context available");
+        return NULL;
+    }
 
     pcf_ue_sm->supi = ogs_strdup(supi);
     ogs_assert(pcf_ue_sm->supi);
@@ -688,7 +694,10 @@ pcf_sess_t *pcf_sess_add(pcf_ue_sm_t *pcf_ue_sm, uint8_t psi)
     ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
 
     ogs_pool_id_calloc(&pcf_sess_pool, &sess);
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("No PCF session context available");
+        return NULL;
+    }
 
     ogs_list_init(&sess->app_list);
 
@@ -1004,7 +1013,10 @@ pcf_app_t *pcf_app_add(pcf_sess_t *sess)
     ogs_assert(sess);
 
     ogs_pool_alloc(&pcf_app_pool, &app);
-    ogs_assert(app);
+    if (!app) {
+        ogs_error("No PCF application session available");
+        return NULL;
+    }
     memset(app, 0, sizeof *app);
 
     app->app_session_id = ogs_msprintf("%d",
