@@ -147,9 +147,10 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                                     true ==
                                     ogs_sbi_server_send_error(
                                         stream,
-                                        OGS_SBI_HTTP_STATUS_PAYLOAD_TOO_LARGE,
-                                        &message, "Insufficient space",
-                                        message.h.resource.component[1], NULL));
+                                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                                        &message, "Insufficient resources",
+                                        message.h.resource.component[1],
+                                        "INSUFFICIENT_RESOURCES"));
                                 break;
                             }
                             ogs_sbi_nf_instance_set_id(nf_instance,

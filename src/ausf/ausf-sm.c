@@ -52,6 +52,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_ue_t *ausf_ue = NULL;
     ogs_pool_id_t ausf_ue_id = OGS_INVALID_POOL_ID;
+    bool ue_allocation_failed = false;
 
     ausf_sm_debug(e);
 
@@ -145,6 +146,8 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                     if (!ausf_ue) {
                         ausf_ue = ausf_ue_add(
                                 message.AuthenticationInfo->supi_or_suci);
+                        if (!ausf_ue)
+                            ue_allocation_failed = true;
                     }
                 }
                 break;
@@ -159,11 +162,22 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             END
 
             if (!ausf_ue) {
-                ogs_error("Not found [%s]", message.h.method);
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(
-                        stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                        &message, "Not found", message.h.method, NULL));
+                if (ue_allocation_failed) {
+                    ogs_error("Cannot allocate AUSF UE context [%s]",
+                            message.AuthenticationInfo->supi_or_suci);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                            &message, "Insufficient resources",
+                            "Cannot allocate UE context",
+                            "INSUFFICIENT_RESOURCES"));
+                } else {
+                    ogs_error("Not found [%s]", message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(
+                            stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                            &message, "Not found", message.h.method, NULL));
+                }
                 break;
             }
 

@@ -731,6 +731,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     bool rc;
     int i, j, rv, status = 0;
     char *strerror = NULL;
+    const char *cause = NULL;
     pcf_ue_sm_t *pcf_ue_sm = NULL;
     pcf_app_t *app_session = NULL;
 
@@ -954,7 +955,16 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     }
 
     app_session = pcf_app_add(sess);
-    ogs_assert(app_session);
+    if (!app_session) {
+        strerror = ogs_msprintf("[%s:%d] Cannot allocate PCF app session",
+                pcf_ue_sm->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+        cause = "INSUFFICIENT_RESOURCES";
+        ogs_free(fqdn);
+        ogs_freeaddrinfo(addr);
+        ogs_freeaddrinfo(addr6);
+        goto cleanup;
+    }
 
     if (app_session->notif_uri)
         ogs_free(app_session->notif_uri);
@@ -1275,7 +1285,7 @@ cleanup:
                 OGS_LOG_WARN : OGS_LOG_ERROR, 0, "%s", strerror);
     ogs_assert(true ==
         ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL,
-                NULL));
+                cause));
     ogs_free(strerror);
 
     OpenAPI_list_for_each(PccRuleList, node) {

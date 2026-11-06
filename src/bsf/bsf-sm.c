@@ -188,9 +188,9 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                                     ogs_error("Cannot add BSF session");
                                     ogs_assert(true ==
                                         ogs_sbi_server_send_error(stream,
-                                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                                             &message, "Cannot add BSF session",
-                                            NULL, NULL));
+                                            NULL, "INSUFFICIENT_RESOURCES"));
                                     goto cleanup;
                                 }
                             }
