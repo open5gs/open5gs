@@ -157,12 +157,26 @@ int ogs_sbi_server_start_all(
     return OGS_OK;
 }
 
+static int shutdown_request_handler(ogs_sbi_request_t *request, void *data)
+{
+    ogs_sbi_stream_t *stream =
+        ogs_sbi_stream_find_by_id(OGS_POINTER_TO_UINT(data));
+
+    if (!stream ||
+        !ogs_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE))
+        return OGS_ERROR;
+
+    return OGS_OK;
+}
+
 void ogs_sbi_server_graceful_shutdown_all(void)
 {
     ogs_sbi_server_t *server = NULL, *next_server = NULL;
 
-    ogs_list_for_each_safe(&ogs_sbi_self()->server_list, next_server, server)
+    ogs_list_for_each_safe(&ogs_sbi_self()->server_list, next_server, server) {
+        server->cb = shutdown_request_handler;
         ogs_sbi_server_actions.graceful_shutdown(server);
+    }
 }
 
 void ogs_sbi_server_stop_all(void)

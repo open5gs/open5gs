@@ -27,6 +27,41 @@ static void build_default_discovery_parameter(
         OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option);
 
+static void shutdown_holding_expired(void *data)
+{
+    bool *expired = data;
+
+    *expired = true;
+}
+
+void ogs_sbi_graceful_shutdown(void)
+{
+    ogs_timer_t *holding = NULL;
+    bool expired = false;
+
+    if (ogs_list_empty(&ogs_sbi_self()->server_list) &&
+        ogs_list_empty(&ogs_sbi_self()->client_list))
+        return;
+
+    ogs_sbi_server_graceful_shutdown_all();
+
+    /*
+     * The NF event queue is closed. Keep driving curl and HTTP/2 on the
+     * application pollset so queued shutdown messages can reach their peers
+     * before the termination thread joins this worker and closes SBI.
+     */
+    holding = ogs_timer_add(ogs_app()->timer_mgr,
+            shutdown_holding_expired, &expired);
+    ogs_assert(holding);
+    ogs_timer_start(holding, ogs_time_from_msec(300));
+    while (!expired) {
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
+    }
+    ogs_timer_delete(holding);
+}
+
 int ogs_sbi_server_handler(ogs_sbi_request_t *request, void *data)
 {
     ogs_event_t *e = NULL;
@@ -43,8 +78,9 @@ int ogs_sbi_server_handler(ogs_sbi_request_t *request, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_sbi_request_free(request);
+        if (rv != OGS_DONE)
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        /* The server stream still owns the request. */
         ogs_event_free(e);
         return OGS_ERROR;
     }
@@ -74,7 +110,8 @@ int ogs_sbi_client_handler(
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        if (rv != OGS_DONE)
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_sbi_response_free(response);
         ogs_event_free(e);
         return OGS_ERROR;
@@ -235,7 +272,8 @@ static int client_discover_cb(
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        if (rv != OGS_DONE)
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_sbi_response_free(response);
         ogs_event_free(e);
         return OGS_ERROR;

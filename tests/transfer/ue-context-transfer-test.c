@@ -3000,14 +3000,6 @@ static void test4_func(abts_case *tc, void *data)
         gmmbuf = testgmm_build_registration_request(test_ue_target[i], NULL, false, false);
         ABTS_PTR_NOTNULL(tc, gmmbuf);
 
-        test_ue_target[i]->registration_request_param.gmm_capability = 1;
-        test_ue_target[i]->registration_request_param.s1_ue_network_capability = 1;
-        test_ue_target[i]->registration_request_param.requested_nssai = 1;
-        test_ue_target[i]->registration_request_param.last_visited_registered_tai = 1;
-        test_ue_target[i]->registration_request_param.ue_usage_setting = 1;
-        nasbuf = testgmm_build_registration_request(test_ue_target[i], NULL, false, false);
-        ABTS_PTR_NOTNULL(tc, nasbuf);
-
         sendbuf = testngap_build_initial_ue_message(test_ue_target[i], gmmbuf,
                     NGAP_RRCEstablishmentCause_mo_Signalling, false, true);
         ABTS_PTR_NOTNULL(tc, sendbuf);

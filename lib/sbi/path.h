@@ -30,6 +30,9 @@ int ogs_sbi_server_handler(ogs_sbi_request_t *request, void *data);
 int ogs_sbi_client_handler(
         int status, ogs_sbi_response_t *response, void *data);
 
+/* Run on the NF worker after it stops dispatching events. */
+void ogs_sbi_graceful_shutdown(void);
+
 int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact);
 int ogs_sbi_discover_only(ogs_sbi_xact_t *xact);
 

@@ -55,32 +55,13 @@ int nrf_initialize(void)
     return OGS_OK;
 }
 
-static ogs_timer_t *t_termination_holding = NULL;
-
-static void event_termination(void)
-{
-    /* Gracefully shutdown the server by sending GOAWAY to each session. */
-    ogs_sbi_server_graceful_shutdown_all();
-
-    /* Start holding timer */
-    t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
-    ogs_assert(t_termination_holding);
-#define TERMINATION_HOLDING_TIME ogs_time_from_msec(300)
-    ogs_timer_start(t_termination_holding, TERMINATION_HOLDING_TIME);
-
-    /* Sending termination event to the queue */
-    ogs_queue_term(ogs_app()->queue);
-    ogs_pollset_notify(ogs_app()->pollset);
-}
-
 void nrf_terminate(void)
 {
     if (!initialized) return;
 
-    /* Daemon terminating */
-    event_termination();
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
     ogs_thread_destroy(thread);
-    ogs_timer_delete(t_termination_holding);
 
     nrf_sbi_close();
 
@@ -130,6 +111,6 @@ static void nrf_main(void *data)
         }
     }
 done:
-
+    ogs_sbi_graceful_shutdown();
     ogs_fsm_fini(&nrf_sm, 0);
 }

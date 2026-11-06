@@ -67,8 +67,9 @@ static void timer_send_event(int timer_id, void *data)
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed [%d] in %s",
-                (int)rv, sepp_timer_get_name(timer_id));
+        if (rv != OGS_DONE)
+            ogs_error("ogs_queue_push() failed [%d] in %s",
+                    (int)rv, sepp_timer_get_name(timer_id));
         ogs_event_free(e);
     }
 }

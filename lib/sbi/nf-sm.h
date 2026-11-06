@@ -30,6 +30,7 @@ extern "C" {
 
 void ogs_sbi_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance);
+void ogs_sbi_nf_fsm_fini_all(void);
 
 void ogs_sbi_nf_state_initial(ogs_fsm_t *s, ogs_event_t *e);
 void ogs_sbi_nf_state_final(ogs_fsm_t *s, ogs_event_t *e);
