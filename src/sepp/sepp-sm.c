@@ -289,8 +289,9 @@ void sepp_state_operational(ogs_fsm_t *s, sepp_event_t *e)
                 if (old_state) {
                     e->h.sbi.message = &message;
                     ogs_fsm_dispatch(&nf_instance->sm, e);
-                } else
+                } else {
                     ogs_warn("NF instance FSM has been finalized");
+                }
 
             /*
              * The SEPP on the H-PLMN should send a n32c-handshake message
