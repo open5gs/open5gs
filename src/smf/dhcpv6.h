@@ -118,6 +118,12 @@ int smf_dhcpv6_encode_response(uint8_t *buf, size_t buflen,
         smf_sess_t *sess, smf_dhcpv6_message_t *req,
         uint8_t type, uint16_t status);
 
+/* Unit tests observe the CP-bound DHCPv6 reply without a GTP-U peer.
+ * NULL is production: the packet is sent on the CP2UP path.
+ * The hook consumes pkbuf. */
+void smf_dhcpv6_test_set_cp_send_hook(
+        void (*hook)(smf_sess_t *sess, ogs_pkbuf_t *pkbuf));
+
 #ifdef __cplusplus
 }
 #endif

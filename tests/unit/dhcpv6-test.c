@@ -17,8 +17,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <unistd.h>
+
+#include <netinet/ip6.h>
+#include <netinet/udp.h>
+
 #include "ogs-pfcp.h"
 #include "smf/dhcpv6.h"
+#include "n4-handler.h"
+#include "metrics.h"
 #include "core/abts.h"
 
 /* Build a DHCPv6 Solicit with IA_PD; optionally Rapid Commit */
@@ -580,6 +587,628 @@ static void dhcpv6_test_pd_lease_pending(abts_case *tc, void *data)
     ABTS_TRUE(tc, smf_sess_pd_lease_pfcp_pending(&sess));
 }
 
+/*
+ * In-process regression for the review items. Packets are handed to
+ * smf_dhcpv6_handle(), PFCP Session Modification is sent to a localhost
+ * UDP socket, and the EPC or 5GC N4 handler (or its response timer)
+ * completes the lease. No eNB/gNB, no UE, and no subscriber traffic.
+ */
+#define PD_CAP_MAX 8
+
+typedef struct pd_reply_s {
+    uint8_t type;
+    int rapid;
+    int status;
+} pd_reply_t;
+
+static pd_reply_t pd_cap[PD_CAP_MAX];
+static int pd_cap_n;
+static int pd_runtime_ready;
+static uint8_t pd_server_duid[DHCPV6_MAX_DUID_LEN];
+static uint16_t pd_server_duid_len;
+
+static const uint8_t pd_duid_a[14] = {
+    0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+    0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+};
+static const uint8_t pd_duid_b[14] = {
+    0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02,
+    0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
+};
+
+typedef struct pd_fix_s {
+    smf_ue_t *ue;
+    smf_sess_t *sess;
+    ogs_pfcp_node_t *node;
+    ogs_pfcp_subnet_t *subnet;
+    ogs_pfcp_ue_ip_t *ip;
+} pd_fix_t;
+
+static void pd_cap_reset(void)
+{
+    memset(pd_cap, 0, sizeof(pd_cap));
+    pd_cap_n = 0;
+}
+
+static int pd_walk_dhcp(const uint8_t *p, const uint8_t *end,
+        int *rapid, int *status, int *saw_prefix)
+{
+    while (p + 4 <= end) {
+        uint16_t code = ((uint16_t)p[0] << 8) | p[1];
+        uint16_t olen = ((uint16_t)p[2] << 8) | p[3];
+        const uint8_t *data = p + 4;
+
+        if (data + olen > end)
+            return -1;
+        if (code == DHCPV6_OPT_RAPID_COMMIT && olen == 0)
+            *rapid = 1;
+        else if (code == DHCPV6_OPT_STATUS_CODE && olen >= 2)
+            *status = ((int)data[0] << 8) | data[1];
+        else if (code == DHCPV6_OPT_IAPREFIX)
+            *saw_prefix = 1;
+        else if (code == DHCPV6_OPT_IA_PD && olen >= 12)
+            pd_walk_dhcp(data + 12, data + olen, rapid, status, saw_prefix);
+        p = data + olen;
+    }
+    return 0;
+}
+
+static void pd_capture(smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
+{
+    struct ip6_hdr *ip6;
+    struct udphdr *udp;
+    const uint8_t *dhcp;
+    int dhcp_len, rapid = 0, status = -1, saw_prefix = 0;
+    pd_reply_t *reply;
+
+    ogs_assert(pkbuf);
+    if (pd_cap_n < PD_CAP_MAX &&
+            pkbuf->len >= (int)(sizeof(*ip6) + sizeof(*udp) + 4)) {
+        ip6 = (struct ip6_hdr *)pkbuf->data;
+        udp = (struct udphdr *)(ip6 + 1);
+        dhcp = (const uint8_t *)(udp + 1);
+        dhcp_len = pkbuf->len - (int)(sizeof(*ip6) + sizeof(*udp));
+        reply = &pd_cap[pd_cap_n];
+        reply->type = dhcp[0];
+        pd_walk_dhcp(dhcp + 4, dhcp + dhcp_len, &rapid, &status, &saw_prefix);
+        if (status < 0 && saw_prefix)
+            status = DHCPV6_STATUS_SUCCESS;
+        reply->rapid = rapid;
+        reply->status = status;
+    }
+    pd_cap_n++;
+    ogs_pkbuf_free(pkbuf);
+    (void)sess;
+}
+
+static void pd_load_server_duid(void)
+{
+    uint8_t reqbuf[160], resp[256];
+    int reqlen, resplen;
+    smf_dhcpv6_message_t msg;
+    smf_sess_t sess;
+
+    smf_dhcpv6_init();
+    fill_test_lease(&sess);
+    reqlen = build_solicit(reqbuf, false);
+    memset(&msg, 0, sizeof(msg));
+    ogs_assert(smf_dhcpv6_parse(&msg, reqbuf, reqlen) == OGS_OK);
+    resplen = smf_dhcpv6_encode_response(resp, sizeof(resp),
+            &sess, &msg, DHCPV6_MSG_ADVERTISE, DHCPV6_STATUS_SUCCESS);
+    ogs_assert(extract_serverid(resp, resplen, pd_server_duid, &pd_server_duid_len));
+}
+
+static void pd_runtime_init(void)
+{
+    ogs_sockaddr_t *local = NULL;
+
+    if (pd_runtime_ready)
+        return;
+
+    ogs_app_context_init();
+    ogs_global_conf()->max.ue = 8;
+    ogs_app()->pool.sess = 16;
+    ogs_app()->pool.bearer = 32;
+    ogs_app()->pool.timer = 512;
+    ogs_app()->pool.xact = 64;
+    ogs_app()->pool.nf = 8;
+    ogs_app()->pool.gtp_node = 8;
+    ogs_app()->pool.event = 64;
+    ogs_app()->metrics.max_specs = 512;
+    ogs_app()->timer_mgr = ogs_timer_mgr_create(ogs_app()->pool.timer);
+    ogs_assert(ogs_app()->timer_mgr);
+    ogs_app()->queue = ogs_queue_create(ogs_app()->pool.event);
+    ogs_assert(ogs_app()->queue);
+
+    ogs_local_conf()->time.message.pfcp.t1_response_duration =
+            ogs_time_from_sec(60);
+    ogs_local_conf()->time.message.pfcp.n1_response_rcount = 1;
+    ogs_local_conf()->time.message.pfcp.t1_holding_duration =
+            ogs_time_from_sec(60);
+    ogs_local_conf()->time.message.pfcp.n1_holding_rcount = 1;
+
+    ogs_pfcp_context_init();
+    ogs_pfcp_xact_init();
+    ogs_gtp_context_init(8);
+    ogs_gtp_xact_init();
+    smf_metrics_init();
+    smf_context_init();
+
+    ogs_assert(ogs_addaddrinfo(&local, AF_INET, "127.0.0.1", 18805, 0) == OGS_OK);
+    ogs_pfcp_self()->pfcp_sock = ogs_udp_server(local, NULL);
+    ogs_assert(ogs_pfcp_self()->pfcp_sock);
+    ogs_freeaddrinfo(local);
+
+    pd_load_server_duid();
+    smf_dhcpv6_test_set_cp_send_hook(pd_capture);
+    pd_runtime_ready = 1;
+}
+
+static int pd_fix_open(pd_fix_t *fix, bool epc)
+{
+    ogs_sockaddr_t *addr = NULL;
+
+    memset(fix, 0, sizeof(*fix));
+    pd_runtime_init();
+    pd_cap_reset();
+
+    fix->subnet = ogs_pfcp_subnet_add(
+            "2001:db8:cafe::", "48", "2001:db8:cafe::1", "internet", "lo");
+    if (!fix->subnet)
+        return -1;
+    if (ogs_pfcp_subnet_delegated_prefix_set(
+                fix->subnet, "2001:db8:8000::", "48", 56, 0, 0) != OGS_OK)
+        return -1;
+
+    if (ogs_addaddrinfo(&addr, AF_INET, "127.0.0.1", 18805, 0) != OGS_OK)
+        return -1;
+    fix->node = ogs_pfcp_node_new(addr);
+    if (!fix->node) {
+        ogs_freeaddrinfo(addr);
+        return -1;
+    }
+    fix->node->up_function_features.frrt = 1;
+
+    fix->ue = smf_ue_add_by_supi("imsi-001010000000001");
+    if (!fix->ue)
+        return -1;
+    fix->sess = smf_sess_add_by_psi(fix->ue, 1);
+    if (!fix->sess)
+        return -1;
+    fix->sess->session.name = ogs_strdup("internet");
+    fix->sess->epc = epc;
+    fix->sess->pfcp_node = fix->node;
+    if (!smf_bearer_add(fix->sess))
+        return -1;
+
+    fix->ip = ogs_calloc(1, sizeof(*fix->ip));
+    ogs_assert(fix->ip);
+    fix->ip->subnet = fix->subnet;
+    fix->sess->ipv6 = fix->ip;
+    return 0;
+}
+
+static void pd_fix_close(pd_fix_t *fix)
+{
+    if (!fix)
+        return;
+    if (fix->sess) {
+        fix->sess->ipv6 = NULL;
+        smf_sess_remove(fix->sess);
+        fix->sess = NULL;
+    }
+    if (fix->ip) {
+        ogs_free(fix->ip);
+        fix->ip = NULL;
+    }
+    if (fix->ue) {
+        smf_ue_remove(fix->ue);
+        fix->ue = NULL;
+    }
+    if (fix->node) {
+        ogs_pfcp_node_free(fix->node);
+        fix->node = NULL;
+    }
+    if (fix->subnet) {
+        ogs_pfcp_subnet_remove(fix->subnet);
+        fix->subnet = NULL;
+    }
+}
+
+static int pd_xacts(const pd_fix_t *fix)
+{
+    return ogs_list_count(&fix->node->local_list);
+}
+
+static uint8_t *put_be32_test(uint8_t *p, uint32_t v);
+
+static int pd_build_client(uint8_t *buf, uint8_t type, uint32_t iaid,
+        const uint8_t *duid, uint16_t duid_len, bool rapid, bool serverid,
+        bool ia_pd)
+{
+    uint8_t *p = buf;
+
+    *p++ = type;
+    *p++ = 0x11; *p++ = 0x22; *p++ = 0x33;
+
+    *p++ = 0x00; *p++ = DHCPV6_OPT_CLIENTID;
+    *p++ = (uint8_t)(duid_len >> 8);
+    *p++ = (uint8_t)(duid_len & 0xff);
+    memcpy(p, duid, duid_len);
+    p += duid_len;
+
+    if (serverid) {
+        *p++ = 0x00; *p++ = DHCPV6_OPT_SERVERID;
+        *p++ = (uint8_t)(pd_server_duid_len >> 8);
+        *p++ = (uint8_t)(pd_server_duid_len & 0xff);
+        memcpy(p, pd_server_duid, pd_server_duid_len);
+        p += pd_server_duid_len;
+    }
+
+    if (rapid) {
+        *p++ = 0x00; *p++ = DHCPV6_OPT_RAPID_COMMIT;
+        *p++ = 0x00; *p++ = 0x00;
+    }
+
+    if (ia_pd) {
+        *p++ = 0x00; *p++ = DHCPV6_OPT_IA_PD;
+        *p++ = 0x00; *p++ = 12;
+        p = put_be32_test(p, iaid);
+        memset(p, 0, 8);
+        p += 8;
+    }
+    return (int)(p - buf);
+}
+
+/* Local writer so this builder does not depend on dhcpv6.c statics. */
+static uint8_t *put_be32_test(uint8_t *p, uint32_t v)
+{
+    uint32_t be = htobe32(v);
+    memcpy(p, &be, 4);
+    return p + 4;
+}
+
+static void pd_feed(smf_sess_t *sess, uint8_t type, uint32_t iaid,
+        const uint8_t *duid, bool rapid, bool serverid, bool ia_pd)
+{
+    uint8_t dhcp[256];
+    int dlen;
+    ogs_pkbuf_t *pkbuf;
+    struct ip6_hdr *ip6;
+    struct udphdr *udp;
+    size_t total;
+
+    dlen = pd_build_client(dhcp, type, iaid, duid, 14, rapid, serverid, ia_pd);
+    total = sizeof(*ip6) + sizeof(*udp) + dlen;
+    pkbuf = ogs_pkbuf_alloc(NULL, total);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put(pkbuf, total);
+    memset(pkbuf->data, 0, pkbuf->len);
+
+    ip6 = (struct ip6_hdr *)pkbuf->data;
+    ip6->ip6_flow = htobe32(0x60000000);
+    ip6->ip6_plen = htobe16(sizeof(*udp) + dlen);
+    ip6->ip6_nxt = IPPROTO_UDP;
+    ip6->ip6_hlim = 64;
+    ip6->ip6_src.s6_addr[0] = 0x20;
+    ip6->ip6_src.s6_addr[1] = 0x01;
+    ip6->ip6_src.s6_addr[2] = 0x0d;
+    ip6->ip6_src.s6_addr[3] = 0xb8;
+    ip6->ip6_src.s6_addr[15] = 0x02;
+    ip6->ip6_dst.s6_addr[0] = 0xfe;
+    ip6->ip6_dst.s6_addr[1] = 0x80;
+    ip6->ip6_dst.s6_addr[15] = 0x01;
+
+    udp = (struct udphdr *)(ip6 + 1);
+    udp->uh_sport = htobe16(DHCPV6_CLIENT_PORT);
+    udp->uh_dport = htobe16(DHCPV6_SERVER_PORT);
+    udp->uh_ulen = htobe16(sizeof(*udp) + dlen);
+    memcpy(udp + 1, dhcp, dlen);
+
+    smf_dhcpv6_handle(sess, pkbuf);
+    ogs_pkbuf_free(pkbuf);
+}
+
+static void pd_deliver(pd_fix_t *fix, bool accepted, bool with_cause)
+{
+    ogs_pfcp_xact_t *xact;
+    ogs_pfcp_session_modification_response_t rsp;
+
+    ogs_assert(pd_xacts(fix) == 1);
+    xact = ogs_list_first(&fix->node->local_list);
+    memset(&rsp, 0, sizeof(rsp));
+    if (with_cause) {
+        rsp.cause.presence = 1;
+        rsp.cause.u8 = accepted ?
+            OGS_PFCP_CAUSE_REQUEST_ACCEPTED : OGS_PFCP_CAUSE_REQUEST_REJECTED;
+    }
+
+    if (fix->sess->epc)
+        smf_epc_n4_handle_session_modification_response(
+                fix->sess, xact, NULL, &rsp);
+    else
+        smf_5gc_n4_handle_session_modification_response(fix->sess, xact, &rsp);
+
+    /* The N4 handler commits the still-open request. Drop it so the
+     * response timer cannot complete the lease a second time. */
+    if (ogs_list_count(&fix->node->local_list))
+        ogs_pfcp_xact_delete_all(fix->node);
+}
+
+static void pd_pump_timers(void)
+{
+    int i;
+
+    for (i = 0; i < 40; i++) {
+        usleep(2000);
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
+    }
+}
+
+static void dhcpv6_test_handler_rfc8415(abts_case *tc, void *data)
+{
+    pd_fix_t fix;
+    int before;
+
+    ABTS_INT_EQUAL(tc, 0, pd_fix_open(&fix, false));
+
+    pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 1, pd_duid_a,
+            false, true, true);
+    pd_feed(fix.sess, DHCPV6_MSG_CONFIRM, 1, pd_duid_a,
+            false, true, true);
+    pd_feed(fix.sess, DHCPV6_MSG_REBIND, 1, pd_duid_a,
+            false, true, true);
+    pd_feed(fix.sess, DHCPV6_MSG_REQUEST, 1, pd_duid_a,
+            false, false, true);
+    pd_feed(fix.sess, DHCPV6_MSG_RENEW, 1, pd_duid_a,
+            false, false, true);
+    pd_feed(fix.sess, DHCPV6_MSG_RELEASE, 1, pd_duid_a,
+            false, false, true);
+    pd_feed(fix.sess, DHCPV6_MSG_DECLINE, 1, pd_duid_a,
+            false, false, true);
+
+    /* Wrong Server Identifier is not this server. Build it by feeding
+     * a Decline whose Server DUID is replaced below. */
+    {
+        uint8_t dhcp[256];
+        int dlen, i;
+        ogs_pkbuf_t *pkbuf;
+        struct ip6_hdr *ip6;
+        struct udphdr *udp;
+        size_t total;
+
+        dlen = pd_build_client(dhcp, DHCPV6_MSG_RENEW, 1, pd_duid_a,
+                14, false, true, true);
+        for (i = 0; i + 1 < dlen; i++) {
+            if (dhcp[i] == 0x00 && dhcp[i + 1] == DHCPV6_OPT_SERVERID &&
+                    i + 4 + pd_server_duid_len <= dlen) {
+                memset(dhcp + i + 4, 0x11, pd_server_duid_len);
+                break;
+            }
+        }
+        total = sizeof(*ip6) + sizeof(*udp) + dlen;
+        pkbuf = ogs_pkbuf_alloc(NULL, total);
+        ogs_assert(pkbuf);
+        ogs_pkbuf_put(pkbuf, total);
+        memset(pkbuf->data, 0, pkbuf->len);
+        ip6 = (struct ip6_hdr *)pkbuf->data;
+        ip6->ip6_flow = htobe32(0x60000000);
+        ip6->ip6_plen = htobe16(sizeof(*udp) + dlen);
+        ip6->ip6_nxt = IPPROTO_UDP;
+        ip6->ip6_hlim = 64;
+        ip6->ip6_src.s6_addr[0] = 0x20;
+        ip6->ip6_src.s6_addr[1] = 0x01;
+        ip6->ip6_src.s6_addr[2] = 0x0d;
+        ip6->ip6_src.s6_addr[3] = 0xb8;
+        ip6->ip6_src.s6_addr[15] = 0x02;
+        udp = (struct udphdr *)(ip6 + 1);
+        udp->uh_sport = htobe16(DHCPV6_CLIENT_PORT);
+        udp->uh_dport = htobe16(DHCPV6_SERVER_PORT);
+        udp->uh_ulen = htobe16(sizeof(*udp) + dlen);
+        memcpy(udp + 1, dhcp, dlen);
+        smf_dhcpv6_handle(fix.sess, pkbuf);
+        ogs_pkbuf_free(pkbuf);
+    }
+
+    /* Confirm carries IA_PD and no Server Identifier: still not a PD op. */
+    pd_feed(fix.sess, DHCPV6_MSG_CONFIRM, 1, pd_duid_a,
+            false, false, true);
+
+    before = pd_cap_n;
+    ABTS_INT_EQUAL(tc, 0, before);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_NONE, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+
+    pd_fix_close(&fix);
+}
+
+static void dhcpv6_test_defer_accept_5gc(abts_case *tc, void *data)
+{
+    pd_fix_t fix;
+
+    ABTS_INT_EQUAL(tc, 0, pd_fix_open(&fix, false));
+
+    pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 0x11111111, pd_duid_a,
+            true, false, true);
+    ABTS_INT_EQUAL(tc, 0, pd_cap_n);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_PENDING, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 1, pd_xacts(&fix));
+
+    pd_deliver(&fix, true, true);
+    ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_REPLY, pd_cap[0].type);
+    ABTS_INT_EQUAL(tc, 1, pd_cap[0].rapid);
+    ABTS_INT_EQUAL(tc, DHCPV6_STATUS_SUCCESS, pd_cap[0].status);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_ACTIVE, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+
+    /* Renew/Rebind of an installed lease do not open another modification. */
+    pd_cap_reset();
+    pd_feed(fix.sess, DHCPV6_MSG_RENEW, 0x11111111, pd_duid_a,
+            false, true, true);
+    ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_REPLY, pd_cap[0].type);
+    ABTS_INT_EQUAL(tc, DHCPV6_STATUS_SUCCESS, pd_cap[0].status);
+    ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+
+    pd_cap_reset();
+    pd_feed(fix.sess, DHCPV6_MSG_REBIND, 0x11111111, pd_duid_a,
+            false, false, true);
+    ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_REPLY, pd_cap[0].type);
+    ABTS_INT_EQUAL(tc, DHCPV6_STATUS_SUCCESS, pd_cap[0].status);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_ACTIVE, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+
+    pd_fix_close(&fix);
+}
+
+static void dhcpv6_test_defer_reject_epc(abts_case *tc, void *data)
+{
+    pd_fix_t fix;
+
+    ABTS_INT_EQUAL(tc, 0, pd_fix_open(&fix, true));
+
+    pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 0x22222222, pd_duid_a,
+            false, false, true);
+    ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_ADVERTISE, pd_cap[0].type);
+    ABTS_INT_EQUAL(tc, 0, pd_cap[0].rapid);
+    ABTS_INT_EQUAL(tc, DHCPV6_STATUS_SUCCESS, pd_cap[0].status);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_OFFERED, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+
+    pd_feed(fix.sess, DHCPV6_MSG_REQUEST, 0x22222222, pd_duid_a,
+            false, true, true);
+    ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_PENDING, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 1, pd_xacts(&fix));
+
+    pd_deliver(&fix, false, true);
+    ABTS_INT_EQUAL(tc, 2, pd_cap_n);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_REPLY, pd_cap[1].type);
+    ABTS_INT_EQUAL(tc, DHCPV6_STATUS_NOPREFIX_AVAIL, pd_cap[1].status);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_NONE, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+
+    pd_fix_close(&fix);
+}
+
+static void dhcpv6_test_pfcp_cause_required(abts_case *tc, void *data)
+{
+    pd_fix_t fix;
+
+    ABTS_INT_EQUAL(tc, 0, pd_fix_open(&fix, false));
+    pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 0x33333333, pd_duid_a,
+            true, false, true);
+    ABTS_INT_EQUAL(tc, 0, pd_cap_n);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_PENDING, fix.sess->pd_lease.state);
+
+    /* No Cause IE is not acceptance. */
+    pd_deliver(&fix, false, false);
+    ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_ADVERTISE, pd_cap[0].type);
+    ABTS_INT_EQUAL(tc, DHCPV6_STATUS_NOPREFIX_AVAIL, pd_cap[0].status);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_NONE, fix.sess->pd_lease.state);
+
+    pd_fix_close(&fix);
+}
+
+static void dhcpv6_test_defer_timeout(abts_case *tc, void *data)
+{
+    int epc;
+
+    for (epc = 0; epc <= 1; epc++) {
+        pd_fix_t fix;
+
+        ABTS_INT_EQUAL(tc, 0, pd_fix_open(&fix, epc ? true : false));
+        ogs_local_conf()->time.message.pfcp.t1_response_duration = 1000;
+        ogs_local_conf()->time.message.pfcp.n1_response_rcount = 1;
+
+        pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 0x44444444, pd_duid_a,
+                true, false, true);
+        ABTS_INT_EQUAL(tc, 0, pd_cap_n);
+        ABTS_INT_EQUAL(tc, SMF_PD_LEASE_PENDING, fix.sess->pd_lease.state);
+        ABTS_INT_EQUAL(tc, 1, pd_xacts(&fix));
+
+        pd_pump_timers();
+        ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+        ABTS_INT_EQUAL(tc, DHCPV6_MSG_ADVERTISE, pd_cap[0].type);
+        ABTS_INT_EQUAL(tc, DHCPV6_STATUS_NOPREFIX_AVAIL, pd_cap[0].status);
+        ABTS_INT_EQUAL(tc, SMF_PD_LEASE_NONE, fix.sess->pd_lease.state);
+        ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+
+        ogs_local_conf()->time.message.pfcp.t1_response_duration =
+                ogs_time_from_sec(60);
+        pd_fix_close(&fix);
+    }
+}
+
+static void dhcpv6_test_one_outstanding(abts_case *tc, void *data)
+{
+    pd_fix_t fix;
+    uint8_t prefix[OGS_IPV6_LEN];
+
+    ABTS_INT_EQUAL(tc, 0, pd_fix_open(&fix, false));
+    pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 0x55555555, pd_duid_a,
+            true, false, true);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_PENDING, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 1, pd_xacts(&fix));
+    ABTS_INT_EQUAL(tc, 0, pd_cap_n);
+    memcpy(prefix, fix.sess->pd_lease.prefix, sizeof(prefix));
+
+    pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 0x66666666, pd_duid_b,
+            true, false, true);
+    ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_ADVERTISE, pd_cap[0].type);
+    ABTS_INT_EQUAL(tc, DHCPV6_STATUS_NOPREFIX_AVAIL, pd_cap[0].status);
+    ABTS_INT_EQUAL(tc, 1, pd_xacts(&fix));
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_PENDING, fix.sess->pd_lease.state);
+    ABTS_TRUE(tc, memcmp(prefix, fix.sess->pd_lease.prefix, sizeof(prefix)) == 0);
+    ABTS_INT_EQUAL(tc, 0x55555555, fix.sess->pd_lease.iaid);
+
+    pd_cap_reset();
+    pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 0x55555555, pd_duid_a,
+            true, false, true);
+    ABTS_INT_EQUAL(tc, 0, pd_cap_n);
+    ABTS_INT_EQUAL(tc, 1, pd_xacts(&fix));
+
+    pd_deliver(&fix, true, true);
+    ABTS_INT_EQUAL(tc, 1, pd_cap_n);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_REPLY, pd_cap[0].type);
+    ABTS_INT_EQUAL(tc, 1, pd_cap[0].rapid);
+    ABTS_INT_EQUAL(tc, DHCPV6_STATUS_SUCCESS, pd_cap[0].status);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_ACTIVE, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+
+    pd_fix_close(&fix);
+}
+
+static void dhcpv6_test_confirm_decline_ignored(abts_case *tc, void *data)
+{
+    pd_fix_t fix;
+    uint8_t prefix[OGS_IPV6_LEN];
+
+    ABTS_INT_EQUAL(tc, 0, pd_fix_open(&fix, true));
+    pd_feed(fix.sess, DHCPV6_MSG_SOLICIT, 0x77777777, pd_duid_a,
+            true, false, true);
+    pd_deliver(&fix, true, true);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_ACTIVE, fix.sess->pd_lease.state);
+    memcpy(prefix, fix.sess->pd_lease.prefix, sizeof(prefix));
+
+    pd_cap_reset();
+    pd_feed(fix.sess, DHCPV6_MSG_DECLINE, 0x77777777, pd_duid_a,
+            false, true, true);
+    pd_feed(fix.sess, DHCPV6_MSG_CONFIRM, 0x77777777, pd_duid_a,
+            false, false, true);
+    ABTS_INT_EQUAL(tc, 0, pd_cap_n);
+    ABTS_INT_EQUAL(tc, SMF_PD_LEASE_ACTIVE, fix.sess->pd_lease.state);
+    ABTS_INT_EQUAL(tc, 0, pd_xacts(&fix));
+    ABTS_TRUE(tc, memcmp(prefix, fix.sess->pd_lease.prefix, sizeof(prefix)) == 0);
+
+    pd_fix_close(&fix);
+}
+
 abts_suite *test_dhcpv6(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -593,6 +1222,13 @@ abts_suite *test_dhcpv6(abts_suite *suite)
     abts_run_test(suite, dhcpv6_test_rfc8415_serverid, NULL);
     abts_run_test(suite, dhcpv6_test_rfc8415_ia_pd, NULL);
     abts_run_test(suite, dhcpv6_test_pd_lease_pending, NULL);
+    abts_run_test(suite, dhcpv6_test_handler_rfc8415, NULL);
+    abts_run_test(suite, dhcpv6_test_defer_accept_5gc, NULL);
+    abts_run_test(suite, dhcpv6_test_defer_reject_epc, NULL);
+    abts_run_test(suite, dhcpv6_test_pfcp_cause_required, NULL);
+    abts_run_test(suite, dhcpv6_test_defer_timeout, NULL);
+    abts_run_test(suite, dhcpv6_test_one_outstanding, NULL);
+    abts_run_test(suite, dhcpv6_test_confirm_decline_ignored, NULL);
 
     return suite;
 }

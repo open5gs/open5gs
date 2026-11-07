@@ -446,6 +446,15 @@ static ogs_pkbuf_t *build_response(smf_sess_t *sess,
     return pkbuf;
 }
 
+/* NULL in production. Unit tests install this to capture the reply. */
+static void (*dhcpv6_cp_send_hook)(smf_sess_t *sess, ogs_pkbuf_t *pkbuf);
+
+void smf_dhcpv6_test_set_cp_send_hook(
+        void (*hook)(smf_sess_t *sess, ogs_pkbuf_t *pkbuf))
+{
+    dhcpv6_cp_send_hook = hook;
+}
+
 static void send_response(smf_sess_t *sess, smf_dhcpv6_message_t *req,
         uint8_t type, uint16_t status)
 {
@@ -459,6 +468,11 @@ static void send_response(smf_sess_t *sess, smf_dhcpv6_message_t *req,
 
     ogs_debug("      Send DHCPv6 %s [%s]",
             dhcpv6_message_name(type), dhcpv6_status_name(status));
+
+    if (dhcpv6_cp_send_hook) {
+        dhcpv6_cp_send_hook(sess, pkbuf);
+        return;
+    }
 
     smf_gtp_send_cp_packet_to_ue(sess, pkbuf);
 }
