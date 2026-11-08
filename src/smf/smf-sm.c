@@ -1355,6 +1355,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
+            service_name_id = sbi_xact->service_name;
+
             ogs_sbi_xact_remove(sbi_xact);
 
             sess = smf_sess_find_by_id(sbi_object_id);
@@ -1373,6 +1375,18 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                         "Cannot receive SBI message", smf_ue->supi, NULL));
             }
+
+            /*
+             * [Issue #4878]
+             *
+             * The AMF did not answer the N1N2 transfer of the PDU Session
+             * Establishment Reject. Nothing is left to do for the reject,
+             * so release the session as the answer would have done.
+             * Otherwise the session is never released.
+             */
+            if (service_name_id == OpenAPI_service_name_namf_comm &&
+                OGS_FSM_CHECK(&sess->sm, smf_gsm_state_5gc_n1_n2_reject))
+                SMF_SESS_CLEAR(sess);
             break;
 
         default:
