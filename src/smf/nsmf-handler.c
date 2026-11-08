@@ -1944,7 +1944,8 @@ bool smf_nsmf_handle_created_data_in_vsmf(
                 return false;
             }
             if (src->qos_flow_description &&
-                ogs_base64_decoded_size(src->qos_flow_description) <= 0) {
+                !gsm_qos_flow_description_ie_is_valid(
+                    src->qos_flow_description)) {
                 ogs_error("[%s:%d] Invalid qosFlowDescription",
                         smf_ue->supi, sess->psi);
                 return false;
@@ -2356,6 +2357,8 @@ bool smf_nsmf_handle_update_data_in_vsmf(
     OpenAPI_ref_to_binary_data_t *n1SmInfoToUe = NULL;
 
     smf_n1_n2_message_transfer_param_t param;
+    ogs_nas_qos_flow_description_t qos_flow_description;
+    int num_qos_flow_descriptions = 0;
 
     ogs_assert(stream);
     ogs_assert(message);
@@ -2464,7 +2467,10 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                     return false;
                 }
                 if (src->qos_flow_description &&
-                    ogs_base64_decoded_size(src->qos_flow_description) <= 0) {
+                    (++num_qos_flow_descriptions >
+                        OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION ||
+                    gsm_parse_qos_flow_description_ie(&qos_flow_description,
+                        src->qos_flow_description) != OGS_OK)) {
                     ogs_error("[%s:%d] Invalid qosFlowDescription",
                             smf_ue->supi, sess->psi);
                     smf_sbi_send_vsmf_update_error(stream,
@@ -2543,7 +2549,10 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                     return false;
                 }
                 if (src->qos_flow_description &&
-                    ogs_base64_decoded_size(src->qos_flow_description) <= 0) {
+                    (++num_qos_flow_descriptions >
+                        OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION ||
+                    gsm_parse_qos_flow_description_ie(&qos_flow_description,
+                        src->qos_flow_description) != OGS_OK)) {
                     ogs_error("[%s:%d] Invalid qosFlowDescription",
                             smf_ue->supi, sess->psi);
                     smf_sbi_send_vsmf_update_error(stream,

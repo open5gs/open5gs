@@ -57,6 +57,8 @@ void gsm_encode_qos_rule(
 void gsm_encode_qos_flow_description(
         ogs_nas_qos_flow_description_t *qos_flow_description,
         smf_bearer_t *qos_flow, uint8_t qos_flow_description_code);
+char *gsm_encode_qos_flow_description_ie(
+        const ogs_nas_qos_flow_descriptions_t *descriptions);
 
 #ifdef __cplusplus
 }

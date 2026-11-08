@@ -26,6 +26,111 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gsm_log_domain
 
+#define QOS_FLOW_DESCRIPTION_MIN_LEN 3
+
+uint8_t *gsm_decode_base64(const char *src, int *out_len)
+{
+    int len, decoded;
+    uint8_t *buf = NULL;
+
+    ogs_assert(out_len);
+
+    *out_len = 0;
+
+    if (!src) {
+        ogs_error("No base64 data");
+        return NULL;
+    }
+
+    len = ogs_base64_decoded_size(src);
+    if (len <= 0) {
+        ogs_error("Invalid base64 data");
+        return NULL;
+    }
+
+    buf = ogs_calloc(1, len);
+    if (!buf) {
+        ogs_error("ogs_calloc() failed [%d]", len);
+        return NULL;
+    }
+
+    decoded = ogs_base64_decode_to_buffer(buf, len, src);
+    if (decoded <= 0) {
+        ogs_error("Invalid base64 data");
+        ogs_free(buf);
+        return NULL;
+    }
+    if (decoded > 0xffff) {
+        ogs_error("Base64 data too long [%d]", decoded);
+        ogs_free(buf);
+        return NULL;
+    }
+
+    *out_len = decoded;
+
+    return buf;
+}
+
+uint8_t *gsm_decode_qos_flow_description_ie(const char *src, int *len)
+{
+    int value_len;
+    uint8_t *buf = gsm_decode_base64(src, len);
+
+    if (!buf)
+        return NULL;
+
+    if (*len < GSM_QOS_FLOW_DESCRIPTION_IE_HEADER_LEN +
+                   QOS_FLOW_DESCRIPTION_MIN_LEN ||
+        buf[0] != GSM_QOS_FLOW_DESCRIPTION_IEI)
+        goto invalid;
+
+    value_len = (buf[1] << 8) | buf[2];
+    if (value_len != *len - GSM_QOS_FLOW_DESCRIPTION_IE_HEADER_LEN)
+        goto invalid;
+
+    memmove(buf, buf + GSM_QOS_FLOW_DESCRIPTION_IE_HEADER_LEN, value_len);
+    *len = value_len;
+    return buf;
+
+invalid:
+    ogs_free(buf);
+    *len = 0;
+    return NULL;
+}
+
+bool gsm_qos_flow_description_ie_is_valid(const char *src)
+{
+    int len;
+    uint8_t *buf = gsm_decode_qos_flow_description_ie(src, &len);
+
+    if (!buf)
+        return false;
+
+    ogs_free(buf);
+    return true;
+}
+
+int gsm_parse_qos_flow_description_ie(
+        ogs_nas_qos_flow_description_t *description, const char *src)
+{
+    ogs_nas_qos_flow_descriptions_t descriptions;
+    ogs_nas_qos_flow_description_t parsed[OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION];
+    int len, count;
+
+    descriptions.buffer = gsm_decode_qos_flow_description_ie(src, &len);
+    if (!descriptions.buffer)
+        return OGS_ERROR;
+
+    descriptions.length = len;
+    count = ogs_nas_parse_qos_flow_descriptions(parsed, &descriptions);
+    ogs_free(descriptions.buffer);
+    if (count != 1)
+        return OGS_ERROR;
+
+    *description = parsed[0];
+    return OGS_OK;
+}
+
 int gsm_handle_pdu_session_establishment_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_nas_5gs_pdu_session_establishment_request_t *
