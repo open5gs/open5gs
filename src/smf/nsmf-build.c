@@ -612,15 +612,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
                     goto end;
                 }
 
-                enc_len = ogs_base64_encoded_size(
-                        authorized_qos_flow_descriptions.length);
-                ogs_assert(enc_len > 0);
-                encoded_qos_flow_description = ogs_calloc(1, enc_len);
-                ogs_assert(encoded_qos_flow_description);
-                ogs_assert(ogs_base64_encode_from_buffer(
-                        encoded_qos_flow_description, enc_len,
-                        authorized_qos_flow_descriptions.buffer,
-                        authorized_qos_flow_descriptions.length) > 0);
+                encoded_qos_flow_description = gsm_encode_qos_flow_description_ie(
+                        &authorized_qos_flow_descriptions);
 
                 ogs_free(authorized_qos_flow_descriptions.buffer);
             }
