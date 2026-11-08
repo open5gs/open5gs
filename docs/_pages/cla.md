@@ -1,31 +1,35 @@
 ---
 layout: page
 title: CLA
-subject : Copyright License Agreement
+subject: Contributor License Agreement
 permalink: /cla/
 ---
 
-### 1. What is a Copyright License Agreement (CLA) and why do I need one?
+### 1. What is a Contributor License Agreement (CLA)?
 
-A Copyright License Agreement is a legal document in which you state you are entitled to contribute the code/documentation/translation to the project you’re contributing to and are willing to have it used in distributions and derivative works. This means that should there be any kind of legal issue in the future as to the origins and ownership of any particular piece of code, then that project has the necessary forms on file from the contributor(s) saying they were permitted to make this contribution.
+A CLA confirms that you have the rights needed to submit your contribution and grants permission to use it under the terms of the agreement.
 
-The CLA also ensures that once you have provided a contribution, you cannot try to withdraw permission for its use at a later date. People and companies can therefore use that software, confident that they will not be asked to stop using pieces of the code at a later date.
-
-The agreements used by the Open5GS project are standard documents provided by Project Harmony, a community-centered group focused on contributor agreements for free and open source software (FOSS). For more information, see [www.harmonyagreements.org](http://www.harmonyagreements.org).
-
+The Open5GS agreements are based on [Project Harmony's Version 1.0 templates](https://selector.harmonyagreements.org/agreements). The recipient under both agreements is Sukchan Lee, acting in his personal capacity as the founder and lead developer of Open5GS.
 
 ### 2. How do I complete and submit the CLA?
 
-The Open5GS CLAs can be found as below.
-- [I am an individual]({{ site.url }}{{ site.baseurl }}/assets/cla/Open5GS-Individual.pdf)...(revision 2020-05-23)
-- [I am a legal entity (corporation)]({{ site.url }}{{ site.baseurl }}/assets/cla//Open5GS-Entity.pdf)...(revision 2020-05-23)
+**Current form revision: 2026-11-08**
 
-**(Email)** Download the appropriate CLA, then print, sign and scan the document before sending by email to [acetcom@gmail.com](mailto:acetcom@gmail.com).
+- [Individual CLA (PDF)]({{ site.url }}{{ site.baseurl }}/assets/cla/Open5GS-Individual-2026-11-08.pdf)
+- [Entity CLA (PDF)]({{ site.url }}{{ site.baseurl }}/assets/cla/Open5GS-Entity-2026-11-08.pdf)
 
-**(Electronic submission)** If you're contributing through a pull request to Open5GS project on Github, please read its acceptance by going back to GitHub and accepting electronically.
+**Email.** Complete and sign the appropriate form, then email the full signed agreement to [acetcom@gmail.com](mailto:acetcom@gmail.com). If you sign by hand, scan all pages before sending. For the Entity CLA, enter the entity's full legal name and have an authorized representative sign on its behalf.
 
-### 3. How will my contributions to Open5GS be used?
+**GitHub.** If a pull request prompts you to accept a CLA, follow the instructions in that pull request.
 
-Through the license agreements, we ask you to grant us permission to use your contributions within Open5GS and to continue to provide Open5GS under open-source and another licenses and within proprietary products. As we do not ask for copyright assignment, you retain complete ownership of your contributions and have the same rights to use or license those contributions which you would have had without entering into a license agreement.
+### 3. How will my contributions be used?
 
-If you have any questions about Open5GS licensing and contributions, please contact us at [acetcom@gmail.com](mailto:acetcom@gmail.com)
+You retain ownership of your contributions. The CLA permits their use and distribution under open-source and other licenses, including commercial licenses, subject to the terms of the agreement.
+
+<a id="third-party-material"></a>
+
+### 4. What if my submission includes third-party material?
+
+In your submission or an accompanying message, identify any third-party material introduced by the submission, its source, and the applicable license or permission. Material already present in Open5GS before your submission need not be listed again. For contributions submitted before these instructions were published, you may provide these details when signing the CLA.
+
+For questions about Open5GS licensing or contributions, email [acetcom@gmail.com](mailto:acetcom@gmail.com).
