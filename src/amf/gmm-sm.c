@@ -1785,7 +1785,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 break;
             }
 
-            if (!AMF_UE_HAVE_SUCI(amf_ue)) {
+            if (!(AMF_UE_HAVE_SUCI(amf_ue) || AMF_UE_HAVE_SUPI(amf_ue))) {
                 CLEAR_AMF_UE_TIMER(amf_ue->t3570);
                 r = nas_5gs_send_identity_request(amf_ue);
                 ogs_expect(r == OGS_OK);
@@ -1955,6 +1955,18 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                break;
+            }
+
+            /*
+             * TS 24.501 5.4.3.2: the AMF sends IDENTITY REQUEST only for a
+             * UE whose SUCI and SUPI it does not have.  A response from a
+             * UE with either answers no request (7.4); ignore it instead of
+             * relabelling this context with the SUCI in the message.
+             */
+            if (AMF_UE_HAVE_SUCI(amf_ue) || AMF_UE_HAVE_SUPI(amf_ue)) {
+                ogs_error("[%s] Unexpected Identity response",
+                        amf_ue->suci ? amf_ue->suci : amf_ue->supi);
                 break;
             }
 
@@ -3882,7 +3894,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            if (!AMF_UE_HAVE_SUCI(amf_ue)) {
+            if (!(AMF_UE_HAVE_SUCI(amf_ue) || AMF_UE_HAVE_SUPI(amf_ue))) {
                 CLEAR_AMF_UE_TIMER(amf_ue->t3570);
                 r = nas_5gs_send_identity_request(amf_ue);
                 ogs_expect(r == OGS_OK);
