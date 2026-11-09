@@ -1081,7 +1081,7 @@ void ngap_handle_ue_radio_capability_info_indication(
         amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i, r;
+    int i;
 
     ran_ue_t *ran_ue = NULL;
     amf_ue_t *amf_ue = NULL;
@@ -1138,13 +1138,12 @@ void ngap_handle_ue_radio_capability_info_indication(
             (long long)ran_ue->ran_ue_ngap_id,
             (long long)ran_ue->amf_ue_ngap_id);
 
+    /*
+     * TS 38.413 9.2.13.1 and 10.3.5: UE Radio Capability has assigned
+     * criticality "ignore"; ignore its absence without notifying the sender.
+     */
     if (!UERadioCapability) {
-        ogs_error("No UERadioCapability");
-        r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
-                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+        ogs_error("No UERadioCapability IE; ignoring the indication");
         return;
     }
 
