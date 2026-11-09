@@ -1359,14 +1359,14 @@ bool udr_nudr_dr_handle_policy_data(
     CASE(OGS_SBI_RESOURCE_NAME_UES)
         char *supi = recvmsg->h.resource.component[2];
 
-        if (!supi) {
-            strerror = ogs_msprintf("No SUPI");
+        if (ogs_supi_is_valid(supi) == false) {
+            strerror = ogs_msprintf("Invalid SUPI");
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
 
-        if (strncmp(supi,
-                OGS_ID_SUPI_TYPE_IMSI, strlen(OGS_ID_SUPI_TYPE_IMSI)) != 0) {
+        if (strncmp(supi, OGS_ID_SUPI_TYPE_IMSI "-",
+                sizeof(OGS_ID_SUPI_TYPE_IMSI "-") - 1) != 0) {
             strerror = ogs_msprintf("[%s] Unknown SUPI Type", supi);
             status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
             goto cleanup;

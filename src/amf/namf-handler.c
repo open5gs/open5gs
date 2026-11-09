@@ -78,8 +78,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     pdu_session_id = N1N2MessageTransferReqData->pdu_session_id;
 
     supi = recvmsg->h.resource.component[1];
-    if (!supi) {
-        ogs_error("No SUPI");
+    if (ogs_supi_is_valid(supi) == false) {
+        ogs_error("Invalid SUPI");
         return OGS_ERROR;
     }
 
@@ -536,9 +536,9 @@ int amf_namf_callback_handle_sm_context_status(
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
-    if (!recvmsg->h.resource.component[0]) {
+    if (ogs_supi_is_valid(recvmsg->h.resource.component[0]) == false) {
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        ogs_error("No SUPI");
+        ogs_error("Invalid SUPI");
         goto cleanup;
     }
 
@@ -639,9 +639,9 @@ int amf_namf_callback_handle_dereg_notify(
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
-    if (!recvmsg->h.resource.component[0]) {
+    if (ogs_supi_is_valid(recvmsg->h.resource.component[0]) == false) {
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        ogs_error("No SUPI");
+        ogs_error("Invalid SUPI");
         goto cleanup;
     }
 
@@ -992,9 +992,9 @@ int amf_namf_callback_handle_sdm_data_change_notify(
         char *saveptr = NULL;
 
         ueid = ogs_sbi_parse_uri(item->resource_id, "/", &saveptr);
-        if (!ueid) {
+        if (ogs_supi_is_valid(ueid) == false) {
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-            ogs_error("[%s] No UeId", item->resource_id);
+            ogs_error("[%s] Invalid SUPI", item->resource_id);
             goto cleanup;
         }
 
@@ -1332,8 +1332,8 @@ int amf_namf_comm_handle_ue_context_transfer_response(
 
     UeContext = recvmsg->UeContextTransferRspData->ue_context;
 
-    if (!UeContext->supi) {
-        ogs_error("No SUPI");
+    if (ogs_supi_is_valid(UeContext->supi) == false) {
+        ogs_error("Invalid SUPI");
         return OGS_ERROR;
     }
 

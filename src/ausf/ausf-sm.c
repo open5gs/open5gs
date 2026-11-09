@@ -136,6 +136,23 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             break;
 
         case OpenAPI_service_name_nausf_auth:
+            if (!strcmp(message.h.method, OGS_SBI_HTTP_METHOD_POST) &&
+                message.AuthenticationInfo &&
+                message.AuthenticationInfo->supi_or_suci &&
+                strncmp(message.AuthenticationInfo->supi_or_suci,
+                    "suci-", strlen("suci-")) != 0 &&
+                ogs_supi_is_valid(
+                    message.AuthenticationInfo->supi_or_suci) == false) {
+                ogs_error("Invalid SUPI [%s]",
+                        message.AuthenticationInfo->supi_or_suci);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                        "Invalid SUPI",
+                        message.AuthenticationInfo->supi_or_suci, NULL));
+                break;
+            }
+
             SWITCH(message.h.method)
             CASE(OGS_SBI_HTTP_METHOD_POST)
                 if (message.AuthenticationInfo &&

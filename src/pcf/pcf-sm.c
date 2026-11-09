@@ -144,8 +144,19 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             break;
 
         case OpenAPI_service_name_npcf_am_policy_control:
-            /* Reject an oversized list before finding or creating UE state. */
             PolicyAssociationRequest = message.PolicyAssociationRequest;
+            if (!strcmp(message.h.method, OGS_SBI_HTTP_METHOD_POST) &&
+                PolicyAssociationRequest &&
+                ogs_supi_is_valid(PolicyAssociationRequest->supi) == false) {
+                ogs_error("Invalid SUPI");
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                        "Invalid SUPI", NULL, NULL));
+                break;
+            }
+
+            /* Reject an oversized list before finding or creating UE state. */
             if (PolicyAssociationRequest &&
                 PolicyAssociationRequest->allowed_snssais &&
                 PolicyAssociationRequest->allowed_snssais->count >
@@ -230,6 +241,15 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                                 message.SmPolicyContextData->
                                     pdu_session_id) == false) {
                             ogs_error("[%s:%d] Invalid PDU session identity",
+                                    message.SmPolicyContextData->supi,
+                                    message.SmPolicyContextData->
+                                        pdu_session_id);
+                            break;
+                        }
+
+                        if (ogs_supi_is_valid(
+                                message.SmPolicyContextData->supi) == false) {
+                            ogs_error("[%s:%d] Invalid SUPI",
                                     message.SmPolicyContextData->supi,
                                     message.SmPolicyContextData->
                                         pdu_session_id);

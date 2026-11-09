@@ -199,8 +199,8 @@ int amf_nausf_auth_handle_authenticate_confirmation(
         return OGS_ERROR;
     }
 
-    if (!ConfirmationDataResponse->supi) {
-        ogs_error("[%s] No supi", amf_ue->suci);
+    if (ogs_supi_is_valid(ConfirmationDataResponse->supi) == false) {
+        ogs_error("[%s] Invalid SUPI", amf_ue->suci);
         return OGS_ERROR;
     }
 

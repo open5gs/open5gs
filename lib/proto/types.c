@@ -526,19 +526,39 @@ bool ogs_imeisv_bcd_is_valid(const char *imeisv_bcd)
     return ogs_bcd_string_is_valid(imeisv_bcd, OGS_MAX_IMEISV_BCD_LEN);
 }
 
+bool ogs_supi_is_valid(const char *supi)
+{
+    bool valid = true;
+    char *type = NULL, *value = NULL;
+
+    if (!supi) {
+        ogs_warn("Missing SUPI");
+        return false;
+    }
+
+    if (ogs_id_get_type_value(supi, &type, &value) == false)
+        return false;
+
+    if (strcmp(type, OGS_ID_SUPI_TYPE_IMSI) == 0)
+        valid = ogs_imsi_bcd_is_valid(value);
+
+    ogs_free(type);
+    ogs_free(value);
+
+    return valid;
+}
+
 /*
  * Return the decimal IMSI string only for IMSI-type SUPI.  Other SUPI
  * types cannot be used as EPC IMSI keys and remain SUPI-only.
  *
- * Return OGS_ERROR only when the SUPI claims to be IMSI-type but the
- * IMSI payload is malformed.  That must not fall back to SUPI-only.
+ * Return OGS_ERROR for malformed SUPIs. On failure or for a non-IMSI
+ * SUPI, leave imsi_bcd untouched and set imsi_supi to false.
  */
 int ogs_supi_to_imsi_bcd(
         const char *supi, char *imsi_bcd, bool *imsi_supi)
 {
-    int rv = OGS_ERROR;
-    char *type = NULL;
-    char *value = NULL;
+    const size_t imsi_prefix_len = sizeof(OGS_ID_SUPI_TYPE_IMSI "-") - 1;
 
     ogs_assert(supi);
     ogs_assert(imsi_bcd);
@@ -546,33 +566,21 @@ int ogs_supi_to_imsi_bcd(
 
     *imsi_supi = false;
 
-    if (ogs_id_get_type_value(supi, &type, &value) == false) {
+    if (ogs_supi_is_valid(supi) == false) {
         ogs_error("Invalid SUPI [%s]", supi);
-        goto cleanup;
+        return OGS_ERROR;
     }
 
     /* Non-IMSI SUPI is valid, but has no EPC IMSI alias. */
-    if (strcmp(type, OGS_ID_SUPI_TYPE_IMSI) != 0) {
-        rv = OGS_OK;
-        goto cleanup;
-    }
+    if (strncmp(supi, OGS_ID_SUPI_TYPE_IMSI "-", imsi_prefix_len) != 0)
+        return OGS_OK;
 
-    if (ogs_imsi_bcd_is_valid(value) == false) {
-        ogs_error("Invalid IMSI SUPI [%s]", supi);
-        goto cleanup;
-    }
-
-    ogs_cpystrn(imsi_bcd, value, OGS_MAX_IMSI_BCD_LEN+1);
+    /* Validation bounds the IMSI length; allow overlapping input/output. */
+    memmove(imsi_bcd, supi + imsi_prefix_len,
+            strlen(supi + imsi_prefix_len) + 1);
     *imsi_supi = true;
-    rv = OGS_OK;
 
-cleanup:
-    if (type)
-        ogs_free(type);
-    if (value)
-        ogs_free(value);
-
-    return rv;
+    return OGS_OK;
 }
 
 char *ogs_s_nssai_sd_to_string(const ogs_uint24_t sd)
