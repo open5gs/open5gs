@@ -521,6 +521,14 @@ int gsm_handle_pdu_session_modification_qos_rules(
     return OGS_OK;
 }
 
+static uint64_t gsm_qos_flow_bitrate(ogs_nas_bitrate_t *nas_bitrate)
+{
+    uint64_t bitrate = ogs_nas_bitrate_to_uint64(nas_bitrate);
+
+    /* Keep the rate representable in the N2 QoS flow parameters. */
+    return ogs_min(bitrate, OGS_MAX_BITRATE_NGAP);
+}
+
 int gsm_handle_pdu_session_modification_qos_flow_descriptions(
         smf_sess_t *sess,
         ogs_nas_qos_flow_descriptions_t *requested_qos_flow_descriptions,
@@ -633,19 +641,19 @@ int gsm_handle_pdu_session_modification_qos_flow_descriptions(
                 /* Nothing */
                 break;
             case OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_UPLINK:
-                qos_flow->qos.gbr.uplink = ogs_nas_bitrate_to_uint64(
+                qos_flow->qos.gbr.uplink = gsm_qos_flow_bitrate(
                         &qos_flow_description[i].param[j].br);
                 break;
             case OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK:
-                qos_flow->qos.gbr.downlink = ogs_nas_bitrate_to_uint64(
+                qos_flow->qos.gbr.downlink = gsm_qos_flow_bitrate(
                         &qos_flow_description[i].param[j].br);
                 break;
             case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK:
-                qos_flow->qos.mbr.uplink = ogs_nas_bitrate_to_uint64(
+                qos_flow->qos.mbr.uplink = gsm_qos_flow_bitrate(
                         &qos_flow_description[i].param[j].br);
                 break;
             case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK:
-                qos_flow->qos.mbr.downlink = ogs_nas_bitrate_to_uint64(
+                qos_flow->qos.mbr.downlink = gsm_qos_flow_bitrate(
                         &qos_flow_description[i].param[j].br);
                 break;
             default:
