@@ -3050,6 +3050,26 @@ void s1ap_handle_path_switch_request(
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
+        r = s1ap_send_path_switch_failure(
+                enb, *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        return;
+    }
+
+    /*
+     * An S1 handover leg can still reference the MME UE after the
+     * active S1 connection has been released or moved to another leg.
+     */
+    if (mme_ue->enb_ue_id != enb_ue->id) {
+        ogs_error("Inactive S1 context for path switch "
+                "[MME_UE_S1AP_ID:%lld]", (long long)*MME_UE_S1AP_ID);
+        r = s1ap_send_path_switch_failure(
+                enb, *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
         return;
     }
 
