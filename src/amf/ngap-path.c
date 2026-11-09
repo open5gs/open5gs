@@ -159,6 +159,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     int rv;
 
     amf_ue_t *amf_ue = NULL;
+    int mac_failed = 0;
 
     ogs_nas_5gs_security_header_t *sh = NULL;
     ogs_nas_security_header_type_t security_header_type;
@@ -246,8 +247,13 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     }
 
     if (amf_ue) {
-        if (nas_5gs_security_decode(amf_ue,
-                security_header_type, nasbuf) != OGS_OK) {
+        rv = nas_5gs_security_decode(amf_ue, security_header_type, nasbuf);
+
+        /* The verdict goes with the message, and not with the UE */
+        mac_failed = amf_ue->mac_failed;
+        amf_ue->mac_failed = 0;
+
+        if (rv != OGS_OK) {
             ogs_error("nas_5gs_security_decode failed()");
             ogs_pkbuf_free(nasbuf);
             ran_ue_remove(ran_ue);
@@ -318,6 +324,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         e->ran_ue_id = ran_ue->id;
         e->ngap.code = procedureCode;
         e->nas.type = security_header_type.type;
+        e->nas.mac_failed = mac_failed;
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {

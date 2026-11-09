@@ -132,7 +132,7 @@ int s1ap_delayed_send_to_enb_ue(
 
 int s1ap_send_to_esm(
         mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf,
-        uint8_t nas_type, int create_action)
+        uint8_t nas_type, int mac_failed, int create_action)
 {
     int rv;
     mme_event_t *e = NULL;
@@ -145,6 +145,7 @@ int s1ap_send_to_esm(
     e->mme_ue_id = mme_ue->id;
     e->pkbuf = esmbuf;
     e->nas_type = nas_type;
+    e->mac_failed = mac_failed;
     e->create_action = create_action;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
@@ -162,6 +163,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     int rv;
 
     mme_ue_t *mme_ue = NULL;
+    int mac_failed = 0;
 
     ogs_nas_eps_security_header_t *sh = NULL;
     ogs_nas_security_header_type_t security_header_type;
@@ -255,8 +257,13 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     }
 
     if (mme_ue) {
-        if (nas_eps_security_decode(mme_ue,
-                security_header_type, nasbuf) != OGS_OK) {
+        rv = nas_eps_security_decode(mme_ue, security_header_type, nasbuf);
+
+        /* The verdict goes with the message, and not with the UE */
+        mac_failed = mme_ue->mac_failed;
+        mme_ue->mac_failed = 0;
+
+        if (rv != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
             ogs_pkbuf_free(nasbuf);
             enb_ue_remove(enb_ue);
@@ -306,6 +313,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         e->enb_ue_id = enb_ue->id;
         e->s1ap_code = procedureCode;
         e->nas_type = security_header_type.type;
+        e->mac_failed = mac_failed;
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
@@ -322,7 +330,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             return OGS_ERROR;
         }
         rv = s1ap_send_to_esm(
-                mme_ue, nasbuf, security_header_type.type,
+                mme_ue, nasbuf, security_header_type.type, mac_failed,
                 OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT);
         ogs_expect(rv == OGS_OK);
         return rv;

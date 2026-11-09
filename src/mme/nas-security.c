@@ -121,6 +121,9 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
 
+    /* TS24.301 4.4.4.3: a failed check discards this message only */
+    mme_ue->mac_failed = 0;
+
     if (security_header_type.service_request) {
 #define SHORT_MAC_SIZE 2
         ogs_nas_ksi_and_sequence_number_t *ksi_and_sequence_number =

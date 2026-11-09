@@ -123,6 +123,9 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
 
+    /* TS24.501 4.4.4.3: a failed check discards this message only */
+    amf_ue->mac_failed = 0;
+
     if (!amf_ue->security_context_available) {
         security_header_type.integrity_protected = 0;
         security_header_type.new_security_context = 0;
