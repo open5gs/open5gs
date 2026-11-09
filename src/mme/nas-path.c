@@ -78,7 +78,8 @@ int nas_eps_send_emm_to_esm(mme_ue_t *mme_ue,
     ogs_pkbuf_put_data(esmbuf,
             esm_message_container->buffer, esm_message_container->length);
 
-    rv = s1ap_send_to_esm(mme_ue, esmbuf, 0, OGS_GTP_CREATE_IN_ATTACH_REQUEST);
+    rv = s1ap_send_to_esm(mme_ue, esmbuf, 0, mme_ue->mac_failed,
+            OGS_GTP_CREATE_IN_ATTACH_REQUEST);
     ogs_expect(rv == OGS_OK);
 
     return rv;

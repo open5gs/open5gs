@@ -92,6 +92,7 @@ typedef struct mme_event_s {
     ogs_gtp_node_t *gnode;
 
     uint8_t nas_type;
+    int mac_failed;
     int create_action;
     ogs_nas_eps_message_t *nas_message;
 

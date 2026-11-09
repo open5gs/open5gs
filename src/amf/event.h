@@ -72,6 +72,7 @@ typedef struct amf_event_s {
 
     struct {
         uint8_t type;
+        int mac_failed;
         ogs_nas_5gs_message_t *message;
     } nas;
 

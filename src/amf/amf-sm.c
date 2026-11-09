@@ -930,6 +930,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
+        /* The integrity verdict of this message, checked when queued */
+        if (amf_ue) {
+            amf_ue->mac_failed = e->nas.mac_failed;
+            e->amf_ue_id = amf_ue->id;
+        }
+
         if (amf_ue && amf_ue->registration_session_release_pending) {
             ogs_error("[%s] Ignore NAS message while registration session "
                     "release is pending", amf_ue->supi);
@@ -1115,9 +1121,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         (pending_guti && amf_ue->mac_failed)) {
                         ogs_warn("[%s] nas_security_decode() failed",
                                 amf_ue->suci);
+                        /* The message is discarded with its verdict */
+                        amf_ue->mac_failed = 0;
                         if (pending_guti) {
                             /* Verification did not authorize rebinding. */
-                            amf_ue->mac_failed = 0;
                             r = ngap_send_ran_ue_context_release_command(
                                     ran_ue, NGAP_Cause_PR_nas,
                                     NGAP_CauseNas_normal_release,
@@ -1210,5 +1217,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     default:
         ogs_error("No handler for event %s", amf_event_get_name(e));
         break;
+    }
+
+    /* The verdict was that of this NAS message only, whatever its fate */
+    if (e->h.id == AMF_EVENT_5GMM_MESSAGE) {
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
+        if (amf_ue)
+            amf_ue->mac_failed = 0;
     }
 }
