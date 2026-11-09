@@ -439,6 +439,18 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 break;
             }
 
+            /*
+             * TS 24.301 5.4.4.2: the MME sends IDENTITY REQUEST only for a
+             * UE whose IMSI it does not have.  A response from a UE whose
+             * IMSI is known answers no request (7.4); ignore it instead of
+             * relabelling this context with the IMSI in the message.
+             */
+            if (MME_UE_HAVE_IMSI(mme_ue)) {
+                ogs_error("[%s] Unexpected Identity response",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+
             ogs_info("Identity response");
             CLEAR_MME_UE_TIMER(mme_ue->t3470);
 
