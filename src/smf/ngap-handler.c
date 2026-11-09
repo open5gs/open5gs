@@ -525,6 +525,14 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
                 qos_flow = smf_qos_flow_find_by_qfi(sess,
                         qosFlowAddOrModifyResponseItem->qosFlowIdentifier);
                 if (qos_flow) {
+                    /* Adding the same node twice makes the list circular */
+                    if (ogs_list_exists(&sess->qos_flow_to_modify_list,
+                                &qos_flow->to_modify_node)) {
+                        ogs_error("[%s:%d] Duplicate QFI [%d]",
+                                smf_ue->supi, sess->psi, qos_flow->qfi);
+                        continue;
+                    }
+
                     dl_far = qos_flow->dl_far;
                     ogs_assert(dl_far);
 
