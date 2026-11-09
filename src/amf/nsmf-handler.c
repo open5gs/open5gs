@@ -402,7 +402,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                                 AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED)) {
                         r = ngap_send_handover_request(amf_ue);
                         ogs_expect(r == OGS_OK);
-                        ogs_assert(r != OGS_ERROR);
 
                         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, handover_request);
                     }

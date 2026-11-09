@@ -667,6 +667,7 @@ int ngap_send_handover_request(amf_ue_t *amf_ue)
 
     ran_ue_t *source_ue = NULL, *target_ue = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
+    NGAP_Cause_t cause;
 
     if (!amf_ue) {
         ogs_error("UE(amf-ue) context has already been removed");
@@ -686,15 +687,29 @@ int ngap_send_handover_request(amf_ue_t *amf_ue)
     }
 
     ngapbuf = ngap_build_handover_request(target_ue);
-    if (!ngapbuf) {
+    if (ngapbuf) {
+        rv = ngap_send_to_ran_ue(target_ue, ngapbuf);
+        if (rv == OGS_OK)
+            return OGS_OK;
+    } else {
         ogs_error("ngap_build_handover_request() failed");
-        return OGS_ERROR;
     }
 
-    rv = ngap_send_to_ran_ue(target_ue, ngapbuf);
-    ogs_expect(rv == OGS_OK);
+    /*
+     * Preparation failed locally, for example when the transparent
+     * container and N2 SM transfers exceed the NGAP encoder buffer.
+     * Release the provisional target context and notify the source gNB.
+     */
+    source_ue_deassociate_target_ue(target_ue);
+    ran_ue_remove(target_ue);
+    OGS_ASN_CLEAR_DATA(&amf_ue->handover.container);
+    amf_ue->ho_rejected++;
 
-    return rv;
+    memset(&cause, 0, sizeof(cause));
+    cause.present = NGAP_Cause_PR_radioNetwork;
+    cause.choice.radioNetwork =
+        NGAP_CauseRadioNetwork_ho_failure_in_target_5GC_ngran_node_or_target_system;
+    return ngap_send_handover_preparation_failure(source_ue, &cause);
 }
 
 int ngap_send_handover_preparation_failure(
