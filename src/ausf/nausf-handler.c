@@ -67,7 +67,8 @@ bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
             ausf_nudm_ueau_build_get,
             ausf_ue, stream, AuthenticationInfo->resynchronization_info);
     ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    if (r != OGS_OK)
+        return false;
 
     return true;
 }
@@ -119,7 +120,8 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
             ausf_nudm_ueau_build_result_confirmation_inform,
             ausf_ue, stream, NULL);
     ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    if (r != OGS_OK)
+        return false;
 
     return true;
 }
@@ -148,7 +150,8 @@ bool ausf_nausf_auth_handle_authenticate_delete(ausf_ue_t *ausf_ue,
             ausf_nudm_ueau_build_auth_removal_ind,
             ausf_ue, stream, NULL);
     ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    if (r != OGS_OK)
+        return false;
 
     return true;
 }
