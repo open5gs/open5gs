@@ -223,6 +223,77 @@ static void legacy_identity_bounds(abts_case *tc, void *data)
     ABTS_TRUE(tc, !ogs_imeisv_bcd_is_valid("490154203237518x"));
 }
 
+static void supi_validation(abts_case *tc, void *data)
+{
+    static const struct {
+        const char *supi;
+        int result;
+        const char *imsi;
+    } cases[] = {
+        { "", OGS_ERROR, NULL },
+        { "1234567890", OGS_ERROR, NULL },
+        { "imsi", OGS_ERROR, NULL },
+        { "-1", OGS_ERROR, NULL },
+        { "imsi-", OGS_ERROR, NULL },
+        { "imsi--1", OGS_ERROR, NULL },
+        { "imsi-1-2", OGS_ERROR, NULL },
+        { "imsi-1-", OGS_ERROR, NULL },
+        { "imsi-abc", OGS_ERROR, NULL },
+        { "imsi-+1", OGS_ERROR, NULL },
+        { "imsi-1 ", OGS_ERROR, NULL },
+        { "imsi-\xff", OGS_ERROR, NULL },
+        { "imsi-0010101234567890", OGS_ERROR, NULL },
+        { "imsi-1", OGS_OK, "1" },
+        { "imsi-001010123456789", OGS_OK, "001010123456789" },
+        { "nai-user@example.org", OGS_OK, NULL },
+        { "unknown-value", OGS_OK, NULL },
+        { "imsiX-abc", OGS_OK, NULL },
+        { "nai-user-name@example.org", OGS_ERROR, NULL },
+    };
+    size_t i;
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char unchanged[sizeof(imsi_bcd)];
+    bool imsi_supi;
+
+    ABTS_TRUE(tc, !ogs_supi_is_valid(NULL));
+    memset(unchanged, 0x5a, sizeof(unchanged));
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        ABTS_TRUE(tc, ogs_supi_is_valid(cases[i].supi) ==
+                (cases[i].result == OGS_OK));
+
+        memcpy(imsi_bcd, unchanged, sizeof(imsi_bcd));
+        imsi_supi = true;
+        ABTS_INT_EQUAL(tc, cases[i].result,
+                ogs_supi_to_imsi_bcd(cases[i].supi, imsi_bcd, &imsi_supi));
+        ABTS_TRUE(tc, imsi_supi == (cases[i].imsi != NULL));
+        if (cases[i].imsi)
+            ABTS_STR_EQUAL(tc, cases[i].imsi, imsi_bcd);
+        else
+            ABTS_TRUE(tc,
+                    memcmp(imsi_bcd, unchanged, sizeof(imsi_bcd)) == 0);
+    }
+}
+
+static void supi_imsi_overlap(abts_case *tc, void *data)
+{
+    char supi[32];
+    bool imsi_supi = false;
+
+    ogs_cpystrn(supi, "imsi-001010123456789", sizeof(supi));
+    ABTS_INT_EQUAL(tc, OGS_OK,
+            ogs_supi_to_imsi_bcd(supi, supi, &imsi_supi));
+    ABTS_TRUE(tc, imsi_supi);
+    ABTS_STR_EQUAL(tc, "001010123456789", supi);
+
+    ogs_cpystrn(supi, "imsi-001010123456789", sizeof(supi));
+    imsi_supi = false;
+    ABTS_INT_EQUAL(tc, OGS_OK,
+            ogs_supi_to_imsi_bcd(supi, supi + 6, &imsi_supi));
+    ABTS_TRUE(tc, imsi_supi);
+    ABTS_STR_EQUAL(tc, "001010123456789", supi + 6);
+}
+
 static void framed_route_format(abts_case *tc, void *data)
 {
     static const struct {
@@ -409,6 +480,8 @@ abts_suite *test_proto_message(abts_suite *suite)
     abts_run_test(suite, pei_format, NULL);
     abts_run_test(suite, bcd_explicit_length, NULL);
     abts_run_test(suite, legacy_identity_bounds, NULL);
+    abts_run_test(suite, supi_validation, NULL);
+    abts_run_test(suite, supi_imsi_overlap, NULL);
     abts_run_test(suite, framed_route_format, NULL);
     abts_run_test(suite, framed_route_classful, NULL);
     abts_run_test(suite, framed_route_invalid, NULL);

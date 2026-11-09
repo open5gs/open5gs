@@ -183,6 +183,15 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             if (!udm_ue) {
                 supi = ogs_supi_from_supi_or_suci(
                     message.h.resource.component[0]);
+                if (supi && ogs_supi_is_valid(supi) == false) {
+                    ogs_error("Invalid SUPI [%s]", supi);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                            "Invalid SUPI", supi, NULL));
+                    ogs_free(supi);
+                    break;
+                }
                 if (supi) {
                     udm_ue = udm_ue_find_by_supi(supi);
                 }

@@ -159,13 +159,13 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         return false;
     }
 
-    if (!AuthenticationInfoResult->supi) {
-        ogs_error("[%s] No AuthenticationVector.supi", ausf_ue->suci);
+    if (ogs_supi_is_valid(AuthenticationInfoResult->supi) == false) {
+        ogs_error("[%s] Invalid AuthenticationInfoResult.supi", ausf_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No AuthenticationVector.supi", ausf_ue->suci,
-                NULL));
+                recvmsg, "Invalid AuthenticationInfoResult.supi",
+                ausf_ue->suci, NULL));
         return false;
     }
 

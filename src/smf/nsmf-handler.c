@@ -2801,9 +2801,9 @@ bool smf_nsmf_callback_handle_sdm_data_change_notify(
         char *saveptr = NULL;
 
         ueid = ogs_sbi_parse_uri(item->resource_id, "/", &saveptr);
-        if (!ueid) {
+        if (ogs_supi_is_valid(ueid) == false) {
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-            ogs_error("[%s] No UeId", item->resource_id);
+            ogs_error("[%s] Invalid SUPI", item->resource_id);
             goto cleanup;
         }
 

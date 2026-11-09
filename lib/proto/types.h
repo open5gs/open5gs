@@ -338,6 +338,12 @@ bool ogs_id_bcd_is_valid(
 bool ogs_pei_is_valid(const char *pei);
 bool ogs_imsi_bcd_is_valid(const char *imsi_bcd);
 bool ogs_imeisv_bcd_is_valid(const char *imeisv_bcd);
+/*
+ * Require non-empty type and value separated by exactly one '-'.
+ * IMSI values must also pass ogs_imsi_bcd_is_valid().
+ * Other types retain structural validation only. NULL returns false.
+ */
+bool ogs_supi_is_valid(const char *supi);
 int ogs_supi_to_imsi_bcd(
         const char *supi, char *imsi_bcd, bool *imsi_supi);
 

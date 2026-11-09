@@ -143,6 +143,17 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                 } else {
                     SWITCH(message.h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
+                        if (message.PcfBinding && message.PcfBinding->supi &&
+                            ogs_supi_is_valid(
+                                message.PcfBinding->supi) == false) {
+                            ogs_error("Invalid SUPI");
+                            ogs_assert(true ==
+                                ogs_sbi_server_send_error(stream,
+                                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                                    "Invalid SUPI", NULL, NULL));
+                            goto cleanup;
+                        }
+
                         if (message.PcfBinding &&
                             (message.PcfBinding->ipv4_addr ||
                              message.PcfBinding->ipv6_prefix)) {
