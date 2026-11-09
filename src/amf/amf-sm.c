@@ -930,6 +930,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
+        /* The integrity verdict of this message, checked when queued */
+        if (amf_ue)
+            amf_ue->mac_failed = e->nas.mac_failed;
+
         if (amf_ue && amf_ue->registration_session_release_pending) {
             ogs_error("[%s] Ignore NAS message while registration session "
                     "release is pending", amf_ue->supi);

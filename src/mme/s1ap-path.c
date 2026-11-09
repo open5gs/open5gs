@@ -145,6 +145,7 @@ int s1ap_send_to_esm(
     e->mme_ue_id = mme_ue->id;
     e->pkbuf = esmbuf;
     e->nas_type = nas_type;
+    e->mac_failed = mme_ue->mac_failed;
     e->create_action = create_action;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
@@ -300,6 +301,8 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         e->enb_ue_id = enb_ue->id;
         e->s1ap_code = procedureCode;
         e->nas_type = security_header_type.type;
+        if (mme_ue)
+            e->mac_failed = mme_ue->mac_failed;
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {

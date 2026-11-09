@@ -267,6 +267,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
+        /* The integrity verdict of this message, checked when queued */
+        if (mme_ue)
+            mme_ue->mac_failed = e->mac_failed;
+
         if (mme_ue && mme_ue->attach_session_delete_pending) {
             ogs_error("[%s] NAS message while deleting old Attach sessions",
                     mme_ue->imsi_bcd);
@@ -498,6 +502,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_pkbuf_free(pkbuf);
             break;
         }
+        /* The integrity verdict of this message, as for EMM above */
+        mme_ue->mac_failed = e->mac_failed;
 
         if (mme_ue->attach_session_delete_pending || mme_ue->eir_check_pending) {
             ogs_error("[%s] ESM message while "

@@ -312,6 +312,8 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         e->ran_ue_id = ran_ue->id;
         e->ngap.code = procedureCode;
         e->nas.type = security_header_type.type;
+        if (amf_ue)
+            e->nas.mac_failed = amf_ue->mac_failed;
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
