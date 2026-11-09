@@ -321,7 +321,11 @@ done:
             while (bson_iter_next(&child5_iter)) {
                 ogs_pcc_rule_t *pcc_rule = NULL;
 
-                ogs_assert(pcc_rule_index < OGS_MAX_NUM_OF_PCC_RULE);
+                if (pcc_rule_index >= OGS_MAX_NUM_OF_PCC_RULE) {
+                    ogs_error("[%s] Ignore PCC Rule; max %d reached",
+                            supi, OGS_MAX_NUM_OF_PCC_RULE);
+                    break;
+                }
                 pcc_rule = &session_data->pcc_rule[pcc_rule_index];
 
                 bson_iter_recurse(&child5_iter, &child6_iter);
@@ -511,8 +515,11 @@ done:
                         while (bson_iter_next(&child7_iter)) {
                             ogs_flow_t *flow = NULL;
 
-                            ogs_assert(
-                                flow_index < OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE);
+                            if (flow_index >= OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE) {
+                                ogs_error("[%s] Ignore Flow; max %d reached",
+                                        supi, OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE);
+                                break;
+                            }
                             flow = &pcc_rule->flow[flow_index];
 
                             bson_iter_recurse(&child7_iter, &child8_iter);

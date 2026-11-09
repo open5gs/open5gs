@@ -87,7 +87,11 @@ int ogs_dbi_msisdn_data(
 
             bson_iter_recurse(&iter, &child1_iter);
             while (bson_iter_next(&child1_iter)) {
-                ogs_assert(msisdn_index < OGS_MAX_NUM_OF_MSISDN);
+                if (msisdn_index >= OGS_MAX_NUM_OF_MSISDN) {
+                    ogs_error("[%s] Ignore MSISDN; max %d reached",
+                            imsi_or_msisdn_bcd, OGS_MAX_NUM_OF_MSISDN);
+                    break;
+                }
 
                 if (BSON_ITER_HOLDS_UTF8(&child1_iter)) {
                     utf8 = bson_iter_utf8(&child1_iter, &length);
@@ -176,7 +180,11 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
 
             bson_iter_recurse(&iter, &child1_iter);
             while (bson_iter_next(&child1_iter)) {
-                ogs_assert(msisdn_index < OGS_MAX_NUM_OF_MSISDN);
+                if (msisdn_index >= OGS_MAX_NUM_OF_MSISDN) {
+                    ogs_error("[%s] Ignore MSISDN; max %d reached",
+                            supi, OGS_MAX_NUM_OF_MSISDN);
+                    break;
+                }
 
                 if (BSON_ITER_HOLDS_UTF8(&child1_iter)) {
                     utf8 = bson_iter_utf8(&child1_iter, &length);
@@ -196,7 +204,11 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
             int ifc_index = 0;
             bson_iter_recurse(&iter, &child2_iter);
             while (bson_iter_next(&child2_iter)) {
-                ogs_assert(ifc_index < OGS_MAX_NUM_OF_IFC);
+                if (ifc_index >= OGS_MAX_NUM_OF_IFC) {
+                    ogs_error("[%s] Ignore IFC; max %d reached",
+                            supi, OGS_MAX_NUM_OF_IFC);
+                    break;
+                }
                 bson_iter_recurse(&child2_iter, &child3_iter);
                 while (bson_iter_next(&child3_iter)) {
                     const char *child3_key = bson_iter_key(&child3_iter);
@@ -253,7 +265,12 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
                                 int spt_index = 0;
                                 bson_iter_recurse(&child5_iter, &child6_iter);
                                 while (bson_iter_next(&child6_iter)) {
-                                    ogs_assert(spt_index < OGS_MAX_NUM_OF_SPT);
+                                    if (spt_index >= OGS_MAX_NUM_OF_SPT) {
+                                        ogs_error(
+                                            "[%s] Ignore SPT; max %d reached",
+                                            supi, OGS_MAX_NUM_OF_SPT);
+                                        break;
+                                    }
                                     bson_iter_recurse(&child6_iter,
                                                       &child7_iter);
                                     while (bson_iter_next(&child7_iter)) {
