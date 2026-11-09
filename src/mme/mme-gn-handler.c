@@ -595,7 +595,11 @@ void mme_gn_handle_ran_information_relay(
         goto cleanup;
     }
 
-    ogs_s1ap_ENB_ID_to_uint32(global_ENB_ID->eNB_ID, &target_enb_id);
+    if (ogs_s1ap_ENB_ID_to_uint32(
+                global_ENB_ID->eNB_ID, &target_enb_id) != OGS_OK) {
+        ogs_warn("[Gn] Rx RAN Information Relay: invalid or unsupported eNB-ID");
+        goto cleanup;
+    }
 
     ogs_debug("    Target : ENB_ID[%s:%d], TAC[%d]",
               global_ENB_ID->eNB_ID->present ==

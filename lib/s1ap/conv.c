@@ -65,22 +65,28 @@ void ogs_s1ap_uint32_to_ENB_ID(
 
 }
 
-void ogs_s1ap_ENB_ID_to_uint32(S1AP_ENB_ID_t *eNB_ID, uint32_t *uint32)
+int ogs_s1ap_ENB_ID_to_uint32(S1AP_ENB_ID_t *eNB_ID, uint32_t *uint32)
 {
     ogs_assert(uint32);
     ogs_assert(eNB_ID);
 
     if (eNB_ID->present == S1AP_ENB_ID_PR_homeENB_ID) {
         uint8_t *buf = eNB_ID->choice.homeENB_ID.buf;
-        ogs_assert(buf);
+        if (!buf || eNB_ID->choice.homeENB_ID.size != 4 ||
+                eNB_ID->choice.homeENB_ID.bits_unused != 4)
+            return OGS_ERROR;
         *uint32 = (buf[0] << 20) + (buf[1] << 12) + (buf[2] << 4) +
             ((buf[3] & 0xf0) >> 4);
 
     } else if (eNB_ID->present == S1AP_ENB_ID_PR_macroENB_ID) {
         uint8_t *buf = eNB_ID->choice.macroENB_ID.buf;
-        ogs_assert(buf);
+        if (!buf || eNB_ID->choice.macroENB_ID.size != 3 ||
+                eNB_ID->choice.macroENB_ID.bits_unused != 4)
+            return OGS_ERROR;
         *uint32 = (buf[0] << 12) + (buf[1] << 4) + ((buf[2] & 0xf0) >> 4);
     } else {
-        ogs_assert_if_reached();
+        return OGS_ERROR;
     }
+
+    return OGS_OK;
 }

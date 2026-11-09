@@ -33,7 +33,7 @@ void ogs_s1ap_buffer_to_OCTET_STRING(
 
 void ogs_s1ap_uint32_to_ENB_ID(
         S1AP_ENB_ID_PR present, uint32_t enb_id, S1AP_ENB_ID_t *eNB_ID);
-void ogs_s1ap_ENB_ID_to_uint32(
+int ogs_s1ap_ENB_ID_to_uint32(
         S1AP_ENB_ID_t *eNB_ID, uint32_t *uint32);
 
 #ifdef __cplusplus

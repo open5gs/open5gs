@@ -270,7 +270,17 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
-    ogs_s1ap_ENB_ID_to_uint32(Global_ENB_ID->eNB_ID, &enb_id);
+    if (ogs_s1ap_ENB_ID_to_uint32(
+                Global_ENB_ID->eNB_ID, &enb_id) != OGS_OK) {
+        ogs_error("Invalid or unsupported Global_ENB_ID->eNB_ID");
+        group = S1AP_Cause_PR_protocol;
+        cause = S1AP_CauseProtocol_semantic_error;
+
+        r = s1ap_send_s1_setup_failure(enb, group, cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
     ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->sctp.addr, buf), enb_id);
 
     mme_enb_set_enb_id(enb, enb_id);
@@ -3445,10 +3455,19 @@ void s1ap_handle_enb_configuration_transfer(
             return;
         }
 
-        ogs_s1ap_ENB_ID_to_uint32(
-                sourceeNB_ID->global_ENB_ID->eNB_ID, &source_enb_id);
-        ogs_s1ap_ENB_ID_to_uint32(
-                targeteNB_ID->global_ENB_ID->eNB_ID, &target_enb_id);
+        if (ogs_s1ap_ENB_ID_to_uint32(
+                    sourceeNB_ID->global_ENB_ID->eNB_ID,
+                    &source_enb_id) != OGS_OK ||
+                ogs_s1ap_ENB_ID_to_uint32(
+                    targeteNB_ID->global_ENB_ID->eNB_ID,
+                    &target_enb_id) != OGS_OK) {
+            ogs_error("Invalid or unsupported SONConfigurationTransfer eNB-ID");
+            r = s1ap_send_error_indication(enb, NULL, NULL,
+                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
 
         if (sourceeNB_ID->selected_TAI->tAC.size != sizeof(source_tac)) {
             ogs_error("Invalid sourceeNB_ID->selected_TAI->tAC.size = %d "
@@ -3530,9 +3549,16 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
 
     switch (TargetID->present) {
     case S1AP_TargetID_PR_targeteNB_ID:
-        ogs_s1ap_ENB_ID_to_uint32(
-            TargetID->choice.targeteNB_ID->global_ENB_ID->eNB_ID,
-            &target_enb_id);
+        if (ogs_s1ap_ENB_ID_to_uint32(
+                    TargetID->choice.targeteNB_ID->global_ENB_ID->eNB_ID,
+                    &target_enb_id) != OGS_OK) {
+            ogs_error("Invalid or unsupported target eNB-ID");
+            r = s1ap_send_handover_preparation_failure(source_ue,
+                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
         break;
     default:
         ogs_error("Not implemented(%d)", TargetID->present);
