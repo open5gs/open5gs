@@ -97,22 +97,28 @@ void pcf_nnrf_handle_nf_discover(
         /* If BSF is not reachable, we ignore NBSF_MANAGMENT service */
         if (service_name == OpenAPI_service_name_nbsf_management) {
             ogs_sbi_stream_t *stream = NULL;
+            ogs_pool_id_t stream_id = xact->assoc_stream_id;
 
-            ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
-                    xact->assoc_stream_id <= OGS_MAX_POOL_ID);
-            stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
+            ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                    stream_id <= OGS_MAX_POOL_ID);
+
+            /*
+             * Remove the transaction before sending the response.
+             * Sending the response can close the stream, and closing
+             * the stream removes the transaction attached to it.
+             */
+            ogs_sbi_xact_remove(xact);
+
+            stream = ogs_sbi_stream_find_by_id(stream_id);
             if (!stream) {
                 ogs_warn("Associated SBI stream has already been removed [%d]",
-                        xact->assoc_stream_id);
-                ogs_sbi_xact_remove(xact);
+                        stream_id);
                 return;
             }
 
             /* Send Response for SM Policy Association establishment */
             ogs_expect(true ==
                     pcf_sbi_send_smpolicycontrol_create_response(sess, stream));
-
-            ogs_sbi_xact_remove(xact);
         }
         return;
     }
