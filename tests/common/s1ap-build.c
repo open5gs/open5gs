@@ -2558,13 +2558,41 @@ ogs_pkbuf_t *test_s1ap_build_enb_configuration_transfer(int i)
         0,
     };
     char hexbuf[OGS_HUGE_LEN];
+    ogs_s1ap_message_t message = {0};
+    S1AP_ENBConfigurationTransfer_t *transfer;
+    uint16_t tac = htobe16(test_self()->e_tai.tac);
+    int n;
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
         ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
 
-    return pkbuf;
+    if (ogs_s1ap_decode(&message, pkbuf) != OGS_OK) {
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+    ogs_pkbuf_free(pkbuf);
+    transfer = message.choice.initiatingMessage->value.choice.ENBConfigurationTransfer;
+    for (n = 0; n < OGS_ASN_LIST_COUNT(transfer->protocolIEs); n++) {
+        S1AP_ENBConfigurationTransferIEs_t *ie = OGS_ASN_LIST_GET(transfer->protocolIEs, n);
+        if (ie->id == S1AP_ProtocolIE_ID_id_SONConfigurationTransferECT) {
+            S1AP_SONConfigurationTransfer_t *son = ie->value.choice.SONConfigurationTransfer;
+            /* Keep captured transport/SON information, but use the PLMN
+             * and TAC announced by this fixture's S1 Setup Requests. */
+            memcpy(son->sourceeNB_ID->global_ENB_ID->pLMNidentity.buf,
+                    &test_self()->e_tai.plmn_id, OGS_PLMN_ID_LEN);
+            memcpy(son->targeteNB_ID->global_ENB_ID->pLMNidentity.buf,
+                    &test_self()->e_tai.plmn_id, OGS_PLMN_ID_LEN);
+            memcpy(son->sourceeNB_ID->selected_TAI->pLMNidentity.buf,
+                    &test_self()->e_tai.plmn_id, OGS_PLMN_ID_LEN);
+            memcpy(son->targeteNB_ID->selected_TAI->pLMNidentity.buf,
+                    &test_self()->e_tai.plmn_id, OGS_PLMN_ID_LEN);
+            memcpy(son->sourceeNB_ID->selected_TAI->tAC.buf, &tac, sizeof(tac));
+            memcpy(son->targeteNB_ID->selected_TAI->tAC.buf, &tac, sizeof(tac));
+        }
+    }
+    return ogs_s1ap_encode(&message);
 }
 
 ogs_pkbuf_t *test_s1ap_build_enb_configuration_update(int i)

@@ -89,7 +89,8 @@ void mme_s10_configuration_receive(const ogs_gtp2_message_t *msg)
             target.enb_type != embedded.enb_type || target.enb_id != embedded.enb_id ||
             target.tai.tac != embedded.tai.tac ||
             memcmp(&target.enb_plmn, &embedded.enb_plmn, sizeof(target.enb_plmn))) goto out;
-    enb = mme_enb_find_by_enb_id(target.enb_id);
+    enb = mme_enb_find_by_global_id(
+            &target.enb_plmn, target.enb_type, target.enb_id);
     if (enb && enb->state.s1_setup_success &&
             !memcmp(&enb->plmn_id, &target.enb_plmn, sizeof(target.enb_plmn)))
         s1ap_send_mme_configuration_transfer(enb, &son);

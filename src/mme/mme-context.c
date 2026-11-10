@@ -3431,6 +3431,36 @@ mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id)
     return (mme_enb_t *)ogs_hash_get(self.enb_id_hash, &enb_id, sizeof(enb_id));
 }
 
+/* TS 36.413: an eNB-ID is scoped by its PLMN and by the ENB-ID CHOICE.
+ * Numeric IDs alone can select a different operator or eNB type. Keep the
+ * numeric hash for legacy callers; mobility uses the complete identity. */
+mme_enb_t *mme_enb_find_by_global_id(
+        const ogs_plmn_id_t *plmn, S1AP_ENB_ID_PR type, uint32_t id)
+{
+    mme_enb_t *enb, *found = NULL;
+    if (!plmn || type == S1AP_ENB_ID_PR_NOTHING) return NULL;
+    ogs_list_for_each(&self.enb_list, enb) {
+        if (enb->enb_id_presence && enb->state.s1_setup_success &&
+                enb->enb_id == id && enb->enb_type == type &&
+                !memcmp(&enb->plmn_id, plmn, sizeof(*plmn)))
+            found = enb;
+    }
+    /* As with the ID hash, the newest successful association wins. */
+    return found;
+}
+
+mme_enb_t *mme_enb_find_by_s1ap_global_id(const S1AP_Global_ENB_ID_t *global)
+{
+    ogs_plmn_id_t plmn;
+    uint32_t id;
+    if (!global || !global->eNB_ID || !global->pLMNidentity.buf ||
+            global->pLMNidentity.size != sizeof(plmn) ||
+            ogs_s1ap_ENB_ID_to_uint32(global->eNB_ID, &id) != OGS_OK)
+        return NULL;
+    memcpy(&plmn, global->pLMNidentity.buf, sizeof(plmn));
+    return mme_enb_find_by_global_id(&plmn, global->eNB_ID->present, id);
+}
+
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
 {
     ogs_assert(enb);

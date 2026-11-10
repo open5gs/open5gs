@@ -76,7 +76,9 @@ Each procedure needs source and target behavior:
   complete request, acknowledge, update S11 ownership and HSS registration,
   and allocate/confirm the target GUTI. Authentication fallback retries the
   request with IMSI and the standard MS Validated indication.
-- [x] Route connected-mode handover by target TAI/eNB identity.
+- [x] Route connected-mode handover by target TAI and the complete global
+  eNB identity (PLMN, ENB-ID choice and numeric ID), preserving PLMN and eNB-type
+  separation when IDs collide.
 - [x] Retain the old context while transfer is pending. Handle acknowledgements,
   HSS cancellation, retransmissions and expiry without deleting gateway sessions
   that now belong to the target MME.

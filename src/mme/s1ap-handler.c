@@ -285,6 +285,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
     }
     ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->sctp.addr, buf), enb_id);
 
+    enb->enb_type = Global_ENB_ID->eNB_ID->present;
     mme_enb_set_enb_id(enb, enb_id);
 
     memcpy(&enb->plmn_id,
@@ -3523,7 +3524,7 @@ void s1ap_handle_enb_configuration_transfer(
                     S1AP_ENB_ID_PR_macroENB_ID ? "Macro" : "Others",
                 target_enb_id, target_tac);
 
-        target_enb = mme_enb_find_by_enb_id(target_enb_id);
+        target_enb = mme_enb_find_by_s1ap_global_id(targeteNB_ID->global_ENB_ID);
         if (target_enb == NULL &&
                 mme_s10_configuration_transfer(SONConfigurationTransfer) == OGS_OK)
             return;
@@ -3583,7 +3584,8 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
         return;
     }
 
-    target_enb = mme_enb_find_by_enb_id(target_enb_id);
+    target_enb = mme_enb_find_by_s1ap_global_id(
+            TargetID->choice.targeteNB_ID->global_ENB_ID);
     if (target_enb == NULL && mme_s10_handover_required(source_ue,
                 TargetID->choice.targeteNB_ID, Cause,
                 Source_ToTarget_TransparentContainer, direct_forwarding) == OGS_OK)

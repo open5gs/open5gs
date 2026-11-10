@@ -512,7 +512,8 @@ static void relocation_request(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
             req->e_utran_transparent_container.len > OGS_MAX_SDU_LEN / 2 ||
             (*(uint8_t *)req->e_utran_transparent_container.data & 15) != 3)
         goto reject;
-    enb = mme_enb_find_by_enb_id(target.enb_id);
+    enb = mme_enb_find_by_global_id(
+            &target.enb_plmn, target.enb_type, target.enb_id);
     error = OGS_GTP2_CAUSE_RELOCATION_FAILURE;
     if (!enb || !enb->state.s1_setup_success ||
             memcmp(&enb->plmn_id, &target.enb_plmn, sizeof(enb->plmn_id)) ||

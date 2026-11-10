@@ -295,6 +295,7 @@ typedef struct mme_enb_s {
 
     bool            enb_id_presence;
     uint32_t        enb_id;     /* eNB_ID received from eNB */
+    S1AP_ENB_ID_PR   enb_type;   /* The CHOICE is part of the global identity. */
     /* Optional human-readable eNB name from the S1SetupRequest eNBname
      * IE (S1AP id_eNBname).  Empty string when the eNB doesn't include
      * the IE.  Capped at 64 octets; the spec PrintableString upper
@@ -1297,6 +1298,9 @@ int mme_enb_remove(mme_enb_t *enb);
 int mme_enb_remove_all(void);
 mme_enb_t *mme_enb_find_by_addr(const ogs_sockaddr_t *addr);
 mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
+mme_enb_t *mme_enb_find_by_global_id(
+        const ogs_plmn_id_t *plmn, S1AP_ENB_ID_PR type, uint32_t id);
+mme_enb_t *mme_enb_find_by_s1ap_global_id(const S1AP_Global_ENB_ID_t *global);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
 mme_enb_t *mme_enb_find_by_id(ogs_pool_id_t id);
