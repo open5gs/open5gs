@@ -974,6 +974,11 @@ cleanup:
             mme_s11_handle_update_bearer_request(
                 xact, mme_ue, &gtp_message.update_bearer_request);
             break;
+        case OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+            ogs_warn("Dedicated bearer release rejected by gateway");
+            rv = ogs_gtp_xact_commit(xact);
+            ogs_expect(rv == OGS_OK);
+            break;
         case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             mme_s11_handle_delete_bearer_request(
                 xact, mme_ue, &gtp_message.delete_bearer_request);

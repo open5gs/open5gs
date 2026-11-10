@@ -163,6 +163,7 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
         mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
         ogs_assert(mme_ue);
         break;
+    case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
         bearer_id = OGS_POINTER_TO_UINT(data);
         ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
@@ -219,6 +220,7 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("No S1 Context");
         }
         break;
+    case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
         /* Nothing to do */
         break;
@@ -1055,4 +1057,47 @@ int mme_gtp1_send_ran_information_relay(
     ogs_expect(rv == OGS_OK);
 
     return rv;
+}
+
+static void release_command_deleted(ogs_gtp_xact_t *xact)
+{
+    mme_bearer_t *bearer = mme_bearer_find_by_id(OGS_POINTER_TO_UINT(xact->data));
+    if (bearer && bearer->release_xact_id == xact->id)
+        bearer->release_xact_id = OGS_INVALID_POOL_ID;
+}
+
+/* TS 29.274 7.2.17.1: an MME-initiated dedicated bearer release is
+ * a command followed by the PGW's Delete Bearer Request, not a local
+ * bearer deletion. Independent commands avoid coupling unrelated PDNs. */
+int mme_gtp_send_delete_bearer_command(mme_bearer_t *bearer)
+{
+    mme_ue_t *ue = mme_ue_find_by_id(bearer->mme_ue_id);
+    mme_sess_t *sess = mme_sess_find_by_id(bearer->sess_id);
+    sgw_ue_t *sgw = ue ? sgw_ue_find_by_id(ue->sgw_ue_id) : NULL;
+    ogs_gtp2_message_t *msg;
+    ogs_gtp2_tlv_bearer_context_t *bc;
+    ogs_pkbuf_t *p;
+    ogs_gtp_xact_t *xact;
+    if (bearer->release_xact_id &&
+            ogs_gtp_xact_find_by_id(bearer->release_xact_id)) return OGS_RETRY;
+    if (!sess || mme_default_bearer_in_sess(sess) == bearer ||
+            !sgw || !sgw->gnode || !sgw->sgw_s11_teid) return OGS_ERROR;
+    msg = ogs_calloc(1, sizeof(*msg));
+    ogs_assert(msg);
+    msg->h.type = OGS_GTP2_DELETE_BEARER_COMMAND_TYPE;
+    msg->h.teid = sgw->sgw_s11_teid;
+    bc = &msg->delete_bearer_command.bearer_contexts[0];
+    bc->presence = 1;
+    bc->eps_bearer_id.presence = 1;
+    bc->eps_bearer_id.u8 = bearer->ebi;
+    p = ogs_gtp2_build_msg(msg);
+    if (!p) { ogs_free(msg); return OGS_ERROR; }
+    xact = ogs_gtp_xact_local_create(sgw->gnode, &msg->h, p,
+            timeout, OGS_UINT_TO_POINTER(bearer->id));
+    ogs_free(msg);
+    if (!xact) return OGS_ERROR;
+    xact->local_teid = ue->mme_s11_teid;
+    xact->delete_cb = release_command_deleted;
+    bearer->release_xact_id = xact->id;
+    return ogs_gtp_xact_commit(xact);
 }

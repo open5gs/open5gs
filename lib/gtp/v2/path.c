@@ -280,3 +280,15 @@ void ogs_gtp1_send_error_indication(
 
     ogs_pkbuf_free(pkbuf);
 }
+
+void ogs_gtp2_send_delete_bearer_failure_indication(
+        ogs_gtp_xact_t *xact, uint32_t teid,
+        const ogs_gtp2_delete_bearer_command_t *cmd, uint8_t cause_value)
+{
+    ogs_gtp2_header_t h = {0};
+    ogs_pkbuf_t *p = ogs_gtp2_build_delete_bearer_failure_indication(cmd, cause_value);
+    h.type = OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE;
+    h.teid = teid;
+    if (p && ogs_gtp_xact_update_tx(xact, &h, p) == OGS_OK)
+        ogs_gtp_xact_commit(xact);
+}

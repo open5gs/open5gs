@@ -25,6 +25,7 @@ int mme_s10_handover_required(enb_ue_t *source,
         const S1AP_TargeteNB_ID_t *target, const S1AP_Cause_t *cause,
         const OCTET_STRING_t *container, bool direct);
 bool mme_s10_source_committed(const mme_ue_t *ue);
+bool mme_s10_handover_bearer_rejected(const mme_ue_t *ue, uint8_t ebi);
 bool mme_s10_handover_busy(const mme_ue_t *ue);
 bool mme_s10_handover_queue_downlink(enb_ue_t *enb, ogs_pkbuf_t *p);
 bool mme_s10_handover_direct(const mme_ue_t *ue);

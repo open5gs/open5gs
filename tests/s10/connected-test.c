@@ -95,10 +95,76 @@ static int send_forwarded_downlink(ogs_socknode_t *node,
     return test_gtpu_send(node, &forwarding, &header, payload);
 }
 
+/* Build a standards-compliant ACK with EBI 6 explicitly refused. */
+static ogs_pkbuf_t *partial_handover_ack(
+        test_ue_t *ue, test_sess_t *sess, uint8_t rejected_ebi)
+{
+    test_bearer_t *rejected = test_bearer_find_by_ue_ebi(ue, rejected_ebi);
+    ogs_pkbuf_t *p;
+    ogs_s1ap_message_t msg = {0};
+    S1AP_HandoverRequestAcknowledge_t *ack;
+    S1AP_HandoverRequestAcknowledgeIEs_t *ie;
+    S1AP_E_RABFailedtoSetupItemHOReqAckIEs_t *item;
+    S1AP_E_RABFailedToSetupItemHOReqAck_t *failed;
+    ogs_assert(rejected);
+    ogs_list_remove(&sess->bearer_list, rejected);
+    p = test_s1ap_build_handover_request_ack(ue);
+    ogs_list_add(&sess->bearer_list, rejected);
+    ogs_assert(p && ogs_s1ap_decode(&msg, p) == OGS_OK);
+    ogs_pkbuf_free(p);
+    ack = msg.choice.successfulOutcome->value.choice.HandoverRequestAcknowledge;
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(ack->protocolIEs, ie);
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABFailedToSetupListHOReqAck;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_HandoverRequestAcknowledgeIEs__value_PR_E_RABFailedtoSetupListHOReqAck;
+    ie->value.choice.E_RABFailedtoSetupListHOReqAck =
+        ogs_asn_calloc_constructed(&asn_DEF_S1AP_E_RABFailedtoSetupListHOReqAck);
+    item = CALLOC(1, sizeof(*item));
+    ogs_assert(item);
+    ASN_SEQUENCE_ADD(ie->value.choice.E_RABFailedtoSetupListHOReqAck, item);
+    item->id = S1AP_ProtocolIE_ID_id_E_RABFailedtoSetupItemHOReqAck;
+    item->criticality = S1AP_Criticality_ignore;
+    item->value.present = S1AP_E_RABFailedtoSetupItemHOReqAckIEs__value_PR_E_RABFailedToSetupItemHOReqAck;
+    failed = item->value.choice.E_RABFailedToSetupItemHOReqAck = CALLOC(1, sizeof(*failed));
+    ogs_assert(failed);
+    failed->e_RAB_ID = rejected_ebi;
+    failed->cause = CALLOC(1, sizeof(*failed->cause));
+    ogs_assert(failed->cause);
+    failed->cause->present = S1AP_Cause_PR_radioNetwork;
+    failed->cause->choice.radioNetwork =
+        S1AP_CauseRadioNetwork_no_radio_resources_available_in_target_cell;
+    return ogs_s1ap_encode(&msg);
+}
+
+static void assert_released_bearer(abts_case *tc, ogs_pkbuf_t *p)
+{
+    ogs_s1ap_message_t msg = {0};
+    S1AP_HandoverCommand_t *cmd;
+    int i, count = 0;
+    ABTS_INT_EQUAL(tc, OGS_OK, ogs_s1ap_decode(&msg, p));
+    cmd = msg.choice.successfulOutcome->value.choice.HandoverCommand;
+    for (i = 0; i < OGS_ASN_LIST_COUNT(cmd->protocolIEs); i++) {
+        S1AP_HandoverCommandIEs_t *ie = OGS_ASN_LIST_GET(cmd->protocolIEs, i);
+        if (ie->id == S1AP_ProtocolIE_ID_id_E_RABtoReleaseListHOCmd) {
+            S1AP_E_RABItemIEs_t *item;
+            count = OGS_ASN_LIST_COUNT(ie->value.choice.E_RABList);
+            ABTS_INT_EQUAL(tc, 1, count);
+            item = OGS_ASN_LIST_GET(ie->value.choice.E_RABList, 0);
+            ABTS_INT_EQUAL(tc, 6, item->value.choice.E_RABItem->e_RAB_ID);
+        }
+    }
+    ABTS_INT_EQUAL(tc, 1, count);
+    ogs_s1ap_free(&msg);
+}
+
 static void connected_handover(abts_case *tc, void *data)
 {
     int rv;
     bool direct = data != NULL;
+    bool partial = data == (void *)2;
+    bool rejected_default = data == (void *)3;
     ogs_socknode_t *s1ap1, *s1ap2;
     ogs_socknode_t *gtpu1, *gtpu2;
     ogs_pkbuf_t *emmbuf;
@@ -131,7 +197,7 @@ static void connected_handover(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, direct ? "3746000008" : "3746000007");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, rejected_default ? "3746000010" : partial ? "3746000009" : direct ? "3746000008" : "3746000007");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1234560;
@@ -385,6 +451,9 @@ static void connected_handover(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Save the source radio identifiers independently of target preparation. */
+    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
     /* Send Handover Required */
     sendbuf = handover_required(test_ue, 0x43, direct);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -405,14 +474,47 @@ static void connected_handover(abts_case *tc, void *data)
         bearer->enb_s1u_addr = test_self()->gnb2_addr;
         bearer->enb_s1u_addr6 = test_self()->gnb2_addr6;
     }
-    sendbuf = test_s1ap_build_handover_request_ack(test_ue);
+    sendbuf = (partial || rejected_default) ?
+        partial_handover_ack(test_ue, sess, rejected_default ? 5 : 6) :
+        test_s1ap_build_handover_request_ack(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    if (rejected_default) {
+        /* No PDN can survive: refuse the relocation and release the
+         * target reservation, retaining both serving source bearers. */
+        recvbuf = testenb_s1ap_read(s1ap1);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        memset(&message, 0, sizeof(message));
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_s1ap_decode(&message, recvbuf));
+        ABTS_INT_EQUAL(tc, S1AP_S1AP_PDU_PR_unsuccessfulOutcome, message.present);
+        ABTS_INT_EQUAL(tc, S1AP_UnsuccessfulOutcome__value_PR_HandoverPreparationFailure,
+                message.choice.unsuccessfulOutcome->value.present);
+        ogs_s1ap_free(&message);
+        ogs_pkbuf_free(recvbuf);
+        recvbuf = testenb_s1ap_read(s1ap2);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        tests1ap_recv(test_ue, recvbuf);
+        ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_UEContextRelease,
+                test_ue->s1ap_procedure_code);
+        sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+        ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(s1ap2, sendbuf));
+        test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
+        test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4));
+            recvbuf = test_gtpu_read(gtpu1);
+            ABTS_PTR_NOTNULL(tc, recvbuf);
+            ogs_pkbuf_free(recvbuf);
+        }
+        goto cleanup;
+    }
+
     /* Receive Handover Command */
     recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
+    if (partial) assert_released_bearer(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send GTP-U ICMP Packet */
@@ -469,10 +571,25 @@ static void connected_handover(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    /* Receive End Mark */
-    recvbuf = test_gtpu_read(gtpu1);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
+    if (!partial) {
+        /* The refused EBI has no target radio endpoint or End Marker. */
+        recvbuf = test_gtpu_read(gtpu1);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        ogs_pkbuf_free(recvbuf);
+    } else {
+        recvbuf = testenb_s1ap_read(s1ap2);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        tests1ap_recv(test_ue, recvbuf);
+        ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_downlinkNASTransport,
+                test_ue->s1ap_procedure_code);
+        ABTS_INT_EQUAL(tc, OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST,
+                test_ue->esm_message_type);
+        bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
+        esmbuf = testesm_build_deactivate_eps_bearer_context_accept(bearer);
+        sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+        ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(s1ap2, sendbuf));
+        test_bearer_remove(bearer);
+    }
 
     /* Send TAU Request */
     memset(&test_ue->tau_request_param, 0, sizeof(test_ue->tau_request_param));
@@ -480,7 +597,7 @@ static void connected_handover(abts_case *tc, void *data)
     test_ue->tau_request_param.last_visited_registered_tai = 1;
     test_ue->tau_request_param.drx_parameter = 1;
     test_ue->tau_request_param.eps_bearer_context_status =
-        0x60; /* EBI:5, EBI:6 */
+        partial ? 0x20 : 0x60; /* EBI 5, optionally EBI 6. */
     test_ue->tau_request_param.ms_network_capability = 1;
     test_ue->tau_request_param.tmsi_status = 1;
     test_ue->tau_request_param.mobile_station_classmark_2 = 1;
@@ -531,6 +648,8 @@ static void connected_handover(abts_case *tc, void *data)
     recvbuf = test_gtpu_read(gtpu2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+
+    if (partial) goto cleanup;
 
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
@@ -718,6 +837,7 @@ static void connected_handover(abts_case *tc, void *data)
     }
     ogs_msleep(300);
 
+cleanup:
     /********** Remove Subscriber in Database */
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
@@ -737,5 +857,7 @@ abts_suite *test_s10_connected(abts_suite *suite)
     suite = ADD_SUITE(suite);
     abts_run_test(suite, connected_handover, NULL);
     abts_run_test(suite, connected_handover, (void *)1);
+    abts_run_test(suite, connected_handover, (void *)2);
+    abts_run_test(suite, connected_handover, (void *)3);
     return suite;
 }

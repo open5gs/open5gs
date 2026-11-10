@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-11-10 17:08:44.624261 by root
+ * Created on: 2026-11-10 17:53:33.519314 by root
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -1106,7 +1106,7 @@ typedef struct ogs_gtp2_modify_bearer_failure_indication_s {
 } ogs_gtp2_modify_bearer_failure_indication_t;
 
 typedef struct ogs_gtp2_delete_bearer_command_s {
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts;
+    ogs_gtp2_tlv_bearer_context_t bearer_contexts[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_uli_t user_location_information;
     ogs_gtp2_tlv_uli_timestamp_t uli_timestamp;
     ogs_gtp2_tlv_ue_time_zone_t ue_time_zone;
@@ -1119,7 +1119,7 @@ typedef struct ogs_gtp2_delete_bearer_command_s {
 
 typedef struct ogs_gtp2_delete_bearer_failure_indication_s {
     ogs_gtp2_tlv_cause_t cause;
-    ogs_gtp2_tlv_bearer_context_t bearer_context;
+    ogs_gtp2_tlv_bearer_context_t bearer_context[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_recovery_t recovery;
     ogs_gtp2_tlv_indication_t indication_flags;
     ogs_gtp2_tlv_overload_control_information_t pgw_s_overload_control_information;

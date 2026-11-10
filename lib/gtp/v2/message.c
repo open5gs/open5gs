@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-11-10 17:08:44.704368 by root
+ * Created on: 2026-11-10 17:53:33.608006 by root
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -2813,6 +2813,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_command =
     "Delete Bearer Command",
     0, 0, 0, 0, {
         &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_tlv_desc_more8,
         &ogs_gtp2_tlv_desc_uli_0,
         &ogs_gtp2_tlv_desc_uli_timestamp_0,
         &ogs_gtp2_tlv_desc_ue_time_zone_0,
@@ -2831,6 +2832,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_failure_indication =
     0, 0, 0, 0, {
         &ogs_gtp2_tlv_desc_cause_0,
         &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_tlv_desc_more8,
         &ogs_gtp2_tlv_desc_recovery_0,
         &ogs_gtp2_tlv_desc_indication_0,
         &ogs_gtp2_tlv_desc_overload_control_information_0,

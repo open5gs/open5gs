@@ -61,6 +61,8 @@ int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
 int mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue, int action);
 
+int mme_gtp_send_delete_bearer_command(mme_bearer_t *bearer);
+
 int mme_gtp_send_bearer_resource_command(
         mme_bearer_t *bearer, ogs_nas_eps_message_t *nas_message);
 

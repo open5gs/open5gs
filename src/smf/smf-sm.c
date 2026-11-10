@@ -242,6 +242,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
+        case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
+            smf_s5c_handle_delete_bearer_command(sess, gtp_xact,
+                    &gtp2_message.delete_bearer_command, &gtp2_sender_f_teid);
+            break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_bearer_resource_command(

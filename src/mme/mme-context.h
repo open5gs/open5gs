@@ -1175,6 +1175,8 @@ typedef struct mme_bearer_s {
     uint32_t        pgw_s5u_teid;
     ogs_ip_t        pgw_s5u_ip;
 
+    ogs_pool_id_t   release_xact_id; /* MME-initiated dedicated release. */
+    bool            s10_not_admitted; /* No radio bearer exists after S10 HO. */
     uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
     ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
 

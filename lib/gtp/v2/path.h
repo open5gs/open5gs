@@ -31,6 +31,10 @@ extern "C" {
 typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
 
 ogs_pkbuf_t *ogs_gtp2_handle_echo_req(ogs_pkbuf_t *pkb);
+void ogs_gtp2_send_delete_bearer_failure_indication(
+        ogs_gtp_xact_t *xact, uint32_t teid,
+        const ogs_gtp2_delete_bearer_command_t *cmd, uint8_t cause_value);
+
 void ogs_gtp2_send_error_message(
         ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value);
 

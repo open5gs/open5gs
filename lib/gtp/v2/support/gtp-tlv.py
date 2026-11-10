@@ -100,6 +100,9 @@ def repeat_count(parent, ie):
         return ('OGS_MAX_NUM_OF_SESS', 4)
     if parent == 'PDN Connection' and ie['ie_type'] == 'EPS PDN Bearer Context':
         return ('OGS_BEARER_PER_UE', 8)
+    if parent in ('Delete Bearer Command', 'Delete Bearer Failure Indication') and \
+            ie['ie_type'] == 'Bearer Context':
+        return ('OGS_BEARER_PER_UE', 8)
     if parent in ('Forward Relocation Response', 'Context Acknowledge') and \
             ie['ie_type'] in ('Bearer Context', 'Relocation Bearer Context'):
         return ('OGS_BEARER_PER_UE', 8)

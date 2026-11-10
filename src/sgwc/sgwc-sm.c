@@ -227,6 +227,9 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
             sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
+        case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
+            sgwc_s11_handle_delete_bearer_command(sgwc_ue, gtp_xact, &gtp_message);
+            break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             sgwc_s11_handle_bearer_resource_command(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
@@ -302,6 +305,9 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             sgwc_s5c_handle_delete_bearer_request(
                     sess, gtp_xact, recvbuf, &gtp_message);
+            break;
+        case OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+            sgwc_s5c_handle_delete_bearer_failure_indication(sess, gtp_xact, &gtp_message);
             break;
         case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");

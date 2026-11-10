@@ -39,6 +39,8 @@ typedef struct mme_s10_handover_s {
     ogs_time_t deadline;
     bool direct;
     bool command_sent;
+    bool admission_known;
+    uint16_t admitted_ebis;
     bool cancel_complete;
     bool indirect_uncertain;
     bool gateway_updated;
@@ -177,6 +179,13 @@ static void source_failure(mme_ue_t *ue, const S1AP_Cause_t *cause)
         if (enb) s1ap_send_to_enb_ue(enb, downlink[i]);
         else ogs_pkbuf_free(downlink[i]);
     }
+}
+
+bool mme_s10_handover_bearer_rejected(const mme_ue_t *ue, uint8_t ebi)
+{
+    const handover_t *ho = ue ? ue->s10_handover : NULL;
+    return ho && ho->admission_known && ebi >= 5 && ebi <= 15 &&
+        !(ho->admitted_ebis & (1 << ebi));
 }
 
 bool mme_s10_handover_busy(const mme_ue_t *ue)
@@ -394,6 +403,11 @@ static bool bearer_procedures_idle(mme_ue_t *ue)
     ogs_list_for_each(&ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
             if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active) ||
+                    bearer->s10_not_admitted ||
+                    (bearer->release_xact_id &&
+                     ogs_gtp_xact_find_by_id(bearer->release_xact_id)) ||
+                    (bearer->delete.xact_id &&
+                     ogs_gtp_xact_find_by_id(bearer->delete.xact_id)) ||
                     !ogs_list_empty(&bearer->update.xact_list)) return false;
         }
     }
@@ -552,11 +566,35 @@ int mme_s10_handover_acknowledge(enb_ue_t *target)
     handover_t *ho;
     ogs_gtp_xact_t *xact;
     int rv;
+    mme_sess_t *sess;
+    mme_bearer_t *bearer;
+    bool have_default = false;
     if (!mme_s10_handover_is_target(ue) ||
             (ho = ue->s10_handover)->phase != HO_TARGET_PREPARING ||
             ho->enb_ue_id != target->id) return OGS_ERROR;
     xact = ogs_gtp_xact_find_by_id(ho->xact_id);
     if (!xact || xact->data != OGS_UINT_TO_POINTER(ue->id)) return OGS_ERROR;
+    ho->admitted_ebis = 0;
+    ogs_list_for_each(&ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            bearer->s10_not_admitted = !bearer->target_s1u_teid;
+            if (bearer->target_s1u_teid) {
+                ho->admitted_ebis |= 1 << bearer->ebi;
+                if (mme_default_bearer_in_sess(sess) == bearer) have_default = true;
+            }
+        }
+    }
+    /* At least one PDN must remain usable at the target. */
+    if (!have_default) {
+        S1AP_Cause_t cause = {0};
+        cause.present = S1AP_Cause_PR_radioNetwork;
+        cause.choice.radioNetwork = S1AP_CauseRadioNetwork_no_radio_resources_available_in_target_cell;
+        relocation_response(xact, NULL, ho->remote_teid,
+                OGS_GTP2_CAUSE_RELOCATION_FAILURE, &cause);
+        target_release(ue);
+        return OGS_ERROR;
+    }
+    ho->admission_known = true;
     rv = relocation_response(xact, ue, ho->remote_teid,
             OGS_GTP2_CAUSE_REQUEST_ACCEPTED, NULL);
     if (rv == OGS_OK) {
@@ -648,6 +686,9 @@ static void forward_response(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
     source = enb_ue_find_by_id(ho->enb_ue_id);
     if (!n || !source || ue->enb_ue_id != source->id) goto invalid;
     ho->remote_teid = teid;
+    ho->admission_known = true;
+    ho->admitted_ebis = 0;
+    for (i = 0; i < n; i++) ho->admitted_ebis |= 1 << admitted[i].bearer->ebi;
     mme_ue_clear_indirect_tunnel(ue);
     for (i = 0; i < n; i++) {
         admitted[i].bearer->enb_dl_teid = admitted[i].dl_teid;
@@ -843,6 +884,26 @@ void mme_s10_handover_sgw_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
                 S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_unspecified,
                 S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
         return;
+    }
+    /* TS 23.401 5.5.1.2.2 step 15: after switching the serving MME,
+     * release the PDNs and dedicated bearers the target did not admit. */
+    {
+        mme_sess_t *sess;
+        mme_bearer_t *bearer;
+        sgw_ue_t *sgw = sgw_ue_find_by_id(ue->sgw_ue_id);
+        ogs_list_for_each(&ue->sess_list, sess) {
+            mme_bearer_t *def = mme_default_bearer_in_sess(sess);
+            if (def->s10_not_admitted) {
+                if (mme_gtp_send_delete_session_request(
+                        enb_ue_find_by_id(ue->enb_ue_id), sgw, sess,
+                        OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST) == OGS_OK)
+                    OGS_FSM_TRAN(&def->sm, esm_state_pdn_will_disconnect);
+                continue;
+            }
+            ogs_list_for_each(&sess->bearer_list, bearer)
+                if (bearer->s10_not_admitted)
+                    mme_gtp_send_delete_bearer_command(bearer);
+        }
     }
     ho->gateway_updated = true;
     ogs_info("S10 handover gateway updated [ue:%u]", ue->id);

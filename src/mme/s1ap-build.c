@@ -1634,6 +1634,9 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+    mme_sess_t *sess;
+    mme_bearer_t *released;
+    bool whole_pdn;
 
     ogs_assert(esmbuf);
     ogs_assert(bearer);
@@ -1746,27 +1749,36 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
                 mme_ue->ambr.downlink);
     }
 
-    item = CALLOC(1, sizeof(*item));
-    ogs_assert(item);
-    ASN_SEQUENCE_ADD(E_RABList, item);
+    sess = mme_sess_find_by_id(bearer->sess_id);
+    ogs_assert(sess);
+    whole_pdn = mme_default_bearer_in_sess(sess) == bearer;
+    /* A default bearer deactivation releases every admitted E-RAB of
+     * that PDN, including dedicated E-RABs admitted without their default. */
+    ogs_list_for_each(&sess->bearer_list, released) {
+        if ((!whole_pdn && released != bearer) || released->s10_not_admitted ||
+                !released->enb_s1u_teid) continue;
+        item = CALLOC(1, sizeof(*item));
+        ogs_assert(item);
+        ASN_SEQUENCE_ADD(E_RABList, item);
 
-    item->id = S1AP_ProtocolIE_ID_id_E_RABItem;
-    item->criticality = S1AP_Criticality_ignore;
-    item->value.present = S1AP_E_RABItemIEs__value_PR_E_RABItem;
+        item->id = S1AP_ProtocolIE_ID_id_E_RABItem;
+        item->criticality = S1AP_Criticality_ignore;
+        item->value.present = S1AP_E_RABItemIEs__value_PR_E_RABItem;
 
-    item->value.choice.E_RABItem =
-        CALLOC(1, sizeof(*e_rab));
-    e_rab = item->value.choice.E_RABItem;
-    ogs_assert(e_rab);
+        item->value.choice.E_RABItem =
+            CALLOC(1, sizeof(*e_rab));
+        e_rab = item->value.choice.E_RABItem;
+        ogs_assert(e_rab);
 
-    e_rab->e_RAB_ID = bearer->ebi;
-    e_rab->cause = CALLOC(1, sizeof(*e_rab->cause));
-    ogs_assert(e_rab->cause);
-    e_rab->cause->present = group;
-    e_rab->cause->choice.radioNetwork = cause;
+        e_rab->e_RAB_ID = released->ebi;
+        e_rab->cause = CALLOC(1, sizeof(*e_rab->cause));
+        ogs_assert(e_rab->cause);
+        e_rab->cause->present = group;
+        e_rab->cause->choice.radioNetwork = cause;
 
-    ogs_debug("    EBI[%d] Gruop[%d] Cause[%d]",
-            bearer->ebi, group, (int)cause);
+        ogs_debug("    EBI[%d] Gruop[%d] Cause[%d]",
+                released->ebi, group, (int)cause);
+    }
 
     nasPdu->size = esmbuf->len;
     nasPdu->buf = CALLOC(nasPdu->size, sizeof(uint8_t));
@@ -2471,6 +2483,7 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_HandoverType_t *HandoverType = NULL;
+    S1AP_E_RABList_t *release_list = NULL;
     struct S1AP_E_RABSubjecttoDataForwardingList
         *E_RABSubjecttoDataForwardingList = NULL;
     S1AP_Target_ToSource_TransparentContainer_t
@@ -2561,6 +2574,36 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
             bool have_ul = direct ? MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer) :
                 MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer);
 
+            if (mme_s10_handover_bearer_rejected(mme_ue, bearer->ebi)) {
+                S1AP_E_RABItemIEs_t *item;
+                S1AP_E_RABItem_t *released;
+                if (!release_list) {
+                    ie = CALLOC(1, sizeof(*ie));
+                    ogs_assert(ie);
+                    ASN_SEQUENCE_ADD(HandoverCommand->protocolIEs, ie);
+                    ie->id = S1AP_ProtocolIE_ID_id_E_RABtoReleaseListHOCmd;
+                    ie->criticality = S1AP_Criticality_ignore;
+                    ie->value.present = S1AP_HandoverCommandIEs__value_PR_E_RABList;
+                    release_list = ie->value.choice.E_RABList =
+                        CALLOC(1, sizeof(*release_list));
+                    ogs_assert(release_list);
+                }
+                item = CALLOC(1, sizeof(*item));
+                ogs_assert(item);
+                ASN_SEQUENCE_ADD(release_list, item);
+                item->id = S1AP_ProtocolIE_ID_id_E_RABItem;
+                item->criticality = S1AP_Criticality_ignore;
+                item->value.present = S1AP_E_RABItemIEs__value_PR_E_RABItem;
+                released = item->value.choice.E_RABItem = CALLOC(1, sizeof(*released));
+                ogs_assert(released);
+                released->e_RAB_ID = bearer->ebi;
+                released->cause = CALLOC(1, sizeof(*released->cause));
+                ogs_assert(released->cause);
+                released->cause->present = S1AP_Cause_PR_radioNetwork;
+                released->cause->choice.radioNetwork =
+                    S1AP_CauseRadioNetwork_no_radio_resources_available_in_target_cell;
+                continue;
+            }
             if (have_dl || have_ul) {
                 S1AP_E_RABDataForwardingItemIEs_t *item = NULL;
 

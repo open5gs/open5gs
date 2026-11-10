@@ -83,6 +83,10 @@ Each procedure needs source and target behavior:
 - [x] Connected handover with a retained SGW: exchange Forward Relocation, allocate target radio
   resources, forward status containers, complete relocation and release source
   resources. Cover cancellation, target rejection and expiry paths.
+- [x] Release refused dedicated bearers through the standard S11/S5 Delete
+  Bearer Command and PGW-triggered Delete Bearer Request, preserving admitted
+  bearers. Include the source E-RAB release list; refuse relocation if no
+  default bearer can remain usable at the target.
 - [ ] Handle SGW relocation and indirect forwarding when the selected SGW changes.
 - [ ] Preserve NAS replay protection, key derivation and NH/NCC progression across
   mobility and concurrent security procedures.
@@ -158,6 +162,21 @@ TAU and verifies data after cancellation. SON configuration is tunneled in both
 directions. The source SGW retains the allocating MME's forwarding binding so
 cleanup replies reach the source even after the serving S11 endpoint changes.
 Cleanup failures never delete PDNs transferred to the target.
+
+Partial-admission cases retain an admitted default bearer while the target
+refuses its dedicated bearer. The source Handover Command names the refused
+E-RAB. After the gateway switch, the target initiates dedicated bearer release
+through S11 and S5/S8; the UE receives NAS deactivation without an E-RAB Release
+Command for a radio bearer that was never established. A second case admits a
+dedicated bearer without any default bearer: relocation is rejected, target
+radio reservations are released, and both source bearers still carry data.
+
+The MME emits one Delete Bearer Command per refused dedicated bearer. Commands
+and failure indications retain repeated Bearer Context IEs on the wire, and
+failure indications include both overall and per-bearer causes. The PGW handler
+currently processes a single dedicated bearer per command and rejects a
+multi-bearer command with the standard service-not-supported cause. PFCP
+rejection and timeout return a failure indication without deleting other PDNs.
 
 Rejected Context Responses end as two-leg transactions: TS 29.274 7.3.7 requires
 an Acknowledge only for an accepted Context Response. Unit coverage checks that

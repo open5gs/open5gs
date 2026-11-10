@@ -2181,3 +2181,59 @@ void sgwc_s11_handle_bearer_resource_command(
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 }
+
+void sgwc_s11_handle_delete_bearer_command(
+        sgwc_ue_t *ue, ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
+{
+    ogs_gtp2_delete_bearer_command_t *cmd = &msg->delete_bearer_command;
+    sgwc_sess_t *sess = NULL;
+    sgwc_bearer_t *first = NULL;
+    ogs_gtp_xact_t *out;
+    ogs_pkbuf_t *p;
+    uint16_t seen = 0;
+    uint8_t cause = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+    int i;
+    if (!ue || ue->gnode != xact->gnode)
+        cause = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    else for (i = 0; i < OGS_BEARER_PER_UE && cmd->bearer_contexts[i].presence; i++) {
+        ogs_gtp2_tlv_bearer_context_t *bc = &cmd->bearer_contexts[i];
+        uint8_t ebi = bc->eps_bearer_id.u8;
+        sgwc_bearer_t *bearer;
+        sgwc_sess_t *current;
+        if (!bc->eps_bearer_id.presence || ebi < 5 || ebi > 15 ||
+                (seen & (1 << ebi))) {
+            cause = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            break;
+        }
+        seen |= 1 << ebi;
+        bearer = sgwc_bearer_find_by_ue_ebi(ue, ebi);
+        current = bearer ? sgwc_sess_find_by_id(bearer->sess_id) : NULL;
+        if (!current || !current->gnode ||
+                sgwc_default_bearer_in_sess(current) == bearer ||
+                (sess && sess != current)) {
+            cause = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+            break;
+        }
+        sess = current;
+        if (!first) first = bearer;
+    }
+    if (!seen && cause == OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
+        cause = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    if (cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        ogs_gtp2_send_delete_bearer_failure_indication(
+                xact, ue && ue->gnode == xact->gnode ? ue->mme_s11_teid : 0,
+                cmd, cause);
+        return;
+    }
+    /* The MME sender F-TEID is S11-specific and must not cross S5/S8. */
+    cmd->sender_f_teid_for_control_plane.presence = 0;
+    msg->h.teid = sess->pgw_s5c_teid;
+    p = ogs_gtp2_build_msg(msg);
+    if (!p) return;
+    out = ogs_gtp_xact_local_create(sess->gnode, &msg->h, p,
+            gtp_bearer_timeout, OGS_UINT_TO_POINTER(first->id));
+    if (!out) return;
+    out->local_teid = sess->sgw_s5c_teid;
+    ogs_gtp_xact_associate(xact, out);
+    ogs_gtp_xact_commit(out);
+}

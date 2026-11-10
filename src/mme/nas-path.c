@@ -739,6 +739,9 @@ int nas_eps_send_deactivate_bearer_context_request(
     ogs_pkbuf_t *esmbuf = NULL;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+    mme_sess_t *sess;
+    mme_bearer_t *radio_bearer;
+    bool have_radio = false;
 
     ogs_assert(bearer);
 
@@ -760,6 +763,18 @@ int nas_eps_send_deactivate_bearer_context_request(
         ogs_error("esm_build_deactivate_bearer_context_request() failed");
         return OGS_ERROR;
     }
+
+    sess = mme_sess_find_by_id(bearer->sess_id);
+    ogs_assert(sess);
+    if (mme_default_bearer_in_sess(sess) == bearer) {
+        ogs_list_for_each(&sess->bearer_list, radio_bearer)
+            if (!radio_bearer->s10_not_admitted && radio_bearer->enb_s1u_teid)
+                have_radio = true;
+    } else {
+        have_radio = !bearer->s10_not_admitted && bearer->enb_s1u_teid;
+    }
+    if (!have_radio)
+        return nas_eps_send_to_downlink_nas_transport(enb_ue, esmbuf);
 
     s1apbuf = s1ap_build_e_rab_release_command(bearer, esmbuf,
             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release);
