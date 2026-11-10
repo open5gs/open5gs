@@ -22,7 +22,8 @@
 ogs_pkbuf_t *ogs_ngap_build_error_indication(
         uint64_t *ran_ue_ngap_id,
         uint64_t *amf_ue_ngap_id,
-        NGAP_Cause_PR group, long cause)
+        NGAP_Cause_PR group, long cause,
+        NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics)
 {
     NGAP_NGAP_PDU_t pdu;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -105,7 +106,72 @@ ogs_pkbuf_t *ogs_ngap_build_error_indication(
     ogs_debug("    Group[%d] Cause[%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
+    if (CriticalityDiagnostics) {
+        ie = CALLOC(1, sizeof(NGAP_ErrorIndicationIEs_t));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(ErrorIndication->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_CriticalityDiagnostics;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present =
+            NGAP_ErrorIndicationIEs__value_PR_CriticalityDiagnostics;
+        ie->value.choice.CriticalityDiagnostics = CriticalityDiagnostics;
+    }
+
     return ogs_ngap_encode(&pdu);
+}
+
+/*
+ * TS 38.413 10.3.5, 9.3.1.3: the procedure only for an ERROR INDICATION
+ * (initiatingMessage, else NULL), and the missing "reject" IE, if any (>= 0)
+ */
+NGAP_CriticalityDiagnostics_t *ogs_ngap_build_criticality_diagnostics(
+        NGAP_InitiatingMessage_t *initiatingMessage,
+        NGAP_ProtocolIE_ID_t missing_ie_id)
+{
+    NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics = NULL;
+    NGAP_CriticalityDiagnostics_IE_Item_t *item = NULL;
+
+    CriticalityDiagnostics = CALLOC(1, sizeof(*CriticalityDiagnostics));
+    ogs_assert(CriticalityDiagnostics);
+
+    if (initiatingMessage) {
+        CriticalityDiagnostics->procedureCode =
+            CALLOC(1, sizeof(NGAP_ProcedureCode_t));
+        ogs_assert(CriticalityDiagnostics->procedureCode);
+        *CriticalityDiagnostics->procedureCode =
+            initiatingMessage->procedureCode;
+
+        CriticalityDiagnostics->triggeringMessage =
+            CALLOC(1, sizeof(NGAP_TriggeringMessage_t));
+        ogs_assert(CriticalityDiagnostics->triggeringMessage);
+        *CriticalityDiagnostics->triggeringMessage =
+            NGAP_TriggeringMessage_initiating_message;
+
+        CriticalityDiagnostics->procedureCriticality =
+            CALLOC(1, sizeof(NGAP_Criticality_t));
+        ogs_assert(CriticalityDiagnostics->procedureCriticality);
+        *CriticalityDiagnostics->procedureCriticality =
+            initiatingMessage->criticality;
+    }
+
+    if (missing_ie_id >= 0) {
+        CriticalityDiagnostics->iEsCriticalityDiagnostics =
+            CALLOC(1, sizeof(NGAP_CriticalityDiagnostics_IE_List_t));
+        ogs_assert(CriticalityDiagnostics->iEsCriticalityDiagnostics);
+
+        item = CALLOC(1, sizeof(*item));
+        ogs_assert(item);
+        item->iECriticality = NGAP_Criticality_reject;
+        item->iE_ID = missing_ie_id;
+        item->typeOfError = NGAP_TypeOfError_missing;
+
+        ASN_SEQUENCE_ADD(
+                &CriticalityDiagnostics->iEsCriticalityDiagnostics->list,
+                item);
+    }
+
+    return CriticalityDiagnostics;
 }
 
 ogs_pkbuf_t *ogs_ngap_build_ng_reset(

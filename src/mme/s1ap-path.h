@@ -51,6 +51,9 @@ int s1ap_send_to_esm(
 int s1ap_send_s1_setup_response(mme_enb_t *enb);
 int s1ap_send_s1_setup_failure(
         mme_enb_t *enb, S1AP_Cause_PR group, long cause);
+int s1ap_send_s1_setup_failure_with_diagnostics(
+        mme_enb_t *enb, S1AP_Cause_PR group, long cause,
+        S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics);
 
 int s1ap_send_enb_configuration_update_ack(mme_enb_t *enb);
 int s1ap_send_enb_configuration_update_failure(
@@ -101,6 +104,12 @@ int s1ap_send_error_indication(
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_Cause_PR group, long cause);
+int s1ap_send_error_indication_with_diagnostics(
+        mme_enb_t *enb,
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
+        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
+        S1AP_Cause_PR group, long cause,
+        S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics);
 int s1ap_send_error_indication1(
         enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause);
 int s1ap_send_error_indication2(

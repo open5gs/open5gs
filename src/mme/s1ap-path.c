@@ -361,6 +361,14 @@ int s1ap_send_s1_setup_response(mme_enb_t *enb)
 int s1ap_send_s1_setup_failure(
         mme_enb_t *enb, S1AP_Cause_PR group, long cause)
 {
+    return s1ap_send_s1_setup_failure_with_diagnostics(
+            enb, group, cause, NULL);
+}
+
+int s1ap_send_s1_setup_failure_with_diagnostics(
+        mme_enb_t *enb, S1AP_Cause_PR group, long cause,
+        S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics)
+{
     int rv;
     ogs_pkbuf_t *s1ap_buffer;
 
@@ -368,7 +376,8 @@ int s1ap_send_s1_setup_failure(
 
     ogs_debug("S1-Setup failure");
 
-    s1ap_buffer = s1ap_build_setup_failure(group, cause, S1AP_TimeToWait_v10s);
+    s1ap_buffer = s1ap_build_setup_failure(
+            group, cause, S1AP_TimeToWait_v10s, CriticalityDiagnostics);
     if (!s1ap_buffer) {
         ogs_error("s1ap_build_setup_failure() failed");
         return OGS_ERROR;
@@ -930,6 +939,17 @@ int s1ap_send_error_indication(
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_Cause_PR group, long cause)
 {
+    return s1ap_send_error_indication_with_diagnostics(
+            enb, mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause, NULL);
+}
+
+int s1ap_send_error_indication_with_diagnostics(
+        mme_enb_t *enb,
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
+        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
+        S1AP_Cause_PR group, long cause,
+        S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics)
+{
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
 
@@ -938,7 +958,8 @@ int s1ap_send_error_indication(
     ogs_info("ErrorIndication");
 
     s1apbuf = ogs_s1ap_build_error_indication(
-            mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause);
+            mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause,
+            CriticalityDiagnostics);
     if (!s1apbuf) {
         ogs_error("ogs_s1ap_build_error_indication() failed");
         return OGS_ERROR;

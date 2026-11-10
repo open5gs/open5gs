@@ -367,7 +367,10 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ogs_error("No SupportedTAList");
         group = NGAP_Cause_PR_protocol;
         cause = NGAP_CauseProtocol_semantic_error;
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
+        /* TS 38.413 10.3.5: report the missing "reject" IE */
+        r = ngap_send_ng_setup_failure_with_diagnostics(gnb, group, cause,
+                ogs_ngap_build_criticality_diagnostics(
+                    NULL, NGAP_ProtocolIE_ID_id_SupportedTAList));
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -812,8 +815,12 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
     if (!NAS_PDU) {
         ogs_error("No NAS_PDU");
-        r = ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
-                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        /* TS 38.413 10.3.5: report the missing "reject" IE */
+        r = ngap_send_error_indication_with_diagnostics(
+                gnb, &ran_ue->ran_ue_ngap_id, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error,
+                ogs_ngap_build_criticality_diagnostics(
+                    initiatingMessage, NGAP_ProtocolIE_ID_id_NAS_PDU));
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         ran_ue_remove(ran_ue);
@@ -4775,10 +4782,12 @@ void ngap_handle_handover_notification(
     if (!source_ue) {
         ogs_error("Cannot find Source-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
-        r = ngap_send_error_indication(
+        /* TS 38.413 10.4: name the procedure of the logical error */
+        r = ngap_send_error_indication_with_diagnostics(
                 gnb, &target_ue->ran_ue_ngap_id, &target_ue->amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
-                NGAP_CauseRadioNetwork_inconsistent_remote_UE_NGAP_ID);
+                NGAP_CauseRadioNetwork_inconsistent_remote_UE_NGAP_ID,
+                ogs_ngap_build_criticality_diagnostics(initiatingMessage, -1));
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
