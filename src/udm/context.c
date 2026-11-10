@@ -61,6 +61,10 @@ void udm_ue_idle_timer_start(udm_ue_t *udm_ue)
 
     ogs_assert(udm_ue);
 
+    /* Move to the tail so ogs_list_first() is the least recently used. */
+    ogs_list_remove(&self.udm_ue_list, udm_ue);
+    ogs_list_add(&self.udm_ue_list, udm_ue);
+
     if (!udm_ue->t_idle)
         return;
 
@@ -206,8 +210,22 @@ udm_ue_t *udm_ue_add(char *suci)
 
     ogs_pool_id_calloc(&udm_ue_pool, &udm_ue);
     if (!udm_ue) {
-        ogs_error("No memory pool [%s]", suci);
-        return NULL;
+        /* The pool is a cache of UDR data, not a hard limit on subscribers.
+         * Evicting by idle time alone is still time-driven: a burst of more
+         * than max.ue distinct SUPIs inside one idle window fills the pool and
+         * the surplus gets a 404. Drop the least recently used context and try
+         * again, so a full pool never turns into a rejected subscriber. */
+        udm_ue_t *lru = ogs_list_first(&self.udm_ue_list);
+        if (lru) {
+            ogs_warn("[%s] pool full, evicting least recently used [%s]",
+                    suci, lru->supi ? lru->supi : "?");
+            udm_ue_remove(lru);
+            ogs_pool_id_calloc(&udm_ue_pool, &udm_ue);
+        }
+        if (!udm_ue) {
+            ogs_error("No memory pool [%s]", suci);
+            return NULL;
+        }
     }
 
     /* SBI Type */
