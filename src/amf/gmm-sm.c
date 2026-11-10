@@ -2059,6 +2059,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             break;
 
         case OGS_NAS_5GS_DEREGISTRATION_ACCEPT_TO_UE:
+            /* TS 24.501 4.4.4.3: discard it, as DEREGISTRATION REQUEST above */
+            if (state == GMM_COMMON_STATE_REGISTERED &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                ogs_error("No Security Context");
+                break;
+            }
+
             ogs_info("[%s] Deregistration accept", amf_ue->supi);
             CLEAR_AMF_UE_TIMER(amf_ue->t3522);
 
@@ -2074,6 +2081,12 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             break;
 
         case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE:
+            /* TS 24.501 4.4.4.3: no exception for this message; discard it */
+            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+                ogs_error("No Security Context");
+                break;
+            }
+
             ogs_info("[%s] Configuration update complete", amf_ue->supi);
 
             amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_CONF_UPDATE_SUCC);
@@ -3545,6 +3558,16 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
 
+            /*
+             * TS 24.501 4.4.4.3: the secure exchange of NAS messages is
+             * established. Discard a message that is not integrity protected
+             * or that fails the integrity check.
+             */
+            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+                ogs_error("[%s] No Security Context", amf_ue->supi);
+                break;
+            }
+
             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
 
             /*
@@ -3666,6 +3689,13 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
+            /* TS 24.501 4.4.4.3: discard it, as REGISTRATION COMPLETE above */
+            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+                ogs_warn("[%s] Ignore unverified Deregistration request",
+                        amf_ue->supi);
+                break;
+            }
+
             ogs_warn("[%s] Deregistration request", amf_ue->supi);
 
             gmm_handle_deregistration_request(

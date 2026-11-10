@@ -318,6 +318,20 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_pkbuf_free(nasbuf);
             return OGS_ERROR;
         }
+        /*
+         * TS 24.301 4.4.4.3: all ESM messages are integrity protected except
+         * a PDN CONNECTIVITY REQUEST piggybacked in ATTACH REQUEST. Discard
+         * one that is not, or that fails the integrity check.
+         */
+        if (!security_header_type.integrity_protected ||
+            !SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+            ogs_error("[%s] Discard unverified ESM message",
+                    mme_ue->imsi_bcd);
+            /* The verdict was this message's only */
+            mme_ue->mac_failed = 0;
+            ogs_pkbuf_free(nasbuf);
+            return OGS_ERROR;
+        }
         rv = s1ap_send_to_esm(
                 mme_ue, nasbuf, security_header_type.type,
                 OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT);
