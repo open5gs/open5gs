@@ -1044,7 +1044,11 @@ int ogs_gtp_xact_receive(
         list = &gnode->local_list;
         break;
     case GTP_XACT_FINAL_STAGE:
-        if (xid & OGS_GTP_CMD_XACT_ID) {
+        if (type == OGS_GTP2_CONTEXT_ACKNOWLEDGE_TYPE) {
+            /* The third leg of the S10 Context transfer belongs to the
+             * transaction created when the old MME received the request. */
+            list = &gnode->remote_list;
+        } else if (xid & OGS_GTP_CMD_XACT_ID) {
             if (type == OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE ||
                 type == OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE ||
                 type == OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE) {
@@ -1168,6 +1172,12 @@ static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t xid)
     ogs_gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
 
     switch (type) {
+    case OGS_GTP2_IDENTIFICATION_REQUEST_TYPE:
+    case OGS_GTP2_CONTEXT_REQUEST_TYPE:
+    case OGS_GTP2_FORWARD_RELOCATION_REQUEST_TYPE:
+    case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_NOTIFICATION_TYPE:
+    case OGS_GTP2_FORWARD_ACCESS_CONTEXT_NOTIFICATION_TYPE:
+    case OGS_GTP2_RELOCATION_CANCEL_REQUEST_TYPE:
     case OGS_GTP2_ECHO_REQUEST_TYPE:
     case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
     case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
@@ -1202,6 +1212,15 @@ static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t xid)
         else
             stage = GTP_XACT_INITIAL_STAGE;
         break;
+    case OGS_GTP2_CONTEXT_RESPONSE_TYPE:
+        stage = GTP_XACT_INTERMEDIATE_STAGE;
+        break;
+    case OGS_GTP2_IDENTIFICATION_RESPONSE_TYPE:
+    case OGS_GTP2_CONTEXT_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_FORWARD_RELOCATION_RESPONSE_TYPE:
+    case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_FORWARD_ACCESS_CONTEXT_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_RELOCATION_CANCEL_RESPONSE_TYPE:
     case OGS_GTP2_ECHO_RESPONSE_TYPE:
     case OGS_GTP2_VERSION_NOT_SUPPORTED_INDICATION_TYPE:
     case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:

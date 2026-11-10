@@ -85,6 +85,38 @@ def output_header_to_file(f):
     f.write(" * Created on: %s by %s\n * from %s\n" % (str(now), getpass.getuser(), filename))
     f.write(" ******************************************************************************/\n\n")
 
+def message_field_name(parent, ie):
+    name = v_lower(ie['ie_value'])
+    duplicates = sum(v_lower(x['ie_value']) == name
+                     for x in msg_list[parent]['ies'])
+    if duplicates > 1 and int(ie['instance']) > 0:
+        name += '_' + ie['instance']
+    return name
+
+def repeat_count(parent, ie):
+    """C storage bound and matching TLV repetition descriptor."""
+    if parent in ('Forward Relocation Request', 'Context Response') and \
+            ie['ie_type'] == 'PDN Connection':
+        return ('OGS_MAX_NUM_OF_SESS', 4)
+    if parent == 'PDN Connection' and ie['ie_type'] == 'Bearer Context':
+        return ('OGS_BEARER_PER_UE', 8)
+    if parent in ('Forward Relocation Response', 'Context Acknowledge') and \
+            ie['ie_type'] == 'Bearer Context':
+        return ('OGS_BEARER_PER_UE', 8)
+    if ((parent in ('Create Indirect Data Forwarding Tunnel Request',
+                    'Create Indirect Data Forwarding Tunnel Response') and
+         ie['ie_value'] == 'Bearer Contexts') or
+        (parent == 'Create Session Request' and
+         ie['ie_value'] == 'Bearer Contexts to be created') or
+        (parent == 'Create Session Response' and
+         ie['ie_value'] == 'Bearer Contexts created') or
+        (parent == 'Modify Bearer Request' and
+         ie['ie_value'] == 'Bearer Contexts to be modified') or
+        (parent == 'Modify Bearer Response' and
+         ie['ie_value'] == 'Bearer Contexts modified')):
+        return ('OGS_BEARER_PER_UE', 8)
+    return None
+
 def usage():
     print("Python generating TLV build/parser for GTPv2-C v%s" % (version))
     print("Usage: python gtp-tlv.py [options]")
@@ -106,7 +138,8 @@ def v_upper(v):
     return v_token(v).upper()
 
 def v_lower(v):
-    return v_token(v).lower()
+    token = v_token(v).lower()
+    return '_' + token if token and token[0].isdigit() else token
 
 def compact_row_cells(cells):
     """Return logical cells, hiding python-docx duplicates for merged cells."""
@@ -152,6 +185,8 @@ def normalize_ie_type(name):
     ie_type = re.sub(r'\s*\([A-Za-z]*\s*NOTE.*\)\s*$', '', raw_ie_type)
     ie_type = re.sub(r'\s*\([^\)]*\)\s*$', '', ie_type)
 
+    if ie_type == 'IP-Address':
+        ie_type = 'IP Address'
     if 'LDN' in ie_type:
         ie_type = 'LDN'
     elif 'Charging Id' in ie_type:
@@ -169,6 +204,10 @@ def normalize_ie_type(name):
     elif 'Procedure Transaction ID' in ie_type:
         ie_type = 'PTI'
 
+    # Mobility tables use inconsistent capitalization (e.g. context Info).
+    for canonical in type_list:
+        if canonical.casefold() == ie_type.casefold():
+            return canonical
     return ie_type
 
 def normalize_ie_value(name):
@@ -355,7 +394,7 @@ else:
         type = clean_cell_text(cells[0].text)
         if type.isdigit() is False:
             continue
-        if int(type) in range(128, 160):
+        if int(type) in range(142, 160):
             continue
         if int(type) in range(231, 240):
             continue
@@ -521,6 +560,22 @@ msg_list["Release Access Bearers Response"]["table"] = 87
 msg_list["Modify Access Bearers Request"]["table"] = 91
 msg_list["Modify Access Bearers Response"]["table"] = 94
 
+# TS 29.274 section 7.3: S10 mobility management messages.
+msg_list["Forward Relocation Request"]["table"] = 103
+msg_list["Forward Relocation Response"]["table"] = 111
+msg_list["Forward Relocation Complete Notification"]["table"] = 113
+msg_list["Forward Relocation Complete Acknowledge"]["table"] = 114
+msg_list["Context Request"]["table"] = 115
+msg_list["Context Response"]["table"] = 116
+msg_list["Context Acknowledge"]["table"] = 122
+msg_list["Identification Request"]["table"] = 124
+msg_list["Identification Response"]["table"] = 125
+msg_list["Forward Access Context Notification"]["table"] = 126
+msg_list["Forward Access Context Acknowledge"]["table"] = 127
+msg_list["Relocation Cancel Request"]["table"] = 132
+msg_list["Relocation Cancel Response"]["table"] = 133
+msg_list["Configuration Transfer Tunnel"]["table"] = 134
+
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
         d_info("[" + key + "]")
@@ -547,6 +602,9 @@ for key in msg_list.keys():
                     if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
                         ies_is_added = False
                 if ies_is_added is True:
+                    # Cache the S10 wire schema, not the specification prose.
+                    if 128 <= int(msg_list[key]["type"]) <= 141:
+                        cells["comment"] = ""
                     ies.append(cells)
                     write_cells_to_file("ies", cells)
             msg_list[key]["ies"] = ies
@@ -696,6 +754,8 @@ for (k, v) in sorted_group_list:
     for ies in group_list[k]["ies"]:
         f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                 v_lower(ies["ie_value"]))
+        if repeat_count(k, ies):
+            f.write("[" + repeat_count(k, ies)[0] + "]")
         if ies["ie_type"] == "F-TEID":
             if ies["ie_value"] == "S2b-U ePDG F-TEID":
                 f.write("_" + ies["instance"] + ";")
@@ -714,12 +774,12 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_gtp2_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
-            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Create Session Request' and ies["ie_value"] == 'Bearer Contexts to be created') or (k == 'Create Session Response' and ies["ie_value"] == 'Bearer Contexts created') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
+            if repeat_count(k, ies):
                 f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                        v_lower(ies["ie_value"]) + "[OGS_BEARER_PER_UE];\n")
+                        message_field_name(k, ies) + "[" + repeat_count(k, ies)[0] + "];\n")
             else:
                 f.write("    ogs_gtp2_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                        v_lower(ies["ie_value"]) + ";\n")
+                        message_field_name(k, ies) + ";\n")
         f.write("} ogs_gtp2_" + v_lower(k) + "_t;\n")
         f.write("\n")
 
@@ -791,7 +851,9 @@ for (k, v) in sorted_group_list:
         f.write("    sizeof(ogs_gtp2_tlv_%s_t),\n" % v_lower(k))
         f.write("    {\n")
         for ies in group_list[k]["ies"]:
-                f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+                f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), ies["instance"]))
+                if repeat_count(k, ies):
+                    f.write("        &ogs_tlv_desc_more%d,\n" % repeat_count(k, ies)[1])
         f.write("        NULL,\n")
         f.write("    }\n")
         f.write("};\n\n")
@@ -804,9 +866,9 @@ for (k, v) in sorted_msg_list:
         f.write("    \"%s\",\n" % k)
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
-            f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-            if ((k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts') or (k == 'Create Session Request' and ies["ie_value"] == 'Bearer Contexts to be created') or (k == 'Create Session Response' and ies["ie_value"] == 'Bearer Contexts created') or (k == 'Modify Bearer Request' and ies["ie_value"] == 'Bearer Contexts to be modified') or (k == 'Modify Bearer Response' and ies["ie_value"] == 'Bearer Contexts modified'):
-                f.write("        &ogs_tlv_desc_more8,\n")
+            f.write("        &ogs_gtp2_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), ies["instance"]))
+            if repeat_count(k, ies):
+                f.write("        &ogs_tlv_desc_more%d,\n" % repeat_count(k, ies)[1])
         f.write("    NULL,\n")
         f.write("}};\n\n")
 f.write("\n")

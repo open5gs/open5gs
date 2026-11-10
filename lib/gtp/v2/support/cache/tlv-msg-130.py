@@ -1,0 +1,22 @@
+ies = []
+ies.append({ "ie_type" : "IMSI", "ie_value" : "IMSI", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "GUTI", "ie_value" : "GUTI", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "ULI", "ie_value" : "Routeing Area Identity", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "P-TMSI", "ie_value" : "Packet TMSI", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "P-TMSI Signature", "ie_value" : "P-TMSI Signature", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "Complete Request Message", "ie_value" : "Complete TAU request message", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "F-TEID", "ie_value" : "S3/S16/S10/N26 Address and TEID for Control Plane", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "Port Number", "ie_value" : "UDP Source Port Number", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "RAT Type", "ie_value" : "RAT Type", "presence" : "C", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "Indication", "ie_value" : "Indication", "presence" : "CO", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "Hop Counter", "ie_value" : "Hop Counter", "presence" : "O", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "Serving Network", "ie_value" : "Target PLMN ID", "presence" : "CO", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "LDN", "ie_value" : "MME/S4-SGSN LDN", "presence" : "O", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "FQDN", "ie_value" : "SGSN node name", "presence" : "CO", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "FQDN", "ie_value" : "MME node name", "presence" : "CO", "instance" : "1", "comment" : ""})
+ies.append({ "ie_type" : "Node Number", "ie_value" : "SGSN Number", "presence" : "O", "instance" : "0", "comment" : ""})
+ies.append({ "ie_type" : "Node Identifier", "ie_value" : "SGSN Identifier", "presence" : "O", "instance" : "0", "comment" : ""})
+type_list["Node Identifier"]["max_instance"] = "1"
+ies.append({ "ie_type" : "Node Identifier", "ie_value" : "MME Identifier", "presence" : "O", "instance" : "1", "comment" : ""})
+ies.append({ "ie_type" : "CIoT Optimizations Support Indication", "ie_value" : "CIoT Optimizations Support Indication", "presence" : "CO", "instance" : "0", "comment" : ""})
+msg_list[key]["ies"] = ies
