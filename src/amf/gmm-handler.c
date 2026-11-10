@@ -379,6 +379,20 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
                 sizeof(registration_request->ue_security_capability.length));
     }
 
+    /*
+     * TS 24.501 5.5.1.2.8 i): no 5GS encryption algorithm (all bits zero)
+     * is rejected; no 5GS integrity algorithm selects NIA0, rejected below
+     */
+    if (amf_ue->nas.registration.value ==
+            OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL &&
+        (registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT) &&
+        ue_security_capability->nr_ea == 0) {
+        ogs_error("[UE:0x%x:0x%x] No 5GS encryption algorithm",
+            ue_security_capability->nr_ea, ue_security_capability->nr_ia);
+        return OGS_5GMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH;
+    }
+
     if (amf_selected_int_algorithm(amf_ue) ==
             OGS_NAS_SECURITY_ALGORITHMS_NIA0) {
         ogs_error("[UE:0x%x:0x%x], NEA0 can be used in Encrypt[0x%x], "
