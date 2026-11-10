@@ -119,6 +119,8 @@ ogs_pkbuf_t *nas_5gs_security_encode(
 int nas_5gs_security_decode(amf_ue_t *amf_ue,
     ogs_nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf)
 {
+    bool ciphered = security_header_type.ciphered;
+
     ogs_assert(amf_ue);
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
@@ -177,6 +179,14 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
             if (h->message_authentication_code != mac32) {
                 ogs_warn("NAS MAC verification failed(0x%x != 0x%x)",
                     be32toh(h->message_authentication_code), be32toh(mac32));
+
+                /*
+                 * TS24.501 4.4.4.3: a ciphered message (with 5G-EA0 too,
+                 * 4.4.5) that fails the integrity check is discarded
+                 */
+                if (ciphered)
+                    return OGS_ERROR;
+
                 amf_ue->mac_failed = 1;
             } else {
                 /*

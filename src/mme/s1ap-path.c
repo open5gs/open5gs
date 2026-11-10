@@ -173,9 +173,9 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(enb_ue);
     ogs_assert(nasPdu);
 
+    /* TS24.301 4.4.4.3, 7.2: discard the message, keep the S1 context */
     if (nasPdu->size < sizeof(ogs_nas_emm_header_t)) {
         ogs_error("NAS PDU too short [%d]", (int)nasPdu->size);
-        enb_ue_remove(enb_ue);
         return OGS_ERROR;
     }
 
@@ -218,7 +218,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         ogs_error("Not implemented(security header type:0x%x)",
                 sh->security_header_type);
         ogs_pkbuf_free(nasbuf);
-        enb_ue_remove(enb_ue);
         return OGS_ERROR;
     }
 
@@ -237,7 +236,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_error("NAS PDU too short for security header [%d]",
                     (int)nasPdu->size);
             ogs_pkbuf_free(nasbuf);
-            enb_ue_remove(enb_ue);
             return OGS_ERROR;
         }
     }
@@ -250,7 +248,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     if (nasbuf->len < sizeof(ogs_nas_emm_header_t)) {
         ogs_error("NAS PDU too short for EMM header [%d]", (int)nasbuf->len);
         ogs_pkbuf_free(nasbuf);
-        enb_ue_remove(enb_ue);
         return OGS_ERROR;
     }
 
@@ -259,7 +256,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
             ogs_pkbuf_free(nasbuf);
-            enb_ue_remove(enb_ue);
             return OGS_ERROR;
         }
     }
@@ -274,7 +270,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
                     h->protocol_discriminator);
 
             ogs_pkbuf_free(nasbuf);
-            enb_ue_remove(enb_ue);
 
             return OGS_ERROR;
         }
@@ -289,7 +284,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_error("Invalid EMM message type [%d]", h->message_type);
 
             ogs_pkbuf_free(nasbuf);
-            enb_ue_remove(enb_ue);
 
             return OGS_ERROR;
         }
@@ -331,7 +325,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
                   h->protocol_discriminator);
 
         ogs_pkbuf_free(nasbuf);
-        enb_ue_remove(enb_ue);
 
         return OGS_ERROR;
     }
