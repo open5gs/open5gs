@@ -163,7 +163,8 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
 }
 
 ogs_pkbuf_t *s1ap_build_setup_failure(
-        S1AP_Cause_PR group, long cause, long time_to_wait)
+        S1AP_Cause_PR group, long cause, long time_to_wait,
+        S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics)
 {
     S1AP_S1AP_PDU_t pdu;
     S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
@@ -231,6 +232,18 @@ ogs_pkbuf_t *s1ap_build_setup_failure(
 
     if (TimeToWait)
         *TimeToWait = time_to_wait;
+
+    if (CriticalityDiagnostics) {
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(S1SetupFailure->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_CriticalityDiagnostics;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present =
+            S1AP_S1SetupFailureIEs__value_PR_CriticalityDiagnostics;
+        ie->value.choice.CriticalityDiagnostics = CriticalityDiagnostics;
+    }
 
     return ogs_s1ap_encode(&pdu);
 }

@@ -48,6 +48,9 @@ int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf);
 int ngap_send_ng_setup_response(amf_gnb_t *gnb);
 int ngap_send_ng_setup_failure(
         amf_gnb_t *gnb, NGAP_Cause_PR group, long cause);
+int ngap_send_ng_setup_failure_with_diagnostics(
+        amf_gnb_t *gnb, NGAP_Cause_PR group, long cause,
+        NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics);
 int ngap_send_amf_configuration_update(amf_gnb_t *gnb);
 void ngap_send_amf_configuration_update_all(void);
 int ngap_send_ran_configuration_update_ack(amf_gnb_t *gnb);
@@ -86,6 +89,12 @@ int ngap_send_error_indication(
         uint64_t *ran_ue_ngap_id,
         uint64_t *amf_ue_ngap_id,
         NGAP_Cause_PR group, long cause);
+int ngap_send_error_indication_with_diagnostics(
+        amf_gnb_t *gnb,
+        uint64_t *ran_ue_ngap_id,
+        uint64_t *amf_ue_ngap_id,
+        NGAP_Cause_PR group, long cause,
+        NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics);
 int ngap_send_error_indication2(
         ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause);
 int ngap_send_ng_reset_ack(

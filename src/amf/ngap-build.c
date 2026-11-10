@@ -202,7 +202,8 @@ ogs_pkbuf_t *ngap_build_ng_setup_response(void)
 }
 
 ogs_pkbuf_t *ngap_build_ng_setup_failure(
-        NGAP_Cause_PR group, long cause, long time_to_wait)
+        NGAP_Cause_PR group, long cause, long time_to_wait,
+        NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics)
 {
     NGAP_NGAP_PDU_t pdu;
     NGAP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
@@ -260,6 +261,18 @@ ogs_pkbuf_t *ngap_build_ng_setup_failure(
                 sizeof(*ie->value.choice.TimeToWait));
         ogs_assert(ie->value.choice.TimeToWait);
         *ie->value.choice.TimeToWait = time_to_wait;
+    }
+
+    if (CriticalityDiagnostics) {
+        ie = CALLOC(1, sizeof(NGAP_NGSetupFailureIEs_t));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(NGSetupFailure->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_CriticalityDiagnostics;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present =
+            NGAP_NGSetupFailureIEs__value_PR_CriticalityDiagnostics;
+        ie->value.choice.CriticalityDiagnostics = CriticalityDiagnostics;
     }
 
     return ogs_ngap_encode(&pdu);
