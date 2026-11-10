@@ -572,11 +572,22 @@ void mme_s10_holding_expired(ogs_pool_id_t ue_id)
     mme_ue_t *ue = mme_ue_find_by_id(ue_id);
     bool remove;
     if (!ue || !ue->s10.source_transfer) return;
+    if (ue->s10.acknowledged && !ue->s10.cancel_location) {
+        /* Keep ownership marked until HSS cancellation. A delayed CLR must
+         * not turn into a normal detach against the target's gateway session. */
+        ogs_timer_start(ue->s10.holding, ogs_time_from_sec(10));
+        return;
+    }
     remove = ue->s10.acknowledged && ue->s10.cancel_location;
     mme_s10_ue_clear(ue);
     /* Gateway sessions now belong to the target. Local removal must not
      * send Delete Session to the shared SGW or PGW. */
     if (remove) mme_ue_remove(ue);
+}
+
+bool mme_s10_source_committed(const mme_ue_t *ue)
+{
+    return ue && ue->s10.source_transfer && ue->s10.acknowledged;
 }
 
 bool mme_s10_cancel_location(mme_ue_t *ue)
@@ -652,6 +663,7 @@ static void context_request(ogs_gtp_xact_t *xact,
         cause = OGS_GTP2_CAUSE_SYSTEM_FAILURE;
         p = mme_s10_build_context_response(NULL, cause);
     }
+    xact->response_final = cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
     h.type = OGS_GTP2_CONTEXT_RESPONSE_TYPE;
     h.teid = remote_teid;
     if (!p || ogs_gtp_xact_update_tx(xact, &h, p) != OGS_OK) return;
@@ -928,6 +940,9 @@ static void context_response(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *message)
         ogs_pkbuf_t *request = ue->s10.request;
         bool retry_auth = !ue->s10.fresh_security &&
             cause->value == OGS_GTP2_CAUSE_USER_AUTHENTICATION_FAILED;
+        xact->response_final = true;
+        ogs_gtp_xact_commit(xact);
+        ue->s10.xact_id = 0;
         ue->s10.request = NULL;
         mme_s10_ue_clear(ue);
         if (retry_auth) {
@@ -1007,11 +1022,17 @@ void mme_s10_receive(ogs_gtp_node_t *node, ogs_pkbuf_t *pkbuf)
     ogs_gtp_xact_t *xact = NULL;
     ogs_assert(message);
     if (ogs_gtp2_parse_msg(message, pkbuf) != OGS_OK) goto out;
+    if (message->h.type == OGS_GTP2_CONFIGURATION_TRANSFER_TUNNEL_TYPE) {
+        mme_s10_configuration_receive(message);
+        goto out;
+    }
     if (message->h.type != OGS_GTP2_IDENTIFICATION_REQUEST_TYPE &&
             message->h.type != OGS_GTP2_IDENTIFICATION_RESPONSE_TYPE &&
             message->h.type != OGS_GTP2_CONTEXT_REQUEST_TYPE &&
             message->h.type != OGS_GTP2_CONTEXT_RESPONSE_TYPE &&
             message->h.type != OGS_GTP2_CONTEXT_ACKNOWLEDGE_TYPE &&
+            !(message->h.type >= OGS_GTP2_FORWARD_RELOCATION_REQUEST_TYPE &&
+              message->h.type <= OGS_GTP2_RELOCATION_CANCEL_RESPONSE_TYPE) &&
             message->h.type != OGS_GTP2_ECHO_REQUEST_TYPE &&
             message->h.type != OGS_GTP2_ECHO_RESPONSE_TYPE) {
         ogs_warn("Unsupported S10 procedure [%u]", message->h.type);
@@ -1039,6 +1060,9 @@ void mme_s10_receive(ogs_gtp_node_t *node, ogs_pkbuf_t *pkbuf)
         break;
     case OGS_GTP2_IDENTIFICATION_RESPONSE_TYPE:
         identification_response(xact, &message->identification_response);
+        break;
+    default:
+        mme_s10_handover_receive(xact, message);
         break;
     }
 out:

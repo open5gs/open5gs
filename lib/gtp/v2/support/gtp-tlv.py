@@ -987,6 +987,12 @@ f.write("""ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp2_message)
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("    case OGS_GTP2_%s_TYPE:\n" % v_upper(k))
+        if k == "Forward Relocation Complete Notification":
+            f.write("        /* TS 29.274 7.3.3 permits an empty IE payload. */\n")
+            f.write("        if (!gtp2_message->forward_relocation_complete_notification.indication_flags.presence) {\n")
+            f.write("            pkbuf = ogs_pkbuf_alloc(NULL, OGS_TLV_MAX_HEADROOM);\n")
+            f.write("            if (pkbuf) ogs_pkbuf_reserve(pkbuf, OGS_TLV_MAX_HEADROOM);\n")
+            f.write("            break;\n        }\n")
         f.write("        pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_%s,\n" % v_lower(k))
         f.write("                &gtp2_message->%s, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("        break;\n")

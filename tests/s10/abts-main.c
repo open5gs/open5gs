@@ -54,6 +54,8 @@ static void initialize(const char *const argv[])
     }
 }
 
+abts_suite *test_s10_connected(abts_suite *suite);
+
 int main(int argc, const char *const argv[])
 {
     abts_suite *suite = NULL;
@@ -62,6 +64,7 @@ int main(int argc, const char *const argv[])
     test_app_run(argc, argv, "s10-source.yaml", initialize);
 
     suite = test_s10_mobility(suite);
+    suite = test_s10_connected(suite);
 
     return abts_report(suite);
 }

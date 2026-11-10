@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-11-10 16:41:38.943650 by root
+ * Created on: 2026-11-10 17:08:44.704368 by root
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -3843,6 +3843,12 @@ ogs_pkbuf_t *ogs_gtp2_build_msg(ogs_gtp2_message_t *gtp2_message)
                 &gtp2_message->forward_relocation_response, OGS_TLV_MODE_T1_L2_I1);
         break;
     case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_NOTIFICATION_TYPE:
+        /* TS 29.274 7.3.3 permits an empty IE payload. */
+        if (!gtp2_message->forward_relocation_complete_notification.indication_flags.presence) {
+            pkbuf = ogs_pkbuf_alloc(NULL, OGS_TLV_MAX_HEADROOM);
+            if (pkbuf) ogs_pkbuf_reserve(pkbuf, OGS_TLV_MAX_HEADROOM);
+            break;
+        }
         pkbuf = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_forward_relocation_complete_notification,
                 &gtp2_message->forward_relocation_complete_notification, OGS_TLV_MODE_T1_L2_I1);
         break;

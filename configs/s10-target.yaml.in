@@ -56,6 +56,9 @@ mme:
     client:
       mme:
         - address: 127.0.0.2
+          tai:
+            - plmn_id: {mcc: '999', mnc: '70'}
+              tac: 1
           gummei:
             plmn_id: {mcc: '999', mnc: '70'}
             mme_gid: 2

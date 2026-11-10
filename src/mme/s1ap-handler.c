@@ -22,6 +22,7 @@
 
 #include "s1ap-path.h"
 #include "mme-as-security.h"
+#include "mme-s10.h"
 #include "nas-path.h"
 #include "mme-fd-path.h"
 #include "mme-gtp-path.h"
@@ -3523,6 +3524,9 @@ void s1ap_handle_enb_configuration_transfer(
                 target_enb_id, target_tac);
 
         target_enb = mme_enb_find_by_enb_id(target_enb_id);
+        if (target_enb == NULL &&
+                mme_s10_configuration_transfer(SONConfigurationTransfer) == OGS_OK)
+            return;
         if (target_enb == NULL) {
             ogs_error("eNB configuration transfer : "
                         "cannot find target eNB-id[0x%x]", target_enb_id);
@@ -3544,7 +3548,8 @@ void s1ap_handle_enb_configuration_transfer(
 
 static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
                 S1AP_Cause_t *Cause, S1AP_TargetID_t *TargetID,
-                S1AP_Source_ToTarget_TransparentContainer_t *Source_ToTarget_TransparentContainer)
+                S1AP_Source_ToTarget_TransparentContainer_t *Source_ToTarget_TransparentContainer,
+                bool direct_forwarding)
 {
     mme_enb_t *target_enb = NULL;
     uint32_t target_enb_id = 0;
@@ -3579,6 +3584,10 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
     }
 
     target_enb = mme_enb_find_by_enb_id(target_enb_id);
+    if (target_enb == NULL && mme_s10_handover_required(source_ue,
+                TargetID->choice.targeteNB_ID, Cause,
+                Source_ToTarget_TransparentContainer, direct_forwarding) == OGS_OK)
+        return;
     if (target_enb == NULL) {
         ogs_error("Handover required : cannot find target eNB-id[0x%x]",
                     target_enb_id);
@@ -3652,6 +3661,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i, r;
+    bool direct_forwarding = false;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_HandoverRequired_t *HandoverRequired = NULL;
@@ -3694,6 +3704,11 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
             break;
         case S1AP_ProtocolIE_ID_id_TargetID:
             TargetID = ie->value.choice.TargetID;
+            break;
+        case S1AP_ProtocolIE_ID_id_Direct_Forwarding_Path_Availability:
+            direct_forwarding = ie->value.choice.Direct_Forwarding_Path_Availability &&
+                *ie->value.choice.Direct_Forwarding_Path_Availability ==
+                    S1AP_Direct_Forwarding_Path_Availability_directPathAvailable;
             break;
         case S1AP_ProtocolIE_ID_id_Source_ToTarget_TransparentContainer:
             Source_ToTarget_TransparentContainer =
@@ -3831,7 +3846,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
     case S1AP_HandoverType_intralte:
         s1ap_handle_handover_required_intralte(
                 source_ue, Cause, TargetID,
-                Source_ToTarget_TransparentContainer);
+                Source_ToTarget_TransparentContainer, direct_forwarding);
         break;
     case S1AP_HandoverType_ltetoutran:
     case S1AP_HandoverType_ltetogeran:
@@ -3976,7 +3991,9 @@ void s1ap_handle_handover_request_ack(
         return;
     }
 
-    source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
+    mme_ue = mme_ue_find_by_id(target_ue->mme_ue_id);
+    source_ue = mme_s10_handover_is_target(mme_ue) ? target_ue :
+        enb_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("No Source UE");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -4160,6 +4177,10 @@ void s1ap_handle_handover_request_ack(
     OGS_ASN_STORE_DATA(&mme_ue->container,
             Target_ToSource_TransparentContainer);
 
+    if (mme_s10_handover_is_target(mme_ue)) {
+        mme_s10_handover_acknowledge(target_ue);
+        return;
+    }
     if (mme_ue_have_indirect_tunnel(mme_ue) == true) {
         ogs_assert(OGS_OK ==
             mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
@@ -4184,6 +4205,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
     S1AP_Cause_t *Cause = NULL;
 
     enb_ue_t *target_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     enb_ue_t *source_ue = NULL;
 
     ogs_assert(enb);
@@ -4257,6 +4279,11 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
+    mme_ue = mme_ue_find_by_id(target_ue->mme_ue_id);
+    if (mme_s10_handover_is_target(mme_ue)) {
+        mme_s10_handover_failure(target_ue, Cause);
+        return;
+    }
     source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("No Source UE");
@@ -4394,6 +4421,10 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
+    if (mme_s10_handover_busy(mme_ue_find_by_id(source_ue->mme_ue_id))) {
+        mme_s10_handover_cancel(source_ue);
+        return;
+    }
     target_ue = enb_ue_find_by_id(source_ue->target_ue_id);
     if (!target_ue) {
         ogs_error("No Target UE");
@@ -4537,6 +4568,11 @@ void s1ap_handle_enb_status_transfer(
         return;
     }
 
+    if (mme_s10_handover_busy(mme_ue_find_by_id(source_ue->mme_ue_id))) {
+        mme_s10_handover_status(source_ue,
+                ENB_StatusTransfer_TransparentContainer);
+        return;
+    }
     target_ue = enb_ue_find_by_id(source_ue->target_ue_id);
     if (!target_ue) {
         ogs_error("No Target UE");
@@ -4688,7 +4724,9 @@ void s1ap_handle_handover_notification(
         return;
     }
 
-    source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
+    mme_ue = mme_ue_find_by_id(target_ue->mme_ue_id);
+    source_ue = mme_s10_handover_is_target(mme_ue) ? target_ue :
+        enb_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("No Source UE");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -4798,13 +4836,15 @@ void s1ap_handle_handover_notification(
     memcpy(&mme_ue->e_cgi, &target_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
 
-    r = s1ap_send_ue_context_release_command(source_ue,
-            S1AP_Cause_PR_radioNetwork,
-            S1AP_CauseRadioNetwork_successful_handover,
-            S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
-            ogs_local_conf()->time.handover.duration);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    if (!mme_s10_handover_is_target(mme_ue)) {
+        r = s1ap_send_ue_context_release_command(source_ue,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_successful_handover,
+                S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
+                ogs_local_conf()->time.handover.duration);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    }
 
     ogs_list_init(&mme_ue->bearer_to_modify_list);
 
@@ -4831,6 +4871,10 @@ void s1ap_handle_handover_notification(
         }
     }
 
+    if (mme_s10_handover_is_target(mme_ue)) {
+        mme_s10_handover_notify(target_ue);
+        return;
+    }
     if (ogs_list_count(&mme_ue->bearer_to_modify_list)) {
         ogs_assert(OGS_OK == mme_gtp_send_modify_bearer_request(
                     target_ue, mme_ue, 1, 0));

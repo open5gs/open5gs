@@ -1682,11 +1682,25 @@ out:
         ogs_info("    BEARER ID[%d] EBI[%d]", bearer->id, bearer->ebi);
 }
 
+static bool forwarding_endpoint_valid(const ogs_tlv_octet_t *ie, bool downlink)
+{
+    const ogs_gtp2_f_teid_t *f = ie->data;
+    if (!ie->presence || !f || ie->len < 5 || !f->teid ||
+            (!f->ipv4 && !f->ipv6) ||
+            ie->len != 5 + (f->ipv4 ? 4 : 0) + (f->ipv6 ? 16 : 0)) return false;
+    return downlink ?
+        (f->interface_type == OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING ||
+         f->interface_type == OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING) :
+        (f->interface_type == OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING ||
+         f->interface_type == OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING);
+}
+
 void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
         sgwc_ue_t *sgwc_ue, ogs_gtp_xact_t *s11_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message)
 {
     int rv, i;
+    uint16_t seen = 0;
 
     sgwc_sess_t *sess = NULL;
     sgwc_bearer_t *bearer = NULL;
@@ -1723,10 +1737,43 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
      ********************/
     ogs_assert(sgwc_ue);
 
+    if (sgwc_ue->gnode != s11_xact->gnode ||
+            (sgwc_ue->forwarding_gnode &&
+             sgwc_ue->forwarding_gnode != s11_xact->gnode)) {
+        /* Do not overwrite another MME's forwarding pair before it has
+         * completed the standard Delete Indirect procedure. */
+        cause_value = OGS_GTP2_CAUSE_TEMPORARILY_REJECTED_DUE_TO_HANDOVER_IN_PROGRESS;
+        goto cleanup;
+    }
+    /* Validate the whole repeated group before allocating or reusing any
+     * forwarding PDR. Malformed requests must leave the serving path intact. */
+    for (i = 0; i < OGS_BEARER_PER_UE && req->bearer_contexts[i].presence; i++) {
+        const ogs_gtp2_tlv_bearer_context_t *bc = &req->bearer_contexts[i];
+        uint8_t ebi = bc->eps_bearer_id.u8;
+        if (!bc->eps_bearer_id.presence || ebi < 5 || ebi > 15 ||
+                (seen & (1 << (ebi - 5))) ||
+                !sgwc_bearer_find_by_ue_ebi(sgwc_ue, ebi) ||
+                (!bc->s1_u_enodeb_f_teid.presence && !bc->s12_rnc_f_teid.presence) ||
+                (bc->s1_u_enodeb_f_teid.presence &&
+                 !forwarding_endpoint_valid(&bc->s1_u_enodeb_f_teid, true)) ||
+                (bc->s12_rnc_f_teid.presence &&
+                 !forwarding_endpoint_valid(&bc->s12_rnc_f_teid, false))) {
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            goto cleanup;
+        }
+        seen |= 1 << (ebi - 5);
+    }
+    if (!i) {
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        goto cleanup;
+    }
+    sgwc_ue->forwarding_gnode = s11_xact->gnode;
+    sgwc_ue->forwarding_mme_s11_teid = sgwc_ue->mme_s11_teid;
+
     ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
-    for (i = 0; req->bearer_contexts[i].presence; i++) {
+    for (i = 0; i < OGS_BEARER_PER_UE && req->bearer_contexts[i].presence; i++) {
         if (req->bearer_contexts[i].eps_bearer_id.presence == 0) {
             ogs_error("No EBI");
             cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
@@ -1930,6 +1977,7 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
     sgwc_bearer_t *bearer = NULL;
     sgwc_tunnel_t *tunnel = NULL;
     uint8_t cause_value = 0;
+    bool pending = false;
 
     ogs_assert(s11_xact);
 
@@ -1945,9 +1993,17 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
         cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
     }
 
+    if (sgwc_ue) {
+        if (sgwc_ue->forwarding_gnode == s11_xact->gnode)
+            s11_xact->remote_teid = sgwc_ue->forwarding_mme_s11_teid;
+        else if (!sgwc_ue->forwarding_gnode && sgwc_ue->gnode == s11_xact->gnode)
+            s11_xact->remote_teid = sgwc_ue->mme_s11_teid;
+        else cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                s11_xact, s11_xact->remote_teid,
                 OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE,
                 cause_value);
         return;
@@ -1977,26 +2033,22 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
         }
 
         if (has_indirect) {
+            pending = true;
             ogs_info("    sess_id=%d xact=%p", sess->id, s11_xact);
             ogs_assert(OGS_OK ==
                 sgwc_pfcp_send_session_modification_request(
                     sess, s11_xact->id, gtpbuf,
                     OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE));
-        } else {
-            ogs_error("No Indirect Tunnel");
-            ogs_error("    UE IMSI[%s] APN[%s]",
-                    sgwc_ue->imsi_bcd, sess->session.name);
-            ogs_error("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-                    sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-            ogs_list_for_each(&sess->bearer_list, bearer) {
-                ogs_error("    EBI[%d]", bearer->ebi);
-                ogs_list_for_each(&bearer->tunnel_list, tunnel) {
-                    ogs_error("TUNNEL[%d] INF[%d]",
-                            tunnel->id, tunnel->interface_type);
-                }
-            }
         }
     }
+    if (!pending) {
+        sgwc_ue->forwarding_gnode = NULL;
+        sgwc_ue->forwarding_mme_s11_teid = 0;
+        ogs_gtp_send_error_message(s11_xact, s11_xact->remote_teid,
+                OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE,
+                OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
+    }
+
 }
 
 void sgwc_s11_handle_bearer_resource_command(

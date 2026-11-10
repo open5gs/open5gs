@@ -18,6 +18,7 @@
  */
 
 #include "mme-context.h"
+#include "mme-s10.h"
 
 #include "mme-sm.h"
 #include "s1ap-build.h"
@@ -2554,9 +2555,13 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
         ogs_list_for_each(&sess->bearer_list, bearer) {
 
             S1AP_E_RABDataForwardingItem_t *e_rab = NULL;
+            bool direct = mme_s10_handover_direct(mme_ue);
+            bool have_dl = direct ? MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer) :
+                MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer);
+            bool have_ul = direct ? MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer) :
+                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer);
 
-            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
-                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer)) {
+            if (have_dl || have_ul) {
                 S1AP_E_RABDataForwardingItemIEs_t *item = NULL;
 
                 if (E_RABSubjecttoDataForwardingList == NULL) {
@@ -2598,35 +2603,37 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
                 e_rab->e_RAB_ID = bearer->ebi;
             }
 
-            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer)) {
+            if (have_dl) {
                 ogs_assert(e_rab);
                 e_rab->dL_transportLayerAddress =
                     CALLOC(1, sizeof(*e_rab->dL_transportLayerAddress));
                 ogs_assert(e_rab->dL_transportLayerAddress);
                 rv = ogs_asn_ip_to_BIT_STRING(
-                        &bearer->sgw_dl_ip, e_rab->dL_transportLayerAddress);
+                        direct ? &bearer->enb_dl_ip : &bearer->sgw_dl_ip, e_rab->dL_transportLayerAddress);
                 ogs_assert(rv == OGS_OK);
 
                 e_rab->dL_gTP_TEID = CALLOC(1, sizeof(*e_rab->dL_gTP_TEID));
                 ogs_assert(e_rab->dL_gTP_TEID);
                 ogs_asn_uint32_to_OCTET_STRING(
-                        bearer->sgw_dl_teid, e_rab->dL_gTP_TEID);
+                        direct ? bearer->enb_dl_teid : bearer->sgw_dl_teid,
+                        e_rab->dL_gTP_TEID);
                 ogs_debug("    SGW-DL-TEID[%d]", bearer->sgw_dl_teid);
             }
 
-            if (MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer)) {
+            if (have_ul) {
                 ogs_assert(e_rab);
                 e_rab->uL_TransportLayerAddress =
                     CALLOC(1, sizeof(*e_rab->uL_TransportLayerAddress));
                 ogs_assert(e_rab->uL_TransportLayerAddress);
                 rv = ogs_asn_ip_to_BIT_STRING(
-                    &bearer->sgw_ul_ip, e_rab->uL_TransportLayerAddress);
+                    direct ? &bearer->enb_ul_ip : &bearer->sgw_ul_ip, e_rab->uL_TransportLayerAddress);
                 ogs_assert(rv == OGS_OK);
 
                 e_rab->uL_GTP_TEID = CALLOC(1, sizeof(*e_rab->uL_GTP_TEID));
                 ogs_assert(e_rab->uL_GTP_TEID);
                 ogs_asn_uint32_to_OCTET_STRING(
-                        bearer->sgw_ul_teid, e_rab->uL_GTP_TEID);
+                        direct ? bearer->enb_ul_teid : bearer->sgw_ul_teid,
+                        e_rab->uL_GTP_TEID);
                 ogs_debug("    SGW-UL-TEID[%d]", bearer->sgw_dl_teid);
             }
         }

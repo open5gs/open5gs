@@ -23,6 +23,7 @@
 #include "emm-build.h"
 #include "nas-path.h"
 #include "mme-as-security.h"
+#include "mme-s10.h"
 #include "mme-event.h"
 #include "mme-timer.h"
 #include "mme-sm.h"
@@ -47,6 +48,7 @@ int nas_eps_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
         return OGS_NOTFOUND;
     }
 
+    if (mme_s10_handover_queue_downlink(enb_ue, pkbuf)) return OGS_OK;
     rv = s1ap_send_to_enb_ue(enb_ue, pkbuf);
     ogs_expect(rv == OGS_OK);
 
@@ -105,6 +107,7 @@ int nas_eps_send_to_downlink_nas_transport(
         return OGS_ERROR;
     }
 
+    if (mme_s10_handover_queue_downlink(enb_ue, s1apbuf)) return OGS_OK;
     rv = s1ap_send_to_enb_ue(enb_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
 

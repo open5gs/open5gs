@@ -166,6 +166,22 @@ static void identification_wire(abts_case *tc, void *data)
     ogs_pkbuf_free(p);
 }
 
+static void empty_relocation_complete(abts_case *tc, void *data)
+{
+    ogs_gtp2_message_t *msg = ogs_calloc(1, sizeof(*msg));
+    ogs_pkbuf_t *p;
+    ogs_assert(msg);
+    msg->h.type = OGS_GTP2_FORWARD_RELOCATION_COMPLETE_NOTIFICATION_TYPE;
+    p = ogs_gtp2_build_msg(msg);
+    ABTS_PTR_NOTNULL(tc, p);
+    if (p) {
+        ABTS_INT_EQUAL(tc, 0, p->len);
+        ABTS_TRUE(tc, ogs_pkbuf_headroom(p) >= OGS_GTPV2C_HEADER_LEN);
+        ogs_pkbuf_free(p);
+    }
+    ogs_free(msg);
+}
+
 static void relocation_forwarding_wire(abts_case *tc, void *data)
 {
     /* Independent TS 29.274 table 7.3.2-2 vector: EBI plus all six
@@ -418,6 +434,42 @@ static void s10_transaction_stages(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp_xact_commit(remote));
     ABTS_TRUE(tc, !ogs_gtp_xact_find_by_id(id));
     ogs_gtp_xact_delete_all(&node);
+    /* A rejected Context Response is a two-leg exchange. Preserve its
+     * duplicate cache, without starting a timer waiting for a forbidden ACK. */
+    {
+        ogs_sockaddr_t bind_addr = {0};
+        bind_addr.sin.sin_family = AF_INET;
+        bind_addr.sin.sin_addr.s_addr = htobe32(INADDR_LOOPBACK);
+        old_mme.addr = bind_addr;
+        old_mme.addr.sin.sin_port = htobe16(9);
+        old_mme.sock = ogs_udp_server(&bind_addr, NULL);
+        ABTS_PTR_NOTNULL(tc, old_mme.sock);
+        header.type = OGS_GTP2_CONTEXT_REQUEST_TYPE;
+        xact = ogs_gtp_xact_local_create(&node, &header,
+                transaction_payload(), NULL, NULL);
+        ogs_assert(xact);
+        header.sqn = OGS_GTP2_XID_TO_SQN(xact->xid);
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp_xact_receive(&old_mme, &header, &remote));
+        ogs_assert(remote);
+        remote->response_final = true;
+        header.type = OGS_GTP2_CONTEXT_RESPONSE_TYPE;
+        ABTS_INT_EQUAL(tc, OGS_OK,
+                ogs_gtp_xact_update_tx(remote, &header, transaction_payload()));
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp_xact_commit(remote));
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp_xact_receive(&node, &header, &received));
+        ABTS_TRUE(tc, received == xact);
+        id = xact->id;
+        xact->response_final = true;
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp_xact_commit(xact));
+        ABTS_TRUE(tc, !ogs_gtp_xact_find_by_id(id));
+        ABTS_TRUE(tc, ogs_timer_mgr_next(ogs_app()->timer_mgr) > ogs_time_from_sec(50));
+        header.type = OGS_GTP2_CONTEXT_REQUEST_TYPE;
+        ABTS_INT_EQUAL(tc, OGS_RETRY,
+                ogs_gtp_xact_receive(&old_mme, &header, &received));
+        ogs_gtp_xact_delete_all(&old_mme);
+        ogs_sock_destroy(old_mme.sock);
+        old_mme.sock = NULL;
+    }
     /* Cancelling an abandoned mobility procedure releases its pool slot
      * and removes it from peer lookup without a synthetic response. */
     header.type = OGS_GTP2_CONTEXT_REQUEST_TYPE;
@@ -449,6 +501,7 @@ abts_suite *test_gtp_s10(abts_suite *suite)
     abts_run_test(suite, identification_wire, NULL);
     abts_run_test(suite, pdn_bearer_wire, NULL);
     abts_run_test(suite, relocation_forwarding_wire, NULL);
+    abts_run_test(suite, empty_relocation_complete, NULL);
     abts_run_test(suite, multiple_pdn_and_bearer, NULL);
     abts_run_test(suite, s10_message_dispatch, NULL);
     abts_run_test(suite, s10_transaction_stages, NULL);

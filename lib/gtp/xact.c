@@ -425,6 +425,8 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
             OGS_PORT(&xact->gnode->addr));
 
     stage = ogs_gtp2_xact_get_stage(hdesc->type, xact->xid);
+    if (hdesc->type == OGS_GTP2_CONTEXT_RESPONSE_TYPE && xact->response_final)
+        stage = GTP_XACT_FINAL_STAGE;
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
@@ -528,6 +530,8 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
         stage = ogs_gtp1_xact_get_stage(type, xact->xid);
     else
         stage = ogs_gtp2_xact_get_stage(type, xact->xid);
+    if (xact->gtp_version == 2 && type == OGS_GTP2_CONTEXT_RESPONSE_TYPE &&
+            xact->response_final) stage = GTP_XACT_FINAL_STAGE;
 
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
@@ -709,6 +713,8 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
         stage = ogs_gtp1_xact_get_stage(type, xact->xid);
     else
         stage = ogs_gtp2_xact_get_stage(type, xact->xid);
+    if (xact->gtp_version == 2 && type == OGS_GTP2_CONTEXT_RESPONSE_TYPE &&
+            xact->response_final) stage = GTP_XACT_FINAL_STAGE;
 
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {

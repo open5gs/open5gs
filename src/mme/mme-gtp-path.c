@@ -421,6 +421,10 @@ int mme_gtp_send_delete_session_request(
     mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
     ogs_assert(sgw_ue);
+    if (mme_s10_source_committed(mme_ue)) {
+        ogs_debug("Ignore obsolete Delete Session after S10 transfer [ue:%u]", mme_ue->id);
+        return OGS_OK;
+    }
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_SESSION_REQUEST_TYPE;
@@ -653,6 +657,10 @@ int mme_gtp_send_release_access_bearers_request(
     ogs_assert(enb_ue);
     ogs_assert(action);
     ogs_assert(mme_ue);
+    if (mme_s10_source_committed(mme_ue))
+        return s1ap_send_ue_context_release_command(enb_ue,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
     sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
@@ -818,6 +826,7 @@ int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
     xact->local_teid = mme_ue->gn.mme_gn_teid;
     xact->enb_ue_id = enb_ue->id;
 
+    mme_s10_handover_bind_indirect(mme_ue, xact);
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 

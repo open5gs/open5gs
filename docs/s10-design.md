@@ -2,9 +2,10 @@
 
 S10 connects MMEs for mobility and context transfer. The protocol layer includes
 GTPv2-C mobility messages, the EPS MM Context codec and transaction stages. The
-MME runtime implements Identification and inter-MME TAU with a retained SGW,
-including fresh AKA fallback and transfer in either direction. Connected-mode
-S1 handover is tracked separately in the integration checklist below.
+MME runtime implements Identification, inter-MME TAU and connected S1 handover
+with a retained SGW. It includes fresh AKA fallback for idle mobility, direct
+and indirect forwarding, PDCP status transfer, cancellation and SON configuration
+transfer. The remaining integration work is listed below.
 
 ## Standards baseline
 
@@ -59,7 +60,8 @@ identity, access-control and security-context policy when importing a context.
 Context Request/Response/Acknowledge uses a three-leg transaction. The ACK is
 matched against the old MME's remote transaction list. Other request/response
 pairs use the two-leg transaction path. Configuration Transfer Tunnel is a
-one-way message, with codec support rather than a request/response transaction.
+one-way message, forwarded between configured MMEs without creating a
+request/response transaction.
 
 ## MME integration checklist
 
@@ -74,11 +76,11 @@ Each procedure needs source and target behavior:
   complete request, acknowledge, update S11 ownership and HSS registration,
   and allocate/confirm the target GUTI. Authentication fallback retries the
   request with IMSI and the standard MS Validated indication.
-- [ ] Route connected-mode handover by target TAI/eNB identity.
-- [ ] Retain the old context while transfer is pending. Handle acknowledgements,
+- [x] Route connected-mode handover by target TAI/eNB identity.
+- [x] Retain the old context while transfer is pending. Handle acknowledgements,
   HSS cancellation, retransmissions and expiry without deleting gateway sessions
   that now belong to the target MME.
-- [ ] Connected handover: exchange Forward Relocation, allocate target radio
+- [x] Connected handover with a retained SGW: exchange Forward Relocation, allocate target radio
   resources, forward status containers, complete relocation and release source
   resources. Cover cancellation, target rejection and expiry paths.
 - [ ] Handle SGW relocation and indirect forwarding when the selected SGW changes.
@@ -107,6 +109,9 @@ mme:
       mme:
         - address: 192.0.2.20
           port: 2123
+          tai:
+            - plmn_id: {mcc: '001', mnc: '01'}
+              tac: 2
           gummei:
             plmn_id: {mcc: '001', mnc: '01'}
             mme_gid: 2
@@ -145,6 +150,20 @@ Mode fallback, target GUTI allocation, unchanged UE address and a returned
 IPv4 ICMP echo after each move. `configs/s10-source.yaml` and
 `configs/s10-target.yaml` are the integration fixtures.
 
+Connected cases exercise both direct forwarding and indirect forwarding through
+the retained SGW. Each transfers default and dedicated bearers in both directions,
+checks source-path traffic during preparation, forwards downlink data to the
+advertised target endpoint, transports PDCP status, registers through post-handover
+TAU and verifies data after cancellation. SON configuration is tunneled in both
+directions. The source SGW retains the allocating MME's forwarding binding so
+cleanup replies reach the source even after the serving S11 endpoint changes.
+Cleanup failures never delete PDNs transferred to the target.
+
+Rejected Context Responses end as two-leg transactions: TS 29.274 7.3.7 requires
+an Acknowledge only for an accepted Context Response. Unit coverage checks that
+no ACK-response timer starts for a rejection while duplicate requests can still
+receive the cached negative response.
+
 `tests/unit/mme-s10-test.c` checks peer configuration and GUMMEI routing, MAC
 failure without modifying the source context, accepted COUNT progression and
 replay rejection. `tests/unit/gtp-s10-test.c` covers independent wire vectors, all fourteen message
@@ -180,8 +199,10 @@ The S1 and X2 handover paths advance the AS NH chain using its own KASME.
 Forward Relocation serialization includes the previous AS context when it differs
 from the active NAS context, as required by TS 33.401 7.2.10. Target import preserves
 the received NH/NCC pair; it does not apply the idle TAU key derivation again.
-The runtime handover dispatch and procedure lifecycle remain in the checklist
-above until source and target signaling are connected.
+The source waits for pending NAS security and AS installation procedures before
+sending its snapshot, then freezes downlink NAS until failure or cancellation.
+A successful transfer stops the source NAS timers and prevents obsolete S11
+session deletion or access-path deactivation.
 
 Target Identification supports macro, home, short macro and long macro eNB IDs.
 Selected PLMN ID has a dedicated codec for the two- and three-digit MNC encoding

@@ -589,6 +589,7 @@ struct mme_ue_s {
         ogs_pool_id_t   gtp_xact_id; /* 2g->4g SGSN Context Req/Resp/Ack gtp1c xact */
     } gn;
 
+    struct mme_s10_handover_s *s10_handover;
     uint32_t mme_s10_teid;
     struct {
         ogs_pool_id_t xact_id;
@@ -940,7 +941,7 @@ struct mme_ue_s {
         CLEAR_MME_UE_TIMER((__mME)->t_mobile_reachable); \
         CLEAR_MME_UE_TIMER((__mME)->t_implicit_detach); \
         \
-        ogs_list_for_each(&mme_ue->sess_list, sess) { \
+        ogs_list_for_each(&(__mME)->sess_list, sess) { \
             ogs_list_for_each(&sess->bearer_list, bearer) { \
                 CLEAR_BEARER_ALL_TIMERS(bearer); \
             } \

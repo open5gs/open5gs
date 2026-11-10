@@ -622,6 +622,9 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
              * it deletes the S1 Context after exchanging
              * the UEContextReleaseCommand/Complete with the eNB
              */
+            if (mme_s10_handover_tau(mme_ue,
+                        &message->emm.tracking_area_update_request)) break;
+
             CLEAR_S1_CONTEXT(mme_ue);
 
             /*

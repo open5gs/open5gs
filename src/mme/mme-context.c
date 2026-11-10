@@ -3538,7 +3538,10 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     ogs_assert(enb_ue);
 
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
-    if (mme_ue) mme_as_security_release(mme_ue, enb_ue->id);
+    if (mme_ue) {
+        mme_s10_handover_source_released(mme_ue, enb_ue->id);
+        mme_as_security_release(mme_ue, enb_ue->id);
+    }
 
     enb = mme_enb_find_by_id(enb_ue->enb_id);
 
@@ -4078,6 +4081,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     ogs_hash_set(self.mme_s10_teid_hash, &mme_ue->mme_s10_teid,
             sizeof(mme_ue->mme_s10_teid), NULL);
+    mme_s10_handover_clear(mme_ue);
     mme_s10_ue_clear(mme_ue);
     ogs_list_remove(&self.mme_ue_list, mme_ue);
 

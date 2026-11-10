@@ -793,6 +793,9 @@ void sgwc_sxa_handle_session_modification_response(
                     }
                 }
 
+                sgwc_ue->forwarding_gnode = NULL;
+                sgwc_ue->forwarding_mme_s11_teid = 0;
+
                 if (!s11_xact) {
                     ogs_warn("S11 transaction has already been removed [%u]; "
                             "reclaimed [%d] local indirect tunnels",
@@ -815,7 +818,8 @@ void sgwc_sxa_handle_session_modification_response(
 
                 send_message.h.type =
                 OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE;
-                send_message.h.teid = sgwc_ue->mme_s11_teid;
+                send_message.h.teid = s11_xact->remote_teid ?
+                    s11_xact->remote_teid : sgwc_ue->mme_s11_teid;
 
                 pkbuf = ogs_gtp2_build_msg(&send_message);
                 if (!pkbuf) {

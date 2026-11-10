@@ -15,6 +15,37 @@ typedef struct mme_s10_peer_s {
     ogs_eps_tai_t tai[OGS_MAX_NUM_OF_SUPPORTED_TA];
 } mme_s10_peer_t;
 
+int mme_s10_configuration_transfer(const S1AP_SONConfigurationTransfer_t *son);
+void mme_s10_configuration_receive(const ogs_gtp2_message_t *msg);
+
+/* Connected S1 mobility. The handover state owns all asynchronous snapshots. */
+void mme_s10_handover_clear(mme_ue_t *ue);
+void mme_s10_handover_tick(ogs_pool_id_t ue_id);
+int mme_s10_handover_required(enb_ue_t *source,
+        const S1AP_TargeteNB_ID_t *target, const S1AP_Cause_t *cause,
+        const OCTET_STRING_t *container, bool direct);
+bool mme_s10_source_committed(const mme_ue_t *ue);
+bool mme_s10_handover_busy(const mme_ue_t *ue);
+bool mme_s10_handover_queue_downlink(enb_ue_t *enb, ogs_pkbuf_t *p);
+bool mme_s10_handover_direct(const mme_ue_t *ue);
+bool mme_s10_handover_is_target(const mme_ue_t *ue);
+int mme_s10_handover_acknowledge(enb_ue_t *target);
+void mme_s10_handover_failure(enb_ue_t *target, const S1AP_Cause_t *cause);
+void mme_s10_handover_bind_indirect(mme_ue_t *ue, ogs_gtp_xact_t *xact);
+bool mme_s10_handover_indirect_response(ogs_gtp_xact_t *xact,
+        const ogs_gtp2_message_t *msg);
+void mme_s10_handover_source_released(mme_ue_t *ue, ogs_pool_id_t enb_ue_id);
+void mme_s10_handover_cleanup_response(ogs_gtp_xact_t *xact,
+        const ogs_gtp2_message_t *msg);
+int mme_s10_handover_status(enb_ue_t *source,
+        const S1AP_ENB_StatusTransfer_TransparentContainer_t *container);
+int mme_s10_handover_cancel(enb_ue_t *source);
+int mme_s10_handover_notify(enb_ue_t *target);
+void mme_s10_handover_sgw_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
+        ogs_gtp2_modify_bearer_response_t *rsp);
+bool mme_s10_handover_tau(mme_ue_t *ue,
+        const ogs_nas_eps_tracking_area_update_request_t *req);
+void mme_s10_handover_receive(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg);
 bool mme_s10_security_context_usable(const mme_ue_t *ue,
         const ogs_gtp2_eps_mm_context_t *mm);
 typedef struct {
