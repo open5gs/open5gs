@@ -106,15 +106,11 @@ ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer)
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = OGS_NAS_EPS_ESM_INFORMATION_REQUEST;
 
-    return nas_eps_security_encode(mme_ue, &message);
+    return ogs_nas_eps_plain_encode(&message);
 }
 
 ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(

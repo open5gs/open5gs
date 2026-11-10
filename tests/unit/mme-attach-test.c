@@ -107,6 +107,10 @@ static int attach_command(mme_ue_t *ue)
 {
     ogs_pkbuf_t *pkbuf = emm_build_security_mode_command(ue);
     if (!pkbuf) return OGS_ERROR;
+    pkbuf = nas_eps_security_protect(ue,
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT,
+        pkbuf);
+    if (!pkbuf) return OGS_ERROR;
     ogs_pkbuf_free(pkbuf);
     ogs_timer_start(ue->t3460.timer, ogs_time_from_sec(1));
     f->smc++;
@@ -1165,6 +1169,10 @@ static void aia_allocates_native_ksi(abts_case *tc, void *data)
             /* SMC installs a usable context even while the original UE KSI
              * remains 7 ("no key available"). */
             pkbuf = emm_build_security_mode_command(&f->ue);
+            ogs_assert(pkbuf);
+            pkbuf = nas_eps_security_protect(&f->ue,
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT,
+                pkbuf);
             ogs_assert(pkbuf);
             ABTS_TRUE(tc, SECURITY_CONTEXT_IS_VALID(&f->ue));
             ogs_pkbuf_free(pkbuf);

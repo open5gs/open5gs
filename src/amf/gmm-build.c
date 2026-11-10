@@ -55,11 +55,6 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_REGISTRATION_ACCEPT;
@@ -172,7 +167,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
                 amf_ue->supi, pdu_session_reactivation_result->psi);
     }
 
-    pkbuf = nas_5gs_security_encode(amf_ue, &message);
+    pkbuf = ogs_nas_5gs_plain_encode(&message);
 
     return pkbuf;
 }
@@ -314,11 +309,6 @@ ogs_pkbuf_t *gmm_build_de_registration_request(
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE;
@@ -333,7 +323,7 @@ ogs_pkbuf_t *gmm_build_de_registration_request(
         dereg_req->gmm_cause = gmm_cause;
     }
 
-    return nas_5gs_security_encode(amf_ue, &message);
+    return ogs_nas_5gs_plain_encode(&message);
 }
 
 ogs_pkbuf_t *gmm_build_identity_request(amf_ue_t *amf_ue)
@@ -421,11 +411,6 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_SECURITY_MODE_COMMAND;
@@ -484,7 +469,7 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     ogs_kdf_nas_5gs(OGS_KDF_NAS_ENC_ALG, amf_ue->selected_enc_algorithm,
             amf_ue->kamf, amf_ue->knas_enc);
 
-    return nas_5gs_security_encode(amf_ue, &message);
+    return ogs_nas_5gs_plain_encode(&message);
 }
 
 ogs_pkbuf_t *gmm_build_configuration_update_command(
@@ -514,11 +499,6 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
     ogs_assert(param);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND;
@@ -615,7 +595,7 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
         mobile_identity->buffer = &mobile_identity_guti;
     }
 
-    return nas_5gs_security_encode(amf_ue, &message);
+    return ogs_nas_5gs_plain_encode(&message);
 }
 
 ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
