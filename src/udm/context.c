@@ -21,6 +21,57 @@
 
 static udm_context_t self;
 
+/* A udm_ue context is UDR data cached in memory. It is allocated on the first
+ * SBI request that mentions a SUPI and, before this, was only ever released
+ * when a state machine went to exception - so udm_ue_pool, sized by max.ue,
+ * filled up with every subscriber the process had ever seen and then rejected
+ * new ones with "No memory pool". Idle contexts are now evicted.
+ *
+ * Default 3600s, override with UDM_UE_IDLE_TIMEOUT (seconds, 0 disables). */
+#define UDM_UE_IDLE_TIMEOUT_DEFAULT 3600
+
+static int udm_ue_idle_timeout(void)
+{
+    const char *s = ogs_env_get("UDM_UE_IDLE_TIMEOUT");
+    if (s) {
+        int v = atoi(s);
+        if (v >= 0) return v;
+    }
+    return UDM_UE_IDLE_TIMEOUT_DEFAULT;
+}
+
+static void udm_ue_idle_timer_expire(void *data)
+{
+    ogs_pool_id_t id = OGS_POINTER_TO_UINT(data);
+    udm_ue_t *udm_ue = udm_ue_find_by_id(id);
+
+    if (!udm_ue)
+        return;
+
+    ogs_info("[%s] no request for %d sec, evicting UE context",
+            udm_ue->supi, udm_ue_idle_timeout());
+    udm_ue_remove(udm_ue);
+}
+
+/* Restart the idle timer. Called for every SBI request that resolves to an
+ * existing udm_ue, so a context only goes away when it is genuinely unused. */
+void udm_ue_idle_timer_start(udm_ue_t *udm_ue)
+{
+    int t;
+
+    ogs_assert(udm_ue);
+
+    if (!udm_ue->t_idle)
+        return;
+
+    t = udm_ue_idle_timeout();
+    if (t <= 0) {
+        ogs_timer_stop(udm_ue->t_idle);
+        return;
+    }
+    ogs_timer_start(udm_ue->t_idle, ogs_time_from_sec(t));
+}
+
 int __udm_log_domain;
 
 static OGS_POOL(udm_ue_pool, udm_ue_t);
@@ -194,6 +245,23 @@ udm_ue_t *udm_ue_add(char *suci)
     e.udm_ue_id = udm_ue->id;
     ogs_fsm_init(&udm_ue->sm, udm_ue_state_initial, udm_ue_state_final, &e);
 
+    udm_ue->t_idle = ogs_timer_add(ogs_app()->timer_mgr,
+            udm_ue_idle_timer_expire, OGS_UINT_TO_POINTER(udm_ue->id));
+    if (!udm_ue->t_idle) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_fsm_fini(&udm_ue->sm, &e);
+        ogs_hash_unset_if_owner(self.suci_hash,
+                udm_ue->suci, strlen(udm_ue->suci), udm_ue);
+        ogs_hash_unset_if_owner(self.supi_hash,
+                udm_ue->supi, strlen(udm_ue->supi), udm_ue);
+        ogs_free(udm_ue->supi);
+        ogs_free(udm_ue->suci);
+        ogs_free(udm_ue->ctx_id);
+        ogs_pool_id_free(&udm_ue_pool, udm_ue);
+        return NULL;
+    }
+    udm_ue_idle_timer_start(udm_ue);
+
     ogs_list_add(&self.udm_ue_list, udm_ue);
 
     return udm_ue;
@@ -242,6 +310,10 @@ void udm_ue_remove(udm_ue_t *udm_ue)
         ogs_free(udm_ue->amf_instance_id);
     if (udm_ue->dereg_callback_uri)
         ogs_free(udm_ue->dereg_callback_uri);
+
+    if (udm_ue->t_idle)
+        ogs_timer_delete(udm_ue->t_idle);
+    udm_ue->t_idle = NULL;
 
     ogs_pool_id_free(&udm_ue_pool, udm_ue);
 }
