@@ -29,6 +29,8 @@ extern "C" {
 
 ogs_pkbuf_t *nas_eps_security_encode(
     mme_ue_t *mme_ue, ogs_nas_eps_message_t *message);
+ogs_pkbuf_t *nas_eps_security_protect(mme_ue_t *mme_ue,
+    uint8_t security_header_type, ogs_pkbuf_t *new);
 int nas_eps_security_decode(mme_ue_t *mme_ue, 
     ogs_nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf);
 

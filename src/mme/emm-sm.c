@@ -1886,6 +1886,13 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                     ogs_pkbuf_free(emmbuf);
                     return;
                 }
+                emmbuf = nas_eps_security_protect(mme_ue,
+                    OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED,
+                    emmbuf);
+                if (!emmbuf) {
+                    ogs_error("nas_eps_security_protect() failed");
+                    return;
+                }
 
                 ogs_timer_start(mme_ue->t3450.timer,
                         mme_timer_cfg(MME_TIMER_T3450)->duration);
