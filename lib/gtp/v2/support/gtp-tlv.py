@@ -101,7 +101,7 @@ def repeat_count(parent, ie):
     if parent == 'PDN Connection' and ie['ie_type'] == 'EPS PDN Bearer Context':
         return ('OGS_BEARER_PER_UE', 8)
     if parent in ('Forward Relocation Response', 'Context Acknowledge') and \
-            ie['ie_type'] == 'Bearer Context':
+            ie['ie_type'] in ('Bearer Context', 'Relocation Bearer Context'):
         return ('OGS_BEARER_PER_UE', 8)
     if ((parent in ('Create Indirect Data Forwarding Tunnel Request',
                     'Create Indirect Data Forwarding Tunnel Response') and
@@ -649,6 +649,29 @@ group_list["EPS PDN Bearer Context"] = {
 for ie in group_list["PDN Connection"]["ies"]:
     if ie["ie_type"] == "Bearer Context":
         ie["ie_type"] = "EPS PDN Bearer Context"
+
+# TS 29.274 7.3.2-2: relocation forwarding endpoints have their own
+# instance map. In particular, instance zero is the target eNB, not SGW.
+relocation_bearer_ies = [
+    ("EBI", "EPS Bearer ID", 0),
+    ("Packet Flow ID", "Packet Flow ID", 0),
+    ("F-TEID", "eNB DL Forwarding F-TEID", 0),
+    ("F-TEID", "eNB UL Forwarding F-TEID", 1),
+    ("F-TEID", "SGW DL Forwarding F-TEID", 2),
+    ("F-TEID", "RNC DL Forwarding F-TEID", 3),
+    ("F-TEID", "SGSN DL Forwarding F-TEID", 4),
+    ("F-TEID", "SGW UL Forwarding F-TEID", 5),
+]
+type_list["Relocation Bearer Context"] = {"type": "93", "max_instance": "0"}
+group_list["Relocation Bearer Context"] = {
+    "index": str(int(group_list["PDN Connection"]["index"]) - 2),
+    "type": "93",
+    "ies": [{"ie_type": typ, "ie_value": name, "instance": str(instance)}
+            for typ, name, instance in relocation_bearer_ies],
+}
+for ie in msg_list["Forward Relocation Response"]["ies"]:
+    if ie["ie_type"] == "Bearer Context" and ie["instance"] == "0":
+        ie["ie_type"] = "Relocation Bearer Context"
 
 f = open(outdir + 'message.h', 'w')
 output_header_to_file(f)

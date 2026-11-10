@@ -27,6 +27,8 @@
 
 #include "s1ap-build.h"
 #include "s1ap-path.h"
+#include "mme-as-security.h"
+#include "mme-sm.h"
 
 int s1ap_open(void)
 {
@@ -449,6 +451,8 @@ int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 
     rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
+    if (rv == OGS_OK) mme_as_security_prepare(mme_ue,
+            S1AP_ProcedureCode_id_InitialContextSetup);
 
     return rv;
 }
@@ -479,6 +483,13 @@ int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
     rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
 
+    /* CS fallback carries no SecurityKey; only track an AS installation
+     * when the request actually contains the new KeNB. */
+    if (rv == OGS_OK && !(mme_ue->nas_eps.type ==
+                MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST &&
+                MME_CURRENT_P_TMSI_IS_AVAILABLE(mme_ue)))
+        mme_as_security_prepare(mme_ue,
+                S1AP_ProcedureCode_id_UEContextModification);
     return rv;
 }
 

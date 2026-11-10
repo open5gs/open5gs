@@ -21,6 +21,7 @@
 
 #include "mme-context.h"
 #include "mme-s10.h"
+#include "mme-as-security.h"
 #include "mme-event.h"
 #include "mme-timer.h"
 #include "nas-path.h"
@@ -3532,8 +3533,12 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 void enb_ue_remove(enb_ue_t *enb_ue)
 {
     mme_enb_t *enb = NULL;
+    mme_ue_t *mme_ue;
 
     ogs_assert(enb_ue);
+
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+    if (mme_ue) mme_as_security_release(mme_ue, enb_ue->id);
 
     enb = mme_enb_find_by_id(enb_ue->enb_id);
 

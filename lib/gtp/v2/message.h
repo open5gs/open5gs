@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-11-10 16:11:09.907234 by root
+ * Created on: 2026-11-10 16:41:38.859603 by root
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -177,6 +177,7 @@ typedef struct ogs_gtp2_header_s {
 #define OGS_GTP2_DELAY_VALUE_TYPE 92
 #define OGS_GTP2_BEARER_CONTEXT_TYPE 93
 #define OGS_GTP2_EPS_PDN_BEARER_CONTEXT_TYPE 93
+#define OGS_GTP2_RELOCATION_BEARER_CONTEXT_TYPE 93
 #define OGS_GTP2_CHARGING_ID_TYPE 94
 #define OGS_GTP2_CHARGING_CHARACTERISTICS_TYPE 95
 #define OGS_GTP2_TRACE_INFORMATION_TYPE 96
@@ -495,6 +496,7 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_2;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_3;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_relocation_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_eps_pdn_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_overload_control_information_0;
@@ -778,6 +780,18 @@ typedef struct ogs_gtp2_tlv_bearer_context_s {
     ogs_gtp2_tlv_ti_t transaction_identifier;
     ogs_gtp2_tlv_packet_flow_id_t packet_flow_id;
 } ogs_gtp2_tlv_bearer_context_t;
+
+typedef struct ogs_gtp2_tlv_relocation_bearer_context_s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp2_tlv_ebi_t eps_bearer_id;
+    ogs_gtp2_tlv_packet_flow_id_t packet_flow_id;
+    ogs_gtp2_tlv_f_teid_t enb_dl_forwarding_f_teid; /* Instance : 0 */
+    ogs_gtp2_tlv_f_teid_t enb_ul_forwarding_f_teid; /* Instance : 1 */
+    ogs_gtp2_tlv_f_teid_t sgw_dl_forwarding_f_teid; /* Instance : 2 */
+    ogs_gtp2_tlv_f_teid_t rnc_dl_forwarding_f_teid; /* Instance : 3 */
+    ogs_gtp2_tlv_f_teid_t sgsn_dl_forwarding_f_teid; /* Instance : 4 */
+    ogs_gtp2_tlv_f_teid_t sgw_ul_forwarding_f_teid; /* Instance : 5 */
+} ogs_gtp2_tlv_relocation_bearer_context_t;
 
 typedef struct ogs_gtp2_tlv_eps_pdn_bearer_context_s {
     ogs_tlv_presence_t presence;
@@ -1452,7 +1466,7 @@ typedef struct ogs_gtp2_forward_relocation_response_s {
     ogs_gtp2_tlv_cause_t cause;
     ogs_gtp2_tlv_f_teid_t sender_s_f_teid_for_control_plane;
     ogs_gtp2_tlv_indication_t indication_flags;
-    ogs_gtp2_tlv_bearer_context_t list_of_set_up_bearers[OGS_BEARER_PER_UE];
+    ogs_gtp2_tlv_relocation_bearer_context_t list_of_set_up_bearers[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_bearer_context_t list_of_set_up_rabs[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_bearer_context_t list_of_set_up_pfcs[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_f_cause_t s1_ap_cause;

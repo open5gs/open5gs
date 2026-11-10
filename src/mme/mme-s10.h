@@ -11,14 +11,37 @@ typedef struct mme_s10_peer_s {
     ogs_plmn_id_t plmn_id;
     uint16_t mme_gid;
     uint8_t mme_code;
+    int num_tai;
+    ogs_eps_tai_t tai[OGS_MAX_NUM_OF_SUPPORTED_TA];
 } mme_s10_peer_t;
 
 bool mme_s10_security_context_usable(const mme_ue_t *ue,
         const ogs_gtp2_eps_mm_context_t *mm);
+typedef struct {
+    ogs_plmn_id_t enb_plmn;
+    ogs_eps_tai_t tai;
+    uint32_t enb_id;
+    S1AP_ENB_ID_PR enb_type;
+} mme_s10_target_t;
+int mme_s10_encode_selected_plmn(ogs_tlv_octet_t *ie,
+        const ogs_plmn_id_t *plmn, uint8_t buffer[3]);
+int mme_s10_decode_selected_plmn(ogs_plmn_id_t *plmn,
+        const ogs_tlv_octet_t *ie);
+int mme_s10_encode_target(ogs_tlv_octet_t *ie,
+        const S1AP_TargeteNB_ID_t *target, uint8_t buffer[10]);
+int mme_s10_decode_target(mme_s10_target_t *target, const ogs_tlv_octet_t *ie);
+int mme_s10_encode_cause(ogs_tlv_octet_t *ie,
+        const S1AP_Cause_t *cause, uint8_t buffer[2]);
+int mme_s10_decode_cause(S1AP_Cause_t *cause, const ogs_tlv_octet_t *ie);
+int mme_s10_import_handover_context(mme_ue_t *ue,
+        const ogs_gtp2_forward_relocation_request_t *req);
 int mme_s10_import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
         bool keep_security);
 int mme_s10_export_mm_context(mme_ue_t *ue, ogs_tlv_octet_t *ie,
         void *buffer, size_t size);
+ogs_pkbuf_t *mme_s10_build_forward_relocation_request(mme_ue_t *ue,
+        const S1AP_TargeteNB_ID_t *target, const S1AP_Cause_t *cause,
+        const OCTET_STRING_t *container, bool direct_forwarding);
 ogs_pkbuf_t *mme_s10_build_context_response(mme_ue_t *ue, uint8_t cause);
 bool mme_s10_imsi_available(mme_ue_t *ue, const char *imsi);
 void mme_s10_init(void);
@@ -27,6 +50,7 @@ int mme_s10_parse_peer(ogs_yaml_iter_t *parent);
 int mme_s10_open(void);
 mme_s10_peer_t *mme_s10_find_by_addr(const ogs_sockaddr_t *addr);
 mme_s10_peer_t *mme_s10_find_by_guti(const ogs_nas_eps_guti_t *guti);
+mme_s10_peer_t *mme_s10_find_by_tai(const ogs_eps_tai_t *tai);
 bool mme_s10_message_type(uint8_t type);
 void mme_s10_holding_expired(ogs_pool_id_t ue_id);
 bool mme_s10_cancel_location(mme_ue_t *ue);

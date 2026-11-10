@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-11-10 16:11:09.996817 by root
+ * Created on: 2026-11-10 16:41:38.943650 by root
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -2309,6 +2309,27 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_3 =
     }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_relocation_bearer_context_0 =
+{
+    OGS_TLV_COMPOUND,
+    "Relocation Bearer Context",
+    OGS_GTP2_RELOCATION_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_relocation_bearer_context_t),
+    {
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_packet_flow_id_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_f_teid_2,
+        &ogs_gtp2_tlv_desc_f_teid_3,
+        &ogs_gtp2_tlv_desc_f_teid_4,
+        &ogs_gtp2_tlv_desc_f_teid_5,
+        NULL,
+    }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_eps_pdn_bearer_context_0 =
 {
     OGS_TLV_COMPOUND,
@@ -3239,7 +3260,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_forward_relocation_response =
         &ogs_gtp2_tlv_desc_cause_0,
         &ogs_gtp2_tlv_desc_f_teid_0,
         &ogs_gtp2_tlv_desc_indication_0,
-        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_relocation_bearer_context_0,
         &ogs_tlv_desc_more8,
         &ogs_gtp2_tlv_desc_bearer_context_1,
         &ogs_tlv_desc_more8,

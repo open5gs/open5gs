@@ -2324,14 +2324,16 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(
         }
     }
 
-    SecurityContext->nextHopChainingCount = mme_ue->nhcc;
+    SecurityContext->nextHopChainingCount = mme_ue->as_security.valid ?
+            mme_ue->as_security.ncc : mme_ue->nhcc;
     SecurityContext->nextHopParameter.size = OGS_SHA256_DIGEST_SIZE;
     SecurityContext->nextHopParameter.buf =
         CALLOC(SecurityContext->nextHopParameter.size,
         sizeof(uint8_t));
     SecurityContext->nextHopParameter.bits_unused = 0;
     memcpy(SecurityContext->nextHopParameter.buf,
-            mme_ue->nh, SecurityContext->nextHopParameter.size);
+            mme_ue->as_security.valid ? mme_ue->as_security.nh : mme_ue->nh,
+            SecurityContext->nextHopParameter.size);
 
     if (send_ue_security_capability) {
         ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestAcknowledgeIEs_t));
@@ -3049,14 +3051,16 @@ ogs_pkbuf_t *s1ap_build_handover_request(
     UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
         (mme_ue->ue_network_capability.eia << 1);
 
-    SecurityContext->nextHopChainingCount = mme_ue->nhcc;
+    SecurityContext->nextHopChainingCount = mme_ue->as_security.valid ?
+        mme_ue->as_security.ncc : mme_ue->nhcc;
     SecurityContext->nextHopParameter.size = OGS_SHA256_DIGEST_SIZE;
     SecurityContext->nextHopParameter.buf =
         CALLOC(SecurityContext->nextHopParameter.size,
         sizeof(uint8_t));
     SecurityContext->nextHopParameter.bits_unused = 0;
     memcpy(SecurityContext->nextHopParameter.buf,
-            mme_ue->nh, SecurityContext->nextHopParameter.size);
+            mme_ue->as_security.valid ? mme_ue->as_security.nh : mme_ue->nh,
+            SecurityContext->nextHopParameter.size);
 
     /* TS23.003 6.2.2 Composition of IMEISV
      *

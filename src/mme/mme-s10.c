@@ -39,6 +39,48 @@ static int number(const char *text, unsigned long max, unsigned long *value)
     return !errno && !*end && *value <= max ? OGS_OK : OGS_ERROR;
 }
 
+static int parse_tais(ogs_yaml_iter_t *parent, ogs_eps_tai_t *tais, int *count)
+{
+    ogs_yaml_iter_t array, item, plmn;
+    ogs_yaml_iter_recurse(parent, &array);
+    do {
+        const char *mcc = NULL, *mnc = NULL;
+        unsigned long tac = 0, value;
+        bool have_tac = false;
+        if (*count >= OGS_MAX_NUM_OF_SUPPORTED_TA) return OGS_ERROR;
+        if (ogs_yaml_iter_type(&array) == YAML_MAPPING_NODE)
+            memcpy(&item, &array, sizeof(item));
+        else if (ogs_yaml_iter_type(&array) == YAML_SEQUENCE_NODE) {
+            if (!ogs_yaml_iter_next(&array)) break;
+            ogs_yaml_iter_recurse(&array, &item);
+        } else return OGS_ERROR;
+        while (ogs_yaml_iter_next(&item)) {
+            const char *key = ogs_yaml_iter_key(&item);
+            if (!strcmp(key, "tac")) {
+                if (number(ogs_yaml_iter_value(&item), 65535, &tac) != OGS_OK)
+                    return OGS_ERROR;
+                have_tac = true;
+            } else if (!strcmp(key, "plmn_id")) {
+                ogs_yaml_iter_recurse(&item, &plmn);
+                while (ogs_yaml_iter_next(&plmn)) {
+                    key = ogs_yaml_iter_key(&plmn);
+                    if (!strcmp(key, "mcc")) mcc = ogs_yaml_iter_value(&plmn);
+                    else if (!strcmp(key, "mnc")) mnc = ogs_yaml_iter_value(&plmn);
+                    else return OGS_ERROR;
+                }
+            } else return OGS_ERROR;
+        }
+        if (!mcc || !mnc || !have_tac || strlen(mcc) != 3 ||
+                (strlen(mnc) != 2 && strlen(mnc) != 3) ||
+                number(mcc, 999, &value) != OGS_OK ||
+                number(mnc, 999, &value) != OGS_OK) return OGS_ERROR;
+        ogs_plmn_id_build(&tais[*count].plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
+        tais[*count].tac = tac;
+        (*count)++;
+    } while (ogs_yaml_iter_type(&array) == YAML_SEQUENCE_NODE);
+    return *count ? OGS_OK : OGS_ERROR;
+}
+
 int mme_s10_parse_peer(ogs_yaml_iter_t *parent)
 {
     ogs_yaml_iter_t array, iter, gummei, plmn;
@@ -47,10 +89,14 @@ int mme_s10_parse_peer(ogs_yaml_iter_t *parent)
     bool have_gid = false, have_code = false;
     mme_s10_peer_t *peer, *other;
     ogs_sockaddr_t *addr = NULL;
+    ogs_eps_tai_t tais[OGS_MAX_NUM_OF_SUPPORTED_TA];
+    int num_tai;
 
     ogs_yaml_iter_recurse(parent, &array);
     do {
         address = mcc = mnc = NULL;
+        num_tai = 0;
+        memset(tais, 0, sizeof(tais));
         have_gid = have_code = false;
         port = ogs_gtp_self()->gtpc_port;
         if (ogs_yaml_iter_type(&array) == YAML_MAPPING_NODE)
@@ -65,6 +111,8 @@ int mme_s10_parse_peer(ogs_yaml_iter_t *parent)
             else if (!strcmp(key, "port")) {
                 if (number(ogs_yaml_iter_value(&iter), 65535, &port) != OGS_OK ||
                         !port) goto invalid;
+            } else if (!strcmp(key, "tai")) {
+                if (parse_tais(&iter, tais, &num_tai) != OGS_OK) goto invalid;
             } else if (!strcmp(key, "gummei")) {
                 ogs_yaml_iter_recurse(&iter, &gummei);
                 while (ogs_yaml_iter_next(&gummei)) {
@@ -102,6 +150,8 @@ int mme_s10_parse_peer(ogs_yaml_iter_t *parent)
         ogs_plmn_id_build(&peer->plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
         peer->mme_gid = gid;
         peer->mme_code = code;
+        peer->num_tai = num_tai;
+        memcpy(peer->tai, tais, sizeof(tais));
         ogs_list_for_each(&peers, other) {
             if (other->mme_gid == gid && other->mme_code == code &&
                     !memcmp(&other->plmn_id, &peer->plmn_id,
@@ -162,6 +212,19 @@ mme_s10_peer_t *mme_s10_find_by_guti(const ogs_nas_eps_guti_t *guti)
         if (peer->mme_gid == guti->mme_gid &&
                 peer->mme_code == guti->mme_code &&
                 !memcmp(&peer->plmn_id, &plmn_id, sizeof(plmn_id))) return peer;
+    }
+    return NULL;
+}
+
+mme_s10_peer_t *mme_s10_find_by_tai(const ogs_eps_tai_t *tai)
+{
+    mme_s10_peer_t *peer;
+    int i;
+    ogs_list_for_each(&peers, peer) {
+        for (i = 0; i < peer->num_tai; i++)
+            if (peer->tai[i].tac == tai->tac &&
+                    !memcmp(&peer->tai[i].plmn_id, &tai->plmn_id,
+                        sizeof(tai->plmn_id))) return peer;
     }
     return NULL;
 }

@@ -167,3 +167,31 @@ python3 gtp-tlv.py -f r19.6.0/29274-j60.docx -o ..
 ```
 
 Related design discussion: [open5gs/open5gs#4821](https://github.com/open5gs/open5gs/discussions/4821).
+
+## Connected mobility security and wire formats
+
+The handover foundation keeps the AS key role separately from the current NAS
+KASME/eKSI. Initial Context Setup and SecurityKey-bearing UE Context Modification
+requests capture the key snapshot sent to the radio. Only a matching S1 context
+and procedure response confirms that snapshot; a failure retains the previous
+AS context. Release of an old S1 leg does not clear the key of the serving leg.
+The S1 and X2 handover paths advance the AS NH chain using its own KASME.
+
+Forward Relocation serialization includes the previous AS context when it differs
+from the active NAS context, as required by TS 33.401 7.2.10. Target import preserves
+the received NH/NCC pair; it does not apply the idle TAU key derivation again.
+The runtime handover dispatch and procedure lifecycle remain in the checklist
+above until source and target signaling are connected.
+
+Target Identification supports macro, home, short macro and long macro eNB IDs.
+Selected PLMN ID has a dedicated codec for the two- and three-digit MNC encoding
+in TS 29.274 8.50. The Forward Relocation Response has a separate grouped bearer
+schema for forwarding F-TEID instances 0 through 5 (table 7.3.2-2). It must not use
+the Create Session bearer descriptor. Optional TAI routes are parsed and looked
+up under each configured MME peer.
+
+Independent wire vectors exercise these encodings. Key-role tests cover NAS
+changes while an AS installation is pending, stale and mismatched responses,
+failure, NH progression, old-context export and release of obsolete radio legs.
+A production Forward Relocation builder test verifies opaque RAN container and
+security-context serialization, with only the SGW pool lookup substituted.

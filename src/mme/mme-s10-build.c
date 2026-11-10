@@ -1,6 +1,7 @@
 /* Copyright (C) 2026 Open5GS contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later */
 #include "mme-s10.h"
+#include "mme-as-security.h"
 
 typedef struct {
     char apn[OGS_MAX_APN_LEN + 1];
@@ -104,8 +105,8 @@ static int export_pdn(ogs_gtp2_tlv_pdn_connection_t *pdn,
     return i ? OGS_OK : OGS_ERROR;
 }
 
-int mme_s10_export_mm_context(mme_ue_t *ue, ogs_tlv_octet_t *ie,
-        void *buffer, size_t size)
+static int export_mm_context(mme_ue_t *ue, ogs_tlv_octet_t *ie,
+        void *buffer, size_t size, bool handover)
 {
     ogs_gtp2_eps_mm_context_t mm = {0};
     mm.ksi = ue->nas_eps.mme.ksi;
@@ -134,10 +135,18 @@ int mme_s10_export_mm_context(mme_ue_t *ue, ogs_tlv_octet_t *ie,
     mm.ue_network_capability.len = ue->ue_network_capability.length;
     mm.ms_network_capability.data = (uint8_t *)&ue->ms_network_capability + 1;
     mm.ms_network_capability.len = ue->ms_network_capability.length;
+    if (handover) mme_as_security_export_old(ue, &mm);
     return ogs_gtp2_build_eps_mm_context(ie, &mm, buffer, size);
 }
 
-ogs_pkbuf_t *mme_s10_build_context_response(mme_ue_t *ue, uint8_t cause_value)
+int mme_s10_export_mm_context(mme_ue_t *ue, ogs_tlv_octet_t *ie,
+        void *buffer, size_t size)
+{
+    return export_mm_context(ue, ie, buffer, size, false);
+}
+
+static ogs_pkbuf_t *build_context_response(mme_ue_t *ue, uint8_t cause_value,
+        bool handover)
 {
     ogs_gtp2_message_t *message = ogs_calloc(1, sizeof(*message));
     ogs_gtp2_context_response_t *rsp;
@@ -161,8 +170,8 @@ ogs_pkbuf_t *mme_s10_build_context_response(mme_ue_t *ue, uint8_t cause_value)
     rsp->imsi.presence = 1;
     rsp->imsi.data = ue->imsi;
     rsp->imsi.len = ue->imsi_len;
-    if (mme_s10_export_mm_context(ue, &rsp->mme_sgsn_amf_ue_mm_context,
-                context, sizeof(context)) != OGS_OK) goto fail;
+    if (export_mm_context(ue, &rsp->mme_sgsn_amf_ue_mm_context,
+                context, sizeof(context), handover) != OGS_OK) goto fail;
     sender.interface_type = OGS_GTP2_F_TEID_S10_MME_GTP_C;
     sender.teid = htobe32(ue->mme_s10_teid);
     if (ogs_gtp2_sockaddr_to_f_teid(ogs_gtp_self()->gtpc_addr,
@@ -201,4 +210,74 @@ fail:
     if (storage) ogs_free(storage);
     ogs_free(message);
     return NULL;
+}
+
+ogs_pkbuf_t *mme_s10_build_context_response(mme_ue_t *ue, uint8_t cause)
+{
+    return build_context_response(ue, cause, false);
+}
+
+/* TS 29.274 7.3.1: build the EPS context with the same snapshot as idle
+ * mobility, retaining the previous AS key role when NAS has changed. */
+ogs_pkbuf_t *mme_s10_build_forward_relocation_request(mme_ue_t *ue,
+        const S1AP_TargeteNB_ID_t *target, const S1AP_Cause_t *cause,
+        const OCTET_STRING_t *container, bool direct_forwarding)
+{
+    ogs_gtp2_context_response_t *ctx = ogs_calloc(1, sizeof(*ctx));
+    ogs_gtp2_message_t *msg = ogs_calloc(1, sizeof(*msg));
+    ogs_gtp2_forward_relocation_request_t *req;
+    ogs_gtp2_indication_t indication = {0};
+    ogs_pkbuf_t *snapshot = NULL, *result = NULL;
+    uint8_t target_id[10], f_cause[2], selected_plmn[3], *transparent = NULL;
+    ogs_plmn_id_t plmn;
+    int i;
+    ogs_assert(ctx && msg);
+    req = &msg->forward_relocation_request;
+    /* Leave room for the EPS context and the outer TLVs; reject oversized
+     * opaque RAN containers before the generic fixed-size TLV builder. */
+    if (!ue->as_security.valid || ue->as_pending.valid ||
+            !container || !container->buf || !container->size ||
+            container->size > OGS_MAX_SDU_LEN / 2 ||
+            mme_s10_encode_target(&req->target_identification,
+                target, target_id) != OGS_OK ||
+            mme_s10_encode_cause(&req->s1_ap_cause, cause, f_cause) != OGS_OK)
+        goto out;
+    if (target->selected_TAI->pLMNidentity.size != sizeof(plmn) ||
+            !target->selected_TAI->pLMNidentity.buf) goto out;
+    memcpy(&plmn, target->selected_TAI->pLMNidentity.buf, sizeof(plmn));
+    if (mme_s10_encode_selected_plmn(&req->selected_plmn_id,
+                &plmn, selected_plmn) != OGS_OK) goto out;
+    snapshot = build_context_response(ue, OGS_GTP2_CAUSE_REQUEST_ACCEPTED, true);
+    if (!snapshot || snapshot->len + container->size + 256 >= OGS_MAX_SDU_LEN ||
+            ogs_tlv_parse_msg(ctx, &ogs_gtp2_tlv_desc_context_response,
+                snapshot, OGS_TLV_MODE_T1_L2_I1) != OGS_OK) goto out;
+    req->imsi = ctx->imsi;
+    req->sender_s_f_teid_for_control_plane = ctx->sender_f_teid_for_control_plane;
+    req->sgw_s11_s4_ip_address_and_teid_for_control_plane =
+        ctx->sgw_s11_s4_ip_address_and_teid_for_control_plane;
+    req->mme_sgsn_amf_ue_mm_context = ctx->mme_sgsn_amf_ue_mm_context;
+    for (i = 0; i < OGS_MAX_NUM_OF_SESS; i++)
+        req->mme_sgsn_amf_ue_eps_pdn_connections[i] =
+            ctx->mme_sgsn_amf_ue_eps_pdn_connections[i];
+    transparent = ogs_malloc(container->size + 1);
+    ogs_assert(transparent);
+    transparent[0] = 3; /* E-UTRAN transparent container, TS 29.274 8.48. */
+    memcpy(transparent + 1, container->buf, container->size);
+    req->e_utran_transparent_container.presence = 1;
+    req->e_utran_transparent_container.data = transparent;
+    req->e_utran_transparent_container.len = container->size + 1;
+    if (direct_forwarding) {
+        indication.direct_forwarding_indication = 1;
+        req->indication_flags.presence = 1;
+        req->indication_flags.data = &indication;
+        req->indication_flags.len = sizeof(indication);
+    }
+    msg->h.type = OGS_GTP2_FORWARD_RELOCATION_REQUEST_TYPE;
+    result = ogs_gtp2_build_msg(msg);
+out:
+    if (transparent) ogs_free(transparent);
+    if (snapshot) ogs_pkbuf_free(snapshot);
+    ogs_free(ctx);
+    ogs_free(msg);
+    return result;
 }

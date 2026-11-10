@@ -21,6 +21,7 @@
 #include "mme-timer.h"
 
 #include "s1ap-path.h"
+#include "mme-as-security.h"
 #include "nas-path.h"
 #include "mme-fd-path.h"
 #include "mme-gtp-path.h"
@@ -1427,6 +1428,9 @@ void s1ap_handle_initial_context_setup_response(
         }
     }
 
+    mme_as_security_complete(mme_ue, enb_ue->id,
+            S1AP_ProcedureCode_id_InitialContextSetup, true);
+
     if (MME_PAGING_ONGOING(mme_ue))
         mme_send_after_paging(mme_ue, false);
 }
@@ -1509,6 +1513,8 @@ void s1ap_handle_initial_context_setup_failure(
          * if T3450 is running, Attach complete will be sent.
          * So, we need to clear all the timer at this point.
          */
+        mme_as_security_complete(mme_ue, enb_ue->id,
+                S1AP_ProcedureCode_id_InitialContextSetup, false);
         CLEAR_SERVICE_INDICATOR(mme_ue);
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
     }
@@ -1604,6 +1610,8 @@ void s1ap_handle_ue_context_modification_response(
         return;
     }
 
+    mme_as_security_complete(mme_ue, enb_ue->id,
+            S1AP_ProcedureCode_id_UEContextModification, true);
     CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
@@ -1696,6 +1704,8 @@ void s1ap_handle_ue_context_modification_failure(
         ogs_assert(r != OGS_ERROR);
         return;
     }
+    mme_as_security_complete(mme_ue, enb_ue->id,
+            S1AP_ProcedureCode_id_UEContextModification, false);
     CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
@@ -3365,8 +3375,7 @@ void s1ap_handle_path_switch_request(
      * advancing the NextHop chain before that point would desynchronize
      * the {NH, NCC} with the eNB with no rollback (TS 33.401 7.2.8).
      */
-    mme_ue->nhcc++;
-    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
+    if (mme_as_security_next_hop(mme_ue) != OGS_OK) return;
 
     relocation = sgw_ue_check_if_relocated(mme_ue);
     if (relocation == SGW_WITHOUT_RELOCATION) {
@@ -3616,8 +3625,7 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
 
     source_ue->handover_type = S1AP_HandoverType_intralte;
 
-    mme_ue->nhcc++;
-    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
+    if (mme_as_security_next_hop(mme_ue) != OGS_OK) return;
 
     r = s1ap_send_handover_request(
             source_ue, target_enb, &source_ue->handover_type, Cause,
@@ -4702,6 +4710,8 @@ void s1ap_handle_handover_notification(
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     enb_ue_associate_mme_ue(target_ue, mme_ue);
+    if (mme_ue->as_security.valid)
+        mme_ue->as_security.enb_ue_id = target_ue->id;
     ogs_debug("Mobile Reachable timer stopped for IMSI[%s]", mme_ue->imsi_bcd);
     CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
 

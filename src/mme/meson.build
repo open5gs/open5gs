@@ -32,6 +32,7 @@ libmme_sources = files('''
     mme-fd-path.h
     mme-s6a-handler.h
     mme-s13-handler.h
+    mme-as-security.h
     nas-security.h
     nas-path.h
     emm-handler.h
@@ -70,6 +71,7 @@ libmme_sources = files('''
     mme-fd-path.c
     mme-s6a-handler.c
     mme-s13-handler.c
+    mme-as-security.c
     nas-security.c
     nas-path.c
     emm-sm.c
@@ -81,6 +83,7 @@ libmme_sources = files('''
     mme-s10.c
     mme-s10-build.c
     mme-s10-context.c
+    mme-s10-codec.c
     mme-gn-build.c
     mme-gn-handler.c
     mme-gtp-path.c

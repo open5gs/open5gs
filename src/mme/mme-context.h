@@ -487,6 +487,15 @@ typedef struct mme_ue_memento_s {
     uint8_t selected_int_algorithm;
 } mme_ue_memento_t;
 
+typedef struct mme_as_security_s {
+    bool valid;
+    uint8_t kasme[OGS_SHA256_DIGEST_SIZE];
+    uint8_t ksi;
+    uint8_t nh[OGS_SHA256_DIGEST_SIZE];
+    uint8_t ncc;
+    ogs_pool_id_t enb_ue_id;
+} mme_as_security_t;
+
 struct mme_ue_s {
     ogs_lnode_t     lnode;
     ogs_pool_id_t   id;
@@ -672,6 +681,10 @@ struct mme_ue_s {
 
     /* Memento of context fields */
     mme_ue_memento_t memento;
+
+    mme_as_security_t as_security;
+    mme_as_security_t as_pending;
+    int as_pending_procedure;
 
     /* Security Context */
     ogs_nas_ue_network_capability_t ue_network_capability;

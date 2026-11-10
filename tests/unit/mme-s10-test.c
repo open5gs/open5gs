@@ -25,12 +25,16 @@ static void routes(abts_case *tc, void *data)
 {
     ogs_nas_eps_guti_t guti = {0};
     ogs_plmn_id_t plmn;
+    ogs_eps_tai_t tai = {0};
     mme_s10_peer_t *peer;
     mme_s10_init();
     ABTS_INT_EQUAL(tc, OGS_OK, parse_peer(
         "mme:\n"
         "  - address: 127.0.0.3\n"
         "    port: 2123\n"
+        "    tai:\n"
+        "      - plmn_id: {mcc: '001', mnc: '01'}\n"
+        "        tac: 1234\n"
         "    gummei:\n"
         "      plmn_id: {mcc: '001', mnc: '01'}\n"
         "      mme_gid: 65535\n"
@@ -42,6 +46,14 @@ static void routes(abts_case *tc, void *data)
     peer = mme_s10_find_by_guti(&guti);
     ABTS_PTR_NOTNULL(tc, peer);
     if (peer) ABTS_INT_EQUAL(tc, 2123, OGS_PORT(peer->gnode.sa_list));
+    tai.plmn_id = plmn;
+    tai.tac = 1234;
+    ABTS_TRUE(tc, mme_s10_find_by_tai(&tai) == peer);
+    tai.tac = 1235;
+    ABTS_TRUE(tc, mme_s10_find_by_tai(&tai) == NULL);
+    tai.tac = 1234;
+    ogs_plmn_id_build(&tai.plmn_id, 1, 1, 3);
+    ABTS_TRUE(tc, mme_s10_find_by_tai(&tai) == NULL);
     ABTS_INT_EQUAL(tc, OGS_OK, parse_peer(
         "mme: {address: 127.0.0.3, port: 2123, gummei: {plmn_id: {mcc: '001', "
         "mnc: '01'}, mme_gid: 65535, mme_code: 254}}"));

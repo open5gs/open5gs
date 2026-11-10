@@ -166,6 +166,51 @@ static void identification_wire(abts_case *tc, void *data)
     ogs_pkbuf_free(p);
 }
 
+static void relocation_forwarding_wire(abts_case *tc, void *data)
+{
+    /* Independent TS 29.274 table 7.3.2-2 vector: EBI plus all six
+     * forwarding F-TEID instances. These are not Create Session instances. */
+    uint8_t wire[] = {
+        93, 0, 83, 0, 73, 0, 1, 0, 5,
+        87, 0, 9, 0, 0x80, 0,0,0,1, 192,0,2,1,
+        87, 0, 9, 1, 0x80, 0,0,0,2, 192,0,2,2,
+        87, 0, 9, 2, 0x80, 0,0,0,3, 192,0,2,3,
+        87, 0, 9, 3, 0x80, 0,0,0,4, 192,0,2,4,
+        87, 0, 9, 4, 0x80, 0,0,0,5, 192,0,2,5,
+        87, 0, 9, 5, 0x80, 0,0,0,6, 192,0,2,6
+    };
+    ogs_gtp2_forward_relocation_response_t *rsp = ogs_calloc(1, sizeof(*rsp));
+    ogs_gtp2_tlv_relocation_bearer_context_t *bc = &rsp->list_of_set_up_bearers[0];
+    ogs_pkbuf_t *p = ogs_pkbuf_alloc(NULL, sizeof(wire)), *built;
+    ogs_tlv_octet_t *endpoints[] = {&bc->enb_dl_forwarding_f_teid,
+        &bc->enb_ul_forwarding_f_teid, &bc->sgw_dl_forwarding_f_teid,
+        &bc->rnc_dl_forwarding_f_teid, &bc->sgsn_dl_forwarding_f_teid,
+        &bc->sgw_ul_forwarding_f_teid};
+    size_t i;
+    ogs_assert(rsp && p);
+    ogs_pkbuf_put_data(p, wire, sizeof(wire));
+    ABTS_INT_EQUAL(tc, OGS_OK, ogs_tlv_parse_msg(rsp,
+                &ogs_gtp2_tlv_desc_forward_relocation_response,
+                p, OGS_TLV_MODE_T1_L2_I1));
+    ABTS_INT_EQUAL(tc, 5, bc->eps_bearer_id.u8);
+    for (i = 0; i < OGS_ARRAY_SIZE(endpoints); i++) {
+        ABTS_TRUE(tc, endpoints[i]->presence);
+        ABTS_INT_EQUAL(tc, 9, endpoints[i]->len);
+        if (endpoints[i]->data)
+            ABTS_INT_EQUAL(tc, i + 1, ((uint8_t *)endpoints[i]->data)[4]);
+    }
+    built = ogs_tlv_build_msg(&ogs_gtp2_tlv_desc_forward_relocation_response,
+            rsp, OGS_TLV_MODE_T1_L2_I1);
+    ABTS_PTR_NOTNULL(tc, built);
+    if (built) {
+        ABTS_INT_EQUAL(tc, sizeof(wire), built->len);
+        ABTS_TRUE(tc, !memcmp(wire, built->data, sizeof(wire)));
+        ogs_pkbuf_free(built);
+    }
+    ogs_pkbuf_free(p);
+    ogs_free(rsp);
+}
+
 static void multiple_pdn_and_bearer(abts_case *tc, void *data)
 {
     ogs_gtp2_context_response_t *src = ogs_calloc(1, sizeof(*src));
@@ -403,6 +448,7 @@ abts_suite *test_gtp_s10(abts_suite *suite)
     abts_run_test(suite, eps_invalid_and_extensions, NULL);
     abts_run_test(suite, identification_wire, NULL);
     abts_run_test(suite, pdn_bearer_wire, NULL);
+    abts_run_test(suite, relocation_forwarding_wire, NULL);
     abts_run_test(suite, multiple_pdn_and_bearer, NULL);
     abts_run_test(suite, s10_message_dispatch, NULL);
     abts_run_test(suite, s10_transaction_stages, NULL);

@@ -22,6 +22,7 @@
 #include "esm-build.h"
 #include "emm-build.h"
 #include "nas-path.h"
+#include "mme-as-security.h"
 #include "mme-event.h"
 #include "mme-timer.h"
 #include "mme-sm.h"
@@ -183,6 +184,8 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 
     rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
+    if (rv == OGS_OK) mme_as_security_prepare(mme_ue,
+            S1AP_ProcedureCode_id_InitialContextSetup);
     if (rv == OGS_OK && MME_NEXT_GUTI_IS_AVAILABLE(mme_ue))
         mme_ue_publish_next_guti(mme_ue);
 
@@ -912,6 +915,8 @@ int nas_eps_send_tau_accept(
 
         rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
         ogs_expect(rv == OGS_OK);
+        if (rv == OGS_OK) mme_as_security_prepare(mme_ue,
+                S1AP_ProcedureCode_id_InitialContextSetup);
     } else if (procedureCode == S1AP_ProcedureCode_id_downlinkNASTransport) {
         rv = nas_eps_send_to_downlink_nas_transport(enb_ue, emmbuf);
         ogs_expect(rv == OGS_OK);

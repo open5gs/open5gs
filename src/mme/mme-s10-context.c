@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later */
 #include "mme-s10.h"
 #include "mme-sm.h"
+#include "mme-as-security.h"
 
 typedef struct {
     uint8_t ebi;
@@ -136,14 +137,12 @@ static int parse_pdn(imported_pdn_t *out,
     return OGS_OK;
 }
 
-bool mme_s10_security_context_usable(const mme_ue_t *ue,
-        const ogs_gtp2_eps_mm_context_t *mm)
+static bool security_algorithms_usable(const ogs_gtp2_eps_mm_context_t *mm)
 {
     const uint8_t *cap = mm->ue_network_capability.data;
     bool integrity = false, cipher = false;
     int i;
-    if (mm->ksi != ue->nas_eps.ue.ksi || ue->nas_eps.ue.tsc ||
-            !mm->integrity_algorithm || mm->integrity_algorithm > 3 ||
+    if (!mm->integrity_algorithm || mm->integrity_algorithm > 3 ||
             mm->cipher_algorithm > 3 || mm->ue_network_capability.len < 2 ||
             !cap || !(cap[1] & (0x80 >> mm->integrity_algorithm)) ||
             !(cap[0] & (0x80 >> mm->cipher_algorithm))) return false;
@@ -156,10 +155,17 @@ bool mme_s10_security_context_usable(const mme_ue_t *ue,
     return integrity && cipher;
 }
 
+bool mme_s10_security_context_usable(const mme_ue_t *ue,
+        const ogs_gtp2_eps_mm_context_t *mm)
+{
+    return mm->ksi == ue->nas_eps.ue.ksi && !ue->nas_eps.ue.tsc &&
+        security_algorithms_usable(mm);
+}
+
 /* Validate every PDN before creating any local bearer or changing security.
  * Imported TLV views are copied into owned session/TFT storage before return. */
-int mme_s10_import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
-        bool keep_security)
+static int import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
+        bool keep_security, bool handover)
 {
     imported_pdn_t *pdns = ogs_calloc(OGS_MAX_NUM_OF_SESS, sizeof(*pdns));
     ogs_gtp2_eps_mm_context_t mm;
@@ -178,11 +184,16 @@ int mme_s10_import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
             !rsp->mme_sgsn_amf_ue_mm_context.presence ||
             ogs_gtp2_parse_eps_mm_context(&mm,
                 &rsp->mme_sgsn_amf_ue_mm_context) != OGS_OK ||
-            mm.old_context_present || mm.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE ||
+            (!handover && mm.old_context_present) ||
+            mm.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE ||
+            (handover && (!mm.nh_present ||
+                (mm.old_context_present && (!mm.old_nh_present ||
+                 mm.old_ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE)))) ||
             mm.ue_network_capability.len > sizeof(ue->ue_network_capability) - 1 ||
             mm.ms_network_capability.len > sizeof(ue->ms_network_capability) - 1 ||
             mm.mei.len > sizeof(mei) ||
-            (!keep_security && !mme_s10_security_context_usable(ue, &mm))) goto out;
+            (!keep_security && (handover ? !security_algorithms_usable(&mm) :
+                !mme_s10_security_context_usable(ue, &mm)))) goto out;
     if (mm.mei.len) {
         memcpy(&mei, mm.mei.data, mm.mei.len);
         if (mei.type == OGS_NAS_MOBILE_IDENTITY_IMEISV) {
@@ -279,9 +290,18 @@ int mme_s10_import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
             ue->masked_imeisv[5] = ue->masked_imeisv[6] = 0xff;
         }
     }
-    ogs_kdf_kenb(ue->kasme, ue->ul_count.i32, ue->kenb);
-    ogs_kdf_nh_enb(ue->kasme, ue->kenb, ue->nh);
-    ue->nhcc = 1;
+    if (handover) {
+        /* The received pair was advanced by the source. Advancing it again
+         * would disagree with the UE during vertical key derivation. */
+        memcpy(ue->nh, mm.nh, sizeof(ue->nh));
+        ue->nhcc = mm.ncc;
+        mme_as_security_import(ue, &mm);
+        ue->as_security.enb_ue_id = ue->enb_ue_id;
+    } else {
+        ogs_kdf_kenb(ue->kasme, ue->ul_count.i32, ue->kenb);
+        ogs_kdf_nh_enb(ue->kasme, ue->kenb, ue->nh);
+        ue->nhcc = 1;
+    }
     rv = OGS_OK;
     goto out;
 rollback:
@@ -290,5 +310,28 @@ out:
     if (rv != OGS_OK) ogs_warn("S10 context import rejected [%s]", stages[stage]);
     if (addrs) ogs_freeaddrinfo(addrs);
     ogs_free(pdns);
+    return rv;
+}
+
+int mme_s10_import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
+        bool keep_security)
+{
+    return import_context(ue, rsp, keep_security, false);
+}
+
+int mme_s10_import_handover_context(mme_ue_t *ue,
+        const ogs_gtp2_forward_relocation_request_t *req)
+{
+    ogs_gtp2_context_response_t *ctx = ogs_calloc(1, sizeof(*ctx));
+    int i, rv;
+    ogs_assert(ctx);
+    ctx->mme_sgsn_amf_ue_mm_context = req->mme_sgsn_amf_ue_mm_context;
+    ctx->sgw_s11_s4_ip_address_and_teid_for_control_plane =
+        req->sgw_s11_s4_ip_address_and_teid_for_control_plane;
+    for (i = 0; i < OGS_MAX_NUM_OF_SESS; i++)
+        ctx->mme_sgsn_amf_ue_eps_pdn_connections[i] =
+            req->mme_sgsn_amf_ue_eps_pdn_connections[i];
+    rv = import_context(ue, ctx, false, true);
+    ogs_free(ctx);
     return rv;
 }
