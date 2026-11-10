@@ -61,7 +61,7 @@ amf:
 #    t3513:
 #      value: 2    # Network dependent; Open5GS default
 #    t3522:
-#      value: 3
+#      value: 6
 #    t3550:
 #      value: 6
 #    t3555:
@@ -69,7 +69,7 @@ amf:
 #    t3560:
 #      value: 6
 #    t3570:
-#      value: 3
+#      value: 6
 
 #  eir:
 #    enabled: true

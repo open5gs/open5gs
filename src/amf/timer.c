@@ -26,7 +26,7 @@ static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
 
     /* DEREGISTRATION REQUEST sent */
     [AMF_TIMER_T3522] =
-        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(3) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* REGISTRATION ACCEPT sent */
     [AMF_TIMER_T3550] =
@@ -43,7 +43,7 @@ static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
 
     /* IDENTITY REQUEST sent */
     [AMF_TIMER_T3570] =
-        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(3) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     [AMF_TIMER_NG_HOLDING] =
         { .have = true, .duration = ogs_time_from_sec(30) },
