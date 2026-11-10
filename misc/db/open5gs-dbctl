@@ -27,7 +27,8 @@ display_help() {
     echo "   ambr_speed {imsi dl_value dl_unit ul_value ul_unit}: Change AMBR speed from a specific user and the  unit values are \"[0=bps 1=Kbps 2=Mbps 3=Gbps 4=Tbps ]\""
     echo "   subscriber_status {imsi subscriber_status_val={0,1} operator_determined_barring={0..8}}: Change TS 29.272 values for Subscriber-Status (7.3.29) and Operator-Determined-Barring (7.3.30)"
     echo "   lbo_roaming_allowed {imsi lbo_roaming_allowed={0,1}}: Change roaming type for a specific subscriber: 0 = LBO roaming (default), 1 = HR roaming"
-
+    echo "   eir add imei {imei status}: adds a PEI (IMEI) to the database with default values"
+    echo "   eir add imei {imei status imsi}: adds a PEI (IMEI) to the database with default values and a SUPI for the UE"
 }
 
 while test $# -gt 0; do
@@ -871,5 +872,45 @@ if [ "$1" = "ambr_speed" ]; then
     exit 1
 fi
 
+
+if [ "$1" = "eir" ]; then
+    if [ "$#" -lt 5 ]; then
+        echo "open5gs-dbctl: incorrect number of args, see help"
+        exit 1
+    fi
+    if [ "$2" = "add" ] && [ "$3" = "imei" ]; then
+        IMEI=$4
+        STATUS=$5
+            case "$STATUS" in
+            "WHITELISTED" | "BLACKLISTED" | "GREYLISTED")
+                ;;
+            *)
+            echo "open5gs-dbctl: incorrect status, format is (WHITELISTED|BLACKLISTED|GREYLISTED)"
+            exit 1
+                ;;
+        esac
+        if [ "$#" -eq 6 ]; then
+            IMSI=$6
+            mongosh --eval "db.eir.insertOne(
+                {
+                    \"_id\": new ObjectId(),
+                    \"pei\": \"imei-$IMEI\",
+                    \"status\": \"$STATUS\",
+                    \"supi\": \"imsi-$IMSI\"
+                }
+                );" $DB_URI
+                exit $?
+        else
+            mongosh --eval "db.eir.insertOne(
+                {
+                    \"_id\": new ObjectId(),
+                    \"pei\": \"imei-$IMEI\",
+                    \"status\": \"$STATUS\"
+                }
+                );" $DB_URI
+            exit $?
+        fi
+    fi
+fi
 
 display_help
