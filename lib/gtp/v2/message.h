@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-11-10 14:18:46.484690 by root
+ * Created on: 2026-11-10 16:11:09.907234 by root
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -176,6 +176,7 @@ typedef struct ogs_gtp2_header_s {
 #define OGS_GTP2_S1UDF_TYPE 91
 #define OGS_GTP2_DELAY_VALUE_TYPE 92
 #define OGS_GTP2_BEARER_CONTEXT_TYPE 93
+#define OGS_GTP2_EPS_PDN_BEARER_CONTEXT_TYPE 93
 #define OGS_GTP2_CHARGING_ID_TYPE 94
 #define OGS_GTP2_CHARGING_CHARACTERISTICS_TYPE 95
 #define OGS_GTP2_TRACE_INFORMATION_TYPE 96
@@ -494,6 +495,7 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_2;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_3;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_eps_pdn_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_overload_control_information_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_overload_control_information_1;
@@ -777,6 +779,19 @@ typedef struct ogs_gtp2_tlv_bearer_context_s {
     ogs_gtp2_tlv_packet_flow_id_t packet_flow_id;
 } ogs_gtp2_tlv_bearer_context_t;
 
+typedef struct ogs_gtp2_tlv_eps_pdn_bearer_context_s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp2_tlv_ebi_t eps_bearer_id;
+    ogs_gtp2_tlv_bearer_tft_t tft;
+    ogs_gtp2_tlv_f_teid_t s1_u_sgw_f_teid; /* Instance : 0 */
+    ogs_gtp2_tlv_f_teid_t s5_s8_u_pgw_f_teid; /* Instance : 1 */
+    ogs_gtp2_tlv_bearer_qos_t bearer_level_qos;
+    ogs_gtp2_tlv_f_container_t bss_container;
+    ogs_gtp2_tlv_ti_t transaction_identifier;
+    ogs_gtp2_tlv_bearer_flags_t bearer_flags;
+    ogs_gtp2_tlv_f_teid_t s11_u_sgw_f_teid; /* Instance : 2 */
+} ogs_gtp2_tlv_eps_pdn_bearer_context_t;
+
 typedef struct ogs_gtp2_tlv_pdn_connection_s {
     ogs_tlv_presence_t presence;
     ogs_gtp2_tlv_apn_t apn;
@@ -787,7 +802,7 @@ typedef struct ogs_gtp2_tlv_pdn_connection_s {
     ogs_gtp2_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp2_tlv_f_teid_t pgw_s5_s8_ip_address_for_control_plane_or_pmip; /* Instance : 0 */
     ogs_gtp2_tlv_fqdn_t pgw_node_name;
-    ogs_gtp2_tlv_bearer_context_t bearer_contexts[OGS_BEARER_PER_UE];
+    ogs_gtp2_tlv_eps_pdn_bearer_context_t bearer_contexts[OGS_BEARER_PER_UE];
     ogs_gtp2_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp2_tlv_charging_characteristics_t charging_characteristics;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;

@@ -206,6 +206,44 @@ static void multiple_pdn_and_bearer(abts_case *tc, void *data)
     ogs_free(dst);
 }
 
+static void pdn_bearer_wire(abts_case *tc, void *data)
+{
+    /* TS 29.274 7.3.6: SGW S1-U is F-TEID instance 0, PGW S5/S8-U
+     * is instance 1. Create Session uses instance 3 for the latter. */
+    uint8_t wire[] = {
+        93,0,31,0,
+        73,0,1,0,5,
+        87,0,9,0,0x81,0,0,0,1,127,0,0,4,
+        87,0,9,1,0x85,0,0,0,2,127,0,0,5
+    };
+    ogs_gtp2_tlv_eps_pdn_bearer_context_t bearer = {0};
+    ogs_tlv_desc_t root = {
+        OGS_TLV_MESSAGE, "PDN bearer vector", 0, 0, 0, sizeof(bearer),
+        {&ogs_gtp2_tlv_desc_eps_pdn_bearer_context_0, NULL}
+    };
+    ogs_pkbuf_t *p = ogs_pkbuf_alloc(NULL, sizeof(wire)), *built;
+    ogs_pkbuf_put_data(p, wire, sizeof(wire));
+    ABTS_INT_EQUAL(tc, OGS_OK, ogs_tlv_parse_msg(&bearer,
+                &root, p,
+                OGS_TLV_MODE_T1_L2_I1));
+    ABTS_TRUE(tc, bearer.s1_u_sgw_f_teid.presence);
+    ABTS_TRUE(tc, bearer.s5_s8_u_pgw_f_teid.presence);
+    ABTS_INT_EQUAL(tc, 9, bearer.s5_s8_u_pgw_f_teid.len);
+    if (bearer.s5_s8_u_pgw_f_teid.data)
+        ABTS_INT_EQUAL(tc, 0x85,
+                ((uint8_t *)bearer.s5_s8_u_pgw_f_teid.data)[0]);
+    built = ogs_tlv_build_msg(&root,
+            &bearer, OGS_TLV_MODE_T1_L2_I1);
+    ABTS_PTR_NOTNULL(tc, built);
+    if (built) {
+        ABTS_INT_EQUAL(tc, sizeof(wire), built->len);
+        if (built->len == sizeof(wire))
+            ABTS_TRUE(tc, !memcmp(wire, built->data, sizeof(wire)));
+        ogs_pkbuf_free(built);
+    }
+    ogs_pkbuf_free(p);
+}
+
 static void s10_message_dispatch(abts_case *tc, void *data)
 {
     /* Message numbers and the first IE are taken from TS 29.274 6.1 and
@@ -335,6 +373,18 @@ static void s10_transaction_stages(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp_xact_commit(remote));
     ABTS_TRUE(tc, !ogs_gtp_xact_find_by_id(id));
     ogs_gtp_xact_delete_all(&node);
+    /* Cancelling an abandoned mobility procedure releases its pool slot
+     * and removes it from peer lookup without a synthetic response. */
+    header.type = OGS_GTP2_CONTEXT_REQUEST_TYPE;
+    xact = ogs_gtp_xact_local_create(&node, &header,
+            transaction_payload(), NULL, NULL);
+    ABTS_PTR_NOTNULL(tc, xact);
+    if (xact) {
+        id = xact->id;
+        ogs_gtp_xact_cancel(xact);
+        ABTS_TRUE(tc, ogs_gtp_xact_find_by_id(id) == NULL);
+        ABTS_TRUE(tc, ogs_list_empty(&node.local_list));
+    }
     ogs_gtp_xact_delete_all(&old_mme);
     ogs_gtp_xact_final();
     ogs_timer_mgr_destroy(ogs_app()->timer_mgr);
@@ -352,6 +402,7 @@ abts_suite *test_gtp_s10(abts_suite *suite)
     abts_run_test(suite, eps_optional_and_truncated, NULL);
     abts_run_test(suite, eps_invalid_and_extensions, NULL);
     abts_run_test(suite, identification_wire, NULL);
+    abts_run_test(suite, pdn_bearer_wire, NULL);
     abts_run_test(suite, multiple_pdn_and_bearer, NULL);
     abts_run_test(suite, s10_message_dispatch, NULL);
     abts_run_test(suite, s10_transaction_stages, NULL);

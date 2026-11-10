@@ -42,6 +42,7 @@ abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
 abts_suite *test_gtp_message(abts_suite *suite);
 abts_suite *test_gtp_s10(abts_suite *suite);
+abts_suite *test_mme_s10(abts_suite *suite);
 abts_suite *test_ngap_message(abts_suite *suite);
 abts_suite *test_sbi_message(abts_suite *suite);
 abts_suite *test_sbi_server(abts_suite *suite);
@@ -71,6 +72,7 @@ const struct testlist {
     {test_nas_message},
     {test_gtp_message},
     {test_gtp_s10},
+    {test_mme_s10},
     {test_ngap_message},
     {test_sbi_message},
     {test_sbi_server},

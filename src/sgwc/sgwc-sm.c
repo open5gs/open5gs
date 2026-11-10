@@ -185,6 +185,14 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+            if (sgwc_ue && sgwc_ue->gnode != gnode) {
+                /* A delayed request from the previous MME must not tear
+                 * down sessions whose control plane has moved. */
+                ogs_gtp_send_error_message(gtp_xact, 0,
+                        OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
+                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+                break;
+            }
             sgwc_s11_handle_delete_session_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;

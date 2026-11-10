@@ -27,6 +27,7 @@
 #include "mme-s11-build.h"
 #include "mme-sm.h"
 #include "mme-dns.h"
+#include "mme-s10.h"
 
 static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
@@ -40,6 +41,7 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     mme_sgw_t *sgw = NULL;
     mme_sgsn_t *sgsn = NULL;
     uint8_t gtp_ver;
+    mme_s10_peer_t *peer;
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -57,6 +59,10 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_pkbuf_trim(pkbuf, size);
 
+    if (size < 8) {
+        ogs_pkbuf_free(pkbuf);
+        return;
+    }
     gtp_ver = ((ogs_gtp2_header_t *)pkbuf->data)->version;
     switch (gtp_ver) {
     case 1:
@@ -72,6 +78,21 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
         e->gnode = &sgsn->gnode;
         break;
     case 2:
+        peer = mme_s10_find_by_addr(&from);
+        if (peer && (mme_s10_message_type(pkbuf->data[1]) ||
+                    pkbuf->data[1] == OGS_GTP2_ECHO_REQUEST_TYPE ||
+                    pkbuf->data[1] == OGS_GTP2_ECHO_RESPONSE_TYPE)) {
+            e = mme_event_new(MME_EVENT_S10_MESSAGE);
+            ogs_assert(e);
+            e->gnode = &peer->gnode;
+            break;
+        }
+        if (mme_s10_message_type(pkbuf->data[1])) {
+            ogs_warn("S10 message from an unconfigured MME [%s]",
+                    OGS_ADDR(&from, buf));
+            ogs_pkbuf_free(pkbuf);
+            return;
+        }
         sgw = mme_sgw_find_by_addr(&from);
         if (!sgw) {
             ogs_error("Unknown SGW : %s", OGS_ADDR(&from, buf));
@@ -262,7 +283,7 @@ int mme_gtp_open(void)
         ogs_assert(rv == OGS_OK);
     }
 
-    return OGS_OK;
+    return mme_s10_open();
 }
 
 void mme_gtp_close(void)

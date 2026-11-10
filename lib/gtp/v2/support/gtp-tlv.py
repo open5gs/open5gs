@@ -98,7 +98,7 @@ def repeat_count(parent, ie):
     if parent in ('Forward Relocation Request', 'Context Response') and \
             ie['ie_type'] == 'PDN Connection':
         return ('OGS_MAX_NUM_OF_SESS', 4)
-    if parent == 'PDN Connection' and ie['ie_type'] == 'Bearer Context':
+    if parent == 'PDN Connection' and ie['ie_type'] == 'EPS PDN Bearer Context':
         return ('OGS_BEARER_PER_UE', 8)
     if parent in ('Forward Relocation Response', 'Context Acknowledge') and \
             ie['ie_type'] == 'Bearer Context':
@@ -623,6 +623,32 @@ type_list["APN Restriction"]["size"] = 1                # Type : 127
 type_list["Selection Mode"]["size"] = 1                 # Type : 128
 type_list["Node Type"]["size"] = 1                      # Type : 135
 type_list["Node Features"]["size"] = 1                  # Type : 152
+
+# TS 29.274 7.3.6: the Bearer Context nested in a PDN Connection has
+# different F-TEID instances from Create Session. It needs its own schema;
+# merging by IE type 93 would silently interpret the PGW endpoint as SGSN.
+pdn_bearer_ies = [
+    ("EBI", "EPS Bearer ID", 0),
+    ("Bearer TFT", "TFT", 0),
+    ("F-TEID", "S1-U SGW F-TEID", 0),
+    ("F-TEID", "S5/S8-U PGW F-TEID", 1),
+    ("Bearer QoS", "Bearer Level QoS", 0),
+    ("F-Container", "BSS Container", 0),
+    ("TI", "Transaction Identifier", 0),
+    ("Bearer Flags", "Bearer Flags", 0),
+    ("F-TEID", "S11-U SGW F-TEID", 2),
+]
+
+type_list["EPS PDN Bearer Context"] = {"type": "93", "max_instance": "0"}
+group_list["EPS PDN Bearer Context"] = {
+    "index": str(int(group_list["PDN Connection"]["index"]) - 1),
+    "type": "93",
+    "ies": [{"ie_type": typ, "ie_value": name, "instance": str(instance)}
+            for typ, name, instance in pdn_bearer_ies],
+}
+for ie in group_list["PDN Connection"]["ies"]:
+    if ie["ie_type"] == "Bearer Context":
+        ie["ie_type"] = "EPS PDN Bearer Context"
 
 f = open(outdir + 'message.h', 'w')
 output_header_to_file(f)

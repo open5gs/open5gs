@@ -446,6 +446,36 @@ cleanup:
             cause_value);
 }
 
+/* TS 29.274 7.2.7: a new serving MME supplies its S11 F-TEID,
+ * including during idle TAU when no radio bearer is established. */
+static int update_serving_mme(sgwc_ue_t *ue, ogs_gtp_xact_t *xact,
+        ogs_gtp2_tlv_f_teid_t *ie, bool commit)
+{
+    ogs_gtp2_f_teid_t *fteid = ie->data;
+    ogs_sockaddr_t *list = NULL, *addr;
+    bool matches = false;
+    size_t len;
+    if (!ie->presence) return ue->gnode == xact->gnode ? OGS_OK : OGS_ERROR;
+    if (!fteid || ie->len < 5) return OGS_ERROR;
+    len = 5 + (fteid->ipv4 ? OGS_IPV4_LEN : 0) +
+        (fteid->ipv6 ? OGS_IPV6_LEN : 0);
+    if (ie->len != len || !fteid->teid ||
+            fteid->interface_type != OGS_GTP2_F_TEID_S11_MME_GTP_C ||
+            (!fteid->ipv4 && !fteid->ipv6) ||
+            ogs_gtp2_f_teid_to_sockaddr(fteid, OGS_PORT(&xact->gnode->addr),
+                &list) != OGS_OK) return OGS_ERROR;
+    for (addr = list; addr; addr = addr->next) {
+        if (ogs_sockaddr_is_equal(addr, &xact->gnode->addr)) matches = true;
+    }
+    ogs_freeaddrinfo(list);
+    if (!matches) return OGS_ERROR;
+    if (commit) {
+        ue->mme_s11_teid = be32toh(fteid->teid);
+        OGS_SETUP_GTP_NODE(ue, xact->gnode);
+    }
+    return OGS_OK;
+}
+
 void sgwc_s11_handle_modify_bearer_request(
         sgwc_ue_t *sgwc_ue, ogs_gtp_xact_t *s11_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message)
@@ -494,6 +524,21 @@ void sgwc_s11_handle_modify_bearer_request(
      * Check Mandatory/Conditional IE Missing
      *****************************************/
     ogs_assert(cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
+
+    if (update_serving_mme(sgwc_ue, s11_xact,
+                &req->sender_f_teid_for_control_plane, false) != OGS_OK) {
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+        goto cleanup;
+    }
+    if (!req->bearer_contexts_to_be_modified[0].presence &&
+            req->sender_f_teid_for_control_plane.presence) {
+        ogs_assert(OGS_OK == update_serving_mme(sgwc_ue, s11_xact,
+                    &req->sender_f_teid_for_control_plane, true));
+        ogs_gtp_send_error_message(s11_xact, sgwc_ue->mme_s11_teid,
+                OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE,
+                OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
+        return;
+    }
 
     for (i = 0; i < OGS_BEARER_PER_UE; i++) {
         ogs_pfcp_xact_t *current_xact = NULL;
@@ -622,6 +667,9 @@ void sgwc_s11_handle_modify_bearer_request(
         ogs_error("No Bearer");
         goto cleanup;
     }
+
+    ogs_assert(OGS_OK == update_serving_mme(sgwc_ue, s11_xact,
+                &req->sender_f_teid_for_control_plane, true));
 
     if (req->user_location_information.presence == 1) {
         decoded = ogs_gtp2_parse_uli(&uli, &req->user_location_information);

@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-11-10 14:18:46.574901 by root
+ * Created on: 2026-11-10 16:11:09.996817 by root
  * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
@@ -2309,6 +2309,28 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_bearer_context_3 =
     }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_eps_pdn_bearer_context_0 =
+{
+    OGS_TLV_COMPOUND,
+    "EPS PDN Bearer Context",
+    OGS_GTP2_EPS_PDN_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_eps_pdn_bearer_context_t),
+    {
+        &ogs_gtp2_tlv_desc_ebi_0,
+        &ogs_gtp2_tlv_desc_bearer_tft_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
+        &ogs_gtp2_tlv_desc_f_teid_1,
+        &ogs_gtp2_tlv_desc_bearer_qos_0,
+        &ogs_gtp2_tlv_desc_f_container_0,
+        &ogs_gtp2_tlv_desc_ti_0,
+        &ogs_gtp2_tlv_desc_bearer_flags_0,
+        &ogs_gtp2_tlv_desc_f_teid_2,
+        NULL,
+    }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0 =
 {
     OGS_TLV_COMPOUND,
@@ -2326,7 +2348,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0 =
         &ogs_gtp2_tlv_desc_ebi_0,
         &ogs_gtp2_tlv_desc_f_teid_0,
         &ogs_gtp2_tlv_desc_fqdn_0,
-        &ogs_gtp2_tlv_desc_bearer_context_0,
+        &ogs_gtp2_tlv_desc_eps_pdn_bearer_context_0,
         &ogs_tlv_desc_more8,
         &ogs_gtp2_tlv_desc_ambr_0,
         &ogs_gtp2_tlv_desc_charging_characteristics_0,

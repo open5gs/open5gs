@@ -31,6 +31,7 @@
 #include "mme-gn-handler.h"
 #include "mme-gtp-path.h"
 #include "mme-s11-handler.h"
+#include "mme-s10.h"
 #include "mme-fd-path.h"
 #include "mme-s6a-handler.h"
 #include "mme-s13-handler.h"
@@ -867,6 +868,15 @@ cleanup:
         ogs_free(s13_message);
         break;
 
+    case MME_EVENT_S10_TIMER:
+        mme_s10_holding_expired(e->mme_ue_id);
+        break;
+
+    case MME_EVENT_S10_MESSAGE:
+        mme_s10_receive(e->gnode, e->pkbuf);
+        ogs_pkbuf_free(e->pkbuf);
+        break;
+
     case MME_EVENT_S11_MESSAGE:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
@@ -941,8 +951,11 @@ cleanup:
             break;
         case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_modify_bearer_response(
-                xact, mme_ue, &gtp_message.modify_bearer_response);
+            if (xact->modify_action == OGS_GTP_MODIFY_IN_S10_TAU)
+                mme_s10_sgw_response(xact, mme_ue, &gtp_message.modify_bearer_response);
+            else
+                mme_s11_handle_modify_bearer_response(
+                    xact, mme_ue, &gtp_message.modify_bearer_response);
             break;
         case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");

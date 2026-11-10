@@ -20,6 +20,7 @@
 #include "ogs-sctp.h"
 
 #include "mme-context.h"
+#include "mme-s10.h"
 #include "mme-event.h"
 #include "mme-timer.h"
 #include "nas-path.h"
@@ -92,6 +93,7 @@ void mme_context_init(void)
     ogs_list_init(&self.s1ap_list);
     ogs_list_init(&self.s1ap_list6);
 
+    mme_s10_init();
     ogs_list_init(&self.sgsn_list);
     ogs_list_init(&self.sgw_list);
     ogs_list_init(&self.pgw_list);
@@ -140,6 +142,8 @@ void mme_context_init(void)
     ogs_assert(self.guti_ue_hash);
     self.mme_s11_teid_hash = ogs_hash_make();
     ogs_assert(self.mme_s11_teid_hash);
+    self.mme_s10_teid_hash = ogs_hash_make();
+    ogs_assert(self.mme_s10_teid_hash);
     self.mme_gn_teid_hash = ogs_hash_make();
     ogs_assert(self.mme_gn_teid_hash);
 
@@ -160,6 +164,7 @@ void mme_context_final(void)
     mme_csmap_remove_all();
     mme_vlr_remove_all();
     mme_sgsn_remove_all();
+    mme_s10_final();
     mme_hssmap_remove_all();
     mme_emerg_remove_all();
 
@@ -176,6 +181,7 @@ void mme_context_final(void)
     ogs_hash_destroy(self.mme_s11_teid_hash);
     ogs_assert(self.mme_gn_teid_hash);
     ogs_hash_destroy(self.mme_gn_teid_hash);
+    ogs_hash_destroy(self.mme_s10_teid_hash);
 
     ogs_pool_final(&m_tmsi_pool);
     ogs_pool_final(&mme_emerg_pool);
@@ -780,7 +786,10 @@ int mme_context_parse_config(void)
                                 const char *client_key =
                                     ogs_yaml_iter_key(&client_iter);
                                 ogs_assert(client_key);
-                                if (!strcmp(client_key, "sgwc")) {
+                                if (!strcmp(client_key, "mme")) {
+                                    if (mme_s10_parse_peer(&client_iter) != OGS_OK)
+                                        return OGS_ERROR;
+                                } else if (!strcmp(client_key, "sgwc")) {
                                     ogs_yaml_iter_t sgwc_array, sgwc_iter;
                                     ogs_yaml_iter_recurse(
                                             &client_iter, &sgwc_array);
@@ -4047,6 +4056,13 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     ogs_info("[Added] Number of MME-UEs is now %d",
             ogs_list_count(&self.mme_ue_list));
 
+    do {
+        mme_ue->mme_s10_teid = ogs_random32();
+    } while (!mme_ue->mme_s10_teid || ogs_hash_get(self.mme_s10_teid_hash,
+                &mme_ue->mme_s10_teid, sizeof(mme_ue->mme_s10_teid)));
+    ogs_hash_set(self.mme_s10_teid_hash, &mme_ue->mme_s10_teid,
+            sizeof(mme_ue->mme_s10_teid), mme_ue);
+
     return mme_ue;
 }
 
@@ -4055,6 +4071,9 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     sgw_ue_t *sgw_ue = NULL;
     ogs_assert(mme_ue);
 
+    ogs_hash_set(self.mme_s10_teid_hash, &mme_ue->mme_s10_teid,
+            sizeof(mme_ue->mme_s10_teid), NULL);
+    mme_s10_ue_clear(mme_ue);
     ogs_list_remove(&self.mme_ue_list, mme_ue);
 
     mme_ue_fsm_fini(mme_ue);
@@ -4405,6 +4424,10 @@ static const char *mme_ue_imsi_source_name(mme_ue_imsi_source_e source)
         return "IDENTITY_RESPONSE";
     case MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE:
         return "SGSN_CONTEXT_RESPONSE";
+    case MME_UE_IMSI_FROM_S10_CONTEXT:
+        return "S10_CONTEXT";
+    case MME_UE_IMSI_FROM_S10_IDENTIFICATION:
+        return "S10_IDENTIFICATION";
     }
     return "UNKNOWN";
 }
@@ -4943,7 +4966,7 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
     ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
     ogs_pool_id_calloc(&mme_sess_pool, &sess);
-    ogs_assert(sess);
+    if (!sess) return NULL;
 
     ogs_list_init(&sess->bearer_list);
 
@@ -4955,7 +4978,10 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
     sess->dns_id = OGS_INVALID_POOL_ID;
 
     bearer = mme_bearer_add(sess);
-    ogs_assert(bearer);
+    if (!bearer) {
+        ogs_pool_id_free(&mme_sess_pool, sess);
+        return NULL;
+    }
 
     ogs_list_add(&mme_ue->sess_list, sess);
 

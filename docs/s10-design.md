@@ -1,8 +1,10 @@
 # S10 inter-MME mobility
 
-S10 connects MMEs for mobility and context transfer. This contribution adds the
-GTPv2-C message definitions, EPS MM Context codec and transaction stages used by
-that interface. The MME procedure integration is tracked below.
+S10 connects MMEs for mobility and context transfer. The protocol layer includes
+GTPv2-C mobility messages, the EPS MM Context codec and transaction stages. The
+MME runtime implements Identification and inter-MME TAU with a retained SGW,
+including fresh AKA fallback and transfer in either direction. Connected-mode
+S1 handover is tracked separately in the integration checklist below.
 
 ## Standards baseline
 
@@ -64,14 +66,15 @@ one-way message, with codec support rather than a request/response transaction.
 The intended EPS scope covers both idle mobility and connected-mode S1 handover.
 Each procedure needs source and target behavior:
 
-- [ ] Configure and validate S10 peers, route GUMMEI/target identities, and
-  dispatch only configured peer traffic on the GTP-C transport.
-- [ ] Attach: send Identification Request for a foreign GUTI; verify the
-  complete Attach Request before exporting a security context; continue local
-  identification/authentication when context retrieval cannot complete.
-- [ ] TAU: transfer the MM context and every PDN/bearer context; validate the
-  complete TAU Request; acknowledge transfer; update HSS registration and SGW
-  control-plane ownership; allocate and confirm the target GUTI.
+- [x] Configure S10 peer endpoints and GUMMEI routes, sharing transactions for
+  routes to the same endpoint. Dispatch only provisioned peers on GTP-C.
+- [x] Attach Identification Request/Response for a foreign native GUTI, complete
+  NAS request validation, conditional security-context export and fresh AKA.
+- [x] TAU with a retained SGW: transfer MM and PDN/bearer contexts, validate the
+  complete request, acknowledge, update S11 ownership and HSS registration,
+  and allocate/confirm the target GUTI. Authentication fallback retries the
+  request with IMSI and the standard MS Validated indication.
+- [ ] Route connected-mode handover by target TAI/eNB identity.
 - [ ] Retain the old context while transfer is pending. Handle acknowledgements,
   HSS cancellation, retransmissions and expiry without deleting gateway sessions
   that now belong to the target MME.
@@ -89,9 +92,62 @@ replication, database replication and host failover are separate components.
 They should not be implemented by copying process pointers or by treating the
 subscriber database as an MME session store.
 
+## Runtime configuration
+
+S10 shares `mme.gtpc.server` with S11 and uses UDP/2123. Each endpoint must be
+provisioned on the receiving MME. Configure the remote GUMMEI under
+`mme.gtpc.client.mme`:
+
+```yaml
+mme:
+  gtpc:
+    server:
+      - address: 192.0.2.10
+    client:
+      mme:
+        - address: 192.0.2.20
+          port: 2123
+          gummei:
+            plmn_id: {mcc: '001', mnc: '01'}
+            mme_gid: 2
+            mme_code: 2
+```
+
+The other MME needs the reverse route. Two-digit and three-digit MNCs are
+separate identities. Duplicate GUMMEI routes, invalid numeric ranges and
+unknown peer configuration keys are rejected. Several GUMMEIs can reference
+the same endpoint and use its shared transaction lists. The retained SGW must
+also be configured as an S11 peer on the target MME.
+
+A source context remains available while transfer is pending. A successful
+Context Acknowledge and subsequent HSS Cancel Location permit local cleanup
+after the source holding timer (10 seconds). Cleanup does not delete gateway
+sessions that have moved to the target. A subscriber returning before expiry
+can replace this retired local context. Missing/rejected exchanges retain the
+source session; the target falls back to NAS authentication where applicable.
+
+The target updates the SGW's serving-MME address and S11 TEID before the HSS
+registration step. A bearerless Modify Bearer Request handles the control-plane
+change before access bearer establishment. The SGW rejects a delayed Delete
+Session Request from the previous MME after ownership changes.
+
+EPS PDN bearer groups have a dedicated descriptor: SGW user-plane F-TEID is
+instance 0 and PGW user-plane F-TEID is instance 1, as in mobility tables
+7.3.1 and 7.3.6. The Create Session bearer descriptor has a different instance
+mapping. The runtime exports the allocated PAA, rather than the subscription's
+requested address, and preserves the mobile-identity encoding and masked IMEISV.
+
 ## Verification
 
-`tests/unit/gtp-s10-test.c` covers independent wire vectors, all fourteen message
+`tests/s10` starts two independent MME processes with a common HSS/SGW. It
+checks bidirectional protected TAU, unprotected TAU with Identity/AKA/Security
+Mode fallback, target GUTI allocation, unchanged UE address and a returned
+IPv4 ICMP echo after each move. `configs/s10-source.yaml` and
+`configs/s10-target.yaml` are the integration fixtures.
+
+`tests/unit/mme-s10-test.c` checks peer configuration and GUMMEI routing, MAC
+failure without modifying the source context, accepted COUNT progression and
+replay rejection. `tests/unit/gtp-s10-test.c` covers independent wire vectors, all fourteen message
 dispatch paths, repeated PDNs/bearers, EPS context optional fields, truncated
 contexts, invalid lengths and transaction stages. The existing unit suites run
 alongside these cases:

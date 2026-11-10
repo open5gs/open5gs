@@ -21,6 +21,7 @@
 #include "mme-timer.h"
 #include "s1ap-handler.h"
 #include "mme-gn-handler.h"
+#include "mme-s10.h"
 #include "mme-fd-path.h"
 #include "mme-s13-handler.h"
 #include "emm-handler.h"
@@ -474,6 +475,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             break;
 
         case OGS_NAS_EPS_ATTACH_REQUEST:
+            mme_s10_ue_clear(mme_ue);
             ogs_info("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     enb_ue, mme_ue, &message->emm.attach_request, e->pkbuf);
@@ -484,6 +486,9 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             }
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                rv = mme_s10_identify(mme_ue, &message->emm.attach_request,
+                        e->pkbuf, e->nas_type);
+                if (rv == OGS_OK || rv == OGS_RETRY) break;
                 CLEAR_MME_UE_TIMER(mme_ue->t3470);
                 r = nas_eps_send_identity_request(mme_ue);
                 ogs_expect(r == OGS_OK);
@@ -562,6 +567,18 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 mme_gtp1_send_sgsn_context_request(sgsn, mme_ue, ptmsi_sig);
                 /* FIXME: use a specific FSM state here to state we are waiting for resolution from Gn? */
                 break;
+            }
+
+            if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                rv = mme_s10_tau_request(mme_ue, e->pkbuf, e->nas_type);
+                if (rv == OGS_OK || rv == OGS_RETRY) {
+                    mme_ue->tracking_area_update_accept_proc =
+                        e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage &&
+                        mme_ue->nas_eps.update.active_flag ?
+                        S1AP_ProcedureCode_id_InitialContextSetup :
+                        S1AP_ProcedureCode_id_downlinkNASTransport;
+                    break;
+                }
             }
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
@@ -1406,6 +1423,13 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
             /* Create New GUTI */
             mme_ue_new_guti(mme_ue);
+
+            rv = mme_s10_authentication_complete(mme_ue);
+            if (rv != OGS_NOTFOUND) {
+                OGS_FSM_TRAN(s, rv == OGS_OK ?
+                        &emm_state_initial_context_setup : &emm_state_exception);
+                break;
+            }
 
              /* Special path when SGSN (Gn interface) is involved: */
             if (mme_ue->gn.gtp_xact_id != OGS_INVALID_POOL_ID) {

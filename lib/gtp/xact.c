@@ -288,6 +288,11 @@ ogs_gtp_xact_t *ogs_gtp_xact_find_by_id(ogs_pool_id_t id)
     return ogs_pool_find_by_id(&pool, id);
 }
 
+void ogs_gtp_xact_cancel(ogs_gtp_xact_t *xact)
+{
+    ogs_gtp_xact_delete(xact);
+}
+
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode)
 {
     ogs_gtp_xact_t *xact = NULL, *next_xact = NULL;

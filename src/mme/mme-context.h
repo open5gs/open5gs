@@ -193,6 +193,7 @@ typedef struct mme_context_s {
     ogs_hash_t *guti_ue_hash;   /* hash table (GUTI : MME_UE) */
 
     ogs_hash_t *mme_s11_teid_hash;  /* hash table (MME-S11-TEID : MME_UE) */
+    ogs_hash_t *mme_s10_teid_hash;
     ogs_hash_t *mme_gn_teid_hash;  /* hash table (MME-GN-TEID : MME_UE) */
 
     struct {
@@ -578,6 +579,24 @@ struct mme_ue_s {
         ogs_timer_t     *t_gn_holding;
         ogs_pool_id_t   gtp_xact_id; /* 2g->4g SGSN Context Req/Resp/Ack gtp1c xact */
     } gn;
+
+    uint32_t mme_s10_teid;
+    struct {
+        ogs_pool_id_t xact_id;
+        struct mme_s10_peer_s *peer;
+        uint32_t remote_teid;
+        ogs_pool_id_t sgw_xact_id;
+        ogs_pkbuf_t *request;
+        bool target_transfer;
+        bool auth_pending;
+        bool fresh_security;
+        bool gateway_updated;
+        bool source_transfer;
+        bool acknowledged;
+        bool cancel_location;
+        ogs_timer_t *holding;
+
+    } s10;
 
     /* Received TAU identity, separate from the pending GUTI allocation. */
     ogs_nas_eps_guti_t old_guti;
@@ -1321,6 +1340,8 @@ typedef enum {
     MME_UE_IMSI_FROM_ATTACH_REQUEST = 0,
     MME_UE_IMSI_FROM_IDENTITY_RESPONSE,
     MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE,
+    MME_UE_IMSI_FROM_S10_IDENTIFICATION,
+    MME_UE_IMSI_FROM_S10_CONTEXT,
 } mme_ue_imsi_source_e;
 
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
