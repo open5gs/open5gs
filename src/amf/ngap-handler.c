@@ -902,8 +902,11 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         }
     }
 
-    ogs_expect(OGS_OK == ngap_send_to_nas(
-                ran_ue, NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU));
+    if (ngap_send_to_nas(ran_ue,
+                NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU) != OGS_OK) {
+        /* Release the RAN-UE context allocated above */
+        ran_ue_remove(ran_ue);
+    }
 }
 
 void ngap_handle_uplink_nas_transport(
