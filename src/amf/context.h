@@ -695,6 +695,42 @@ struct amf_ue_s {
         } \
         (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
     } while(0)
+/*
+ * TS 24.501 5.5.1.2.8 f): the 5GMM context gives way only to a genuine UE.
+ * A request that fails before that gives the UE its held NG context back.
+ */
+#define RESTORE_NG_CONTEXT(__aMF) \
+    do { \
+        ran_ue_t *ran_ue_holding = NULL, *ran_ue_request = NULL; \
+        amf_sess_t *sess = NULL; \
+        \
+        ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_holding_id); \
+        if (ran_ue_holding) { \
+            int r; \
+            ogs_warn("[%s] Restore NG Context", (__aMF)->suci); \
+            \
+            ran_ue_request = ran_ue_find_by_id((__aMF)->ran_ue_id); \
+            if (ran_ue_request) { \
+                ran_ue_request->amf_ue_id = OGS_INVALID_POOL_ID; \
+                r = ngap_send_ran_ue_context_release_command( \
+                        ran_ue_request, \
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+            } \
+            \
+            ogs_timer_stop(ran_ue_holding->t_ng_holding); \
+            ran_ue_holding->ue_ctx_rel_action = \
+                NGAP_UE_CTX_REL_INVALID_ACTION; \
+            ran_ue_holding->holding_amf_ue_id = OGS_INVALID_POOL_ID; \
+            ogs_list_for_each(&(__aMF)->sess_list, sess) { \
+                if (sess->stale_ran_ue_id == ran_ue_holding->id) \
+                    sess->stale_ran_ue_id = OGS_INVALID_POOL_ID; \
+            } \
+            amf_ue_associate_ran_ue((__aMF), ran_ue_holding); \
+        } \
+        (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
+    } while(0)
     ogs_pool_id_t   ran_ue_holding_id;
 
     /*

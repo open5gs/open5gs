@@ -852,6 +852,36 @@ struct mme_ue_s {
         } \
         (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
     } while(0)
+/*
+ * TS 24.301 5.5.1.2.7 f): the EMM context gives way only to a genuine UE.
+ * A request that fails before that gives the UE its held S1 context back.
+ */
+#define RESTORE_S1_CONTEXT(__mME) \
+    do { \
+        enb_ue_t *enb_ue_holding = NULL, *enb_ue_request = NULL; \
+        \
+        enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_holding_id); \
+        if (enb_ue_holding) { \
+            int r; \
+            ogs_warn("[%s] Restore S1 Context", (__mME)->imsi_bcd); \
+            \
+            enb_ue_request = enb_ue_find_by_id((__mME)->enb_ue_id); \
+            if (enb_ue_request) { \
+                enb_ue_request->mme_ue_id = OGS_INVALID_POOL_ID; \
+                r = s1ap_send_ue_context_release_command( \
+                        enb_ue_request, \
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
+                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+            } \
+            \
+            ogs_timer_stop(enb_ue_holding->t_s1_holding); \
+            enb_ue_holding->ue_ctx_rel_action = \
+                S1AP_UE_CTX_REL_INVALID_ACTION; \
+            enb_ue_associate_mme_ue(enb_ue_holding, (__mME)); \
+        } \
+        (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
+    } while(0)
     ogs_pool_id_t   enb_ue_holding_id;
 
     struct {

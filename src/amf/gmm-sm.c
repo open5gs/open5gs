@@ -43,6 +43,11 @@
         amf_ue_restore_memento((amf_ue), &((amf_ue)->memento));            \
         (amf_ue)->security_context_available = 1;                        \
         (amf_ue)->mac_failed = 0;                                        \
+        /* Once authenticated, the request is the UE's own */            \
+        if (!OGS_FSM_CHECK((s), gmm_state_security_mode))                \
+            RESTORE_NG_CONTEXT(amf_ue);                                  \
+        else                                                             \
+            CLEAR_NG_CONTEXT(amf_ue);                                    \
         if (!OGS_FSM_CHECK((s), gmm_state_registered))                   \
             OGS_FSM_TRAN((s), &gmm_state_registered);                    \
         ogs_warn("[%s] Failure in transaction; restoring context and "  \

@@ -54,6 +54,11 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e);
         mme_ue_restore_memento((__mME), &((__mME)->memento)); \
         (__mME)->security_context_available = 1; \
         (__mME)->mac_failed = 0; \
+        /* Once authenticated, the request is the UE's own */ \
+        if (!OGS_FSM_CHECK((__s), emm_state_security_mode)) \
+            RESTORE_S1_CONTEXT(__mME); \
+        else \
+            CLEAR_S1_CONTEXT(__mME); \
         if (!OGS_FSM_CHECK((__s), emm_state_registered)) \
             OGS_FSM_TRAN((__s), &emm_state_registered); \
         ogs_warn("[%s] Failure in transaction; restoring context and " \

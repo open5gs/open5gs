@@ -714,6 +714,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 if (mme_ue->can_restore_context &&
                     OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
                     MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, &mme_ue->sm);
+                    /* Already released by RESTORE_S1_CONTEXT() */
+                    if (enb_ue->mme_ue_id != mme_ue->id)
+                        break;
                     r = s1ap_send_ue_context_release_command(enb_ue,
                             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
