@@ -28,6 +28,9 @@
 extern "C" {
 #endif
 
+ogs_pkbuf_t *ogs_gtp2_build_delete_bearer_failure_indication(
+        const ogs_gtp2_delete_bearer_command_t *cmd, uint8_t cause_value);
+
 ogs_pkbuf_t *ogs_gtp2_build_echo_request(
         uint8_t type, uint8_t recovery, uint8_t features);
 ogs_pkbuf_t *ogs_gtp2_build_echo_response(

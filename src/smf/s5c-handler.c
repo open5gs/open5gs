@@ -1719,3 +1719,50 @@ void smf_s5c_handle_bearer_resource_command(
         ogs_expect(rv == OGS_OK);
     }
 }
+
+void smf_s5c_handle_delete_bearer_command(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp2_delete_bearer_command_t *cmd,
+        ogs_gtp2_sender_f_teid_t *sender_f_teid)
+{
+    smf_bearer_t *bearer = NULL;
+    uint8_t cause = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+    if (!sess || sess->gnode != xact->gnode)
+        cause = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    else if (!cmd->bearer_contexts[0].presence ||
+            !cmd->bearer_contexts[0].eps_bearer_id.presence)
+        cause = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    else if (cmd->bearer_contexts[1].presence)
+        cause = OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED;
+    else {
+        bearer = smf_bearer_find_by_ebi(sess, cmd->bearer_contexts[0].eps_bearer_id.u8);
+        if (!bearer || smf_default_bearer_in_sess(sess) == bearer)
+            cause = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    }
+    if (cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        ogs_gtp2_send_delete_bearer_failure_indication(
+                xact, get_sender_f_teid(sess, sender_f_teid), cmd, cause);
+        return;
+    }
+    if (smf_epc_pfcp_send_one_bearer_modification_request(
+                bearer, xact->id, OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP2_CAUSE_UNDEFINED_VALUE) != OGS_OK)
+        smf_s5c_fail_delete_bearer_command(xact, bearer,
+                OGS_GTP2_CAUSE_SYSTEM_FAILURE);
+}
+
+void smf_s5c_fail_delete_bearer_command(
+        ogs_gtp_xact_t *xact, smf_bearer_t *bearer, uint8_t cause)
+{
+    smf_sess_t *sess;
+    ogs_gtp2_delete_bearer_command_t cmd = {0};
+    if (!xact || xact->seq[0].type != OGS_GTP2_DELETE_BEARER_COMMAND_TYPE ||
+            !bearer) return;
+    sess = smf_sess_find_by_id(bearer->sess_id);
+    cmd.bearer_contexts[0].presence = 1;
+    cmd.bearer_contexts[0].eps_bearer_id.presence = 1;
+    cmd.bearer_contexts[0].eps_bearer_id.u8 = bearer->ebi;
+    ogs_gtp2_send_delete_bearer_failure_indication(
+            xact, sess ? sess->sgw_s5c_teid : 0, &cmd, cause);
+}

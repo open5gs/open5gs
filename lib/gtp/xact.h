@@ -119,6 +119,11 @@ typedef struct ogs_gtp_xact_s {
     uint32_t        local_teid;     /**< Local TEID,
                                          expected in reply from peer */
 
+    /* TS 29.274 7.3.7: rejected Context Response has no third-leg ACK. */
+    bool            response_final;
+
+    uint32_t        remote_teid;    /* Response TEID snapshot for async handlers. */
+
     ogs_pool_id_t   assoc_xact_id;  /**< Associated GTP transaction ID */
     void            *pfcp_xact;     /**< Associated PFCP transaction */
 
@@ -148,6 +153,8 @@ typedef struct ogs_gtp_xact_s {
 
 #define OGS_GTP_DELETE_INDIRECT_HANDOVER_COMPLETE 1
 #define OGS_GTP_DELETE_INDIRECT_HANDOVER_CANCEL 2
+#define OGS_GTP_DELETE_INDIRECT_S10_COMPLETE 3
+#define OGS_GTP_DELETE_INDIRECT_S10_CANCEL 4
     int             delete_indirect_action;
 
 #define OGS_GTP_CREATE_IN_ATTACH_REQUEST 1
@@ -158,6 +165,8 @@ typedef struct ogs_gtp_xact_s {
 
 #define OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST 1
 #define OGS_GTP_MODIFY_IN_E_RAB_MODIFICATION 2
+#define OGS_GTP_MODIFY_IN_S10_TAU 3
+#define OGS_GTP_MODIFY_IN_S10_HANDOVER 4
     int             modify_action;
 } ogs_gtp_xact_t;
 
@@ -172,6 +181,8 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
         void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data);
 
 ogs_gtp_xact_t *ogs_gtp_xact_find_by_id(ogs_pool_id_t id);
+/* Cancel a pending procedure, including retransmission timers. */
+void ogs_gtp_xact_cancel(ogs_gtp_xact_t *xact);
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode);
 
 int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,

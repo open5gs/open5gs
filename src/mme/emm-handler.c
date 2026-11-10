@@ -28,6 +28,7 @@
 #include "mme-gtp-path.h"
 
 #include "emm-handler.h"
+#include "mme-s10.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
@@ -536,6 +537,12 @@ int emm_handle_identity_response(
 
         ogs_nas_eps_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
+        if (mme_ue->s10.target_transfer &&
+                !mme_s10_imsi_available(mme_ue, imsi_bcd)) {
+            nas_eps_send_tau_reject(enb_ue, mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            return OGS_ERROR;
+        }
         mme_ue_set_imsi(mme_ue, imsi_bcd, MME_UE_IMSI_FROM_IDENTITY_RESPONSE);
 
         if (mme_ue->imsi_len != OGS_MAX_IMSI_LEN) {

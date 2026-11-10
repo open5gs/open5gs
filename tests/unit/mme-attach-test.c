@@ -260,6 +260,7 @@ static int attach_release(enb_ue_t *enb, S1AP_Cause_PR group, long cause,
 #define mme_gtp_send_downlink_data_notification_ack attach_gtp_notification_ack
 #define mme_gtp_send_create_indirect_data_forwarding_tunnel_request attach_gtp_create_tunnel
 #define mme_gtp_send_delete_indirect_data_forwarding_tunnel_request attach_gtp_delete_tunnel
+#define mme_gtp_send_delete_bearer_command attach_gtp_delete_command
 #define mme_gtp_send_bearer_resource_command attach_gtp_bearer_resource
 #define mme_gtp1_send_sgsn_context_request attach_gtp1_context_request
 #define mme_gtp1_send_sgsn_context_response attach_gtp1_context_response
@@ -288,6 +289,7 @@ static int attach_release(enb_ue_t *enb, S1AP_Cause_PR group, long cause,
 #undef mme_gtp_send_downlink_data_notification_ack
 #undef mme_gtp_send_create_indirect_data_forwarding_tunnel_request
 #undef mme_gtp_send_delete_indirect_data_forwarding_tunnel_request
+#undef mme_gtp_send_delete_bearer_command
 #undef mme_gtp_send_bearer_resource_command
 #undef mme_gtp1_send_sgsn_context_request
 #undef mme_gtp1_send_sgsn_context_response

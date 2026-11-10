@@ -27,6 +27,7 @@
 #include "mme-s11-build.h"
 #include "mme-sm.h"
 #include "mme-dns.h"
+#include "mme-s10.h"
 
 static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
@@ -40,6 +41,7 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     mme_sgw_t *sgw = NULL;
     mme_sgsn_t *sgsn = NULL;
     uint8_t gtp_ver;
+    mme_s10_peer_t *peer;
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -57,6 +59,10 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_pkbuf_trim(pkbuf, size);
 
+    if (size < 8) {
+        ogs_pkbuf_free(pkbuf);
+        return;
+    }
     gtp_ver = ((ogs_gtp2_header_t *)pkbuf->data)->version;
     switch (gtp_ver) {
     case 1:
@@ -72,6 +78,21 @@ static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
         e->gnode = &sgsn->gnode;
         break;
     case 2:
+        peer = mme_s10_find_by_addr(&from);
+        if (peer && (mme_s10_message_type(pkbuf->data[1]) ||
+                    pkbuf->data[1] == OGS_GTP2_ECHO_REQUEST_TYPE ||
+                    pkbuf->data[1] == OGS_GTP2_ECHO_RESPONSE_TYPE)) {
+            e = mme_event_new(MME_EVENT_S10_MESSAGE);
+            ogs_assert(e);
+            e->gnode = &peer->gnode;
+            break;
+        }
+        if (mme_s10_message_type(pkbuf->data[1])) {
+            ogs_warn("S10 message from an unconfigured MME [%s]",
+                    OGS_ADDR(&from, buf));
+            ogs_pkbuf_free(pkbuf);
+            return;
+        }
         sgw = mme_sgw_find_by_addr(&from);
         if (!sgw) {
             ogs_error("Unknown SGW : %s", OGS_ADDR(&from, buf));
@@ -142,6 +163,7 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
         mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
         ogs_assert(mme_ue);
         break;
+    case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
         bearer_id = OGS_POINTER_TO_UINT(data);
         ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
@@ -198,6 +220,7 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("No S1 Context");
         }
         break;
+    case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
         /* Nothing to do */
         break;
@@ -262,7 +285,7 @@ int mme_gtp_open(void)
         ogs_assert(rv == OGS_OK);
     }
 
-    return OGS_OK;
+    return mme_s10_open();
 }
 
 void mme_gtp_close(void)
@@ -400,6 +423,10 @@ int mme_gtp_send_delete_session_request(
     mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
     ogs_assert(sgw_ue);
+    if (mme_s10_source_committed(mme_ue)) {
+        ogs_debug("Ignore obsolete Delete Session after S10 transfer [ue:%u]", mme_ue->id);
+        return OGS_OK;
+    }
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_SESSION_REQUEST_TYPE;
@@ -632,6 +659,10 @@ int mme_gtp_send_release_access_bearers_request(
     ogs_assert(enb_ue);
     ogs_assert(action);
     ogs_assert(mme_ue);
+    if (mme_s10_source_committed(mme_ue))
+        return s1ap_send_ue_context_release_command(enb_ue,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
     sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
@@ -797,6 +828,7 @@ int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
     xact->local_teid = mme_ue->gn.mme_gn_teid;
     xact->enb_ue_id = enb_ue->id;
 
+    mme_s10_handover_bind_indirect(mme_ue, xact);
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 
@@ -1025,4 +1057,47 @@ int mme_gtp1_send_ran_information_relay(
     ogs_expect(rv == OGS_OK);
 
     return rv;
+}
+
+static void release_command_deleted(ogs_gtp_xact_t *xact)
+{
+    mme_bearer_t *bearer = mme_bearer_find_by_id(OGS_POINTER_TO_UINT(xact->data));
+    if (bearer && bearer->release_xact_id == xact->id)
+        bearer->release_xact_id = OGS_INVALID_POOL_ID;
+}
+
+/* TS 29.274 7.2.17.1: an MME-initiated dedicated bearer release is
+ * a command followed by the PGW's Delete Bearer Request, not a local
+ * bearer deletion. Independent commands avoid coupling unrelated PDNs. */
+int mme_gtp_send_delete_bearer_command(mme_bearer_t *bearer)
+{
+    mme_ue_t *ue = mme_ue_find_by_id(bearer->mme_ue_id);
+    mme_sess_t *sess = mme_sess_find_by_id(bearer->sess_id);
+    sgw_ue_t *sgw = ue ? sgw_ue_find_by_id(ue->sgw_ue_id) : NULL;
+    ogs_gtp2_message_t *msg;
+    ogs_gtp2_tlv_bearer_context_t *bc;
+    ogs_pkbuf_t *p;
+    ogs_gtp_xact_t *xact;
+    if (bearer->release_xact_id &&
+            ogs_gtp_xact_find_by_id(bearer->release_xact_id)) return OGS_RETRY;
+    if (!sess || mme_default_bearer_in_sess(sess) == bearer ||
+            !sgw || !sgw->gnode || !sgw->sgw_s11_teid) return OGS_ERROR;
+    msg = ogs_calloc(1, sizeof(*msg));
+    ogs_assert(msg);
+    msg->h.type = OGS_GTP2_DELETE_BEARER_COMMAND_TYPE;
+    msg->h.teid = sgw->sgw_s11_teid;
+    bc = &msg->delete_bearer_command.bearer_contexts[0];
+    bc->presence = 1;
+    bc->eps_bearer_id.presence = 1;
+    bc->eps_bearer_id.u8 = bearer->ebi;
+    p = ogs_gtp2_build_msg(msg);
+    if (!p) { ogs_free(msg); return OGS_ERROR; }
+    xact = ogs_gtp_xact_local_create(sgw->gnode, &msg->h, p,
+            timeout, OGS_UINT_TO_POINTER(bearer->id));
+    ogs_free(msg);
+    if (!xact) return OGS_ERROR;
+    xact->local_teid = ue->mme_s11_teid;
+    xact->delete_cb = release_command_deleted;
+    bearer->release_xact_id = xact->id;
+    return ogs_gtp_xact_commit(xact);
 }

@@ -50,6 +50,14 @@ void smf_s5c_handle_update_bearer_response(
 bool smf_s5c_handle_delete_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_delete_bearer_response_t *rsp);
+void smf_s5c_fail_delete_bearer_command(
+        ogs_gtp_xact_t *xact, smf_bearer_t *bearer, uint8_t cause);
+
+void smf_s5c_handle_delete_bearer_command(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp2_delete_bearer_command_t *cmd,
+        ogs_gtp2_sender_f_teid_t *sender_f_teid);
+
 void smf_s5c_handle_bearer_resource_command(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp2_bearer_resource_command_t *cmd,

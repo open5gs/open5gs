@@ -79,6 +79,10 @@ const char *mme_event_get_name(mme_event_t *e)
         return "MME_EVENT_ESM_MESSAGE";
     case MME_EVENT_ESM_TIMER:
         return "MME_EVENT_ESM_TIMER";
+    case MME_EVENT_S10_TIMER:
+        return "MME_EVENT_S10_TIMER";
+    case MME_EVENT_S10_MESSAGE:
+        return "MME_EVENT_S10_MESSAGE";
     case MME_EVENT_S11_MESSAGE:
         return "MME_EVENT_S11_MESSAGE";
     case MME_EVENT_S11_TIMER:

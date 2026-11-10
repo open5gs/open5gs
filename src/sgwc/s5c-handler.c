@@ -1084,3 +1084,17 @@ void sgwc_s5c_handle_bearer_resource_failure_indication(
     ogs_gtp_send_error_message(s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
             OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
 }
+
+void sgwc_s5c_handle_delete_bearer_failure_indication(
+        sgwc_sess_t *sess, ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
+{
+    ogs_gtp_xact_t *s11 = ogs_gtp_xact_find_by_id(xact->assoc_xact_id);
+    sgwc_ue_t *ue = sess ? sgwc_ue_find_by_id(sess->sgwc_ue_id) : NULL;
+    ogs_pkbuf_t *p;
+    ogs_gtp_xact_commit(xact);
+    if (!s11) return;
+    msg->h.teid = ue ? ue->mme_s11_teid : 0;
+    p = ogs_gtp2_build_msg(msg);
+    if (p && ogs_gtp_xact_update_tx(s11, &msg->h, p) == OGS_OK)
+        ogs_gtp_xact_commit(s11);
+}

@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "s5c-handler.h"
 #include "s5c-build.h"
 #include "pfcp-path.h"
 #include "gtp-path.h"
@@ -1346,11 +1347,15 @@ void smf_epc_n4_handle_session_modification_response(
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
             ogs_error("PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
+            smf_s5c_fail_delete_bearer_command(gtp_xact, bearer,
+                    OGS_GTP2_CAUSE_SYSTEM_FAILURE);
             clear_ei_deactivation(sess, bearer, flags);
             return;
         }
     } else {
         ogs_error("No Cause");
+        smf_s5c_fail_delete_bearer_command(gtp_xact, bearer,
+                OGS_GTP2_CAUSE_SYSTEM_FAILURE);
         clear_ei_deactivation(sess, bearer, flags);
         return;
     }
@@ -1402,6 +1407,8 @@ void smf_epc_n4_handle_session_modification_response(
 
     if (pfcp_cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("PFCP Cause [%d] : Not Accepted", pfcp_cause_value);
+        smf_s5c_fail_delete_bearer_command(gtp_xact, bearer,
+                OGS_GTP2_CAUSE_SYSTEM_FAILURE);
         clear_ei_deactivation(sess, bearer, flags);
         return;
     }
