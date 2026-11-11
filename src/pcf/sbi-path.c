@@ -388,31 +388,28 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     /* Only 1 SessionRule is used */
     SessionRule->sess_rule_id = (char *)"1";
 
-    if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
-                OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION)) {
-        if (sess->subscribed_sess_ambr) {
-            ogs_bitrate_t subscribed_sess_ambr;
+    if (sess->subscribed_sess_ambr) {
+        ogs_bitrate_t subscribed_sess_ambr;
 
-            subscribed_sess_ambr.uplink = ogs_sbi_bitrate_from_string(
-                    sess->subscribed_sess_ambr->uplink);
-            subscribed_sess_ambr.downlink = ogs_sbi_bitrate_from_string(
-                    sess->subscribed_sess_ambr->downlink);
-            if (((subscribed_sess_ambr.uplink / 1000) !=
-                 (session->ambr.uplink / 1000)) ||
-                ((subscribed_sess_ambr.downlink / 1000) !=
-                 (session->ambr.downlink / 1000))) {
+        subscribed_sess_ambr.uplink = ogs_sbi_bitrate_from_string(
+                sess->subscribed_sess_ambr->uplink);
+        subscribed_sess_ambr.downlink = ogs_sbi_bitrate_from_string(
+                sess->subscribed_sess_ambr->downlink);
+        if (((subscribed_sess_ambr.uplink / 1000) !=
+             (session->ambr.uplink / 1000)) ||
+            ((subscribed_sess_ambr.downlink / 1000) !=
+             (session->ambr.downlink / 1000))) {
 
-                OpenAPI_list_add(PolicyCtrlReqTriggers,
-                    (void *)OpenAPI_policy_control_request_trigger_SE_AMBR_CH);
-            }
-
-            memset(&AuthSessAmbr, 0, sizeof(AuthSessAmbr));
-            AuthSessAmbr.uplink = ogs_sbi_bitrate_to_string(
-                    session->ambr.uplink, OGS_SBI_BITRATE_KBPS);
-            AuthSessAmbr.downlink = ogs_sbi_bitrate_to_string(
-                    session->ambr.downlink, OGS_SBI_BITRATE_KBPS);
-            SessionRule->auth_sess_ambr = &AuthSessAmbr;
+            OpenAPI_list_add(PolicyCtrlReqTriggers,
+                (void *)OpenAPI_policy_control_request_trigger_SE_AMBR_CH);
         }
+
+        memset(&AuthSessAmbr, 0, sizeof(AuthSessAmbr));
+        AuthSessAmbr.uplink = ogs_sbi_bitrate_to_string(
+                session->ambr.uplink, OGS_SBI_BITRATE_KBPS);
+        AuthSessAmbr.downlink = ogs_sbi_bitrate_to_string(
+                session->ambr.downlink, OGS_SBI_BITRATE_KBPS);
+        SessionRule->auth_sess_ambr = &AuthSessAmbr;
     }
 
     if (sess->subscribed_default_qos) {
