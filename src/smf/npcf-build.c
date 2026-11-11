@@ -151,7 +151,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         goto end;
     }
 
-    SmPolicyContextData.rat_type = OpenAPI_rat_type_NR;
+    SmPolicyContextData.rat_type = sess->sbi_rat_type;
 
     SmPolicyContextData.serving_network =
         ogs_sbi_build_plmn_id_nid(&sess->serving_plmn_id);

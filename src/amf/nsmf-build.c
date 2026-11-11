@@ -327,6 +327,9 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
     memset(&ueLocation, 0, sizeof(ueLocation));
     memset(&SmContextUpdateData, 0, sizeof(SmContextUpdateData));
 
+    if (ran_ue_find_by_id(amf_ue->ran_ue_id))
+        SmContextUpdateData.rat_type = amf_ue_rat_type(amf_ue);
+
     message.SmContextUpdateData = &SmContextUpdateData;
 
     message.num_of_part = 0;
