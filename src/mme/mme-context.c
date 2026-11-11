@@ -6024,11 +6024,14 @@ void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento)
     memcpy(mme_ue->kasme, memento->kasme, OGS_SHA256_DIGEST_SIZE);
     memcpy(mme_ue->rand, memento->rand, OGS_RAND_LEN);
     memcpy(mme_ue->autn, memento->autn, OGS_AUTN_LEN);
+    /* TS 24.301 4.4.3.1: keys that were not replaced keep their NAS COUNT */
+    if (memcmp(mme_ue->knas_int, memento->knas_int,
+            OGS_SHA256_DIGEST_SIZE / 2))
+        mme_ue->dl_count = memento->dl_count;
     memcpy(mme_ue->knas_int, memento->knas_int,
            OGS_SHA256_DIGEST_SIZE / 2);
     memcpy(mme_ue->knas_enc, memento->knas_enc,
            OGS_SHA256_DIGEST_SIZE / 2);
-    mme_ue->dl_count = memento->dl_count;
     mme_ue->ul_count.i32 = memento->ul_count;
     mme_ue->ul_count_accepted = memento->ul_count_accepted;
     memcpy(mme_ue->kenb, memento->kenb, OGS_SHA256_DIGEST_SIZE);

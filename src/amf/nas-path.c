@@ -52,10 +52,29 @@ int nas_5gs_send_to_downlink_nas_transport(
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
+    ogs_nas_5gs_security_header_t *sh = NULL;
 
     ogs_assert(ran_ue);
     ogs_assert(amf_ue);
     ogs_assert(pkbuf);
+
+    /*
+     * TS 24.501 4.4.4.1: integrity protection is mandatory for the network
+     * once the secure exchange of NAS messages is established. Protect a
+     * plain 5GMM message for a UE whose connection has it established.
+     */
+    sh = (ogs_nas_5gs_security_header_t *)pkbuf->data;
+    if (amf_ue->integrity_verified &&
+        sh->extended_protocol_discriminator ==
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM &&
+        sh->security_header_type == OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE) {
+        pkbuf = nas_5gs_security_protect(amf_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, pkbuf);
+        if (!pkbuf) {
+            ogs_error("nas_5gs_security_protect() failed");
+            return OGS_ERROR;
+        }
+    }
 
     ngapbuf = ngap_build_downlink_nas_transport(
             ran_ue, amf_ue, pkbuf, false, false);
@@ -584,6 +603,11 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
     if (amf_ue->t3560.pkbuf) {
         gmmbuf = amf_ue->t3560.pkbuf;
     } else {
+        /* TS 24.501 4.4.3.1: a restored context keeps the COUNT it reached */
+        if (!memcmp(amf_ue->memento.knas_int, amf_ue->knas_int,
+                    OGS_SHA256_DIGEST_SIZE/2))
+            amf_ue->memento.dl_count = amf_ue->dl_count;
+
         gmmbuf = gmm_build_security_mode_command(amf_ue);
         if (!gmmbuf) {
             ogs_error("gmm_build_security_mode_command() failed");

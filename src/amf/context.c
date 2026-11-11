@@ -3066,9 +3066,11 @@ void amf_ue_restore_memento(amf_ue_t *amf_ue, const amf_ue_memento_t *memento)
     amf_ue->abba_len = memento->abba_len;
     memcpy(amf_ue->hxres_star, memento->hxres_star, OGS_MAX_RES_LEN);
     memcpy(amf_ue->kamf, memento->kamf, OGS_SHA256_DIGEST_SIZE);
+    /* TS 24.501 4.4.3.1: keys that were not replaced keep their NAS COUNT */
+    if (memcmp(amf_ue->knas_int, memento->knas_int, OGS_SHA256_DIGEST_SIZE/2))
+        amf_ue->dl_count = memento->dl_count;
     memcpy(amf_ue->knas_int, memento->knas_int, OGS_SHA256_DIGEST_SIZE/2);
     memcpy(amf_ue->knas_enc, memento->knas_enc, OGS_SHA256_DIGEST_SIZE/2);
-    amf_ue->dl_count = memento->dl_count;
     amf_ue->ul_count.i32 = memento->ul_count;
     amf_ue->ul_count_accepted = memento->ul_count_accepted;
     memcpy(amf_ue->kgnb, memento->kgnb, OGS_SHA256_DIGEST_SIZE);

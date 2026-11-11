@@ -90,6 +90,8 @@ int nas_eps_send_to_downlink_nas_transport(
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
+    mme_ue_t *mme_ue = NULL;
+    ogs_nas_eps_security_header_t *sh = NULL;
 
     ogs_assert(pkbuf);
 
@@ -97,6 +99,24 @@ int nas_eps_send_to_downlink_nas_transport(
         ogs_error("S1 context has already been removed");
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
+    }
+
+    /*
+     * TS 24.301 4.4.4.1: integrity protection is mandatory for the network
+     * once the secure exchange of NAS messages is established. Protect a
+     * plain EMM message for a UE whose connection has it established.
+     */
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+    sh = (ogs_nas_eps_security_header_t *)pkbuf->data;
+    if (mme_ue && mme_ue->integrity_verified &&
+        sh->protocol_discriminator == OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM &&
+        sh->security_header_type == OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE) {
+        pkbuf = nas_eps_security_protect(mme_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, pkbuf);
+        if (!pkbuf) {
+            ogs_error("nas_eps_security_protect() failed");
+            return OGS_ERROR;
+        }
     }
 
     s1apbuf = s1ap_build_downlink_nas_transport(enb_ue, pkbuf);
@@ -347,6 +367,11 @@ int nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
     if (mme_ue->t3460.pkbuf) {
         emmbuf = mme_ue->t3460.pkbuf;
     } else {
+        /* TS 24.301 4.4.3.1: a restored context keeps the COUNT it reached */
+        if (!memcmp(mme_ue->memento.knas_int, mme_ue->knas_int,
+                    OGS_SHA256_DIGEST_SIZE / 2))
+            mme_ue->memento.dl_count = mme_ue->dl_count;
+
         emmbuf = emm_build_security_mode_command(mme_ue);
         if (!emmbuf) {
             ogs_error("emm_build_security_mode_command() failed");
