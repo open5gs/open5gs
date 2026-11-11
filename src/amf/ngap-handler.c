@@ -644,6 +644,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
     ran_ue_t *ran_ue = NULL;
     amf_ue_t *amf_ue = NULL;
+    ogs_pool_id_t ran_ue_holding_id = OGS_INVALID_POOL_ID;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_InitialUEMessage_t *InitialUEMessage = NULL;
@@ -848,6 +849,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             ogs_assert(r != OGS_ERROR);
             return;
         }
+        ran_ue_holding_id = amf_ue->ran_ue_holding_id;
         /* If NAS(amf_ue_t) has already been associated with
          * older NG(ran_ue_t) context */
         if (CM_CONNECTED(amf_ue)) {
@@ -902,8 +904,14 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         }
     }
 
-    ogs_expect(OGS_OK == ngap_send_to_nas(
-                ran_ue, NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU));
+    r = ngap_send_to_nas(
+            ran_ue, NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU);
+    ogs_expect(r == OGS_OK);
+    /* TS 38.413 10.4: a refused NAS-PDU authenticated nobody; a hold
+     * kept for another request waits for that request's end */
+    if (r != OGS_OK && amf_ue &&
+            amf_ue->ran_ue_holding_id != ran_ue_holding_id)
+        RESTORE_NG_CONTEXT(amf_ue);
 }
 
 void ngap_handle_uplink_nas_transport(
@@ -1879,6 +1887,15 @@ void ngap_handle_ue_context_release_request(
                 NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+    } else if (ran_ue_find_by_id(amf_ue->ran_ue_holding_id) &&
+            OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+        /* TS 24.501 5.5.1.2.8 f): only the connection of the request
+         * not yet authenticated goes; the PDU sessions stay the UE's */
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
+                Cause->present, (int)Cause->choice.radioNetwork,
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     } else {
         int xact_count = amf_sess_xact_count(amf_ue);
 
@@ -2084,6 +2101,12 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
          * to prevent retransmission of NAS messages.
          */
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+
+        /* TS 24.501 5.4.1.3.7 a): the connection is gone before the
+         * AUTHENTICATION RESPONSE, so the authentication is aborted */
+        if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication) &&
+            amf_ue->ran_ue_id == ran_ue->id)
+            amf_timer_t3560_expire(OGS_UINT_TO_POINTER(amf_ue->id));
     }
 
     switch (ran_ue->ue_ctx_rel_action) {

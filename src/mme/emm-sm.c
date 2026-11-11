@@ -1285,6 +1285,11 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 mme_ue->t3460.retry_count++;
                 r = nas_eps_send_authentication_request(mme_ue);
+                /* TS 24.301 5.4.2.7 a): the connection is gone, abort */
+                if (r == OGS_NOTFOUND) {
+                    MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
+                    break;
+                }
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }

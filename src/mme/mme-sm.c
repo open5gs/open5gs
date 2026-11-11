@@ -259,13 +259,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
 
+        mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+
         if (ogs_nas_emm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_emm_decode() failed");
             ogs_pkbuf_free(pkbuf);
+            if (mme_ue && mme_ue->enb_ue_id == enb_ue->id &&
+                enb_ue_find_by_id(mme_ue->enb_ue_holding_id) &&
+                e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage)
+                REFUSE_S1_REQUEST(mme_ue, enb_ue);
             return;
         }
-
-        mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
         if (mme_ue && mme_ue->attach_session_delete_pending) {
             ogs_error("[%s] NAS message while deleting old Attach sessions",
@@ -329,6 +333,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                             "context yet");
                 ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+                if (mme_ue->enb_ue_id == enb_ue->id &&
+                    enb_ue_find_by_id(mme_ue->enb_ue_holding_id) &&
+                    e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
+                    REFUSE_S1_REQUEST(mme_ue, enb_ue);
+                    ogs_pkbuf_free(pkbuf);
+                    return;
+                }
 
                 enb_ue->relcause.group = S1AP_Cause_PR_nas;
                 enb_ue->relcause.cause = S1AP_CauseNas_normal_release;

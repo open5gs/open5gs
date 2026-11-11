@@ -796,6 +796,24 @@ struct mme_ue_s {
                     (__hOLDER)->imsi_bcd, \
                     enb_ue_holding->enb_ue_s1ap_id, \
                     enb_ue_holding->mme_ue_s1ap_id); \
+            /* TS 24.301 5.5.1.2.7 f): until the request in progress is \
+             * authenticated, keep the held one, the UE's, and release \
+             * the request's */ \
+            if ((__hOLDER) == (__sERVING) && \
+                !OGS_FSM_CHECK(&(__hOLDER)->sm, emm_state_security_mode)) { \
+                enb_ue_t *enb_ue_serving = \
+                    enb_ue_find_by_id((__sERVING)->enb_ue_id); \
+                if (enb_ue_serving) { \
+                    enb_ue_serving->mme_ue_id = OGS_INVALID_POOL_ID; \
+                    r = s1ap_send_ue_context_release_command( \
+                            enb_ue_serving, \
+                            S1AP_Cause_PR_nas, \
+                            S1AP_CauseNas_normal_release, \
+                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
+                    ogs_expect(r == OGS_OK); \
+                } \
+                break; \
+            } \
             r = s1ap_send_ue_context_release_command( \
                     enb_ue_holding, \
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
@@ -881,6 +899,25 @@ struct mme_ue_s {
             enb_ue_associate_mme_ue(enb_ue_holding, (__mME)); \
         } \
         (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
+    } while(0)
+/*
+ * TS 24.301 5.5.1.2.7 f): a NAS message refused on the connection __eNB that
+ * put the S1 context on hold authenticated nobody. While a request is being
+ * authenticated, only __eNB is released and T3460 ends that authentication;
+ * otherwise the held S1 context is given back.
+ */
+#define REFUSE_S1_REQUEST(__mME, __eNB) \
+    do { \
+        if (OGS_FSM_CHECK(&(__mME)->sm, emm_state_authentication)) { \
+            int r; \
+            enb_ue_deassociate_mme_ue((__eNB), (__mME)); \
+            (__eNB)->mme_ue_id = OGS_INVALID_POOL_ID; \
+            r = s1ap_send_ue_context_release_command((__eNB), \
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
+                    S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+        } else \
+            RESTORE_S1_CONTEXT(__mME); \
     } while(0)
     ogs_pool_id_t   enb_ue_holding_id;
 

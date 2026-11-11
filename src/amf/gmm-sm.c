@@ -2364,6 +2364,11 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             } else {
                 amf_ue->t3560.retry_count++;
                 r = nas_5gs_send_authentication_request(amf_ue);
+                /* TS 24.501 5.4.1.3.7 a): the connection is gone, abort */
+                if (r == OGS_NOTFOUND) {
+                    AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                    break;
+                }
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }

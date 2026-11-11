@@ -635,6 +635,24 @@ struct amf_ue_s {
                     (__hOLDER)->suci, \
                     (long long)ran_ue_holding->ran_ue_ngap_id, \
                     (long long)ran_ue_holding->amf_ue_ngap_id); \
+            /* TS 24.501 5.5.1.2.8 f): until the request in progress is \
+             * authenticated, keep the held one, the UE's, and release \
+             * the request's */ \
+            if ((__hOLDER) == (__sERVING) && \
+                !OGS_FSM_CHECK(&(__hOLDER)->sm, gmm_state_security_mode)) { \
+                ran_ue_t *ran_ue_serving = \
+                    ran_ue_find_by_id((__sERVING)->ran_ue_id); \
+                if (ran_ue_serving) { \
+                    ran_ue_serving->amf_ue_id = OGS_INVALID_POOL_ID; \
+                    r = ngap_send_ran_ue_context_release_command( \
+                            ran_ue_serving, \
+                            NGAP_Cause_PR_nas, \
+                            NGAP_CauseNas_normal_release, \
+                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+                    ogs_expect(r == OGS_OK); \
+                } \
+                break; \
+            } \
             r = ngap_send_ran_ue_context_release_command( \
                     ran_ue_holding, \
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
@@ -730,6 +748,25 @@ struct amf_ue_s {
             amf_ue_associate_ran_ue((__aMF), ran_ue_holding); \
         } \
         (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
+    } while(0)
+/*
+ * TS 24.501 5.5.1.2.8 f): a NAS message refused on the connection __rAN that
+ * put the NG context on hold authenticated nobody. While a request is being
+ * authenticated, only __rAN is released and T3560 ends that authentication;
+ * otherwise the held NG context is given back.
+ */
+#define REFUSE_NG_REQUEST(__aMF, __rAN) \
+    do { \
+        if (OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_authentication)) { \
+            int r; \
+            amf_ue_deassociate_ran_ue((__aMF), (__rAN)); \
+            (__rAN)->amf_ue_id = OGS_INVALID_POOL_ID; \
+            r = ngap_send_ran_ue_context_release_command((__rAN), \
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+        } else \
+            RESTORE_NG_CONTEXT(__aMF); \
     } while(0)
     ogs_pool_id_t   ran_ue_holding_id;
 

@@ -922,13 +922,17 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
 
+        amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
+
         if (ogs_nas_5gmm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_5gmm_decode() failed");
             ogs_pkbuf_free(pkbuf);
+            if (amf_ue && amf_ue->ran_ue_id == ran_ue->id &&
+                ran_ue_find_by_id(amf_ue->ran_ue_holding_id) &&
+                e->ngap.code == NGAP_ProcedureCode_id_InitialUEMessage)
+                REFUSE_NG_REQUEST(amf_ue, ran_ue);
             break;
         }
-
-        amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
         if (amf_ue && amf_ue->registration_session_release_pending) {
             ogs_error("[%s] Ignore NAS message while registration session "
@@ -1006,6 +1010,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_warn("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
                         (long long)ran_ue->ran_ue_ngap_id,
                         (long long)ran_ue->amf_ue_ngap_id);
+
+                if (amf_ue->ran_ue_id == ran_ue->id &&
+                    ran_ue_find_by_id(amf_ue->ran_ue_holding_id) &&
+                    e->ngap.code == NGAP_ProcedureCode_id_InitialUEMessage) {
+                    REFUSE_NG_REQUEST(amf_ue, ran_ue);
+                    ogs_pkbuf_free(pkbuf);
+                    break;
+                }
 
                 /* Same teardown as a RAN-initiated release request */
                 CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
