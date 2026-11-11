@@ -81,30 +81,37 @@ jobs:
         ports:
           - 27017:27017
     steps:
-    - name: Diagnose Ubuntu network access
-      timeout-minutes: 3
+    - name: Check Ubuntu DNS and recover resolver
+      timeout-minutes: 2
       run: |
-          probe() {
-              label="$1"
-              shift
-              result=0
-              output="$(timeout 15 "$@" 2>&1)" || result=$?
-              printf '%s\n' "$output"
-              summary="$(printf '%s' "$output" | tr '\n\r' '  ' | cut -c1-1200)"
-              echo "::notice title=Network diagnostic::$label: exit=$result $summary"
-          }
           cat /etc/resolv.conf
-          ip route
-          for host in archive.ubuntu.com security.ubuntu.com; do
-              probe "host DNS $host" getent ahostsv4 "$host"
-              for scheme in http https; do
-                  probe "host $scheme $host" curl --noproxy '*' --connect-timeout 5 --max-time 10 -sS -o /dev/null -w '%{http_code} %{remote_ip}' "$scheme://$host/ubuntu/"
-              done
+          resolvectl status
+          if timeout 10 getent ahostsv4 archive.ubuntu.com &&
+             timeout 10 getent ahostsv4 security.ubuntu.com; then
+              exit 0
+          fi
+          echo "::warning::Ubuntu repository names do not resolve with the runner DNS"
+          recovered=false
+          for resolver in 1.1.1.1 8.8.8.8; do
+              echo "Testing resolver $resolver"
+              if dig +time=2 +tries=1 +short @"$resolver" archive.ubuntu.com A | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' &&
+                 dig +time=2 +tries=1 +short @"$resolver" security.ubuntu.com A | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+                  interface="$(ip -4 route show default | awk 'NR == 1 {print $5}')"
+                  sudo resolvectl dns "$interface" "$resolver"
+                  sudo resolvectl domain "$interface" '~.'
+                  sudo resolvectl flush-caches
+                  if timeout 10 getent ahostsv4 archive.ubuntu.com &&
+                     timeout 10 getent ahostsv4 security.ubuntu.com; then
+                      echo "::notice::Ubuntu DNS recovered using $resolver"
+                      recovered=true
+                      break
+                  fi
+              fi
           done
-          image="$(docker inspect --format '{{.Image}}' '${{ job.services.mongodb.id }}')"
-          for network in bridge host; do
-              probe "Docker $network DNS" docker run --rm --pull=never --network "$network" --entrypoint sh "$image" -c 'cat /etc/resolv.conf; getent ahostsv4 archive.ubuntu.com; getent ahostsv4 security.ubuntu.com'
-          done
+          if [ "$recovered" != true ]; then
+              echo "::error::Ubuntu DNS failed with the runner resolver and public resolvers"
+              exit 1
+          fi
     - name: Create the TUN device with the interface name `ogstun`.
       run: |
           sudo ip tuntap add name ogstun mode tun
