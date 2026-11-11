@@ -3,7 +3,7 @@
 S10 connects MMEs for mobility and context transfer. The protocol layer includes
 GTPv2-C mobility messages, the EPS MM Context codec and transaction stages. The
 MME runtime implements Identification, inter-MME TAU and connected S1 handover
-with a retained SGW. It includes fresh AKA fallback for idle mobility, direct
+with a retained or relocated SGW. It includes fresh AKA fallback for idle mobility, direct
 and indirect forwarding, PDCP status transfer, cancellation and SON configuration
 transfer. The remaining integration work is listed below.
 
@@ -101,6 +101,10 @@ They should not be implemented by copying process pointers or by treating the
 subscriber database as an MME session store.
 
 ## Runtime configuration
+
+For a two-site deployment walkthrough, reciprocal MME configuration, SGW/PGW
+connections, Diameter requirements and radio setup, see
+[Connect and configure two MMEs over S10](s10-configuration.md).
 
 S10 shares `mme.gtpc.server` with S11 and uses UDP/2123. Each endpoint must be
 provisioned on the receiving MME. Configure the remote GUMMEI under
