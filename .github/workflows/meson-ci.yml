@@ -81,6 +81,30 @@ jobs:
         ports:
           - 27017:27017
     steps:
+    - name: Diagnose Ubuntu network access
+      timeout-minutes: 3
+      run: |
+          probe() {
+              label="$1"
+              shift
+              result=0
+              output="$(timeout 15 "$@" 2>&1)" || result=$?
+              printf '%s\n' "$output"
+              summary="$(printf '%s' "$output" | tr '\n\r' '  ' | cut -c1-1200)"
+              echo "::notice title=Network diagnostic::$label: exit=$result $summary"
+          }
+          cat /etc/resolv.conf
+          ip route
+          for host in archive.ubuntu.com security.ubuntu.com; do
+              probe "host DNS $host" getent ahostsv4 "$host"
+              for scheme in http https; do
+                  probe "host $scheme $host" curl --noproxy '*' --connect-timeout 5 --max-time 10 -sS -o /dev/null -w '%{http_code} %{remote_ip}' "$scheme://$host/ubuntu/"
+              done
+          done
+          image="$(docker inspect --format '{{.Image}}' '${{ job.services.mongodb.id }}')"
+          for network in bridge host; do
+              probe "Docker $network DNS" docker run --rm --pull=never --network "$network" --entrypoint sh "$image" -c 'cat /etc/resolv.conf; getent ahostsv4 archive.ubuntu.com; getent ahostsv4 security.ubuntu.com'
+          done
     - name: Create the TUN device with the interface name `ogstun`.
       run: |
           sudo ip tuntap add name ogstun mode tun
@@ -88,6 +112,7 @@ jobs:
           sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
           sudo ip link set ogstun up
     - name: Install the dependencies for building the source code.
+      timeout-minutes: 5
       run: |
           sudo apt update
           sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev libc-ares-dev meson
