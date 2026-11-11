@@ -333,6 +333,9 @@ int emm_handle_attach_complete(
 {
     int r, rv;
     ogs_pkbuf_t *emmbuf = NULL;
+    ogs_nas_esm_message_container_t *esm_message_container =
+        &attach_complete->esm_message_container;
+    const ogs_nas_esm_header_t *esm_header = NULL;
 
     ogs_nas_eps_message_t message;
     ogs_nas_eps_emm_information_t *emm_information =
@@ -364,11 +367,26 @@ int emm_handle_attach_complete(
         local.tm_hour, local.tm_min, local.tm_sec,
         (int)local.tm_gmtoff, local.tm_isdst);
 
-    rv = nas_eps_send_emm_to_esm(
-            mme_ue, &attach_complete->esm_message_container);
-    if (rv != OGS_OK) {
-        ogs_error("nas_eps_send_emm_to_esm() failed");
+    if (esm_message_container->length < sizeof(*esm_header)) {
+        ogs_error("Invalid ESM Message Container length[%d]",
+                esm_message_container->length);
         return OGS_ERROR;
+    }
+
+    /* Only forward the default bearer activation response from Attach Complete. */
+    esm_header = (const ogs_nas_esm_header_t *)esm_message_container->buffer;
+    if (esm_header->message_type ==
+            OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT ||
+        esm_header->message_type ==
+            OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT) {
+        rv = nas_eps_send_emm_to_esm(mme_ue, esm_message_container);
+        if (rv != OGS_OK) {
+            ogs_error("nas_eps_send_emm_to_esm() failed");
+            return OGS_ERROR;
+        }
+    } else {
+        ogs_error("[%s] Unexpected ESM message in Attach Complete [%d]",
+                mme_ue->imsi_bcd, esm_header->message_type);
     }
 
     memset(&message, 0, sizeof(message));
