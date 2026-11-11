@@ -18,6 +18,8 @@
  */
 
 #include "test-common.h"
+#include "gtpu-check.h"
+#include "multi-pdn.h"
 
 static void test1_func(abts_case *tc, void *data)
 {
@@ -40,7 +42,10 @@ static void test1_func(abts_case *tc, void *data)
     uint32_t previous_ip;
     ogs_socknode_t *moving, *receiving;
     int direction;
-    bool fallback = data != NULL;
+    bool fallback = data == (void *)1 || data == (void *)3;
+    bool multi = data == (void *)2 || data == (void *)3;
+    test_bearer_t *extra = NULL;
+    uint32_t extra_ip = 0;
 
     bson_t *doc = NULL;
 
@@ -91,6 +96,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /********** Insert Subscriber in Database */
     doc = test_db_new_simple(test_ue);
+    if (multi) doc = s10_two_apns(doc);
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
@@ -200,6 +206,10 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
+    if (multi) {
+        extra = s10_add_pdn(tc, test_ue, s1ap);
+        extra_ip = extra->sess->ue_ip.addr;
+    }
     previous_ip = sess->ue_ip.addr;
 
     /* A different SCTP association reaches a second, independent MME. */
@@ -218,7 +228,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(NULL, recvbuf);
 
-    for (direction = 0; direction < 2; direction++) {
+    for (direction = 0; direction < (data == (void *)4 ? 1 : 2); direction++) {
         moving = direction ? target : s1ap;
         receiving = direction ? s1ap : target;
         /* Release access on the source MME, retaining the EPS sessions. */
@@ -241,6 +251,32 @@ static void test1_func(abts_case *tc, void *data)
         recvbuf = testenb_s1ap_read(receiving);
         ABTS_PTR_NOTNULL(tc, recvbuf);
         tests1ap_recv(test_ue, recvbuf);
+        if (data == (void *)4) {
+            ABTS_INT_EQUAL(tc, OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT, test_ue->emm_message_type);
+            recvbuf = testenb_s1ap_read(receiving);
+            tests1ap_recv(test_ue, recvbuf);
+            sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+            ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(receiving, sendbuf));
+            receiving = moving;
+            emmbuf = testemm_build_tau_request(test_ue, true,
+                    OGS_NAS_EPS_UPDATE_TYPE_TA_UPDATING, true, false);
+            sendbuf = test_s1ap_build_initial_ue_message(test_ue, emmbuf,
+                    S1AP_RRC_Establishment_Cause_mo_Signalling, false);
+            ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(receiving, sendbuf));
+            recvbuf = testenb_s1ap_read(receiving);
+            tests1ap_recv(test_ue, recvbuf);
+            ABTS_INT_EQUAL(tc, OGS_NAS_EPS_AUTHENTICATION_REQUEST, test_ue->emm_message_type);
+            emmbuf = testemm_build_authentication_response(test_ue);
+            sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+            ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(receiving, sendbuf));
+            recvbuf = testenb_s1ap_read(receiving);
+            tests1ap_recv(test_ue, recvbuf);
+            emmbuf = testemm_build_security_mode_complete(test_ue);
+            sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+            ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(receiving, sendbuf));
+            recvbuf = testenb_s1ap_read(receiving);
+            tests1ap_recv(test_ue, recvbuf);
+        }
         if (fallback) {
             /* Failed old-context integrity triggers Identity and fresh AKA;
              * security completion retries Context Request with MS Validated. */
@@ -274,7 +310,7 @@ static void test1_func(abts_case *tc, void *data)
             test_ue_remove(test_ue);
             return;
         }
-        ABTS_INT_EQUAL(tc, direction ? 1 : 2, test_ue->nas_eps_guti.mme_code);
+        ABTS_INT_EQUAL(tc, direction || data == (void *)4 ? 1 : 2, test_ue->nas_eps_guti.mme_code);
         ABTS_INT_EQUAL(tc, previous_ip, sess->ue_ip.addr);
         sendbuf = test_s1ap_build_initial_context_setup_response(test_ue);
         ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(receiving, sendbuf));
@@ -286,7 +322,7 @@ static void test1_func(abts_case *tc, void *data)
          * testgtpu_recv() is the IPv6 router-advertisement helper. */
         rv = test_gtpu_send_ping(gtpu, bearer, TEST_PING_IPV4);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
-        recvbuf = test_gtpu_read(gtpu);
+        recvbuf = s10_read_echo(tc, gtpu, bearer);
         ABTS_PTR_NOTNULL(tc, recvbuf);
         {
             ogs_gtp2_header_desc_t header = {0};
@@ -309,6 +345,13 @@ static void test1_func(abts_case *tc, void *data)
         }
         ogs_pkbuf_free(recvbuf);
 
+        if (extra) {
+            ABTS_INT_EQUAL(tc, extra_ip, extra->sess->ue_ip.addr);
+            ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu, extra, TEST_PING_IPV4));
+            recvbuf = s10_read_echo(tc, gtpu, extra);
+            ABTS_PTR_NOTNULL(tc, recvbuf);
+            ogs_pkbuf_free(recvbuf);
+        }
     }
 
     emmbuf = testemm_build_detach_request(test_ue, false, true, true);
@@ -332,7 +375,13 @@ static void test1_func(abts_case *tc, void *data)
 abts_suite *test_s10_mobility(abts_suite *suite)
 {
     suite = ADD_SUITE(suite);
+#ifdef TEST_S10_SGW_FAILURE
+    abts_run_test(suite, test1_func, (void *)4);
+#else
     abts_run_test(suite, test1_func, NULL);
     abts_run_test(suite, test1_func, (void *)1);
+    abts_run_test(suite, test1_func, (void *)2);
+    abts_run_test(suite, test1_func, (void *)3);
+#endif
     return suite;
 }

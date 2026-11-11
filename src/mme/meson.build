@@ -83,6 +83,7 @@ libmme_sources = files('''
     mme-s10.c
     mme-s10-build.c
     mme-s10-context.c
+    mme-s10-sgw.c
     mme-s10-codec.c
     mme-s10-handover.c
     mme-s10-son.c

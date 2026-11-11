@@ -684,14 +684,16 @@ void smf_s5c_handle_modify_bearer_request(
             sgw_s5u_teid = req->bearer_contexts_to_be_modified[i].
                             s4_u_sgsn_f_teid.data;
             ogs_assert(sgw_s5u_teid);
+            uint32_t old_teid = bearer->sgw_s5u_teid;
             bearer->sgw_s5u_teid = be32toh(sgw_s5u_teid->teid);
             ogs_assert(OGS_OK ==
                     ogs_gtp2_f_teid_to_ip(sgw_s5u_teid, &remote_ip));
 
             memset(&zero_ip, 0, sizeof(ogs_ip_t));
             if (memcmp(&bearer->sgw_s5u_ip, &zero_ip, sizeof(ogs_ip_t)) != 0 &&
-                memcmp(&bearer->sgw_s5u_ip,
-                    &remote_ip, sizeof(ogs_ip_t)) != 0) {
+                (old_teid != bearer->sgw_s5u_teid ||
+                 memcmp(&bearer->sgw_s5u_ip,
+                    &remote_ip, sizeof(ogs_ip_t)) != 0)) {
 
                 ogs_assert(sess->pfcp_node);
 

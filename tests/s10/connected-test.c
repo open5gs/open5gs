@@ -18,6 +18,8 @@
  */
 
 #include "test-common.h"
+#include "gtpu-check.h"
+#include "multi-pdn.h"
 
 static ogs_pkbuf_t *handover_required(test_ue_t *ue, uint32_t enb_id, bool direct)
 {
@@ -162,7 +164,10 @@ static void assert_released_bearer(abts_case *tc, ogs_pkbuf_t *p)
 static void connected_handover(abts_case *tc, void *data)
 {
     int rv;
-    bool direct = data != NULL;
+    bool direct = data != NULL && data != (void *)4;
+    bool multi = data == (void *)4 || data == (void *)5;
+    test_bearer_t *extra = NULL;
+    uint32_t extra_ip = 0;
     bool partial = data == (void *)2;
     bool rejected_default = data == (void *)3;
     ogs_socknode_t *s1ap1, *s1ap2;
@@ -254,6 +259,7 @@ static void connected_handover(abts_case *tc, void *data)
 
     /********** Insert Subscriber in Database */
     doc = test_db_new_qos_flow(test_ue);
+    if (multi) doc = s10_two_apns(doc);
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
@@ -404,6 +410,10 @@ static void connected_handover(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    if (multi) {
+        extra = s10_add_pdn(tc, test_ue, s1ap1);
+        extra_ip = extra->sess->ue_ip.addr;
+    }
     /* Send ENB configuration transfer */
     sendbuf = configuration_transfer(test_ue, 0);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -432,22 +442,34 @@ static void connected_handover(abts_case *tc, void *data)
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ogs_assert(bearer);
+    if (extra) {
+        ABTS_INT_EQUAL(tc, extra_ip, extra->sess->ue_ip.addr);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, extra, TEST_PING_IPV4));
+        recvbuf = s10_read_echo(tc, gtpu1, extra);
+        ogs_pkbuf_free(recvbuf);
+    }
     rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu1);
+    recvbuf = s10_read_echo(tc, gtpu1, bearer);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
     ogs_assert(bearer);
+    if (extra) {
+        ABTS_INT_EQUAL(tc, extra_ip, extra->sess->ue_ip.addr);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, extra, TEST_PING_IPV4));
+        recvbuf = s10_read_echo(tc, gtpu1, extra);
+        ogs_pkbuf_free(recvbuf);
+    }
     rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu1);
+    recvbuf = s10_read_echo(tc, gtpu1, bearer);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -462,6 +484,23 @@ static void connected_handover(abts_case *tc, void *data)
 
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     serving_uplink_teid = bearer->sgw_s1u_teid;
+    if (data == (void *)6) {
+        recvbuf = testenb_s1ap_read(s1ap1);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        memset(&message, 0, sizeof(message));
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_s1ap_decode(&message, recvbuf));
+        ABTS_INT_EQUAL(tc, S1AP_S1AP_PDU_PR_unsuccessfulOutcome, message.present);
+        ABTS_INT_EQUAL(tc, S1AP_UnsuccessfulOutcome__value_PR_HandoverPreparationFailure,
+                message.choice.unsuccessfulOutcome->value.present);
+        ogs_s1ap_free(&message);
+        ogs_pkbuf_free(recvbuf);
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4));
+            recvbuf = s10_read_echo(tc, gtpu1, bearer);
+            ogs_pkbuf_free(recvbuf);
+        }
+        goto cleanup;
+    }
     /* Receive Handover Request */
     recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -470,9 +509,14 @@ static void connected_handover(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ABTS_INT_EQUAL(tc, serving_uplink_teid, bearer->sgw_s1u_teid);
     /* Send Handover Request Ack */
-    ogs_list_for_each(&sess->bearer_list, bearer) {
+    {
+        test_sess_t *s;
+        ogs_list_for_each(&test_ue->sess_list, s) {
+            ogs_list_for_each(&s->bearer_list, bearer) {
         bearer->enb_s1u_addr = test_self()->gnb2_addr;
         bearer->enb_s1u_addr6 = test_self()->gnb2_addr6;
+            }
+        }
     }
     sendbuf = (partial || rejected_default) ?
         partial_handover_ack(test_ue, sess, rejected_default ? 5 : 6) :
@@ -504,7 +548,7 @@ static void connected_handover(abts_case *tc, void *data)
         test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
         ogs_list_for_each(&sess->bearer_list, bearer) {
             ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4));
-            recvbuf = test_gtpu_read(gtpu1);
+            recvbuf = s10_read_echo(tc, gtpu1, bearer);
             ABTS_PTR_NOTNULL(tc, recvbuf);
             ogs_pkbuf_free(recvbuf);
         }
@@ -520,11 +564,17 @@ static void connected_handover(abts_case *tc, void *data)
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ogs_assert(bearer);
+    if (extra) {
+        ABTS_INT_EQUAL(tc, extra_ip, extra->sess->ue_ip.addr);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, extra, TEST_PING_IPV4));
+        recvbuf = s10_read_echo(tc, gtpu1, extra);
+        ogs_pkbuf_free(recvbuf);
+    }
     rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu1);
+    recvbuf = s10_read_echo(tc, gtpu1, bearer);
     ABTS_PTR_NOTNULL(tc, recvbuf);
 
     /* Copy ICMP Packet */
@@ -561,6 +611,17 @@ static void connected_handover(abts_case *tc, void *data)
 
     /* Send Handover Notify */
     test_ue->e_cgi.cell_id = 0xabcdef0;
+    {
+        test_sess_t *s;
+        ogs_list_for_each(&test_ue->sess_list, s) {
+            test_bearer_t *b;
+            ogs_list_for_each(&s->bearer_list, b) {
+                ogs_assert(b->target_sgw_s1u_teid);
+                b->sgw_s1u_teid = b->target_sgw_s1u_teid;
+                b->sgw_s1u_ip = b->target_sgw_s1u_ip;
+            }
+        }
+    }
     sendbuf = test_s1ap_build_handover_notify(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap2, sendbuf);
@@ -571,6 +632,11 @@ static void connected_handover(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    if (extra) {
+        recvbuf = test_gtpu_read(gtpu1);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        ogs_pkbuf_free(recvbuf);
+    }
     if (!partial) {
         /* The refused EBI has no target radio endpoint or End Marker. */
         recvbuf = test_gtpu_read(gtpu1);
@@ -641,11 +707,18 @@ static void connected_handover(abts_case *tc, void *data)
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ogs_assert(bearer);
+    if (extra) {
+        ABTS_INT_EQUAL(tc, extra_ip, extra->sess->ue_ip.addr);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu2, extra, TEST_PING_IPV4));
+        recvbuf = s10_read_echo(tc, gtpu2, extra);
+        ogs_pkbuf_free(recvbuf);
+    }
+    if (data == (void *)4) ogs_msleep(11000);
     rv = test_gtpu_send_ping(gtpu2, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu2);
+    recvbuf = s10_read_echo(tc, gtpu2, bearer);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -654,11 +727,17 @@ static void connected_handover(abts_case *tc, void *data)
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
     ogs_assert(bearer);
+    if (extra) {
+        ABTS_INT_EQUAL(tc, extra_ip, extra->sess->ue_ip.addr);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu2, extra, TEST_PING_IPV4));
+        recvbuf = s10_read_echo(tc, gtpu2, extra);
+        ogs_pkbuf_free(recvbuf);
+    }
     rv = test_gtpu_send_ping(gtpu2, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu2);
+    recvbuf = s10_read_echo(tc, gtpu2, bearer);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -678,9 +757,14 @@ static void connected_handover(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ABTS_INT_EQUAL(tc, serving_uplink_teid, bearer->sgw_s1u_teid);
     /* Send Handover Request Ack */
-    ogs_list_for_each(&sess->bearer_list, bearer) {
+    {
+        test_sess_t *s;
+        ogs_list_for_each(&test_ue->sess_list, s) {
+            ogs_list_for_each(&s->bearer_list, bearer) {
         bearer->enb_s1u_addr = test_self()->gnb1_addr;
         bearer->enb_s1u_addr6 = test_self()->gnb1_addr6;
+            }
+        }
     }
     sendbuf = test_s1ap_build_handover_request_ack(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -705,6 +789,17 @@ static void connected_handover(abts_case *tc, void *data)
 
     /* Send Handover Notify */
     test_ue->e_cgi.cell_id = 0x1234560;
+    {
+        test_sess_t *s;
+        ogs_list_for_each(&test_ue->sess_list, s) {
+            test_bearer_t *b;
+            ogs_list_for_each(&s->bearer_list, b) {
+                ogs_assert(b->target_sgw_s1u_teid);
+                b->sgw_s1u_teid = b->target_sgw_s1u_teid;
+                b->sgw_s1u_ip = b->target_sgw_s1u_ip;
+            }
+        }
+    }
     sendbuf = test_s1ap_build_handover_notify(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap1, sendbuf);
@@ -720,6 +815,11 @@ static void connected_handover(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    if (extra) {
+        recvbuf = test_gtpu_read(gtpu2);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        ogs_pkbuf_free(recvbuf);
+    }
     /* Register with the HSS after returning to the original MME. */
     memset(&test_ue->tau_request_param, 0, sizeof(test_ue->tau_request_param));
     test_ue->tau_request_param.ue_network_capability = 1;
@@ -754,22 +854,34 @@ static void connected_handover(abts_case *tc, void *data)
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ogs_assert(bearer);
+    if (extra) {
+        ABTS_INT_EQUAL(tc, extra_ip, extra->sess->ue_ip.addr);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, extra, TEST_PING_IPV4));
+        recvbuf = s10_read_echo(tc, gtpu1, extra);
+        ogs_pkbuf_free(recvbuf);
+    }
     rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu1);
+    recvbuf = s10_read_echo(tc, gtpu1, bearer);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
     ogs_assert(bearer);
+    if (extra) {
+        ABTS_INT_EQUAL(tc, extra_ip, extra->sess->ue_ip.addr);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, extra, TEST_PING_IPV4));
+        recvbuf = s10_read_echo(tc, gtpu1, extra);
+        ogs_pkbuf_free(recvbuf);
+    }
     rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu1);
+    recvbuf = s10_read_echo(tc, gtpu1, bearer);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -789,9 +901,14 @@ static void connected_handover(abts_case *tc, void *data)
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ABTS_INT_EQUAL(tc, serving_uplink_teid, bearer->sgw_s1u_teid);
     /* Send Handover Request Ack */
-    ogs_list_for_each(&sess->bearer_list, bearer) {
+    {
+        test_sess_t *s;
+        ogs_list_for_each(&test_ue->sess_list, s) {
+            ogs_list_for_each(&s->bearer_list, bearer) {
         bearer->enb_s1u_addr = test_self()->gnb1_addr;
         bearer->enb_s1u_addr6 = test_self()->gnb1_addr6;
+            }
+        }
     }
     sendbuf = test_s1ap_build_handover_request_ack(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -831,7 +948,7 @@ static void connected_handover(abts_case *tc, void *data)
      * bearers and the original source radio path. */
     ogs_list_for_each(&sess->bearer_list, bearer) {
         ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4));
-        recvbuf = test_gtpu_read(gtpu1);
+        recvbuf = s10_read_echo(tc, gtpu1, bearer);
         ABTS_PTR_NOTNULL(tc, recvbuf);
         ogs_pkbuf_free(recvbuf);
     }
@@ -855,9 +972,15 @@ cleanup:
 abts_suite *test_s10_connected(abts_suite *suite)
 {
     suite = ADD_SUITE(suite);
+#ifdef TEST_S10_SGW_FAILURE
+    abts_run_test(suite, connected_handover, (void *)6);
+#else
     abts_run_test(suite, connected_handover, NULL);
     abts_run_test(suite, connected_handover, (void *)1);
     abts_run_test(suite, connected_handover, (void *)2);
     abts_run_test(suite, connected_handover, (void *)3);
+    abts_run_test(suite, connected_handover, (void *)4);
+    abts_run_test(suite, connected_handover, (void *)5);
+    #endif
     return suite;
 }

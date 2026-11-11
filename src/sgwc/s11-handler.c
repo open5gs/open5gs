@@ -21,6 +21,7 @@
 #include "pfcp-path.h"
 
 #include "s11-handler.h"
+#include "s5c-handler.h"
 
 static void gtp_sess_timeout(ogs_gtp_xact_t *xact, void *data)
 {
@@ -534,6 +535,7 @@ void sgwc_s11_handle_modify_bearer_request(
             req->sender_f_teid_for_control_plane.presence) {
         ogs_assert(OGS_OK == update_serving_mme(sgwc_ue, s11_xact,
                     &req->sender_f_teid_for_control_plane, true));
+        if (sgwc_s5c_activate_relocated_sessions(sgwc_ue, s11_xact, req)) return;
         ogs_gtp_send_error_message(s11_xact, sgwc_ue->mme_s11_teid,
                 OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE,
                 OGS_GTP2_CAUSE_REQUEST_ACCEPTED);

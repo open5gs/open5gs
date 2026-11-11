@@ -22,6 +22,132 @@
 
 #include "s5c-handler.h"
 
+/* Relocated S1 sessions are prepared before the radio handover. The PGW
+ * path is changed only after S11 Modify Bearer, never during preparation. */
+static void relocation_result(ogs_gtp_xact_t *xact, uint8_t cause)
+{
+    sgwc_ue_t *ue = sgwc_ue_find_by_id(OGS_POINTER_TO_UINT(xact->data));
+    ogs_gtp_xact_t *s11;
+    if (!ue || ue->relocation_xact_id != OGS_POINTER_TO_UINT(xact->peer_data) ||
+            !ue->relocation_pending) return;
+    sgwc_sess_t *sess = sgwc_sess_find_by_teid(xact->local_teid);
+    if (sess && sess->sgwc_ue_id == ue->id) {
+        sess->relocation_prepared = cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+        if (sess->relocation_prepared && sess->relocation_timer)
+            ogs_timer_start(sess->relocation_timer, ogs_time_from_sec(45));
+    }
+    if (cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) ue->relocation_cause = cause;
+    if (--ue->relocation_pending) return;
+    s11 = ogs_gtp_xact_find_by_id(ue->relocation_xact_id);
+    ue->relocation_xact_id = 0;
+    if (s11) ogs_gtp_send_error_message(s11, ue->mme_s11_teid,
+            OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, ue->relocation_cause);
+}
+
+static void relocation_timeout(ogs_gtp_xact_t *xact, void *data)
+{
+    relocation_result(xact, OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING);
+}
+
+static bool relocation_admitted(sgwc_sess_t *sess,
+        const ogs_gtp2_modify_bearer_request_t *req)
+{
+    sgwc_bearer_t *def = sgwc_default_bearer_in_sess(sess);
+    int i;
+    if (!req->bearer_contexts_to_be_modified[0].presence) return true;
+    for (i = 0; i < OGS_BEARER_PER_UE; i++) {
+        const ogs_gtp2_tlv_bearer_context_t *bc = &req->bearer_contexts_to_be_modified[i];
+        if (!bc->presence) break;
+        if (bc->eps_bearer_id.presence && bc->eps_bearer_id.u8 == def->ebi) return true;
+    }
+    return false;
+}
+
+bool sgwc_s5c_activate_relocated_sessions(sgwc_ue_t *ue,
+        ogs_gtp_xact_t *s11, const ogs_gtp2_modify_bearer_request_t *original)
+{
+    sgwc_sess_t *sess;
+    int count = 0;
+    ogs_list_for_each(&ue->sess_list, sess)
+        if (sess->relocation_prepared && relocation_admitted(sess, original)) count++;
+    if (!count) return false;
+    if (ue->relocation_pending) {
+        ogs_gtp_send_error_message(s11, ue->mme_s11_teid,
+                OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE,
+                OGS_GTP2_CAUSE_TEMPORARILY_REJECTED_DUE_TO_HANDOVER_IN_PROGRESS);
+        return true;
+    }
+    ue->relocation_pending = count;
+    ue->relocation_cause = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+    ue->relocation_xact_id = s11->id;
+    ogs_list_for_each(&ue->sess_list, sess) {
+        ogs_gtp2_message_t *msg;
+        ogs_gtp2_modify_bearer_request_t *req;
+        ogs_gtp2_f_teid_t sender = {0}, endpoints[OGS_BEARER_PER_UE] = {{0}};
+        sgwc_bearer_t *bearer;
+        ogs_gtp_xact_t *xact;
+        ogs_pkbuf_t *body;
+        int i = 0, len;
+        if (!sess->relocation_prepared || !relocation_admitted(sess, original)) continue;
+        msg = ogs_calloc(1, sizeof(*msg));
+        ogs_assert(msg);
+        req = &msg->modify_bearer_request;
+        msg->h.type = OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE;
+        msg->h.teid = sess->pgw_s5c_teid;
+        sender.interface_type = OGS_GTP2_F_TEID_S5_S8_SGW_GTP_C;
+        sender.teid = htobe32(sess->sgw_s5c_teid);
+        ogs_assert(OGS_OK == ogs_gtp2_sockaddr_to_f_teid(
+                    ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
+                    &sender, &len));
+        req->sender_f_teid_for_control_plane.presence = 1;
+        req->sender_f_teid_for_control_plane.data = &sender;
+        req->sender_f_teid_for_control_plane.len = len;
+        req->serving_network = original->serving_network;
+        req->user_location_information = original->user_location_information;
+        req->ue_time_zone = original->ue_time_zone;
+        req->rat_type = original->rat_type;
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            sgwc_tunnel_t *dl = sgwc_dl_tunnel_in_bearer(bearer);
+            ogs_gtp2_tlv_bearer_context_t *bc = &req->bearer_contexts_to_be_modified[i];
+            ogs_assert(i < OGS_BEARER_PER_UE);
+            endpoints[i].interface_type = OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U;
+            endpoints[i].teid = htobe32(dl->local_teid);
+            ogs_assert(OGS_OK == ogs_gtp2_sockaddr_to_f_teid(
+                        dl->local_addr, dl->local_addr6, &endpoints[i], &len));
+            bc->presence = 1;
+            bc->eps_bearer_id.presence = 1;
+            bc->eps_bearer_id.u8 = bearer->ebi;
+            bc->s4_u_sgsn_f_teid.presence = 1;
+            bc->s4_u_sgsn_f_teid.data = &endpoints[i];
+            bc->s4_u_sgsn_f_teid.len = len;
+            i++;
+        }
+        body = ogs_gtp2_build_msg(msg);
+        xact = body ? ogs_gtp_xact_local_create(sess->gnode, &msg->h,
+                body, relocation_timeout, OGS_UINT_TO_POINTER(ue->id)) : NULL;
+        ogs_free(msg);
+        if (!xact) {
+            /* Account for a failed local send using the same completion path. */
+            ogs_gtp_xact_t failed = {0};
+            failed.data = OGS_UINT_TO_POINTER(ue->id);
+            failed.local_teid = sess->sgw_s5c_teid;
+            failed.peer_data = OGS_UINT_TO_POINTER(s11->id);
+            relocation_result(&failed, OGS_GTP2_CAUSE_SYSTEM_FAILURE);
+            continue;
+        }
+        xact->local_teid = sess->sgw_s5c_teid;
+        xact->peer_data = OGS_UINT_TO_POINTER(s11->id);
+        xact->modify_action = OGS_GTP_MODIFY_IN_S10_SGW_ACTIVATION;
+        /* The reservation timer must not remove a session while the PGW
+         * update is in flight. A rejected activation can still be cleaned by
+         * the target MME's local-only Delete Session. */
+        if (sess->relocation_timer) ogs_timer_stop(sess->relocation_timer);
+        if (ogs_gtp_xact_commit(xact) != OGS_OK)
+            relocation_result(xact, OGS_GTP2_CAUSE_SYSTEM_FAILURE);
+    }
+    return true;
+}
+
 static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 {
     sgwc_bearer_t *bearer = NULL;
@@ -376,6 +502,17 @@ void sgwc_s5c_handle_modify_bearer_response(
     ogs_assert(rsp);
 
     ogs_info("Modify Bearer Response");
+    if (s5c_xact->modify_action == OGS_GTP_MODIFY_IN_S10_SGW_ACTIVATION) {
+        ogs_gtp2_cause_t *cause = rsp->cause.data;
+        uint8_t value = rsp->cause.presence && rsp->cause.len >= 2 && cause ?
+            cause->value : OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        if (value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED &&
+                message->h.teid != s5c_xact->local_teid)
+            value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+        relocation_result(s5c_xact, value);
+        ogs_gtp_xact_commit(s5c_xact);
+        return;
+    }
 
     /********************
      * Check Transaction

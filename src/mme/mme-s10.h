@@ -4,6 +4,15 @@
 #define MME_S10_H
 #include "mme-context.h"
 
+typedef void (*mme_s10_sgw_ready_t)(mme_ue_t *, int);
+bool mme_s10_return_tau(mme_ue_t *ue);
+int mme_s10_sgw_prepare(mme_ue_t *ue, mme_s10_sgw_ready_t ready);
+bool mme_s10_sgw_relocated(const mme_ue_t *ue);
+void mme_s10_sgw_clear(mme_ue_t *ue);
+void mme_s10_sgw_committed(mme_ue_t *ue);
+void mme_s10_sgw_delete_old(mme_ue_t *ue);
+void mme_s10_sgw_create_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
+        ogs_gtp2_message_t *message);
 /* S10 uses the existing GTP-C socket. Peers are explicitly provisioned. */
 typedef struct mme_s10_peer_s {
     ogs_gtp_node_t gnode;

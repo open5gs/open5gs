@@ -24,6 +24,7 @@ testunit_unit_sources = files('''
     gtp-s10-test.c
     mme-s10-test.c
     mme-s10-security-test.c
+    mme-s10-sgw-test.c
     ngap-message-test.c
     sbi-message-test.c
     sbi-server-test.c

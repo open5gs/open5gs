@@ -399,6 +399,20 @@ void tests1ap_handle_handover_request(
         case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
             break;
+        case S1AP_ProtocolIE_ID_id_E_RABToBeSetupListHOReq: {
+            S1AP_E_RABToBeSetupListHOReq_t *list = ie->value.choice.E_RABToBeSetupListHOReq;
+            int j;
+            for (j = 0; j < OGS_ASN_LIST_COUNT(list); j++) {
+                S1AP_E_RABToBeSetupItemHOReqIEs_t *item = OGS_ASN_LIST_GET(list, j);
+                S1AP_E_RABToBeSetupItemHOReq_t *rab = item->value.choice.E_RABToBeSetupItemHOReq;
+                test_bearer_t *bearer = test_bearer_find_by_ue_ebi(test_ue, rab->e_RAB_ID);
+                ogs_assert(bearer);
+                ogs_asn_OCTET_STRING_to_uint32(&rab->gTP_TEID, &bearer->target_sgw_s1u_teid);
+                ogs_assert(OGS_OK == ogs_asn_BIT_STRING_to_ip(&rab->transportLayerAddress,
+                            &bearer->target_sgw_s1u_ip));
+            }
+            break;
+        }
         default:
             break;
         }

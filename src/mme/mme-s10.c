@@ -507,6 +507,7 @@ bool mme_s10_imsi_available(mme_ue_t *ue, const char *imsi)
      * This obsolete context has already relinquished gateway ownership. */
     enb = enb_ue_find_by_id(old->enb_ue_id);
     if (enb) enb_ue_deassociate_mme_ue(enb, old);
+    mme_s10_sgw_delete_old(old);
     mme_ue_remove(old);
     return true;
 }
@@ -579,6 +580,7 @@ void mme_s10_holding_expired(ogs_pool_id_t ue_id)
         return;
     }
     remove = ue->s10.acknowledged && ue->s10.cancel_location;
+    if (remove) mme_s10_sgw_delete_old(ue);
     mme_s10_ue_clear(ue);
     /* Gateway sessions now belong to the target. Local removal must not
      * send Delete Session to the shared SGW or PGW. */
@@ -702,6 +704,12 @@ static void context_acknowledge(ogs_gtp_xact_t *xact,
         mme_s10_ue_clear(ue);
         return;
     }
+    ue->s10.sgw_changed = false;
+    if (ack->indication_flags.presence) {
+        const ogs_gtp2_indication_t *ind = ack->indication_flags.data;
+        if (!ind || ack->indication_flags.len < 1) return;
+        ue->s10.sgw_changed = ind->sgw_change_indication;
+    }
     ue->s10.acknowledged = true;
     enb = enb_ue_find_by_id(ue->enb_ue_id);
     if (enb && enb->ue_ctx_rel_action == S1AP_UE_CTX_REL_INVALID_ACTION)
@@ -714,6 +722,7 @@ static void tau_failure(mme_ue_t *ue, uint8_t cause)
 {
     enb_ue_t *enb = enb_ue_find_by_id(ue->enb_ue_id);
     bool gateway_updated = ue->s10.gateway_updated;
+    mme_s10_sgw_clear(ue);
     mme_s10_ue_clear(ue);
     if (!gateway_updated) {
         mme_sess_remove_all(ue);
@@ -844,6 +853,16 @@ static int send_context_ack(ogs_gtp_xact_t *xact, uint32_t teid, uint8_t value)
     message->context_acknowledge.cause.presence = 1;
     message->context_acknowledge.cause.data = &cause;
     message->context_acknowledge.cause.len = sizeof(cause);
+    ogs_gtp2_indication_t indication = {0};
+    mme_ue_t *ue = mme_ue_find_by_id(OGS_POINTER_TO_UINT(xact->data));
+    sgw_ue_t *sgw = ue ? sgw_ue_find_by_id(ue->sgw_ue_id) : NULL;
+    if (value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED && sgw &&
+            ue->s10_sgw_change_required) {
+        indication.sgw_change_indication = 1;
+        message->context_acknowledge.indication_flags.presence = 1;
+        message->context_acknowledge.indication_flags.data = &indication;
+        message->context_acknowledge.indication_flags.len = 1;
+    }
     p = ogs_gtp2_build_msg(message);
     if (p && ogs_gtp_xact_update_tx(xact, &message->h, p) == OGS_OK)
         rv = ogs_gtp_xact_commit(xact);
@@ -893,12 +912,23 @@ static int send_sgw_update(mme_ue_t *ue)
     return ogs_gtp_xact_commit(xact);
 }
 
+static void tau_gateway_updated(mme_ue_t *ue)
+{
+    enb_ue_t *enb;
+    mme_s10_sgw_committed(ue);
+    ue->s10.gateway_updated = true;
+    enb = enb_ue_find_by_id(ue->enb_ue_id);
+    if (!enb) { tau_failure(ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE); return; }
+    OGS_FSM_TRAN(&ue->sm, &emm_state_initial_context_setup);
+    if (mme_s13_check_wanted(ue)) mme_s13_start_check(enb, ue);
+    else mme_s6a_send_ulr(enb, ue, 0);
+}
+
 void mme_s10_sgw_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
         ogs_gtp2_modify_bearer_response_t *rsp)
 {
     mme_ue_t *pending = mme_ue_find_by_id(OGS_POINTER_TO_UINT(xact->data));
     ogs_gtp2_cause_t *cause = rsp->cause.data;
-    enb_ue_t *enb;
     bool matched = ue && ue == pending && ue->s10.target_transfer &&
         ue->s10.sgw_xact_id == xact->id;
     ogs_gtp_xact_commit(xact);
@@ -909,12 +939,46 @@ void mme_s10_sgw_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
         tau_failure(ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
         return;
     }
-    ue->s10.gateway_updated = true;
-    enb = enb_ue_find_by_id(ue->enb_ue_id);
-    if (!enb) { tau_failure(ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE); return; }
-    OGS_FSM_TRAN(&ue->sm, &emm_state_initial_context_setup);
-    if (mme_s13_check_wanted(ue)) mme_s13_start_check(enb, ue);
-    else mme_s6a_send_ulr(enb, ue, 0);
+    tau_gateway_updated(ue);
+}
+
+static void tau_sgw_prepared(mme_ue_t *ue, int result)
+{
+    if (result != OGS_OK) {
+        tau_failure(ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
+        return;
+    }
+    if (mme_s10_sgw_relocated(ue)) tau_gateway_updated(ue);
+    else if (send_sgw_update(ue) != OGS_OK)
+        tau_failure(ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
+}
+
+bool mme_s10_return_tau(mme_ue_t *ue)
+{
+    sgw_ue_t *sgw = sgw_ue_find_by_id(ue->sgw_ue_id);
+    enb_ue_t *enb = enb_ue_find_by_id(ue->enb_ue_id);
+    if (!sgw || !enb) return false;
+    if (!ue->s10_return_pending) {
+        if (!ue->s10.source_transfer || !ue->s10.acknowledged || !ue->s10.sgw_changed)
+            return false;
+        mme_s10_sgw_delete_old(ue);
+        mme_s10_sgw_clear(ue);
+        mme_s10_handover_clear(ue);
+        mme_s10_ue_clear(ue);
+        /* The target may have sent NAS since the snapshot was exported.
+         * Fresh AKA avoids reusing a stale source DL COUNT or KASME. */
+        ue->s10_return_pending = true;
+        mme_s6a_send_air(enb, ue, NULL);
+        OGS_FSM_TRAN(&ue->sm, &emm_state_authentication);
+        return true;
+    }
+    ue->s10_return_pending = false;
+    ue->s10_selected_sgw = sgw->sgw;
+    ue->s10_sgw_change_required = true;
+    ue->s10.target_transfer = true;
+    if (mme_s10_sgw_prepare(ue, tau_sgw_prepared) != OGS_OK)
+        tau_failure(ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
+    return true;
 }
 
 static void context_response(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *message)
@@ -1012,7 +1076,7 @@ static void context_response(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *message)
     }
     ue->s10.xact_id = 0; /* Keep the ACK in the transaction duplicate cache. */
     if (!MME_NEXT_GUTI_IS_AVAILABLE(ue)) mme_ue_new_guti(ue);
-    if (send_sgw_update(ue) != OGS_OK)
+    if (mme_s10_sgw_prepare(ue, tau_sgw_prepared) != OGS_OK)
         tau_failure(ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
 }
 

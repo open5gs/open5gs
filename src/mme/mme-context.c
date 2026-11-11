@@ -4111,6 +4111,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     ogs_hash_set(self.mme_s10_teid_hash, &mme_ue->mme_s10_teid,
             sizeof(mme_ue->mme_s10_teid), NULL);
+    mme_s10_sgw_clear(mme_ue);
     mme_s10_handover_clear(mme_ue);
     mme_s10_ue_clear(mme_ue);
     ogs_list_remove(&self.mme_ue_list, mme_ue);

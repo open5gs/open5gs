@@ -590,6 +590,10 @@ struct mme_ue_s {
         ogs_pool_id_t   gtp_xact_id; /* 2g->4g SGSN Context Req/Resp/Ack gtp1c xact */
     } gn;
 
+    struct mme_s10_sgw_s *s10_sgw;
+    mme_sgw_t *s10_selected_sgw;
+    bool s10_sgw_change_required;
+    bool s10_return_pending;
     struct mme_s10_handover_s *s10_handover;
     uint32_t mme_s10_teid;
     struct {
@@ -605,6 +609,7 @@ struct mme_ue_s {
         bool source_transfer;
         bool acknowledged;
         bool cancel_location;
+        bool sgw_changed;
         ogs_timer_t *holding;
 
     } s10;

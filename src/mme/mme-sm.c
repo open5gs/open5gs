@@ -947,7 +947,10 @@ cleanup:
             break;
         case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_create_session_response(
+            if (xact->create_action == OGS_GTP_CREATE_IN_S10_RELOCATION ||
+                    xact->create_action == OGS_GTP_CREATE_IN_S10_TAU_RELOCATION)
+                mme_s10_sgw_create_response(xact, mme_ue, &gtp_message);
+            else mme_s11_handle_create_session_response(
                 xact, mme_ue, &gtp_message.create_session_response);
             break;
         case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
@@ -963,7 +966,9 @@ cleanup:
             break;
         case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_delete_session_response(
+            if (xact->delete_action == OGS_GTP_DELETE_IN_S10_RELOCATION)
+                ogs_gtp_xact_commit(xact);
+            else mme_s11_handle_delete_session_response(
                 xact, mme_ue, &gtp_message.delete_session_response);
             break;
         case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:

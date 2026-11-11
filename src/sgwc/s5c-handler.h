@@ -32,6 +32,8 @@ void sgwc_s5c_handle_create_session_response(
 void sgwc_s5c_handle_delete_session_response(
         sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message);
+bool sgwc_s5c_activate_relocated_sessions(sgwc_ue_t *ue,
+        ogs_gtp_xact_t *s11, const ogs_gtp2_modify_bearer_request_t *req);
 void sgwc_s5c_handle_modify_bearer_response(
         sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message);

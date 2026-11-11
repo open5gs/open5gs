@@ -89,10 +89,10 @@ Each procedure needs source and target behavior:
   Bearer Command and PGW-triggered Delete Bearer Request, preserving admitted
   bearers. Include the source E-RAB release list; refuse relocation if no
   default bearer can remain usable at the target.
-- [ ] Handle SGW relocation and indirect forwarding when the selected SGW changes.
+- [x] Handle SGW relocation and indirect forwarding when the selected SGW changes.
 - [ ] Preserve NAS replay protection, key derivation and NH/NCC progression across
   mobility and concurrent security procedures.
-- [ ] Exercise two-MME Attach/TAU and handover with several APNs and dedicated
+- [x] Exercise two-MME Attach/TAU and handover with several APNs and dedicated
   bearers, checking user-plane traffic and cleanup in both directions.
 
 S10 transfer depends on the source context being available. Continuous session
@@ -237,3 +237,67 @@ changes while an AS installation is pending, stale and mismatched responses,
 failure, NH progression, old-context export and release of obsolete radio legs.
 A production Forward Relocation builder test verifies opaque RAN container and
 security-context serialization, with only the SGW pool lookup substituted.
+
+## SGW relocation
+
+The target MME preserves the result of its configured SGW selection when importing
+S10 context. The source SGW need not be provisioned as a local S11 peer when a
+new SGW is selected. Each transferred PDN retains its allocated PAA and PGW
+control/user-plane endpoints. Create Session serializes every bearer's own QoS,
+including GBR/MBR and ARP, and its TFT; it does not rerun PGW selection or replace
+the allocated address with a subscription address.
+
+The following procedures use GTP-based S5/S8:
+
+- **Idle TAU:** send Context Acknowledge with SGWCI, then one Create Session
+  Request per PDN with OI=1. The new SGW updates that PDN's existing PGW binding
+  through Modify Bearer before replying. HSS registration follows successful
+  session creation. A return using the old GUTI invalidates the old GW/HSS state,
+  runs fresh AKA to avoid reusing a NAS snapshot after the target has sent NAS,
+  reconstructs the SGW sessions and registers at the HSS.
+- **S1 handover preparation:** send Create Session with OI=0. The new SGW reserves
+  PFCP resources and answers without contacting the PGW. Only then may the MME
+  advertise the new SGW's S1-U endpoints to the target eNB. Reservations have a
+  guard timer and are removed locally on cancellation or preparation failure.
+- **Indirect forwarding:** the target MME allocates forwarding tunnels at the
+  target SGW and returns its DL/UL endpoints in Forward Relocation Response
+  instances 2 and 5. The source MME allocates its source-SGW forwarding tunnels
+  toward these endpoints. Direct forwarding continues to use eNB instances 0/1.
+- **Execution:** after Handover Notify, S11 Modify Bearer installs the target
+  radio endpoints. The target SGW updates each admitted PDN at its existing PGW
+  with its own S5-C and S5-U F-TEIDs. S11 completion waits for the PGW responses;
+  failures and timeouts remain failures, and failed updates remain retryable.
+- **Cleanup:** SGWCI marks the old GW ownership invalid at the source. Following
+  the holding interval and HSS cancellation, Delete Session uses OI=0/Scope=1
+  to remove old SGW/PFCP resources without deleting transferred PDNs at the PGW.
+  A PDN whose default bearer was not admitted is instead deleted by its source
+  SGW, while the target removes its local reservation. Target forwarding has
+  its own cleanup guard. Collision replacement deletes the old PFCP generation
+  while retaining its identifiers until deletion responses arrive.
+
+These exchanges follow TS 23.401 5.3.3.1 (especially step 7 and NOTE 6) and
+5.5.1.2.2; TS 29.274 7.2.1/7.2.2, 7.2.7/7.2.8, 7.2.9, 7.3.2 and 8.12 define the
+wire messages, F-TEID instances and OI/SGWCI/Scope indications. No private IE or
+Open5GS-only handshake is used. The existing EPS security transfer rules remain
+those described above for TS 33.401.
+
+`tests/s10/s10-sgw` runs the two-MME suite with two independent SGW-C/SGW-U
+pairs. It covers protected and AKA-fallback TAU, two APNs, default and dedicated
+bearers, both handover directions, direct/indirect forwarding, partial radio
+admission and cancellation. The multi-PDN handover also waits beyond the old
+SGW holding guard before checking traffic. GTP-U verification ignores End Markers
+and requires an IPv4 ICMP Echo Reply with the PDN's destination address, using
+the uplink endpoint independently decoded from Handover Request.
+
+`tests/s10/s10-sgw-failure` and `tests/s10/s10-sgw-timeout` exercise an unavailable
+SGW-U and an unresponsive target SGW, respectively. They check preparation
+failure without losing source traffic, and TAU rejection followed by old-GUTI
+return, fresh AKA, GW reconstruction and a returned ICMP echo. The retained-SGW
+suite and the existing LTE handover and CSFB suites remain regression checks.
+`tests/unit/mme-s10-sgw-test.c` checks production Create Session serialization
+against independent OI masks and literal PGW F-TEID octets, distinct subscription
+and allocated PAA/PGW addresses, per-bearer QoS and TFT.
+
+This validation uses Open5GS peers. Interoperability with an independent MME,
+SGW or PGW implementation still requires a peer-to-peer integration run; the
+wire vectors and standards mapping are not a claim of cross-vendor certification.

@@ -35,6 +35,8 @@ example_conf = '''
     attach.yaml
     s10-source.yaml
     s10-target.yaml
+    s10-sgw-source.yaml
+    s10-sgw-target.yaml
     dns.yaml
     310014.yaml
     csfb.yaml

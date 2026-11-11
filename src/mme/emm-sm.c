@@ -611,6 +611,16 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 break;
             }
 
+            if (mme_ue->s10.source_transfer && mme_ue->s10.acknowledged &&
+                    mme_ue->s10.sgw_changed) {
+                mme_ue->tracking_area_update_accept_proc =
+                    e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage &&
+                    mme_ue->nas_eps.update.active_flag ?
+                    S1AP_ProcedureCode_id_InitialContextSetup :
+                    S1AP_ProcedureCode_id_downlinkNASTransport;
+                if (mme_s10_return_tau(mme_ue)) break;
+            }
+
             if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 mme_s6a_send_air(enb_ue, mme_ue, NULL);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
@@ -1433,6 +1443,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                         &emm_state_initial_context_setup : &emm_state_exception);
                 break;
             }
+
+            if (mme_ue->s10_return_pending && mme_s10_return_tau(mme_ue)) break;
 
              /* Special path when SGSN (Gn interface) is involved: */
             if (mme_ue->gn.gtp_xact_id != OGS_INVALID_POOL_ID) {

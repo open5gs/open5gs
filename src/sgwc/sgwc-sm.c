@@ -103,10 +103,12 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         }
 
         e->pfcp_xact_id = pfcp_xact ? pfcp_xact->id : OGS_INVALID_POOL_ID;
+        ogs_pkbuf_t *gtp_snapshot = pfcp_xact->gtpbuf;
+        pfcp_xact->gtpbuf = NULL;
 
         e->gtp_message = NULL;
-        if (pfcp_xact->gtpbuf) {
-            rv = ogs_gtp2_parse_msg(&gtp_message, pfcp_xact->gtpbuf);
+        if (gtp_snapshot) {
+            rv = ogs_gtp2_parse_msg(&gtp_message, gtp_snapshot);
             e->gtp_message = &gtp_message;
         }
 
@@ -115,8 +117,7 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
             ogs_error("PFCP state machine exception");
         }
 
-        if (pfcp_xact->gtpbuf)
-            ogs_pkbuf_free(pfcp_xact->gtpbuf);
+        if (gtp_snapshot) ogs_pkbuf_free(gtp_snapshot);
         ogs_pkbuf_free(recvbuf);
         ogs_pfcp_message_free(pfcp_message);
         break;

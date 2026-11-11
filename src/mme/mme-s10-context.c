@@ -212,7 +212,7 @@ static int import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
         sgw = mme_sgw_find_by_addr(addr);
         if (sgw) break;
     }
-    if (!sgw) goto out;
+    /* A relocating target need not provision the source SGW as an S11 peer. */
     stage = 2;
     for (n = 0; n < OGS_MAX_NUM_OF_SESS; n++) {
         if (!rsp->mme_sgsn_amf_ue_eps_pdn_connections[n].presence) break;
@@ -229,6 +229,7 @@ static int import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
         if (!sess) goto rollback;
         mme_sess_set_session(sess, &pdns[i].profile);
         sess->paa = pdns[i].paa;
+        sess->ue_request_type.type = pdns[i].paa.session_type;
         sess->pgw_s5c_ip = pdns[i].pgw_ip;
         sess->pgw_s5c_teid = pdns[i].pgw_teid;
         for (j = 0; j < pdns[i].num_bearers; j++) {
@@ -252,7 +253,10 @@ static int import_context(mme_ue_t *ue, ogs_gtp2_context_response_t *rsp,
     }
     sgw_ue = sgw_ue_find_by_id(ue->sgw_ue_id);
     if (!sgw_ue) goto rollback;
-    sgw_ue->gnode = &sgw->gnode;
+    ue->s10_selected_sgw = sgw_ue->sgw;
+    ue->s10_sgw_change_required = !sgw || sgw != sgw_ue->sgw;
+    if (!sgw) sgw = ue->s10_selected_sgw;
+    sgw_ue_switch_to_sgw(sgw_ue, sgw);
     sgw_ue->sgw_s11_teid = sgw_teid;
     if (!keep_security) {
         ue->nas_eps.mme.tsc = 0;

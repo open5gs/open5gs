@@ -173,6 +173,7 @@ static void source_failure(mme_ue_t *ue, const S1AP_Cause_t *cause)
     ho->num_downlink = 0;
     ue->s10.source_transfer = ue->s10.acknowledged = false;
     ue->s10.cancel_location = false;
+    ue->s10.sgw_changed = false;
     mme_s10_handover_clear(ue);
     if (cleanup) cleanup_forwarding(ue, NULL, false);
     for (i = 0; i < n; i++) {
@@ -270,6 +271,7 @@ static int relocation_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
     mme_sess_t *sess;
     mme_bearer_t *bearer;
     uint8_t f_cause[2], *container = NULL;
+    ogs_gtp2_indication_t indication = {0};
     int len, n = 0, rv = OGS_ERROR;
     ogs_assert(msg);
     msg->h.type = OGS_GTP2_FORWARD_RELOCATION_RESPONSE_TYPE;
@@ -290,6 +292,12 @@ static int relocation_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
     rsp->sender_s_f_teid_for_control_plane.presence = 1;
     rsp->sender_s_f_teid_for_control_plane.data = &sender;
     rsp->sender_s_f_teid_for_control_plane.len = len;
+    if (mme_s10_sgw_relocated(ue)) {
+        indication.sgw_change_indication = 1;
+        rsp->indication_flags.presence = 1;
+        rsp->indication_flags.data = &indication;
+        rsp->indication_flags.len = 1;
+    }
     ogs_list_for_each(&ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
             ogs_gtp2_tlv_relocation_bearer_context_t *bc;
@@ -305,6 +313,16 @@ static int relocation_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
             if (bearer->enb_ul_teid && set_fteid(&bc->enb_ul_forwarding_f_teid,
                         &endpoints[n][1], OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING,
                         bearer->enb_ul_teid, &bearer->enb_ul_ip) != OGS_OK) goto out;
+            if (mme_s10_sgw_relocated(ue) && !ue->s10_handover->direct) {
+                bc->enb_dl_forwarding_f_teid.presence = 0;
+                bc->enb_ul_forwarding_f_teid.presence = 0;
+                if (bearer->sgw_dl_teid && set_fteid(&bc->sgw_dl_forwarding_f_teid,
+                        &endpoints[n][0], OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING,
+                        bearer->sgw_dl_teid, &bearer->sgw_dl_ip) != OGS_OK) goto out;
+                if (bearer->sgw_ul_teid && set_fteid(&bc->sgw_ul_forwarding_f_teid,
+                        &endpoints[n][1], OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING,
+                        bearer->sgw_ul_teid, &bearer->sgw_ul_ip) != OGS_OK) goto out;
+            }
             n++;
         }
     }
@@ -424,6 +442,11 @@ void mme_s10_handover_tick(ogs_pool_id_t ue_id)
     ogs_gtp2_header_t h = {0};
     OCTET_STRING_t container = {0};
     if (!ue || !(ho = ue->s10_handover)) return;
+    if (ho->phase == HO_TARGET_COMPLETE && ho->gateway_updated &&
+            mme_s10_sgw_relocated(ue) && !ho->direct) {
+        cleanup_forwarding(ue, NULL, false);
+        return;
+    }
     if (ho->phase == HO_TARGET_PREPARING || ho->phase == HO_TARGET_READY) {
         if (ogs_time_now() >= ho->deadline) {
             if (ho->phase == HO_TARGET_PREPARING) {
@@ -478,6 +501,25 @@ void mme_s10_handover_tick(ogs_pool_id_t ue_id)
     if (ogs_gtp_xact_commit(xact) != OGS_OK) source_failure(ue, NULL);
 }
 
+static void target_sgw_prepared(mme_ue_t *ue, int result)
+{
+    handover_t *ho = ue->s10_handover;
+    enb_ue_t *radio = enb_ue_find_by_id(ho->enb_ue_id);
+    ogs_gtp_xact_t *xact = ogs_gtp_xact_find_by_id(ho->xact_id);
+    S1AP_HandoverType_t type = S1AP_HandoverType_intralte;
+    OCTET_STRING_t container = {0};
+    ogs_pkbuf_t *p;
+    if (result == OGS_OK && radio && xact) {
+        container.buf = ho->container->data;
+        container.size = ho->container->len;
+        p = s1ap_build_handover_request(radio, &type, &ho->cause, &container);
+        if (p && s1ap_send_to_enb_ue(radio, p) == OGS_OK) return;
+    }
+    if (xact) relocation_response(xact, NULL, ho->remote_teid,
+            OGS_GTP2_CAUSE_RELOCATION_FAILURE, NULL);
+    target_release(ue);
+}
+
 static void relocation_request(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
 {
     ogs_gtp2_forward_relocation_request_t *req = &msg->forward_relocation_request;
@@ -489,7 +531,6 @@ static void relocation_request(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
     enb_ue_t *radio = NULL;
     mme_ue_t *ue = NULL;
     handover_t *ho;
-    ogs_pkbuf_t *p;
     ogs_ip_t peer_ip;
     uint32_t teid = 0;
     uint8_t error = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
@@ -526,6 +567,7 @@ static void relocation_request(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
     if (i == enb->num_of_supported_ta_list) goto reject;
     radio = enb_ue_add(enb, INVALID_UE_S1AP_ID);
     if (!radio) goto reject;
+    radio->saved.tai = target.tai;
     ue = mme_ue_add(radio);
     if (!ue) { enb_ue_remove(radio); goto reject; }
     enb_ue_associate_mme_ue(radio, ue);
@@ -547,15 +589,17 @@ static void relocation_request(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
     xact->delete_cb = xact_deleted;
     container.buf = (uint8_t *)req->e_utran_transparent_container.data + 1;
     container.size = req->e_utran_transparent_container.len - 1;
-    p = s1ap_build_handover_request(radio, &type, &cause, &container);
-    if (!p || s1ap_send_to_enb_ue(radio, p) != OGS_OK) {
-        ho->xact_id = 0; /* Keep the negative response in the duplicate cache. */
-        enb_ue_remove(radio);
-        mme_ue_remove(ue);
-        goto reject;
-    }
+    ho->cause = cause;
+    ho->container = ogs_pkbuf_alloc(NULL, container.size);
+    ogs_assert(ho->container);
+    ogs_pkbuf_put_data(ho->container, container.buf, container.size);
+    if (req->indication_flags.presence && req->indication_flags.data &&
+            req->indication_flags.len >= 1)
+        ho->direct = ((ogs_gtp2_indication_t *)req->indication_flags.data)->direct_forwarding_indication;
     ho->deadline = ogs_time_now() + ogs_time_from_sec(10);
     ogs_timer_start(ho->timer, ogs_time_from_sec(10));
+    if (mme_s10_sgw_prepare(ue, target_sgw_prepared) != OGS_OK)
+        target_sgw_prepared(ue, OGS_ERROR);
     return;
 reject:
     relocation_response(xact, NULL, teid, error, NULL);
@@ -596,6 +640,8 @@ int mme_s10_handover_acknowledge(enb_ue_t *target)
         return OGS_ERROR;
     }
     ho->admission_known = true;
+    if (mme_s10_sgw_relocated(ue) && !ho->direct && mme_ue_have_indirect_tunnel(ue))
+        return mme_gtp_send_create_indirect_data_forwarding_tunnel_request(target, ue);
     rv = relocation_response(xact, ue, ho->remote_teid,
             OGS_GTP2_CAUSE_REQUEST_ACCEPTED, NULL);
     if (rv == OGS_OK) {
@@ -662,8 +708,17 @@ static void forward_response(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
             rsp->e_utran_transparent_container.len > OGS_MAX_SDU_LEN / 2 ||
             (*(uint8_t *)rsp->e_utran_transparent_container.data & 15) != 3)
         goto invalid;
+    ue->s10.sgw_changed = false;
+    if (rsp->indication_flags.presence) {
+        if (!rsp->indication_flags.data || rsp->indication_flags.len < 1) goto invalid;
+        ue->s10.sgw_changed = ((ogs_gtp2_indication_t *)rsp->indication_flags.data)->sgw_change_indication;
+    }
     for (i = 0; i < OGS_BEARER_PER_UE; i++) {
         ogs_gtp2_tlv_relocation_bearer_context_t *bc = &rsp->list_of_set_up_bearers[i];
+        if (ue->s10.sgw_changed && !ho->direct) {
+            bc->enb_dl_forwarding_f_teid = bc->sgw_dl_forwarding_f_teid;
+            bc->enb_ul_forwarding_f_teid = bc->sgw_ul_forwarding_f_teid;
+        }
         uint8_t ebi;
         if (!bc->presence) break;
         ebi = bc->eps_bearer_id.u8;
@@ -674,12 +729,12 @@ static void forward_response(ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg)
         seen |= 1 << (ebi - 5);
         if (bc->enb_dl_forwarding_f_teid.presence &&
                 read_fteid(&bc->enb_dl_forwarding_f_teid,
-                    OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING,
+                    ue->s10.sgw_changed && !ho->direct ? OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING : OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING,
                     &admitted[n].dl_teid, &admitted[n].dl_ip) != OGS_OK)
             goto invalid;
         if (bc->enb_ul_forwarding_f_teid.presence &&
                 read_fteid(&bc->enb_ul_forwarding_f_teid,
-                    OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING,
+                    ue->s10.sgw_changed && !ho->direct ? OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING : OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING,
                     &admitted[n].ul_teid, &admitted[n].ul_ip) != OGS_OK)
             goto invalid;
         n++;
@@ -906,7 +961,10 @@ void mme_s10_handover_sgw_response(ogs_gtp_xact_t *xact, mme_ue_t *ue,
                     mme_gtp_send_delete_bearer_command(bearer);
         }
     }
+    mme_s10_sgw_committed(ue);
     ho->gateway_updated = true;
+    if (mme_s10_sgw_relocated(ue) && !ho->direct)
+        ogs_timer_start(ho->timer, ogs_time_from_sec(10));
     ogs_info("S10 handover gateway updated [ue:%u]", ue->id);
     start_hss_registration(ue);
 }
@@ -1159,6 +1217,7 @@ static void target_release(mme_ue_t *ue)
     /* Cached response views do not own the UE. Preserve duplicate handling. */
     ho->xact_id = 0;
     ho->phase = HO_TARGET_RELEASING;
+    mme_s10_sgw_clear(ue);
     ogs_timer_stop(ho->timer);
     if (radio && radio->enb_ue_s1ap_id != INVALID_UE_S1AP_ID &&
             s1ap_send_ue_context_release_command(radio,
@@ -1230,13 +1289,14 @@ static void indirect_timeout(ogs_gtp_xact_t *xact, void *data)
     ho->indirect_uncertain = true;
     if (ho->phase == HO_SOURCE_CANCELLING && ho->cancel_complete)
         cancel_finished(ue);
+    else if (ho->phase == HO_TARGET_PREPARING) target_sgw_prepared(ue, OGS_ERROR);
     else source_failure(ue, NULL);
 }
 
 void mme_s10_handover_bind_indirect(mme_ue_t *ue, ogs_gtp_xact_t *xact)
 {
     handover_t *ho = ue->s10_handover;
-    if (!ho || ho->phase != HO_SOURCE_PREPARING || ho->direct) return;
+    if (!ho || (ho->phase != HO_SOURCE_PREPARING && ho->phase != HO_TARGET_PREPARING) || ho->direct) return;
     ho->indirect_xact_id = xact->id;
     xact->cb = indirect_timeout;
     xact->delete_cb = xact_deleted;
@@ -1291,6 +1351,7 @@ bool mme_s10_handover_indirect_response(ogs_gtp_xact_t *xact,
             (cause->value != OGS_GTP2_CAUSE_TEMPORARILY_REJECTED_DUE_TO_HANDOVER_IN_PROGRESS &&
              cause->value != OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
         if (ho->phase == HO_SOURCE_CANCELLING && ho->cancel_complete) cancel_finished(ue);
+        else if (ho->phase == HO_TARGET_PREPARING) target_sgw_prepared(ue, OGS_ERROR);
         else source_failure(ue, NULL);
         return true;
     }
@@ -1300,6 +1361,18 @@ bool mme_s10_handover_indirect_response(ogs_gtp_xact_t *xact,
         forwarding[i].bearer->sgw_dl_ip = forwarding[i].dl_ip;
         forwarding[i].bearer->sgw_ul_teid = forwarding[i].ul_teid;
         forwarding[i].bearer->sgw_ul_ip = forwarding[i].ul_ip;
+    }
+    if (ho->phase == HO_TARGET_PREPARING) {
+        ogs_gtp_xact_t *request = ogs_gtp_xact_find_by_id(ho->xact_id);
+        if (!request || relocation_response(request, ue, ho->remote_teid,
+                    OGS_GTP2_CAUSE_REQUEST_ACCEPTED, NULL) != OGS_OK) {
+            target_sgw_prepared(ue, OGS_ERROR);
+            return true;
+        }
+        ho->phase = HO_TARGET_READY;
+        ho->deadline = ogs_time_now() + ogs_time_from_sec(30);
+        ogs_timer_start(ho->timer, ogs_time_from_sec(30));
+        return true;
     }
     if (ho->phase == HO_SOURCE_CANCELLING) {
         if (ho->cancel_complete) cancel_finished(ue);
