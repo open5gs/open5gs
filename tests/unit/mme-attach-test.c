@@ -374,6 +374,7 @@ static void dispatch_ksi(uint8_t type, uint8_t security_type, bool invalid_mac,
     event.pkbuf = pkbuf;
     event.s1ap_code = S1AP_ProcedureCode_id_initialUEMessage;
     header.integrity_protected = security_type;
+    header.ciphered = security_type;
     event.nas_type = header.type;
     message.emm.h.message_type = type;
     if (type == OGS_NAS_EPS_ATTACH_REQUEST) {
