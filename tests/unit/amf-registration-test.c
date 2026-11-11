@@ -373,6 +373,7 @@ static void dispatch_ngksi(uint8_t type, bool protected, bool invalid,
     event.ngap.code = NGAP_ProcedureCode_id_InitialUEMessage;
     event.nas.message = &message;
     h.integrity_protected = protected;
+    h.ciphered = protected;
     event.nas.type = h.type;
     message.gmm.h.message_type = type;
     if (type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
