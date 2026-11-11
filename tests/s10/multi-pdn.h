@@ -16,9 +16,9 @@ static bson_t *s10_two_apns(bson_t *original)
     bson_iter_document(&child, &len, &bytes);
     ogs_assert(bson_init_static(&first_session, bytes, len));
     bson_init(&extra);
-    bson_copy_to_excluding(&first_session, &extra, "name", "pcc_rule", NULL);
+    bson_copy_to_excluding_noinit(&first_session, &extra, "name", "pcc_rule", NULL);
     BSON_APPEND_UTF8(&extra, "name", "extra");
-    bson_copy_to_excluding(original, result, "slice", NULL);
+    bson_copy_to_excluding_noinit(original, result, "slice", NULL);
     BSON_APPEND_ARRAY_BEGIN(result, "slice", &slices);
     BSON_APPEND_DOCUMENT_BEGIN(&slices, "0", &slice);
     bson_iter_init(&iter, &first_slice);
