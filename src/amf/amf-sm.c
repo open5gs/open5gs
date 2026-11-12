@@ -61,6 +61,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     int rc;
 
     ogs_nas_5gs_message_t nas_message;
+    ogs_nas_security_header_type_t h;
     ran_ue_t *ran_ue = NULL;
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
@@ -980,9 +981,22 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             (AMF_UE_HAVE_SUCI(amf_ue) || AMF_UE_HAVE_SUPI(amf_ue)) &&
             nas_message.gmm.h.message_type ==
                 OGS_NAS_5GS_REGISTRATION_REQUEST) {
-            amf_ue_t *registering_ue =
-                amf_ue_find_by_message(&nas_message, NULL);
+            amf_ue_t *registering_ue = NULL;
 
+            /* TS 24.501 4.4.4.3: ignore it, as gmm-sm.c, before its identity */
+            h.type = e->nas.type;
+            if (e->ngap.code == NGAP_ProcedureCode_id_UplinkNASTransport &&
+                amf_ue->integrity_verified &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                ogs_warn("[%s] Ignore unverified Registration request",
+                        amf_ue->supi);
+                /* The verdict was this message's only */
+                amf_ue->mac_failed = 0;
+                ogs_pkbuf_free(pkbuf);
+                break;
+            }
+
+            registering_ue = amf_ue_find_by_message(&nas_message, NULL);
             if (registering_ue != amf_ue &&
                 (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) ||
                  ogs_list_count(&amf_ue->sess_list))) {
@@ -1058,7 +1072,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         if (!amf_ue) {
             bool pending_guti;
-            ogs_nas_security_header_type_t h;
 
             h.type = e->nas.type;
             amf_ue = amf_ue_find_by_message(&nas_message, &pending_guti);
@@ -1193,6 +1206,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         e->amf_ue_id = amf_ue->id;
         e->nas.message = &nas_message;
+
+        /* A discarded message leaves the secure exchange established */
+        h.type = e->nas.type;
+        if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue))
+            amf_ue->integrity_verified = true;
+        else if (e->ngap.code == NGAP_ProcedureCode_id_InitialUEMessage)
+            amf_ue->integrity_verified = false;
 
         ogs_fsm_dispatch(&amf_ue->sm, e);
 

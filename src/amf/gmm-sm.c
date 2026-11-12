@@ -1718,6 +1718,20 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
+            /*
+             * TS 24.501 4.4.4.3: once the secure exchange of NAS messages is
+             * established on the connection, discard one in an Uplink NAS
+             * Transport that is not integrity protected or that fails the
+             * integrity check, as DEREGISTRATION REQUEST below.
+             */
+            if (amf_ue->integrity_verified &&
+                e->ngap.code == NGAP_ProcedureCode_id_UplinkNASTransport &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                ogs_warn("[%s] Ignore unverified Registration request",
+                        amf_ue->supi);
+                break;
+            }
+
             amf_ue->registration_session_release_after_authentication = false;
             ogs_info("Registration request");
             gmm_cause = gmm_handle_registration_request(
@@ -1875,6 +1889,14 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             break;
 
         case OGS_NAS_5GS_SERVICE_REQUEST:
+            /* TS 24.501 4.4.4.3: discard it, as REGISTRATION REQUEST above */
+            if (e->ngap.code == NGAP_ProcedureCode_id_UplinkNASTransport &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                ogs_warn("[%s] Ignore unverified Service request",
+                        amf_ue->supi);
+                break;
+            }
+
             ogs_info("Service request");
 
             if (state != GMM_COMMON_STATE_REGISTERED) {
@@ -3650,6 +3672,15 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
+            /* TS 24.501 4.4.4.3: discard it, as REGISTRATION COMPLETE above */
+            if (amf_ue->integrity_verified &&
+                e->ngap.code == NGAP_ProcedureCode_id_UplinkNASTransport &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                ogs_warn("[%s] Ignore unverified Registration request",
+                        amf_ue->supi);
+                break;
+            }
+
             ogs_warn("Registration request");
             gmm_cause = gmm_handle_registration_request(
                     amf_ue, h, e->ngap.code,
@@ -3675,6 +3706,14 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OGS_NAS_5GS_SERVICE_REQUEST:
+            /* TS 24.501 4.4.4.3: discard it, as REGISTRATION COMPLETE above */
+            if (e->ngap.code == NGAP_ProcedureCode_id_UplinkNASTransport &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                ogs_warn("[%s] Ignore unverified Service request",
+                        amf_ue->supi);
+                break;
+            }
+
             ogs_info("[%s] Service request", amf_ue->supi);
             r = nas_5gs_send_service_reject(ran_ue, amf_ue,
                 OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);

@@ -474,6 +474,20 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             break;
 
         case OGS_NAS_EPS_ATTACH_REQUEST:
+            /*
+             * TS 24.301 4.4.4.3: once the secure exchange of NAS messages is
+             * established on the connection, discard one in an Uplink NAS
+             * Transport that is not integrity protected or that fails the
+             * integrity check, as DETACH REQUEST below.
+             */
+            if (mme_ue->integrity_verified &&
+                e->s1ap_code == S1AP_ProcedureCode_id_uplinkNASTransport &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue))) {
+                ogs_warn("[%s] Discard unverified Attach request",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+
             ogs_info("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     enb_ue, mme_ue, &message->emm.attach_request, e->pkbuf);
@@ -531,6 +545,15 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             break;
 
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST:
+            /* TS 24.301 4.4.4.3: discard it, as ATTACH REQUEST above */
+            if (mme_ue->integrity_verified &&
+                e->s1ap_code == S1AP_ProcedureCode_id_uplinkNASTransport &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue))) {
+                ogs_warn("[%s] Discard unverified Tracking area update request",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+
             ogs_info("[%s] Tracking area update request", mme_ue->imsi_bcd);
             rv = emm_handle_tau_request(enb_ue, mme_ue,
                     &message->emm.tracking_area_update_request, e->pkbuf);
@@ -751,6 +774,19 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             break;
 
         case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST:
+            /*
+             * TS 24.301 4.4.4.3: an EXTENDED SERVICE REQUEST is processed
+             * only if integrity protected. Discard an unverified one in an
+             * Uplink NAS Transport, as ATTACH REQUEST above; as an initial
+             * message, it is rejected below as one that fails the check.
+             */
+            if (e->s1ap_code == S1AP_ProcedureCode_id_uplinkNASTransport &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue))) {
+                ogs_warn("[%s] Discard unverified Extended service request",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+
             ogs_info("[%s] Extended service request", mme_ue->imsi_bcd);
 
             rv = emm_handle_extended_service_request(
@@ -781,7 +817,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 break;
             }
 
-            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                 r = nas_eps_send_service_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
@@ -1785,6 +1821,16 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_ATTACH_REQUEST:
+            /* TS 24.301 4.4.4.3: discard it, as ATTACH COMPLETE above */
+            h.type = e->nas_type;
+            if (mme_ue->integrity_verified &&
+                e->s1ap_code == S1AP_ProcedureCode_id_uplinkNASTransport &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue))) {
+                ogs_warn("[%s] Discard unverified Attach request",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+
             ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     enb_ue, mme_ue, &message->emm.attach_request, e->pkbuf);
