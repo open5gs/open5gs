@@ -131,28 +131,6 @@ int ngap_delayed_send_to_ran_ue(
     }
 }
 
-int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf)
-{
-    int rv;
-    amf_event_t *e = NULL;
-
-    ogs_assert(amf_ue);
-    ogs_assert(esmbuf);
-
-    e = amf_event_new(AMF_EVENT_5GSM_MESSAGE);
-    ogs_assert(e);
-    e->amf_ue_id = amf_ue->id;
-    e->pkbuf = esmbuf;
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_pkbuf_free(e->pkbuf);
-        ogs_event_free(e);
-    }
-
-    return rv;
-}
- 
 int ngap_send_to_nas(ran_ue_t *ran_ue,
         NGAP_ProcedureCode_t procedureCode, NGAP_NAS_PDU_t *nasPdu)
 {
@@ -329,15 +307,14 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         return rv;
     } else if (h->extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM) {
-        if (!amf_ue) {
-            ogs_error("No UE Context");
-            ogs_pkbuf_free(nasbuf);
-            return OGS_ERROR;
-        }
-        rv = ngap_send_to_5gsm(amf_ue, nasbuf);
-        ogs_expect(rv == OGS_OK);
-
-        return rv;
+        /*
+         * TS 24.501 4.4.4.3, 8.2.10: a 5GSM message travels in an
+         * UL NAS TRANSPORT. No state machine takes one on its own, so
+         * discard it here instead of queueing a buffer nobody frees.
+         */
+        ogs_error("5GSM message outside UL NAS TRANSPORT");
+        ogs_pkbuf_free(nasbuf);
+        return OGS_ERROR;
     } else {
         ogs_error("Unknown NAS Protocol discriminator 0x%02x",
                   h->extended_protocol_discriminator);
