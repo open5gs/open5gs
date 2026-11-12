@@ -43,7 +43,6 @@ int ngap_delayed_send_to_ran_ue(ran_ue_t *ran_ue,
         ogs_pkbuf_t *pkbuf, ogs_time_t duration);
 int ngap_send_to_nas(ran_ue_t *ran_ue,
         NGAP_ProcedureCode_t procedureCode, NGAP_NAS_PDU_t *nasPdu);
-int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf);
 
 int ngap_send_ng_setup_response(amf_gnb_t *gnb);
 int ngap_send_ng_setup_failure(
