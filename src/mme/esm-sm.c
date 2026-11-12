@@ -152,11 +152,13 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
 
             /*
              * The ESM information request procedure is used during the
-             * attach procedure only (TS 24.301 6.6.1.2.1), so a response
-             * from an attached UE answers no request. Ignore it instead of
-             * running the attach-only esm_handle_information_response().
+             * attach procedure only (TS 24.301 6.6.1.2.1), and T3489 keeps
+             * the request until its response comes (6.6.1.2.4). A response
+             * without a pending request (from an attached UE, or during a
+             * TAU) answers no request. Ignore it instead of running the
+             * attach-only esm_handle_information_response().
              */
-            if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+            if (!bearer->t3489.pkbuf) {
                 ogs_error("[%s] Unexpected ESM information response",
                         mme_ue->imsi_bcd);
                 break;
