@@ -28,8 +28,8 @@
  *
  * Before: amf_ue_release_old_context() moves UE-2's session into UE-1's
  *         context -> ogs_assert(ogs_list_empty(&amf_ue->sess_list))
- * After:  sessions deactivated, NG released, message dropped, and UE-1
- *         keeps its own session
+ * After:  message discarded (TS 24.501 4.4.4.3), and UE-1 keeps its own
+ *         session
  *
  * This is the 5GS counterpart of the Attach case in
  * tests/attach/identity-test.c.
@@ -421,9 +421,17 @@ static void registration_identity_mismatch_func(
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /*
-     * Expect the release, not a reply to the Registration Request.
-     * Without the fix the AMF is already gone by now.
+     * TS 24.501 4.4.4.3: the Registration Request is not integrity
+     * protected on the secured NG context of UE-1, so it is discarded.
+     * The gNB then releases UE-1, as nothing answers the request.
      */
+    sendbuf = testngap_build_ue_context_release_request(test_ue1,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue1, recvbuf);
@@ -900,9 +908,17 @@ static void registration_identity_mismatch_no_session_func(
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /*
-     * Expect the release, not a reply to the Registration Request.
-     * Without the fix the AMF is already gone by now.
+     * TS 24.501 4.4.4.3: the Registration Request is not integrity
+     * protected on the secured NG context of UE-1, so it is discarded.
+     * The gNB then releases UE-1, as nothing answers the request.
      */
+    sendbuf = testngap_build_ue_context_release_request(test_ue1,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue1, recvbuf);
