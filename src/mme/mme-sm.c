@@ -312,6 +312,18 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             nas_message.emm.h.message_type == OGS_NAS_EPS_ATTACH_REQUEST) {
             mme_ue_t *attaching_ue = mme_ue_find_by_message(&nas_message, NULL);
 
+            /* TS 24.301 5.5.1.2.7 f): the request being authenticated on
+             * this attached UE's context authenticated nobody, so another
+             * identity on its connection leaves the context unchanged */
+            if (attaching_ue != mme_ue && mme_ue->can_restore_context &&
+                OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
+                ogs_warn("[%s] Attach request of another identity "
+                        "during authentication", mme_ue->imsi_bcd);
+                REFUSE_S1_REQUEST(mme_ue, enb_ue);
+                ogs_pkbuf_free(pkbuf);
+                return;
+            }
+
             if (attaching_ue != mme_ue &&
                 (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered) ||
                  ogs_list_count(&mme_ue->sess_list))) {

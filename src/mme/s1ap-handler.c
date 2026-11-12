@@ -919,6 +919,12 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     if (r != OGS_OK && mme_ue_from_stmsi &&
             mme_ue_from_stmsi->enb_ue_holding_id != enb_ue_holding_id)
         RESTORE_S1_CONTEXT(mme_ue_from_stmsi);
+    /* TS 24.301 5.4.2.7 a): if that request's connection went with the
+     * refused NAS-PDU, its authentication is aborted */
+    else if (r != OGS_OK && mme_ue_from_stmsi &&
+            OGS_FSM_CHECK(&mme_ue_from_stmsi->sm, emm_state_authentication) &&
+            !enb_ue_find_by_id(mme_ue_from_stmsi->enb_ue_id))
+        mme_timer_t3460_expire(OGS_UINT_TO_POINTER(mme_ue_from_stmsi->id));
 }
 
 void s1ap_handle_uplink_nas_transport(

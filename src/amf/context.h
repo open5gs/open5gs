@@ -752,8 +752,9 @@ struct amf_ue_s {
 /*
  * TS 24.501 5.5.1.2.8 f): a NAS message refused on the connection __rAN that
  * put the NG context on hold authenticated nobody. While a request is being
- * authenticated, only __rAN is released and T3560 ends that authentication;
- * otherwise the held NG context is given back.
+ * authenticated, only __rAN is released and that authentication, left with no
+ * connection, is aborted (TS 24.501 5.4.1.3.7 a)), also before the AUSF has
+ * answered; otherwise the held NG context is given back.
  */
 #define REFUSE_NG_REQUEST(__aMF, __rAN) \
     do { \
@@ -765,6 +766,7 @@ struct amf_ue_s {
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
             ogs_expect(r == OGS_OK); \
+            amf_timer_t3560_expire(OGS_UINT_TO_POINTER((__aMF)->id)); \
         } else \
             RESTORE_NG_CONTEXT(__aMF); \
     } while(0)

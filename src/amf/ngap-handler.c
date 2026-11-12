@@ -912,6 +912,12 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     if (r != OGS_OK && amf_ue &&
             amf_ue->ran_ue_holding_id != ran_ue_holding_id)
         RESTORE_NG_CONTEXT(amf_ue);
+    /* TS 24.501 5.4.1.3.7 a): if that request's connection went with the
+     * refused NAS-PDU, its authentication is aborted */
+    else if (r != OGS_OK && amf_ue &&
+            OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication) &&
+            !ran_ue_find_by_id(amf_ue->ran_ue_id))
+        amf_timer_t3560_expire(OGS_UINT_TO_POINTER(amf_ue->id));
 }
 
 void ngap_handle_uplink_nas_transport(

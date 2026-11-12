@@ -983,6 +983,18 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             amf_ue_t *registering_ue =
                 amf_ue_find_by_message(&nas_message, NULL);
 
+            /* TS 24.501 5.5.1.2.8 f): the request being authenticated on
+             * this registered UE's context authenticated nobody, so another
+             * identity on its connection leaves the context unchanged */
+            if (registering_ue != amf_ue && amf_ue->can_restore_context &&
+                OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+                ogs_warn("[%s] Registration request of another identity "
+                        "during authentication", amf_ue->suci);
+                REFUSE_NG_REQUEST(amf_ue, ran_ue);
+                ogs_pkbuf_free(pkbuf);
+                break;
+            }
+
             if (registering_ue != amf_ue &&
                 (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) ||
                  ogs_list_count(&amf_ue->sess_list))) {

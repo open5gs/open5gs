@@ -903,8 +903,9 @@ struct mme_ue_s {
 /*
  * TS 24.301 5.5.1.2.7 f): a NAS message refused on the connection __eNB that
  * put the S1 context on hold authenticated nobody. While a request is being
- * authenticated, only __eNB is released and T3460 ends that authentication;
- * otherwise the held S1 context is given back.
+ * authenticated, only __eNB is released and that authentication, left with no
+ * connection, is aborted (TS 24.301 5.4.2.7 a)), also before the HSS has
+ * answered; otherwise the held S1 context is given back.
  */
 #define REFUSE_S1_REQUEST(__mME, __eNB) \
     do { \
@@ -916,6 +917,7 @@ struct mme_ue_s {
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
                     S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
             ogs_expect(r == OGS_OK); \
+            mme_timer_t3460_expire(OGS_UINT_TO_POINTER((__mME)->id)); \
         } else \
             RESTORE_S1_CONTEXT(__mME); \
     } while(0)
