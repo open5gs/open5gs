@@ -349,7 +349,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                         "during authentication", mme_ue->imsi_bcd);
                 REFUSE_S1_REQUEST(mme_ue, enb_ue);
                 ogs_pkbuf_free(pkbuf);
-                return;
+                break;
             }
 
             if (attaching_ue != mme_ue &&
@@ -379,7 +379,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
                     REFUSE_S1_REQUEST(mme_ue, enb_ue);
                     ogs_pkbuf_free(pkbuf);
-                    return;
+                    break;
                 }
 
                 enb_ue->relcause.group = S1AP_Cause_PR_nas;
