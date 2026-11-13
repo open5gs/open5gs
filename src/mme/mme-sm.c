@@ -498,7 +498,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         /* TS 24.301 5.5.1.2.7 f): a request that passed the integrity check
-         * is the UE's own, and the S1 context it put on hold goes */
+         * is the UE's own: the S1 context it put on hold is never given back,
+         * and goes when the state machine ends the request */
         if (mme_ue && mme_ue->enb_ue_id == enb_ue->id &&
             enb_ue_find_by_id(mme_ue->enb_ue_holding_id)) {
             ogs_nas_security_header_type_t h;
@@ -507,7 +508,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             h.type = e->nas_type;
             if ((h.integrity_protected || h.service_request) &&
                 SECURITY_CONTEXT_IS_VALID(mme_ue))
-                CLEAR_S1_CONTEXT(mme_ue);
+                mme_ue->enb_ue_holding_verified = true;
         }
 
         ogs_assert(mme_ue);
@@ -779,7 +780,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 if (mme_ue->can_restore_context &&
                     OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
                     MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, &mme_ue->sm);
-                    /* Already released by RESTORE_S1_CONTEXT() */
+                    /* Released by RESTORE_S1_CONTEXT() if it gave the held
+                     * S1 context back */
                     if (enb_ue->mme_ue_id != mme_ue->id)
                         break;
                     r = s1ap_send_ue_context_release_command(enb_ue,

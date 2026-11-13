@@ -824,6 +824,7 @@ struct mme_ue_s {
                     mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration); \
             \
             (__hOLDER)->enb_ue_holding_id = (__sERVING)->enb_ue_id; \
+            (__hOLDER)->enb_ue_holding_verified = false; \
         } else \
             ogs_error("[%s] S1 Context has already been removed", \
                     (__sERVING)->imsi_bcd); \
@@ -837,6 +838,7 @@ struct mme_ue_s {
         enb_ue_t *enb_ue_serving = NULL; \
         \
         if (enb_ue_find_by_id((__mME)->enb_ue_holding_id) && \
+            !(__mME)->enb_ue_holding_verified && \
             !OGS_FSM_CHECK(&(__mME)->sm, emm_state_security_mode)) { \
             ogs_warn("[%s] Holding S1 context already exists", \
                     (__mME)->imsi_bcd); \
@@ -884,7 +886,10 @@ struct mme_ue_s {
         enb_ue_t *enb_ue_holding = NULL, *enb_ue_request = NULL; \
         \
         enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_holding_id); \
-        if (enb_ue_holding) { \
+        if (enb_ue_holding && (__mME)->enb_ue_holding_verified) { \
+            /* The verified request is the UE's own: the hold goes */ \
+            CLEAR_S1_CONTEXT(__mME); \
+        } else if (enb_ue_holding) { \
             int r; \
             ogs_warn("[%s] Restore S1 Context", (__mME)->imsi_bcd); \
             \
@@ -927,6 +932,8 @@ struct mme_ue_s {
             RESTORE_S1_CONTEXT(__mME); \
     } while(0)
     ogs_pool_id_t   enb_ue_holding_id;
+    /* The request on the UE's current connection passed the integrity check */
+    bool            enb_ue_holding_verified;
 
     struct {
 #define MME_CLEAR_PAGING_INFO(__mME) \

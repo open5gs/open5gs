@@ -667,6 +667,7 @@ struct amf_ue_s {
                     amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration); \
             \
             (__hOLDER)->ran_ue_holding_id = (__sERVING)->ran_ue_id; \
+            (__hOLDER)->ran_ue_holding_verified = false; \
         } else \
             ogs_error("[%s] NG Context has already been removed", \
                     (__sERVING)->suci); \
@@ -680,6 +681,7 @@ struct amf_ue_s {
         ran_ue_t *ran_ue_serving = NULL; \
         \
         if (ran_ue_find_by_id((__aMF)->ran_ue_holding_id) && \
+            !(__aMF)->ran_ue_holding_verified && \
             !OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_security_mode)) { \
             ogs_warn("[%s] Holding NG context already exists", \
                     (__aMF)->suci); \
@@ -728,7 +730,10 @@ struct amf_ue_s {
         amf_sess_t *sess = NULL; \
         \
         ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_holding_id); \
-        if (ran_ue_holding) { \
+        if (ran_ue_holding && (__aMF)->ran_ue_holding_verified) { \
+            /* The verified request is the UE's own: the hold goes */ \
+            CLEAR_NG_CONTEXT(__aMF); \
+        } else if (ran_ue_holding) { \
             int r; \
             ogs_warn("[%s] Restore NG Context", (__aMF)->suci); \
             \
@@ -776,6 +781,8 @@ struct amf_ue_s {
             RESTORE_NG_CONTEXT(__aMF); \
     } while(0)
     ogs_pool_id_t   ran_ue_holding_id;
+    /* The request on the UE's current connection passed the integrity check */
+    bool            ran_ue_holding_verified;
 
     /*
      * N2 handovers this UE has been through, counted where the AMF is certain.

@@ -1236,14 +1236,15 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         }
 
         /* TS 24.501 5.5.1.2.8 f): a request that passed the integrity check
-         * is the UE's own, and the NG context it put on hold goes */
+         * is the UE's own: the NG context it put on hold is never given back,
+         * and goes when the state machine ends the request */
         if (amf_ue && amf_ue->ran_ue_id == ran_ue->id &&
             ran_ue_find_by_id(amf_ue->ran_ue_holding_id)) {
             ogs_nas_security_header_type_t h;
 
             h.type = e->nas.type;
             if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue))
-                CLEAR_NG_CONTEXT(amf_ue);
+                amf_ue->ran_ue_holding_verified = true;
         }
 
         ogs_assert(amf_ue);
