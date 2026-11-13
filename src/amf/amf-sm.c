@@ -29,7 +29,10 @@
 #include "nas-security.h"
 #include "gmm-handler.h"
 
-/* TS 24.501 5.4.1.3.7 a): abort the authentication, its connection is gone */
+/*
+ * TS 24.501 5.4.1.3.7 a): abort the authentication, its connection is gone.
+ * Not to be called from inside the UE's state machine: it makes a transition.
+ */
 void gmm_abort_authentication(amf_ue_t *amf_ue)
 {
     ogs_fsm_t sm;
@@ -44,6 +47,13 @@ void gmm_abort_authentication(amf_ue_t *amf_ue)
     memset(&e, 0, sizeof(e));
     e.amf_ue_id = amf_ue->id;
     ogs_fsm_tran(&amf_ue->sm, OGS_FSM_STATE(&sm), &e);
+
+    /* TS 24.501 5.3.7: an idle registered UE runs the mobile reachable timer */
+    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) && CM_IDLE(amf_ue)) {
+        ogs_info("[%s] Mobile Reachable timer started", amf_ue->supi);
+        ogs_timer_start(amf_ue->mobile_reachable.timer,
+            ogs_time_from_sec(amf_self()->time.t3512.value + 240));
+    }
 }
 
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)

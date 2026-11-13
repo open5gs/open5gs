@@ -37,7 +37,10 @@
 #include "mme-path.h"
 #include "mme-dns.h"
 
-/* TS 24.301 5.4.2.7 a): abort the authentication, its connection is gone */
+/*
+ * TS 24.301 5.4.2.7 a): abort the authentication, its connection is gone.
+ * Not to be called from inside the UE's state machine: it makes a transition.
+ */
 void emm_abort_authentication(mme_ue_t *mme_ue)
 {
     ogs_fsm_t sm;
@@ -52,6 +55,14 @@ void emm_abort_authentication(mme_ue_t *mme_ue)
     memset(&e, 0, sizeof(e));
     e.mme_ue_id = mme_ue->id;
     ogs_fsm_tran(&mme_ue->sm, OGS_FSM_STATE(&sm), &e);
+
+    /* TS 24.301 5.3.5: an idle attached UE runs the mobile reachable timer */
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered) && ECM_IDLE(mme_ue)) {
+        ogs_info("Mobile Reachable timer started for IMSI[%s]",
+            mme_ue->imsi_bcd);
+        ogs_timer_start(mme_ue->t_mobile_reachable.timer,
+            ogs_time_from_sec(mme_self()->time.t3412.value + 240));
+    }
 }
 
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
