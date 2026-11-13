@@ -503,8 +503,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             enb_ue_find_by_id(mme_ue->enb_ue_holding_id)) {
             ogs_nas_security_header_type_t h;
 
+            /* The SERVICE REQUEST format carries its own short MAC */
             h.type = e->nas_type;
-            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue))
+            if ((h.integrity_protected || h.service_request) &&
+                SECURITY_CONTEXT_IS_VALID(mme_ue))
                 CLEAR_S1_CONTEXT(mme_ue);
         }
 
