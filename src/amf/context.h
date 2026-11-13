@@ -668,6 +668,7 @@ struct amf_ue_s {
             \
             (__hOLDER)->ran_ue_holding_id = (__sERVING)->ran_ue_id; \
             (__hOLDER)->ran_ue_holding_verified = false; \
+            (__hOLDER)->ran_ue_holding_authenticating = false; \
         } else \
             ogs_error("[%s] NG Context has already been removed", \
                     (__sERVING)->suci); \
@@ -695,8 +696,11 @@ struct amf_ue_s {
                         NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
                 ogs_expect(r == OGS_OK); \
             } \
-        } else \
+        } else { \
             HOLDING_NG_CONTEXT_FOR((__aMF), (__aMF)); \
+            (__aMF)->ran_ue_holding_authenticating = \
+                OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_authentication); \
+        } \
     } while(0)
 #define CLEAR_NG_CONTEXT(__aMF) \
     do { \
@@ -764,11 +768,14 @@ struct amf_ue_s {
  * put the NG context on hold authenticated nobody. While a request is being
  * authenticated, only __rAN is released and that authentication, left with no
  * connection, is aborted (TS 24.501 5.4.1.3.7 a)), also before the AUSF has
- * answered; otherwise the held NG context is given back.
+ * answered. Otherwise, or if __rAN put the connection of that authentication
+ * on hold, the held NG context is given back.
  */
 #define REFUSE_NG_REQUEST(__aMF, __rAN) \
     do { \
-        if (OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_authentication)) { \
+        if (OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_authentication) && \
+            !(ran_ue_find_by_id((__aMF)->ran_ue_holding_id) && \
+              (__aMF)->ran_ue_holding_authenticating)) { \
             int r; \
             amf_ue_deassociate_ran_ue((__aMF), (__rAN)); \
             (__rAN)->amf_ue_id = OGS_INVALID_POOL_ID; \
@@ -783,6 +790,9 @@ struct amf_ue_s {
     ogs_pool_id_t   ran_ue_holding_id;
     /* The request on the UE's current connection passed the integrity check */
     bool            ran_ue_holding_verified;
+    /* A new connection put the connection of the authentication in
+     * progress on hold */
+    bool            ran_ue_holding_authenticating;
 
     /*
      * N2 handovers this UE has been through, counted where the AMF is certain.

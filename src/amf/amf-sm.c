@@ -1245,6 +1245,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             h.type = e->nas.type;
             if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue))
                 amf_ue->ran_ue_holding_verified = true;
+
+            /* From now on, the request in progress is this connection's */
+            amf_ue->ran_ue_holding_authenticating = false;
         }
 
         ogs_assert(amf_ue);

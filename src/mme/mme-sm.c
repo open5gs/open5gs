@@ -509,6 +509,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             if ((h.integrity_protected || h.service_request) &&
                 SECURITY_CONTEXT_IS_VALID(mme_ue))
                 mme_ue->enb_ue_holding_verified = true;
+
+            /* From now on, the request in progress is this connection's */
+            mme_ue->enb_ue_holding_authenticating = false;
         }
 
         ogs_assert(mme_ue);

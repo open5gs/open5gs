@@ -825,6 +825,7 @@ struct mme_ue_s {
             \
             (__hOLDER)->enb_ue_holding_id = (__sERVING)->enb_ue_id; \
             (__hOLDER)->enb_ue_holding_verified = false; \
+            (__hOLDER)->enb_ue_holding_authenticating = false; \
         } else \
             ogs_error("[%s] S1 Context has already been removed", \
                     (__sERVING)->imsi_bcd); \
@@ -852,8 +853,11 @@ struct mme_ue_s {
                         S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
                 ogs_expect(r == OGS_OK); \
             } \
-        } else \
+        } else { \
             HOLDING_S1_CONTEXT_FOR((__mME), (__mME)); \
+            (__mME)->enb_ue_holding_authenticating = \
+                OGS_FSM_CHECK(&(__mME)->sm, emm_state_authentication); \
+        } \
     } while(0)
 #define CLEAR_S1_CONTEXT(__mME) \
     do { \
@@ -915,11 +919,14 @@ struct mme_ue_s {
  * put the S1 context on hold authenticated nobody. While a request is being
  * authenticated, only __eNB is released and that authentication, left with no
  * connection, is aborted (TS 24.301 5.4.2.7 a)), also before the HSS has
- * answered; otherwise the held S1 context is given back.
+ * answered. Otherwise, or if __eNB put the connection of that authentication
+ * on hold, the held S1 context is given back.
  */
 #define REFUSE_S1_REQUEST(__mME, __eNB) \
     do { \
-        if (OGS_FSM_CHECK(&(__mME)->sm, emm_state_authentication)) { \
+        if (OGS_FSM_CHECK(&(__mME)->sm, emm_state_authentication) && \
+            !(enb_ue_find_by_id((__mME)->enb_ue_holding_id) && \
+              (__mME)->enb_ue_holding_authenticating)) { \
             int r; \
             enb_ue_deassociate_mme_ue((__eNB), (__mME)); \
             (__eNB)->mme_ue_id = OGS_INVALID_POOL_ID; \
@@ -934,6 +941,9 @@ struct mme_ue_s {
     ogs_pool_id_t   enb_ue_holding_id;
     /* The request on the UE's current connection passed the integrity check */
     bool            enb_ue_holding_verified;
+    /* A new connection put the connection of the authentication in
+     * progress on hold */
+    bool            enb_ue_holding_authenticating;
 
     struct {
 #define MME_CLEAR_PAGING_INFO(__mME) \
