@@ -44,9 +44,34 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e);
 void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e);
 void gmm_state_ue_context_will_remove(ogs_fsm_t *s, amf_event_t *e);
 void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e);
+void gmm_abort_authentication(amf_ue_t *amf_ue);
 
 #define amf_sm_debug(__pe) \
     ogs_debug("%s(): %s", __func__, amf_event_get_name(__pe))
+
+/* Keep the failure log's file, line and function at the call site. */
+#define AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s) do {                   \
+    CLEAR_AMF_UE_TIMER((amf_ue)->t3560);                                 \
+    (amf_ue)->registration_session_release_after_authentication = false; \
+    if ((amf_ue)->can_restore_context) {                                 \
+        amf_ue_restore_memento((amf_ue), &((amf_ue)->memento));            \
+        (amf_ue)->security_context_available = 1;                        \
+        (amf_ue)->mac_failed = 0;                                        \
+        /* Once authenticated, the request is the UE's own */            \
+        if (!OGS_FSM_CHECK((s), gmm_state_security_mode))                \
+            RESTORE_NG_CONTEXT(amf_ue);                                  \
+        else                                                             \
+            CLEAR_NG_CONTEXT(amf_ue);                                    \
+        if (!OGS_FSM_CHECK((s), gmm_state_registered))                   \
+            OGS_FSM_TRAN((s), &gmm_state_registered);                    \
+        ogs_warn("[%s] Failure in transaction; restoring context and "  \
+                  "transitioning to REGISTERED.", (amf_ue)->supi);      \
+    } else {                                                           \
+        OGS_FSM_TRAN((s), &gmm_state_exception);                         \
+        ogs_warn("[%s] Failure in transaction; no context "             \
+                  "restoration.", (amf_ue)->supi);                      \
+    }                                                                  \
+} while (0)
 
 #ifdef __cplusplus
 }

@@ -917,7 +917,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     else if (r != OGS_OK && amf_ue &&
             OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication) &&
             !ran_ue_find_by_id(amf_ue->ran_ue_id))
-        amf_timer_t3560_expire(OGS_UINT_TO_POINTER(amf_ue->id));
+        gmm_abort_authentication(amf_ue);
 }
 
 void ngap_handle_uplink_nas_transport(
@@ -2086,6 +2086,7 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
 {
     int r;
     amf_ue_t *amf_ue = NULL;
+    ogs_pool_id_t aborted_amf_ue_id = OGS_INVALID_POOL_ID;
 
     ogs_assert(ran_ue);
 
@@ -2109,10 +2110,11 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
         /* TS 24.501 5.4.1.3.7 a): the connection is gone before the
-         * AUTHENTICATION RESPONSE, so the authentication is aborted */
+         * AUTHENTICATION RESPONSE, so the authentication is aborted
+         * once the connection is removed below */
         if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication) &&
             amf_ue->ran_ue_id == ran_ue->id)
-            amf_timer_t3560_expire(OGS_UINT_TO_POINTER(amf_ue->id));
+            aborted_amf_ue_id = amf_ue->id;
     }
 
     switch (ran_ue->ue_ctx_rel_action) {
@@ -2217,6 +2219,10 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
         ogs_error("Invalid Action[%d]", ran_ue->ue_ctx_rel_action);
         break;
     }
+
+    amf_ue = amf_ue_find_by_id(aborted_amf_ue_id);
+    if (amf_ue)
+        gmm_abort_authentication(amf_ue);
 }
 
 void ngap_handle_pdu_session_resource_setup_response(

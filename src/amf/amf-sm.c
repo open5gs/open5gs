@@ -29,6 +29,23 @@
 #include "nas-security.h"
 #include "gmm-handler.h"
 
+/* TS 24.501 5.4.1.3.7 a): abort the authentication, its connection is gone */
+void gmm_abort_authentication(amf_ue_t *amf_ue)
+{
+    ogs_fsm_t sm;
+    amf_event_t e;
+
+    ogs_assert(amf_ue);
+
+    /* The macro picks the next state; ogs_fsm_tran() exits and enters */
+    sm = amf_ue->sm;
+    AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, &sm);
+
+    memset(&e, 0, sizeof(e));
+    e.amf_ue_id = amf_ue->id;
+    ogs_fsm_tran(&amf_ue->sm, OGS_FSM_STATE(&sm), &e);
+}
+
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_sm_debug(e);
@@ -1206,6 +1223,17 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
              */
             CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
             CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
+        }
+
+        /* TS 24.501 5.5.1.2.8 f): a request that passed the integrity check
+         * is the UE's own, and the NG context it put on hold goes */
+        if (amf_ue && amf_ue->ran_ue_id == ran_ue->id &&
+            ran_ue_find_by_id(amf_ue->ran_ue_holding_id)) {
+            ogs_nas_security_header_type_t h;
+
+            h.type = e->nas.type;
+            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue))
+                CLEAR_NG_CONTEXT(amf_ue);
         }
 
         ogs_assert(amf_ue);

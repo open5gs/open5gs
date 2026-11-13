@@ -37,6 +37,23 @@
 #include "mme-path.h"
 #include "mme-dns.h"
 
+/* TS 24.301 5.4.2.7 a): abort the authentication, its connection is gone */
+void emm_abort_authentication(mme_ue_t *mme_ue)
+{
+    ogs_fsm_t sm;
+    mme_event_t e;
+
+    ogs_assert(mme_ue);
+
+    /* The macro picks the next state; ogs_fsm_tran() exits and enters */
+    sm = mme_ue->sm;
+    MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, &sm);
+
+    memset(&e, 0, sizeof(e));
+    e.mme_ue_id = mme_ue->id;
+    ogs_fsm_tran(&mme_ue->sm, OGS_FSM_STATE(&sm), &e);
+}
+
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
     mme_sm_debug(e);
@@ -467,6 +484,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Mobile Reachable timer stopped for IMSI[%s]",
                 mme_ue->imsi_bcd);
             CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
+        }
+
+        /* TS 24.301 5.5.1.2.7 f): a request that passed the integrity check
+         * is the UE's own, and the S1 context it put on hold goes */
+        if (mme_ue && mme_ue->enb_ue_id == enb_ue->id &&
+            enb_ue_find_by_id(mme_ue->enb_ue_holding_id)) {
+            ogs_nas_security_header_type_t h;
+
+            h.type = e->nas_type;
+            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue))
+                CLEAR_S1_CONTEXT(mme_ue);
         }
 
         ogs_assert(mme_ue);

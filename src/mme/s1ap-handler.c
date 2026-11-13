@@ -924,7 +924,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     else if (r != OGS_OK && mme_ue_from_stmsi &&
             OGS_FSM_CHECK(&mme_ue_from_stmsi->sm, emm_state_authentication) &&
             !enb_ue_find_by_id(mme_ue_from_stmsi->enb_ue_id))
-        mme_timer_t3460_expire(OGS_UINT_TO_POINTER(mme_ue_from_stmsi->id));
+        emm_abort_authentication(mme_ue_from_stmsi);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -2330,6 +2330,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
 {
     int r;
     mme_ue_t *mme_ue = NULL;
+    ogs_pool_id_t aborted_mme_ue_id = OGS_INVALID_POOL_ID;
 
     if (!enb_ue) {
         ogs_error("S1 context has already been removed");
@@ -2355,10 +2356,11 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
         /* TS 24.301 5.4.2.7 a): the connection is gone before the
-         * AUTHENTICATION RESPONSE, so the authentication is aborted */
+         * AUTHENTICATION RESPONSE, so the authentication is aborted
+         * once the connection is removed below */
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication) &&
             mme_ue->enb_ue_id == enb_ue->id)
-            mme_timer_t3460_expire(OGS_UINT_TO_POINTER(mme_ue->id));
+            aborted_mme_ue_id = mme_ue->id;
 
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
             ogs_info("Mobile Reachable timer started for IMSI[%s]",
@@ -2539,6 +2541,10 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_error("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
         break;
     }
+
+    mme_ue = mme_ue_find_by_id(aborted_mme_ue_id);
+    if (mme_ue)
+        emm_abort_authentication(mme_ue);
 }
 
 void s1ap_handle_e_rab_modification_indication(

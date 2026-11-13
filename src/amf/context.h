@@ -635,24 +635,6 @@ struct amf_ue_s {
                     (__hOLDER)->suci, \
                     (long long)ran_ue_holding->ran_ue_ngap_id, \
                     (long long)ran_ue_holding->amf_ue_ngap_id); \
-            /* TS 24.501 5.5.1.2.8 f): until the request in progress is \
-             * authenticated, keep the held one, the UE's, and release \
-             * the request's */ \
-            if ((__hOLDER) == (__sERVING) && \
-                !OGS_FSM_CHECK(&(__hOLDER)->sm, gmm_state_security_mode)) { \
-                ran_ue_t *ran_ue_serving = \
-                    ran_ue_find_by_id((__sERVING)->ran_ue_id); \
-                if (ran_ue_serving) { \
-                    ran_ue_serving->amf_ue_id = OGS_INVALID_POOL_ID; \
-                    r = ngap_send_ran_ue_context_release_command( \
-                            ran_ue_serving, \
-                            NGAP_Cause_PR_nas, \
-                            NGAP_CauseNas_normal_release, \
-                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
-                    ogs_expect(r == OGS_OK); \
-                } \
-                break; \
-            } \
             r = ngap_send_ran_ue_context_release_command( \
                     ran_ue_holding, \
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
@@ -689,8 +671,31 @@ struct amf_ue_s {
             ogs_error("[%s] NG Context has already been removed", \
                     (__sERVING)->suci); \
     } while(0)
+/*
+ * TS 24.501 5.5.1.2.8 f): until the request in progress is authenticated,
+ * keep the NG context already held, the UE's, and release the request's.
+ */
 #define HOLDING_NG_CONTEXT(__aMF) \
-    HOLDING_NG_CONTEXT_FOR((__aMF), (__aMF))
+    do { \
+        ran_ue_t *ran_ue_serving = NULL; \
+        \
+        if (ran_ue_find_by_id((__aMF)->ran_ue_holding_id) && \
+            !OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_security_mode)) { \
+            ogs_warn("[%s] Holding NG context already exists", \
+                    (__aMF)->suci); \
+            ran_ue_serving = ran_ue_find_by_id((__aMF)->ran_ue_id); \
+            if (ran_ue_serving) { \
+                int r; \
+                ran_ue_serving->amf_ue_id = OGS_INVALID_POOL_ID; \
+                r = ngap_send_ran_ue_context_release_command( \
+                        ran_ue_serving, \
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+            } \
+        } else \
+            HOLDING_NG_CONTEXT_FOR((__aMF), (__aMF)); \
+    } while(0)
 #define CLEAR_NG_CONTEXT(__aMF) \
     do { \
         ran_ue_t *ran_ue_holding = NULL; \
@@ -766,7 +771,7 @@ struct amf_ue_s {
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
             ogs_expect(r == OGS_OK); \
-            amf_timer_t3560_expire(OGS_UINT_TO_POINTER((__aMF)->id)); \
+            gmm_abort_authentication(__aMF); \
         } else \
             RESTORE_NG_CONTEXT(__aMF); \
     } while(0)

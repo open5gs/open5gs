@@ -46,6 +46,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_registered(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_ue_context_will_remove(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_exception(ogs_fsm_t *s, mme_event_t *e);
+void emm_abort_authentication(mme_ue_t *mme_ue);
 
 /* Keep the failure log's file, line and function at the call site. */
 #define MME_RESTORE_CONTEXT_ON_FAILURE(__mME, __s) do { \
