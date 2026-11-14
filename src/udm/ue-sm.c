@@ -345,7 +345,8 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA)
                     if (udm_nudr_dr_handle_subscription_authentication(
-                            udm_ue, stream, message) == false) {
+                            udm_ue, stream, e->h.sbi.state,
+                            message) == false) {
                         ogs_warn("udm_nudr_dr_handle_subscription_"
                                 "authentication() failed");
                         OGS_FSM_TRAN(s, udm_ue_state_exception);

@@ -134,6 +134,13 @@ void ogs_auc_sqn(
     const uint8_t *rand, const uint8_t *conc_sqn_ms,
     uint8_t *sqn_ms, uint8_t *mac_s);
 
+/*
+ * TS33.102
+ * 6.3.5 Re-synchronisation procedure
+ * Returns the SQN for the next authentication vector after a verified AUTS
+ */
+uint64_t ogs_auc_resync_sqn(uint64_t sqn_he, uint64_t sqn_ms);
+
 #ifdef __cplusplus
 }
 #endif
