@@ -30,7 +30,8 @@ extern "C" {
 
 ogs_pkbuf_t *s1ap_build_setup_rsp(void);
 ogs_pkbuf_t *s1ap_build_setup_failure(
-    S1AP_Cause_PR group, long cause, long time_to_wait);
+    S1AP_Cause_PR group, long cause, long time_to_wait,
+    S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics);
 
 ogs_pkbuf_t *s1ap_build_enb_configuration_update_ack(void);
 ogs_pkbuf_t *s1ap_build_enb_configuration_update_failure(

@@ -264,7 +264,10 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         group = S1AP_Cause_PR_protocol;
         cause = S1AP_CauseProtocol_semantic_error;
 
-        r = s1ap_send_s1_setup_failure(enb, group, cause);
+        /* TS 36.413 10.3.5: report the missing "reject" IE */
+        r = s1ap_send_s1_setup_failure_with_diagnostics(enb, group, cause,
+                ogs_s1ap_build_criticality_diagnostics(
+                    NULL, S1AP_ProtocolIE_ID_id_SupportedTAs));
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -770,8 +773,12 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
 
     if (!NAS_PDU) {
         ogs_error("No NAS_PDU");
-        r = s1ap_send_error_indication(enb, NULL, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        /* TS 36.413 10.3.5: report the missing "reject" IE */
+        r = s1ap_send_error_indication_with_diagnostics(
+                enb, NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error,
+                ogs_s1ap_build_criticality_diagnostics(
+                    initiatingMessage, S1AP_ProtocolIE_ID_id_NAS_PDU));
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         if (enb_ue_new) enb_ue_remove(enb_ue);
@@ -4683,8 +4690,11 @@ void s1ap_handle_handover_notification(
     source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("No Source UE");
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        /* TS 36.413 10.4: name the procedure of the logical error */
+        r = s1ap_send_error_indication_with_diagnostics(
+                enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error,
+                ogs_s1ap_build_criticality_diagnostics(initiatingMessage, -1));
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;

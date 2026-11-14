@@ -824,7 +824,7 @@ static void test3_func(abts_case *tc, void *data)
     /* Send ErrorIndication */
     sendbuf = ogs_ngap_build_error_indication(
                 &test_ue->ran_ue_ngap_id, &test_ue->amf_ue_ngap_id,
-                NGAP_Cause_PR_radioNetwork, 0);
+                NGAP_Cause_PR_radioNetwork, 0, NULL);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

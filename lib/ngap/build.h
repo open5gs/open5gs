@@ -31,7 +31,11 @@ extern "C" {
 ogs_pkbuf_t *ogs_ngap_build_error_indication(
     uint64_t *ran_ue_ngap_id,
     uint64_t *amf_ue_ngap_id,
-    NGAP_Cause_PR group, long cause);
+    NGAP_Cause_PR group, long cause,
+    NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics);
+NGAP_CriticalityDiagnostics_t *ogs_ngap_build_criticality_diagnostics(
+    NGAP_InitiatingMessage_t *initiatingMessage,
+    NGAP_ProtocolIE_ID_t missing_ie_id);
 
 ogs_pkbuf_t *ogs_ngap_build_ng_reset(
     NGAP_Cause_PR group, long cause,

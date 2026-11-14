@@ -405,6 +405,14 @@ void ngap_send_amf_configuration_update_all(void)
 int ngap_send_ng_setup_failure(
         amf_gnb_t *gnb, NGAP_Cause_PR group, long cause)
 {
+    return ngap_send_ng_setup_failure_with_diagnostics(
+            gnb, group, cause, NULL);
+}
+
+int ngap_send_ng_setup_failure_with_diagnostics(
+        amf_gnb_t *gnb, NGAP_Cause_PR group, long cause,
+        NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics)
+{
     int rv;
     ogs_pkbuf_t *ngap_buffer;
 
@@ -413,7 +421,7 @@ int ngap_send_ng_setup_failure(
     ogs_debug("NG-Setup failure");
 
     ngap_buffer = ngap_build_ng_setup_failure(
-            group, cause, NGAP_TimeToWait_v10s);
+            group, cause, NGAP_TimeToWait_v10s, CriticalityDiagnostics);
     if (!ngap_buffer) {
         ogs_error("ngap_build_ng_setup_failure() failed");
         return OGS_ERROR;
@@ -820,13 +828,25 @@ int ngap_send_error_indication(
         uint64_t *amf_ue_ngap_id,
         NGAP_Cause_PR group, long cause)
 {
+    return ngap_send_error_indication_with_diagnostics(
+            gnb, ran_ue_ngap_id, amf_ue_ngap_id, group, cause, NULL);
+}
+
+int ngap_send_error_indication_with_diagnostics(
+        amf_gnb_t *gnb,
+        uint64_t *ran_ue_ngap_id,
+        uint64_t *amf_ue_ngap_id,
+        NGAP_Cause_PR group, long cause,
+        NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics)
+{
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
     ogs_assert(gnb);
 
     ngapbuf = ogs_ngap_build_error_indication(
-            ran_ue_ngap_id, amf_ue_ngap_id, group, cause);
+            ran_ue_ngap_id, amf_ue_ngap_id, group, cause,
+            CriticalityDiagnostics);
     if (!ngapbuf) {
         ogs_error("ogs_ngap_build_error_indication() failed");
         return OGS_ERROR;
