@@ -1108,6 +1108,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
         mme_ue->auth_synch_fail_count = 0;
         break;
     case OGS_FSM_EXIT_SIG:
+        /* The identification below ends with this state. */
+        CLEAR_MME_UE_TIMER(mme_ue->t3470);
         break;
     case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
@@ -1132,6 +1134,16 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                     &message->emm.authentication_response);
             if (rv != OGS_OK) {
                 ogs_warn("emm_handle_authentication_response() failed");
+
+                /* TS 24.301 5.4.2.5: a GUTI UE is identified first */
+                if (mme_ue->old_guti.m_tmsi) {
+                    CLEAR_MME_UE_TIMER(mme_ue->t3470);
+                    r = nas_eps_send_identity_request(mme_ue);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    break;
+                }
+
                 r = nas_eps_send_authentication_reject(mme_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -1140,6 +1152,24 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             }
 
             OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+            break;
+        case OGS_NAS_EPS_IDENTITY_RESPONSE:
+            /* T3470 runs while the identification above is pending */
+            if (!mme_ue->t3470.pkbuf) {
+                ogs_error("[%s] Unexpected Identity response",
+                        mme_ue->imsi_bcd);
+                break;
+            }
+            CLEAR_MME_UE_TIMER(mme_ue->t3470);
+
+            /*
+             * TS 24.301 5.4.2.5: the restart is a "should"; rejecting any
+             * IMSI does not tell which IMSI the GUTI belongs to
+             */
+            r = nas_eps_send_authentication_reject(mme_ue);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
             break;
         case OGS_NAS_EPS_AUTHENTICATION_FAILURE:
             authentication_failure = &message->emm.authentication_failure;
@@ -1285,6 +1315,20 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 mme_ue->t3460.retry_count++;
                 r = nas_eps_send_authentication_request(mme_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+            break;
+        case MME_TIMER_T3470:
+            if (mme_ue->t3470.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3470)->max_count) {
+                ogs_warn("Retransmission of Identity-Request failed. "
+                        "Stop retransmission");
+                CLEAR_MME_UE_TIMER(mme_ue->t3470);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
+            } else {
+                mme_ue->t3470.retry_count++;
+                r = nas_eps_send_identity_request(mme_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }

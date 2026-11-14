@@ -593,7 +593,10 @@ static void test_amf_case(abts_case *tc, void *data)
         !send_plain_deregistration(tc, ngap, peer))
         goto cleanup;
     if (scenario == BAD_RES) {
-        if (!send_nas(tc, ngap, peer, bad_authentication_response(tc, peer)))
+        if (!send_nas(tc, ngap, peer, bad_authentication_response(tc, peer)) ||
+            !receive_ngap(tc, ngap, peer, NGAP_ProcedureCode_id_DownlinkNASTransport,
+                    OGS_NAS_5GS_IDENTITY_REQUEST, 0) ||
+            !send_nas(tc, ngap, peer, testgmm_build_identity_response(peer)))
             goto cleanup;
     } else if (scenario == AUTH_FAILURE || scenario == DEREG_DURING_AUTH) {
         if (!send_nas(tc, ngap, peer, testgmm_build_authentication_failure(

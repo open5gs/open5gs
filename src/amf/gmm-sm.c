@@ -2176,6 +2176,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         amf_ue->auth_ngksi_fail_count = 0;
         break;
     case OGS_FSM_EXIT_SIG:
+        /* The identification below ends with this state. */
+        CLEAR_AMF_UE_TIMER(amf_ue->t3570);
         break;
     case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
@@ -2201,12 +2203,41 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
             if (rv != OGS_OK) {
                 ogs_warn("gmm_handle_authentication_response() failed");
+
+                /* TS 33.501 6.1.3.2.2: a 5G-GUTI UE is identified first */
+                if (amf_ue->old_guti.m_tmsi) {
+                    CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                    r = nas_5gs_send_identity_request(amf_ue);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    break;
+                }
+
                 r = nas_5gs_send_authentication_reject(amf_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
+            break;
+
+        case OGS_NAS_5GS_IDENTITY_RESPONSE:
+            /* T3570 runs while the identification above is pending */
+            if (!amf_ue->t3570.pkbuf) {
+                ogs_error("[%s] Unexpected Identity response",
+                        amf_ue->suci ? amf_ue->suci : amf_ue->supi);
+                break;
+            }
+            CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+
+            /*
+             * TS 33.501 6.1.3.2.2: the new attempt is a "may"; rejecting any
+             * SUCI does not tell which SUPI the 5G-GUTI belongs to
+             */
+            r = nas_5gs_send_authentication_reject(amf_ue);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
             break;
 
         case OGS_NAS_5GS_AUTHENTICATION_FAILURE:
@@ -2363,6 +2394,20 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 ogs_assert(r != OGS_ERROR);
             }
             break;
+        case AMF_TIMER_T3570:
+            if (amf_ue->t3570.retry_count >=
+                    amf_timer_cfg(AMF_TIMER_T3570)->max_count) {
+                ogs_warn("Retransmission of Identity-Request failed. "
+                        "Stop retransmission");
+                CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+            } else {
+                amf_ue->t3570.retry_count++;
+                r = nas_5gs_send_identity_request(amf_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+            break;
         default:
             ogs_error("[%s] Unknown timer[%s:%d]", amf_ue->suci,
                     amf_timer_get_name(e->h.timer_id), e->h.timer_id);
@@ -2419,6 +2464,16 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     if (rv != OGS_OK) {
                         ogs_error("[%s] Cannot handle SBI message",
                                 amf_ue->suci);
+
+                        /* TS 33.501 6.1.3.2.2, as for a wrong RES* above */
+                        if (amf_ue->old_guti.m_tmsi) {
+                            CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                            r = nas_5gs_send_identity_request(amf_ue);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+                            break;
+                        }
+
                         r = nas_5gs_send_authentication_reject(amf_ue);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);

@@ -271,6 +271,8 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         return OGS_ERROR;
     }
 
+    memset(&mme_ue->old_guti, 0, sizeof(ogs_nas_eps_guti_t));
+
     switch (eps_mobile_identity->imsi.type) {
     case OGS_NAS_EPS_MOBILE_IDENTITY_IMSI:
         if (sizeof(ogs_nas_mobile_identity_imsi_t) !=
@@ -315,6 +317,8 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
                 nas_guti.m_tmsi,
                 MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown IMSI");
+
+        memcpy(&mme_ue->old_guti, &nas_guti, sizeof(ogs_nas_eps_guti_t));
         break;
     default:
         ogs_warn("Not implemented[%d]", eps_mobile_identity->imsi.type);

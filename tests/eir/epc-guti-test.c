@@ -495,7 +495,10 @@ static void test_epc_case(abts_case *tc, void *data)
         nas = testemm_build_authentication_response(peer);
         ogs_assert(nas && nas->len > 3);
         nas->data[3] ^= 0xff; /* Corrupt one RES octet, keep NAS well formed. */
-        if (!send_nas(tc, s1ap, peer, nas))
+        if (!send_nas(tc, s1ap, peer, nas) ||
+            !receive_s1ap(tc, s1ap, peer, S1AP_ProcedureCode_id_downlinkNASTransport,
+                    OGS_NAS_EPS_IDENTITY_REQUEST, 0) ||
+            !send_nas(tc, s1ap, peer, testemm_build_identity_response(peer)))
             goto cleanup;
     } else if (scenario == AUTH_FAILURE || scenario == DETACH_DURING_AUTH) {
         if (!send_nas(tc, s1ap, peer, testemm_build_authentication_failure(
