@@ -678,7 +678,18 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  */
 
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
-                    if (ran_ue) {
+                    if (!ran_ue) {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    } else if (ran_ue->ue_ctx_rel_action !=
+                            NGAP_UE_CTX_REL_INVALID_ACTION) {
+                        /* TS 23.502 4.2.6: one UEContextReleaseCommand per
+                         * AN release. A new NAS signalling connection has
+                         * already started releasing this one. */
+                        ogs_warn("[%s] RAN-NG Context is already being "
+                                "released [Action:%d]",
+                                amf_ue->supi, ran_ue->ue_ctx_rel_action);
+                    } else {
                         ogs_assert(ran_ue->deactivation.group);
 
                         r = ngap_send_ran_ue_context_release_command(ran_ue,
@@ -687,9 +698,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                                 NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                    } else {
-                        ogs_warn("[%s] RAN-NG Context has already been removed",
-                                amf_ue->supi);
                     }
                 }
 
