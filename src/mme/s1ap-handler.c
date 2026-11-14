@@ -3989,6 +3989,14 @@ void s1ap_handle_handover_request_ack(
     ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
+    /* TS 36.413 10.4: a second acknowledge answers no request; ignore it */
+    if (target_ue->enb_ue_s1ap_id != INVALID_UE_S1AP_ID) {
+        ogs_error("Handover already acknowledged "
+                "[ENB_UE_S1AP_ID:%d, MME_UE_S1AP_ID:%d]",
+                target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+        return;
+    }
+
     target_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
 
     for (i = 0; i < OGS_ASN_LIST_COUNT(E_RABAdmittedList); i++) {
@@ -4240,6 +4248,17 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
+    /*
+     * TS 36.413 8.4.2.2, 10.4: the acknowledge ended the Handover Resource
+     * Allocation; a HANDOVER FAILURE after it answers no request
+     */
+    if (target_ue->enb_ue_s1ap_id != INVALID_UE_S1AP_ID) {
+        ogs_error("Handover already acknowledged "
+                "[ENB_UE_S1AP_ID:%d, MME_UE_S1AP_ID:%d]",
+                target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+        return;
+    }
+
     if (!Cause) {
         ogs_error("No Cause");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
@@ -4273,6 +4292,72 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
         target_ue, S1AP_Cause_PR_radioNetwork,
         S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
         S1AP_UE_CTX_REL_S1_HANDOVER_FAILURE, 0);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+}
+
+void s1ap_handle_error_indication(mme_enb_t *enb, ogs_s1ap_message_t *message)
+{
+    int i, r;
+
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_ErrorIndication_t *ErrorIndication = NULL;
+
+    S1AP_ErrorIndicationIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+
+    enb_ue_t *target_ue = NULL;
+    enb_ue_t *source_ue = NULL;
+
+    ogs_assert(enb);
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    ErrorIndication = initiatingMessage->value.choice.ErrorIndication;
+    ogs_assert(ErrorIndication);
+
+    ogs_warn("ErrorIndication");
+    for (i = 0; i < OGS_ASN_LIST_COUNT(ErrorIndication->protocolIEs); i++) {
+        ie = OGS_ASN_LIST_GET(ErrorIndication->protocolIEs, i);
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+            MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (!MME_UE_S1AP_ID)
+        return;
+
+    target_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
+    if (!target_ue || target_ue->enb_id != enb->id)
+        return;
+
+    /*
+     * TS 36.413 8.4.1.3: an ERROR INDICATION from a target that has not
+     * acknowledged fails the Handover Preparation
+     */
+    source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
+    if (!source_ue || target_ue->enb_ue_s1ap_id != INVALID_UE_S1AP_ID)
+        return;
+
+    /* TS 36.413 10.6: the target answered its release; release it */
+    if (target_ue->ue_ctx_rel_action != S1AP_UE_CTX_REL_INVALID_ACTION) {
+        s1ap_handle_ue_context_release_action(target_ue);
+        return;
+    }
+
+    ogs_warn("    Handover preparation failed in target "
+            "[MME_UE_S1AP_ID:%d]", target_ue->mme_ue_s1ap_id);
+
+    enb_ue_source_deassociate_target(target_ue);
+    enb_ue_remove(target_ue);
+
+    r = s1ap_send_handover_preparation_failure(source_ue,
+            S1AP_Cause_PR_radioNetwork,
+            S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 }
@@ -4657,6 +4742,18 @@ void s1ap_handle_handover_notification(
                 enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    /* TS 36.413 10.4: a target that has not acknowledged cannot notify */
+    if (target_ue->enb_ue_s1ap_id == INVALID_UE_S1AP_ID) {
+        ogs_error("Handover not acknowledged [MME_UE_S1AP_ID:%lld]",
+                (long long)*MME_UE_S1AP_ID);
+        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;

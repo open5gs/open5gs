@@ -3147,6 +3147,20 @@ void ngap_handle_path_switch_request(
         return;
     }
 
+    /* TS 38.413 10.4: only the UE's serving NG context is switched */
+    if (amf_ue->ran_ue_id != ran_ue->id) {
+        ogs_error("Inactive NG context for path switch "
+                "[AMF_UE_NGAP_ID:%lld]", (long long)amf_ue_ngap_id);
+        r = ngap_send_path_switch_failure(
+                gnb, *RAN_UE_NGAP_ID, amf_ue_ngap_id,
+                PDUSessionResourceToBeSwitchedDLList,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     /*
      * When the NG association of the source gNB is lost,
      * amf_gnb_remove() frees the gNB at once, but ran_ue stays
@@ -4069,6 +4083,15 @@ void ngap_handle_handover_request_ack(
         return;
     }
 
+    /* TS 38.413 10.4: a second acknowledge answers no request; ignore it */
+    if (target_ue->ran_ue_ngap_id != INVALID_UE_NGAP_ID) {
+        ogs_error("Handover already acknowledged "
+                "[RAN_UE_NGAP_ID:%lld, AMF_UE_NGAP_ID:%lld]",
+                (long long)target_ue->ran_ue_ngap_id,
+                (long long)target_ue->amf_ue_ngap_id);
+        return;
+    }
+
     /*
      * The RAN UE NGAP ID assigned by the target gNB is stored only after
      * the sender is confirmed to own the Target-UE context and the
@@ -4279,6 +4302,18 @@ void ngap_handle_handover_failure(
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    /*
+     * TS 38.413 8.4.2.2, 10.4: the acknowledge ended the Handover Resource
+     * Allocation; a HANDOVER FAILURE after it answers no request
+     */
+    if (target_ue->ran_ue_ngap_id != INVALID_UE_NGAP_ID) {
+        ogs_error("Handover already acknowledged "
+                "[RAN_UE_NGAP_ID:%lld, AMF_UE_NGAP_ID:%lld]",
+                (long long)target_ue->ran_ue_ngap_id,
+                (long long)target_ue->amf_ue_ngap_id);
         return;
     }
 
@@ -4791,6 +4826,19 @@ void ngap_handle_handover_notification(
                 gnb, &target_ue->ran_ue_ngap_id, &target_ue->amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    /* TS 38.413 10.4: a target that has not acknowledged cannot notify */
+    if (target_ue->ran_ue_ngap_id == INVALID_UE_NGAP_ID) {
+        ogs_error("Handover not acknowledged [AMF_UE_NGAP_ID:%lld]",
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -5483,11 +5531,11 @@ void ngap_handle_ng_reset(
 
 void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
-    int i;
+    int i, r;
     char buf[OGS_ADDRSTRLEN];
     uint64_t amf_ue_ngap_id;
 
-    ran_ue_t *ran_ue = NULL;
+    ran_ue_t *ran_ue = NULL, *source_ue = NULL;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_ErrorIndication_t *ErrorIndication = NULL;
@@ -5562,6 +5610,39 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     if (Cause) {
         ogs_warn("    Cause[Group:%d Cause:%d]",
                 Cause->present, (int)Cause->choice.radioNetwork);
+    }
+
+    /*
+     * TS 38.413 8.4.1.3: an ERROR INDICATION from a target that has not
+     * acknowledged fails the Handover Preparation
+     */
+    if (ran_ue && ran_ue->gnb_id == gnb->id &&
+        ran_ue->ran_ue_ngap_id == INVALID_UE_NGAP_ID &&
+        (source_ue = ran_ue_find_by_id(ran_ue->source_ue_id))) {
+        amf_ue_t *amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
+        NGAP_Cause_t ho_cause;
+
+        /* TS 38.413 10.6: the target answered its release; release it */
+        if (ran_ue->ue_ctx_rel_action != NGAP_UE_CTX_REL_INVALID_ACTION) {
+            ngap_handle_ue_context_release_action(ran_ue);
+            return;
+        }
+
+        ogs_warn("    Handover preparation failed in target "
+                "[AMF_UE_NGAP_ID:%lld]", (long long)ran_ue->amf_ue_ngap_id);
+
+        source_ue_deassociate_target_ue(ran_ue);
+        ran_ue_remove(ran_ue);
+        if (amf_ue) amf_ue->ho_rejected++;
+
+        memset(&ho_cause, 0, sizeof(ho_cause));
+        ho_cause.present = NGAP_Cause_PR_radioNetwork;
+        ho_cause.choice.radioNetwork =
+            NGAP_CauseRadioNetwork_ho_failure_in_target_5GC_ngran_node_or_target_system;
+        r = ngap_send_handover_preparation_failure(source_ue, &ho_cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
     }
 
     if (ran_ue) {
