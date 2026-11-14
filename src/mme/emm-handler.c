@@ -257,6 +257,19 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
                 sizeof(attach_request->ue_additional_security_capability));
     }
 
+    /* TS 24.301 5.5.1.2.7 j): no EPS encryption algorithm (all bits zero) */
+    if (mme_ue->ue_network_capability.eea == 0) {
+        ogs_warn("[UE:0x%x:0x%x] No EPS encryption algorithm",
+            mme_ue->ue_network_capability.eea,
+            mme_ue->ue_network_capability.eia);
+        r = nas_eps_send_attach_reject(enb_ue, mme_ue,
+                OGS_NAS_EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH,
+                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
+
     if (mme_selected_int_algorithm(mme_ue) ==
             OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_warn("Encrypt[0x%x] can be skipped with EEA0, "
