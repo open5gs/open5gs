@@ -51,12 +51,17 @@ int ogs_dbi_session_data(
     }
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
+
+    /* Only the slice data is needed, don't fetch the keys */
 #if MONGOC_CHECK_VERSION(1, 5, 0)
+    opts = BCON_NEW("projection", "{",
+            "_id", BCON_INT32(0), OGS_SLICE_STRING, BCON_INT32(1), "}");
     cursor = mongoc_collection_find_with_opts(
-            ogs_mongoc()->collection.subscriber, query, NULL, NULL);
+            ogs_mongoc()->collection.subscriber, query, opts, NULL);
 #else
+    opts = BCON_NEW("_id", BCON_INT32(0), OGS_SLICE_STRING, BCON_INT32(1));
     cursor = mongoc_collection_find(ogs_mongoc()->collection.subscriber,
-            MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
+            MONGOC_QUERY_NONE, 0, 0, 0, query, opts, NULL);
 #endif
 
     if (!mongoc_cursor_next(cursor, &document)) {
