@@ -950,7 +950,7 @@ char *hss_cx_download_user_data(
     for (i = 0; i < ims_data->num_of_msisdn; i++) {
         char *public_identity = NULL;
 
-        public_identity = ogs_msprintf("sip:%s@%s",
+        public_identity = ogs_msprintf("sip:+%s@%s",
                 ims_data->msisdn[i].bcd, visited_network_identifier);
         ogs_assert(public_identity);
         hss_cx_associate_identity(user_name, public_identity);
