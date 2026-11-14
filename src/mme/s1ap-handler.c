@@ -625,6 +625,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue_from_stmsi = NULL;
+    ogs_pool_id_t enb_ue_holding_id = OGS_INVALID_POOL_ID;
     bool enb_ue_new = false;
 
     ogs_assert(enb);
@@ -871,6 +872,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             }
             return;
         }
+        enb_ue_holding_id = mme_ue_from_stmsi->enb_ue_holding_id;
         /* If NAS(mme_ue_t) has already been associated with
          * older S1(enb_ue_t) context */
         if (ECM_CONNECTED(mme_ue_from_stmsi)) {
@@ -909,8 +911,20 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
         enb_ue->saved.tai.tac, enb_ue->saved.e_cgi.cell_id);
 
-    ogs_expect(OGS_OK == s1ap_send_to_nas(
-                enb_ue, S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU));
+    r = s1ap_send_to_nas(
+            enb_ue, S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU);
+    ogs_expect(r == OGS_OK);
+    /* TS 36.413 10.4: a refused NAS-PDU authenticated nobody; a hold
+     * kept for another request waits for that request's end */
+    if (r != OGS_OK && mme_ue_from_stmsi &&
+            mme_ue_from_stmsi->enb_ue_holding_id != enb_ue_holding_id)
+        RESTORE_S1_CONTEXT(mme_ue_from_stmsi);
+    /* TS 24.301 5.4.2.7 a): if that request's connection went with the
+     * refused NAS-PDU, its authentication is aborted */
+    else if (r != OGS_OK && mme_ue_from_stmsi &&
+            OGS_FSM_CHECK(&mme_ue_from_stmsi->sm, emm_state_authentication) &&
+            !enb_ue_find_by_id(mme_ue_from_stmsi->enb_ue_id))
+        emm_abort_authentication(mme_ue_from_stmsi);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -2037,6 +2051,7 @@ void s1ap_handle_ue_context_release_request(
     S1AP_Cause_t *Cause = NULL;
 
     enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
@@ -2181,6 +2196,20 @@ void s1ap_handle_ue_context_release_request(
 
     enb_ue->relcause.group = Cause->present;
     enb_ue->relcause.cause = (int)Cause->choice.radioNetwork;
+
+    /* TS 24.301 5.5.1.2.7 f): only the connection of the request not yet
+     * authenticated goes; the bearers stay the UE's */
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+    if (mme_ue && enb_ue_find_by_id(mme_ue->enb_ue_holding_id) &&
+        OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
+        r = s1ap_send_ue_context_release_command(enb_ue,
+                enb_ue->relcause.group, enb_ue->relcause.cause,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     mme_send_release_access_bearer_or_ue_context_release(enb_ue);
 }
 
@@ -2301,6 +2330,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
 {
     int r;
     mme_ue_t *mme_ue = NULL;
+    ogs_pool_id_t aborted_mme_ue_id = OGS_INVALID_POOL_ID;
 
     if (!enb_ue) {
         ogs_error("S1 context has already been removed");
@@ -2324,6 +2354,13 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
          * to prevent retransmission of NAS messages.
          */
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+
+        /* TS 24.301 5.4.2.7 a): the connection is gone before the
+         * AUTHENTICATION RESPONSE, so the authentication is aborted
+         * once the connection is removed below */
+        if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication) &&
+            mme_ue->enb_ue_id == enb_ue->id)
+            aborted_mme_ue_id = mme_ue->id;
 
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
             ogs_info("Mobile Reachable timer started for IMSI[%s]",
@@ -2504,6 +2541,10 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_error("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
         break;
     }
+
+    mme_ue = mme_ue_find_by_id(aborted_mme_ue_id);
+    if (mme_ue)
+        emm_abort_authentication(mme_ue);
 }
 
 void s1ap_handle_e_rab_modification_indication(

@@ -29,6 +29,33 @@
 #include "nas-security.h"
 #include "gmm-handler.h"
 
+/*
+ * TS 24.501 5.4.1.3.7 a): abort the authentication, its connection is gone.
+ * Not to be called from inside the UE's state machine: it makes a transition.
+ */
+void gmm_abort_authentication(amf_ue_t *amf_ue)
+{
+    ogs_fsm_t sm;
+    amf_event_t e;
+
+    ogs_assert(amf_ue);
+
+    /* The macro picks the next state; ogs_fsm_tran() exits and enters */
+    sm = amf_ue->sm;
+    AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, &sm);
+
+    memset(&e, 0, sizeof(e));
+    e.amf_ue_id = amf_ue->id;
+    ogs_fsm_tran(&amf_ue->sm, OGS_FSM_STATE(&sm), &e);
+
+    /* TS 24.501 5.3.7: an idle registered UE runs the mobile reachable timer */
+    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) && CM_IDLE(amf_ue)) {
+        ogs_info("[%s] Mobile Reachable timer started", amf_ue->supi);
+        ogs_timer_start(amf_ue->mobile_reachable.timer,
+            ogs_time_from_sec(amf_self()->time.t3512.value + 240));
+    }
+}
+
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_sm_debug(e);
@@ -922,13 +949,17 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
 
+        amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
+
         if (ogs_nas_5gmm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_5gmm_decode() failed");
             ogs_pkbuf_free(pkbuf);
+            if (amf_ue && amf_ue->ran_ue_id == ran_ue->id &&
+                ran_ue_find_by_id(amf_ue->ran_ue_holding_id) &&
+                e->ngap.code == NGAP_ProcedureCode_id_InitialUEMessage)
+                REFUSE_NG_REQUEST(amf_ue, ran_ue);
             break;
         }
-
-        amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
         if (amf_ue && amf_ue->registration_session_release_pending) {
             ogs_error("[%s] Ignore NAS message while registration session "
@@ -979,6 +1010,18 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             amf_ue_t *registering_ue =
                 amf_ue_find_by_message(&nas_message, NULL);
 
+            /* TS 24.501 5.5.1.2.8 f): the request being authenticated on
+             * this registered UE's context authenticated nobody, so another
+             * identity on its connection leaves the context unchanged */
+            if (registering_ue != amf_ue && amf_ue->can_restore_context &&
+                OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+                ogs_warn("[%s] Registration request of another identity "
+                        "during authentication", amf_ue->suci);
+                REFUSE_NG_REQUEST(amf_ue, ran_ue);
+                ogs_pkbuf_free(pkbuf);
+                break;
+            }
+
             if (registering_ue != amf_ue &&
                 (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) ||
                  ogs_list_count(&amf_ue->sess_list))) {
@@ -1006,6 +1049,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_warn("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
                         (long long)ran_ue->ran_ue_ngap_id,
                         (long long)ran_ue->amf_ue_ngap_id);
+
+                if (amf_ue->ran_ue_id == ran_ue->id &&
+                    ran_ue_find_by_id(amf_ue->ran_ue_holding_id) &&
+                    e->ngap.code == NGAP_ProcedureCode_id_InitialUEMessage) {
+                    REFUSE_NG_REQUEST(amf_ue, ran_ue);
+                    ogs_pkbuf_free(pkbuf);
+                    break;
+                }
 
                 /* Same teardown as a RAN-initiated release request */
                 CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
@@ -1182,6 +1233,21 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
              */
             CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
             CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
+        }
+
+        /* TS 24.501 5.5.1.2.8 f): a request that passed the integrity check
+         * is the UE's own: the NG context it put on hold is never given back,
+         * and goes when the state machine ends the request */
+        if (amf_ue && amf_ue->ran_ue_id == ran_ue->id &&
+            ran_ue_find_by_id(amf_ue->ran_ue_holding_id)) {
+            ogs_nas_security_header_type_t h;
+
+            h.type = e->nas.type;
+            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue))
+                amf_ue->ran_ue_holding_verified = true;
+
+            /* From now on, the request in progress is this connection's */
+            amf_ue->ran_ue_holding_authenticating = false;
         }
 
         ogs_assert(amf_ue);

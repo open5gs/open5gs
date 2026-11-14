@@ -278,6 +278,7 @@ int nas_eps_send_authentication_request(mme_ue_t *mme_ue)
 {
     int rv;
     enb_ue_t *enb_ue = NULL;
+    enb_ue_t *enb_ue_holding = NULL;
     ogs_pkbuf_t *emmbuf = NULL;
 
     if (!mme_ue) {
@@ -311,6 +312,12 @@ int nas_eps_send_authentication_request(mme_ue_t *mme_ue)
     }
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
+
+    /* The held S1 context waits for the authentication */
+    enb_ue_holding = enb_ue_find_by_id(mme_ue->enb_ue_holding_id);
+    if (enb_ue_holding)
+        ogs_timer_start(enb_ue_holding->t_s1_holding,
+                mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration);
 
     rv = nas_eps_send_to_downlink_nas_transport(enb_ue, emmbuf);
     ogs_expect(rv == OGS_OK);

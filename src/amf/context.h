@@ -667,12 +667,41 @@ struct amf_ue_s {
                     amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration); \
             \
             (__hOLDER)->ran_ue_holding_id = (__sERVING)->ran_ue_id; \
+            (__hOLDER)->ran_ue_holding_verified = false; \
+            (__hOLDER)->ran_ue_holding_authenticating = false; \
         } else \
             ogs_error("[%s] NG Context has already been removed", \
                     (__sERVING)->suci); \
     } while(0)
+/*
+ * TS 24.501 5.5.1.2.8 f): until the request in progress is authenticated,
+ * keep the NG context already held, the UE's, and release the request's.
+ */
 #define HOLDING_NG_CONTEXT(__aMF) \
-    HOLDING_NG_CONTEXT_FOR((__aMF), (__aMF))
+    do { \
+        ran_ue_t *ran_ue_serving = NULL; \
+        \
+        if (ran_ue_find_by_id((__aMF)->ran_ue_holding_id) && \
+            !(__aMF)->ran_ue_holding_verified && \
+            !OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_security_mode)) { \
+            ogs_warn("[%s] Holding NG context already exists", \
+                    (__aMF)->suci); \
+            ran_ue_serving = ran_ue_find_by_id((__aMF)->ran_ue_id); \
+            if (ran_ue_serving) { \
+                int r; \
+                ran_ue_serving->amf_ue_id = OGS_INVALID_POOL_ID; \
+                r = ngap_send_ran_ue_context_release_command( \
+                        ran_ue_serving, \
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+            } \
+        } else { \
+            HOLDING_NG_CONTEXT_FOR((__aMF), (__aMF)); \
+            (__aMF)->ran_ue_holding_authenticating = \
+                OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_authentication); \
+        } \
+    } while(0)
 #define CLEAR_NG_CONTEXT(__aMF) \
     do { \
         ran_ue_t *ran_ue_holding = NULL; \
@@ -695,7 +724,75 @@ struct amf_ue_s {
         } \
         (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
     } while(0)
+/*
+ * TS 24.501 5.5.1.2.8 f): the 5GMM context gives way only to a genuine UE.
+ * A request that fails before that gives the UE its held NG context back.
+ */
+#define RESTORE_NG_CONTEXT(__aMF) \
+    do { \
+        ran_ue_t *ran_ue_holding = NULL, *ran_ue_request = NULL; \
+        amf_sess_t *sess = NULL; \
+        \
+        ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_holding_id); \
+        if (ran_ue_holding && (__aMF)->ran_ue_holding_verified) { \
+            /* The verified request is the UE's own: the hold goes */ \
+            CLEAR_NG_CONTEXT(__aMF); \
+        } else if (ran_ue_holding) { \
+            int r; \
+            ogs_warn("[%s] Restore NG Context", (__aMF)->suci); \
+            \
+            ran_ue_request = ran_ue_find_by_id((__aMF)->ran_ue_id); \
+            if (ran_ue_request) { \
+                ran_ue_request->amf_ue_id = OGS_INVALID_POOL_ID; \
+                r = ngap_send_ran_ue_context_release_command( \
+                        ran_ue_request, \
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+            } \
+            \
+            ogs_timer_stop(ran_ue_holding->t_ng_holding); \
+            ran_ue_holding->ue_ctx_rel_action = \
+                NGAP_UE_CTX_REL_INVALID_ACTION; \
+            ran_ue_holding->holding_amf_ue_id = OGS_INVALID_POOL_ID; \
+            ogs_list_for_each(&(__aMF)->sess_list, sess) { \
+                if (sess->stale_ran_ue_id == ran_ue_holding->id) \
+                    sess->stale_ran_ue_id = OGS_INVALID_POOL_ID; \
+            } \
+            amf_ue_associate_ran_ue((__aMF), ran_ue_holding); \
+        } \
+        (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
+    } while(0)
+/*
+ * TS 24.501 5.5.1.2.8 f): a NAS message refused on the connection __rAN that
+ * put the NG context on hold authenticated nobody. While a request is being
+ * authenticated, only __rAN is released and that authentication, left with no
+ * connection, is aborted (TS 24.501 5.4.1.3.7 a)), also before the AUSF has
+ * answered. Otherwise, or if __rAN put the connection of that authentication
+ * on hold, the held NG context is given back.
+ */
+#define REFUSE_NG_REQUEST(__aMF, __rAN) \
+    do { \
+        if (OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_authentication) && \
+            !(ran_ue_find_by_id((__aMF)->ran_ue_holding_id) && \
+              (__aMF)->ran_ue_holding_authenticating)) { \
+            int r; \
+            amf_ue_deassociate_ran_ue((__aMF), (__rAN)); \
+            (__rAN)->amf_ue_id = OGS_INVALID_POOL_ID; \
+            r = ngap_send_ran_ue_context_release_command((__rAN), \
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+            gmm_abort_authentication(__aMF); \
+        } else \
+            RESTORE_NG_CONTEXT(__aMF); \
+    } while(0)
     ogs_pool_id_t   ran_ue_holding_id;
+    /* The request on the UE's current connection passed the integrity check */
+    bool            ran_ue_holding_verified;
+    /* A new connection put the connection of the authentication in
+     * progress on hold */
+    bool            ran_ue_holding_authenticating;
 
     /*
      * N2 handovers this UE has been through, counted where the AMF is certain.

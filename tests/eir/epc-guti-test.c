@@ -548,18 +548,27 @@ static void test_epc_case(abts_case *tc, void *data)
         if (!receive_s1ap(tc, s1ap, peer, S1AP_ProcedureCode_id_downlinkNASTransport,
                     OGS_NAS_EPS_AUTHENTICATION_REJECT, 0))
             goto cleanup;
+        /* The victim gets its held S1 context back; the peer's is released */
+        if (!receive_s1ap(tc, s1ap, peer,
+                    S1AP_ProcedureCode_id_UEContextRelease, 0, 0) ||
+            !send_s1ap(tc, s1ap,
+                    test_s1ap_build_ue_context_release_complete(peer)))
+            goto cleanup;
     }
     if (scenario != REATTACH && !check_bearers(tc, gtpu, old_bearers, pdns, true))
         goto cleanup;
     /* A protected Detach with the original keys also checks security rollback.
      * It follows SMC Reject on the same SCTP stream, since SMC Reject has no reply.
-     * Stage 1 leaves the S1 association on the peer after failure. Use those
-     * current IDs; adjust this check when S1 association restoration is added. */
+     * After a failed authentication the victim is on its own S1 context again;
+     * after an SMC failure it stays on the peer's, so use the peer's IDs then. */
     cleanup_ue = scenario == REATTACH ? peer : victim;
     nas = testemm_build_detach_request(cleanup_ue, false, true, false);
-    cleanup_ue->enb_ue_s1ap_id = peer->enb_ue_s1ap_id;
-    cleanup_ue->mme_ue_s1ap_id = peer->mme_ue_s1ap_id;
-    if (!send_nas(tc, s1ap, peer, nas) ||
+    if (scenario != BAD_RES && scenario != AUTH_FAILURE &&
+        scenario != DETACH_DURING_AUTH) {
+        cleanup_ue->enb_ue_s1ap_id = peer->enb_ue_s1ap_id;
+        cleanup_ue->mme_ue_s1ap_id = peer->mme_ue_s1ap_id;
+    }
+    if (!send_nas(tc, s1ap, cleanup_ue, nas) ||
         !receive_s1ap(tc, s1ap, cleanup_ue, S1AP_ProcedureCode_id_downlinkNASTransport,
                     OGS_NAS_EPS_DETACH_ACCEPT, 0))
         goto cleanup;
