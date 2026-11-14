@@ -1402,7 +1402,24 @@ static int hss_ogs_diam_cx_sar_cb(struct msg **msg, struct avp *avp,
 
             if (hdr->avp_value->i32 ==
                     OGS_DIAM_CX_USER_DATA_ALREADY_AVAILABLE) {
-                /* Nothing to do */
+                /*
+                 * The S-CSCF still has the profile, but we may not:
+                 * the Cx state is kept only in memory, so after an HSS
+                 * restart a re-registration only tells us about the
+                 * registering IMPU (from UAR). Rebuild the MSISDN-derived
+                 * identities of the IMPI (sip:+<msisdn>@, tel:+<msisdn>)
+                 * so that LIR for them (terminating requests) keeps
+                 * working; the profile itself is not sent again.
+                 */
+                char *tmp = hss_cx_download_user_data(
+                        user_name, visited_network_identifier, &ims_data);
+                if (!tmp) {
+                    ogs_error("Failed to download user data");
+                    result_code = OGS_DIAM_CX_ERROR_USER_UNKNOWN;
+                    error_occurred = 1;
+                    goto out;
+                }
+                ogs_free(tmp);
             } else {
                 /* Set the User-Data AVP */
                 user_data = hss_cx_download_user_data(
