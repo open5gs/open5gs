@@ -909,8 +909,10 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
         enb_ue->saved.tai.tac, enb_ue->saved.e_cgi.cell_id);
 
-    ogs_expect(OGS_OK == s1ap_send_to_nas(
-                enb_ue, S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU));
+    if (s1ap_send_to_nas(enb_ue,
+                S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU) != OGS_OK) {
+        if (enb_ue_new) enb_ue_remove(enb_ue);
+    }
 }
 
 void s1ap_handle_uplink_nas_transport(
