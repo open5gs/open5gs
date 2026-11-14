@@ -28,7 +28,7 @@ static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
 
     /* DETACH REQUEST sent */
     [MME_TIMER_T3422] =
-        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(3) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* ATTACH ACCEPT sent
      * TRACKING AREA UPDATE ACCEPT sent with GUTI
@@ -40,11 +40,11 @@ static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
     /* AUTHENTICATION REQUEST sent
      * SECURITY MODE COMMAND sent */
     [MME_TIMER_T3460] =
-        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(3) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* IDENTITY REQUEST sent */
     [MME_TIMER_T3470] =
-        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(3) },
+        { .have = true, .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* ESM INFORMATION REQUEST sent */
     [MME_TIMER_T3489] =
