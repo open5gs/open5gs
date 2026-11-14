@@ -83,6 +83,12 @@ static int nrf_context_prepare(void)
 
 static int nrf_context_validation(void)
 {
+    if (ogs_local_conf()->time.nf_instance.heartbeat_interval < 0) {
+        ogs_error("Invalid time.nf_instance.heartbeat [%d]",
+                ogs_local_conf()->time.nf_instance.heartbeat_interval);
+        return OGS_ERROR;
+    }
+
     return OGS_OK;
 }
 

@@ -40,6 +40,8 @@ const char *smf_timer_get_name(int timer_id)
         return "SMF_TIMER_PFCP_ASSOCIATION";
     case SMF_TIMER_PFCP_NO_HEARTBEAT:
         return "SMF_TIMER_PFCP_NO_HEARTBEAT";
+    case SMF_TIMER_PFCP_RELEASE_AFTER_PEER_FAILURE:
+        return "SMF_TIMER_PFCP_RELEASE_AFTER_PEER_FAILURE";
     case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
         return "SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE";
     case SMF_TIMER_PFCP_NO_DELETION_RESPONSE:
@@ -61,6 +63,7 @@ static void timer_send_event(int timer_id, void *data)
     switch (timer_id) {
     case SMF_TIMER_PFCP_ASSOCIATION:
     case SMF_TIMER_PFCP_NO_HEARTBEAT:
+    case SMF_TIMER_PFCP_RELEASE_AFTER_PEER_FAILURE:
         e = smf_event_new(SMF_EVT_N4_TIMER);
         ogs_assert(e);
         e->h.timer_id = timer_id;
@@ -89,4 +92,9 @@ void smf_timer_pfcp_association(void *data)
 void smf_timer_pfcp_no_heartbeat(void *data)
 {
     timer_send_event(SMF_TIMER_PFCP_NO_HEARTBEAT, data);
+}
+
+void smf_timer_pfcp_release_after_peer_failure(void *data)
+{
+    timer_send_event(SMF_TIMER_PFCP_RELEASE_AFTER_PEER_FAILURE, data);
 }

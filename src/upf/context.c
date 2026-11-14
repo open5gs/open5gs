@@ -231,6 +231,7 @@ int upf_sess_remove(upf_sess_t *sess)
     ogs_assert(sess);
 
     upf_sess_urr_acc_remove_all(sess);
+    OGS_CLEAR_PFCP_NODE(sess);
 
     ogs_list_remove(&self.sess_list, sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
@@ -258,6 +259,14 @@ int upf_sess_remove(upf_sess_t *sess)
             ogs_list_count(&self.sess_list));
 
     return OGS_OK;
+}
+
+/* Whether sessions of the SMF are bound to the node */
+bool upf_node_has_sessions(ogs_pfcp_node_t *node)
+{
+    ogs_assert(node);
+
+    return node->num_of_sessions != 0;
 }
 
 void upf_sess_remove_all(void)
