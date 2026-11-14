@@ -34,7 +34,7 @@
 #define IFNAMSIZ 32
 #endif
 
-ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap)
+ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap, int backpressure)
 {
     ogs_socket_t fd = INVALID_SOCKET;
 
@@ -42,6 +42,15 @@ ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap)
     int rc;
     struct ifreq ifr;
     int flags = IFF_NO_PI;
+
+    if (backpressure) {
+#ifdef IFF_BACKPRESSURE
+        flags |= IFF_BACKPRESSURE;
+#else
+        ogs_warn("tun_backpressure ignored: IFF_BACKPRESSURE missing "
+                "from kernel headers at build time");
+#endif
+    }
 
     ogs_assert(ifname);
 

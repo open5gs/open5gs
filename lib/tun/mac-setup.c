@@ -78,7 +78,7 @@ on_error:
 }
 #endif
 
-ogs_socket_t ogs_tun_open(char *ifname, int maxlen, int is_tap)
+ogs_socket_t ogs_tun_open(char *ifname, int maxlen, int is_tap, int backpressure)
 {
     ogs_socket_t fd = INVALID_SOCKET;
     int unit;
