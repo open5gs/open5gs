@@ -941,17 +941,30 @@ char *hss_cx_download_user_data(
 
     bool barring_indication_presence = true;
     int i, n, m;
+    const char *home_domain = NULL;
 
     ogs_assert(user_name);
     ogs_assert(visited_network_identifier);
     ogs_assert(ims_data);
+
+    /*
+     * The SIP public identities derived from the MSISDN belong to the
+     * subscriber's home network domain, i.e. the realm of the private
+     * identity (TS 23.003 13.3, 13.4), not to the network the P-CSCF
+     * belongs to (Visited-Network-Identifier). Otherwise a subscriber
+     * served by a P-CSCF of another network (roaming, or several PLMNs
+     * on one IMS core) gets SIP IMPUs in that network's domain.
+     */
+    home_domain = strchr(user_name, '@');
+    home_domain = home_domain && home_domain[1] ?
+        home_domain + 1 : visited_network_identifier;
 
     /* Download User-Data */
     for (i = 0; i < ims_data->num_of_msisdn; i++) {
         char *public_identity = NULL;
 
         public_identity = ogs_msprintf("sip:%s@%s",
-                ims_data->msisdn[i].bcd, visited_network_identifier);
+                ims_data->msisdn[i].bcd, home_domain);
         ogs_assert(public_identity);
         hss_cx_associate_identity(user_name, public_identity);
         ogs_free(public_identity);
