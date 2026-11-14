@@ -20,6 +20,7 @@
 #include "ngap-path.h"
 #include "ngap-build.h"
 #include "gmm-build.h"
+#include "nas-security.h"
 #include "nas-path.h"
 
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
@@ -117,6 +118,13 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
             ogs_error("gmm_build_registration_accept() failed");
             return OGS_ERROR;
         }
+    }
+
+    gmmbuf = nas_5gs_security_protect(amf_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, gmmbuf);
+    if (!gmmbuf) {
+        ogs_error("nas_5gs_security_protect() failed");
+        return OGS_ERROR;
     }
 
     /*
@@ -416,6 +424,12 @@ int nas_5gs_send_de_registration_request(
         ogs_pkbuf_free(gmmbuf);
         return OGS_ERROR;
     }
+    gmmbuf = nas_5gs_security_protect(amf_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, gmmbuf);
+    if (!gmmbuf) {
+        ogs_error("nas_5gs_security_protect() failed");
+        return OGS_ERROR;
+    }
     ogs_timer_start(amf_ue->t3522.timer,
             amf_timer_cfg(AMF_TIMER_T3522)->duration);
 
@@ -575,12 +589,24 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
             ogs_error("gmm_build_security_mode_command() failed");
             return OGS_ERROR;
         }
+
+        /* TS 24.501 5.4.2.2: NAS COUNTs reset for the initial command only */
+        amf_ue->dl_count = 0;
+        amf_ue->ul_count.i32 = 0;
+        amf_ue->ul_count_accepted = false;
     }
 
     amf_ue->t3560.pkbuf = ogs_pkbuf_copy(gmmbuf);
     if (!amf_ue->t3560.pkbuf) {
         ogs_error("ogs_pkbuf_copy(amf_ue->t3560.pkbuf) failed");
         ogs_pkbuf_free(gmmbuf);
+        return OGS_ERROR;
+    }
+    gmmbuf = nas_5gs_security_protect(amf_ue,
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT,
+        gmmbuf);
+    if (!gmmbuf) {
+        ogs_error("nas_5gs_security_protect() failed");
         return OGS_ERROR;
     }
     ogs_timer_start(amf_ue->t3560.timer,
@@ -645,6 +671,13 @@ int nas_5gs_send_configuration_update_command(
             ogs_timer_start(amf_ue->t3555.timer,
                     amf_timer_cfg(AMF_TIMER_T3555)->duration);
         }
+    }
+
+    gmmbuf = nas_5gs_security_protect(amf_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, gmmbuf);
+    if (!gmmbuf) {
+        ogs_error("nas_5gs_security_protect() failed");
+        return OGS_ERROR;
     }
 
     amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_CONF_UPDATE);

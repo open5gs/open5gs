@@ -21,6 +21,7 @@
 #include "s1ap-build.h"
 #include "esm-build.h"
 #include "emm-build.h"
+#include "nas-security.h"
 #include "nas-path.h"
 #include "mme-event.h"
 #include "mme-timer.h"
@@ -156,6 +157,12 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
     if (!mme_ue->t3450.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3450.pkbuf) failed");
         ogs_pkbuf_free(emmbuf);
+        return OGS_ERROR;
+    }
+    emmbuf = nas_eps_security_protect(mme_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, emmbuf);
+    if (!emmbuf) {
+        ogs_error("nas_eps_security_protect() failed");
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3450.timer,
@@ -345,12 +352,24 @@ int nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
             ogs_error("emm_build_security_mode_command() failed");
             return OGS_ERROR;
         }
+
+        /* TS 24.301 5.4.3.2: NAS COUNTs reset for the initial command only */
+        mme_ue->dl_count = 0;
+        mme_ue->ul_count.i32 = 0;
+        mme_ue->ul_count_accepted = false;
     }
 
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
     if (!mme_ue->t3460.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3460.pkbuf) failed");
         ogs_pkbuf_free(emmbuf);
+        return OGS_ERROR;
+    }
+    emmbuf = nas_eps_security_protect(mme_ue,
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT,
+        emmbuf);
+    if (!emmbuf) {
+        ogs_error("nas_eps_security_protect() failed");
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3460.timer, 
@@ -426,6 +445,12 @@ int nas_eps_send_detach_request(mme_ue_t *mme_ue)
     if (!mme_ue->t3422.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3422.pkbuf) failed");
         ogs_pkbuf_free(emmbuf);
+        return OGS_ERROR;
+    }
+    emmbuf = nas_eps_security_protect(mme_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, emmbuf);
+    if (!emmbuf) {
+        ogs_error("nas_eps_security_protect() failed");
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3422.timer, 
@@ -565,6 +590,12 @@ int nas_eps_send_esm_information_request(mme_bearer_t *bearer)
     if (!bearer->t3489.pkbuf) {
         ogs_error("ogs_pkbuf_copy(bearer->t3489) failed");
         ogs_pkbuf_free(esmbuf);
+        return OGS_ERROR;
+    }
+    esmbuf = nas_eps_security_protect(mme_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, esmbuf);
+    if (!esmbuf) {
+        ogs_error("nas_eps_security_protect() failed");
         return OGS_ERROR;
     }
     ogs_timer_start(bearer->t3489.timer, 
@@ -897,6 +928,12 @@ int nas_eps_send_tau_accept(
     if (!mme_ue->t3450.pkbuf) {
         ogs_error("ogs_pkbuf_copy(mme_ue->t3450.pkbuf) failed");
         ogs_pkbuf_free(emmbuf);
+        return OGS_ERROR;
+    }
+    emmbuf = nas_eps_security_protect(mme_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, emmbuf);
+    if (!emmbuf) {
+        ogs_error("nas_eps_security_protect() failed");
         return OGS_ERROR;
     }
     ogs_timer_start(mme_ue->t3450.timer,
