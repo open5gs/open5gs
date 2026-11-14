@@ -20,6 +20,7 @@
 #include "ngap-path.h"
 #include "ngap-build.h"
 #include "gmm-build.h"
+#include "nas-security.h"
 #include "nas-path.h"
 
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
@@ -51,10 +52,29 @@ int nas_5gs_send_to_downlink_nas_transport(
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
+    ogs_nas_5gs_security_header_t *sh = NULL;
 
     ogs_assert(ran_ue);
     ogs_assert(amf_ue);
     ogs_assert(pkbuf);
+
+    /*
+     * TS 24.501 4.4.4.1: integrity protection is mandatory for the network
+     * once the secure exchange of NAS messages is established. Protect a
+     * plain 5GMM message for a UE whose connection has it established.
+     */
+    sh = (ogs_nas_5gs_security_header_t *)pkbuf->data;
+    if (amf_ue->integrity_verified &&
+        sh->extended_protocol_discriminator ==
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM &&
+        sh->security_header_type == OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE) {
+        pkbuf = nas_5gs_security_protect(amf_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, pkbuf);
+        if (!pkbuf) {
+            ogs_error("nas_5gs_security_protect() failed");
+            return OGS_ERROR;
+        }
+    }
 
     ngapbuf = ngap_build_downlink_nas_transport(
             ran_ue, amf_ue, pkbuf, false, false);
@@ -117,6 +137,13 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
             ogs_error("gmm_build_registration_accept() failed");
             return OGS_ERROR;
         }
+    }
+
+    gmmbuf = nas_5gs_security_protect(amf_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, gmmbuf);
+    if (!gmmbuf) {
+        ogs_error("nas_5gs_security_protect() failed");
+        return OGS_ERROR;
     }
 
     /*
@@ -416,6 +443,12 @@ int nas_5gs_send_de_registration_request(
         ogs_pkbuf_free(gmmbuf);
         return OGS_ERROR;
     }
+    gmmbuf = nas_5gs_security_protect(amf_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, gmmbuf);
+    if (!gmmbuf) {
+        ogs_error("nas_5gs_security_protect() failed");
+        return OGS_ERROR;
+    }
     ogs_timer_start(amf_ue->t3522.timer,
             amf_timer_cfg(AMF_TIMER_T3522)->duration);
 
@@ -570,17 +603,34 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
     if (amf_ue->t3560.pkbuf) {
         gmmbuf = amf_ue->t3560.pkbuf;
     } else {
+        /* TS 24.501 4.4.3.1: a restored context keeps the COUNT it reached */
+        if (!memcmp(amf_ue->memento.knas_int, amf_ue->knas_int,
+                    OGS_SHA256_DIGEST_SIZE/2))
+            amf_ue->memento.dl_count = amf_ue->dl_count;
+
         gmmbuf = gmm_build_security_mode_command(amf_ue);
         if (!gmmbuf) {
             ogs_error("gmm_build_security_mode_command() failed");
             return OGS_ERROR;
         }
+
+        /* TS 24.501 5.4.2.2: NAS COUNTs reset for the initial command only */
+        amf_ue->dl_count = 0;
+        amf_ue->ul_count.i32 = 0;
+        amf_ue->ul_count_accepted = false;
     }
 
     amf_ue->t3560.pkbuf = ogs_pkbuf_copy(gmmbuf);
     if (!amf_ue->t3560.pkbuf) {
         ogs_error("ogs_pkbuf_copy(amf_ue->t3560.pkbuf) failed");
         ogs_pkbuf_free(gmmbuf);
+        return OGS_ERROR;
+    }
+    gmmbuf = nas_5gs_security_protect(amf_ue,
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT,
+        gmmbuf);
+    if (!gmmbuf) {
+        ogs_error("nas_5gs_security_protect() failed");
         return OGS_ERROR;
     }
     ogs_timer_start(amf_ue->t3560.timer,
@@ -645,6 +695,13 @@ int nas_5gs_send_configuration_update_command(
             ogs_timer_start(amf_ue->t3555.timer,
                     amf_timer_cfg(AMF_TIMER_T3555)->duration);
         }
+    }
+
+    gmmbuf = nas_5gs_security_protect(amf_ue,
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED, gmmbuf);
+    if (!gmmbuf) {
+        ogs_error("nas_5gs_security_protect() failed");
+        return OGS_ERROR;
     }
 
     amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_CONF_UPDATE);

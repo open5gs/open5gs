@@ -50,10 +50,6 @@ ogs_pkbuf_t *emm_build_attach_accept(
     ogs_assert(esmbuf);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_ATTACH_ACCEPT;
 
@@ -277,7 +273,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
             unsecured_redirection_to_geran_not_allowed = 1;
     }
 
-    pkbuf = nas_eps_security_encode(mme_ue, &message);
+    pkbuf = ogs_nas_eps_plain_encode(&message);
     ogs_pkbuf_free(esmbuf);
 
     return pkbuf;
@@ -388,10 +384,6 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_SECURITY_MODE_COMMAND;
 
@@ -498,7 +490,7 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     ogs_kdf_nas_eps(OGS_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
             mme_ue->kasme, mme_ue->knas_enc);
 
-    return nas_eps_security_encode(mme_ue, &message);
+    return ogs_nas_eps_plain_encode(&message);
 }
 
 ogs_pkbuf_t *emm_build_detach_request(mme_ue_t *mme_ue)
@@ -508,17 +500,13 @@ ogs_pkbuf_t *emm_build_detach_request(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_DETACH_REQUEST;
 
     message.emm.detach_request_to_ue.detach_type.value =
         mme_ue->nas_eps.detach.value;
 
-    return nas_eps_security_encode(mme_ue, &message);
+    return ogs_nas_eps_plain_encode(&message);
 }
 
 ogs_pkbuf_t *emm_build_detach_accept(mme_ue_t *mme_ue)
@@ -558,10 +546,6 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT;
 
@@ -718,7 +702,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
             unsecured_redirection_to_geran_not_allowed = 1;
     }
 
-    return nas_eps_security_encode(mme_ue, &message);
+    return ogs_nas_eps_plain_encode(&message);
 }
 
 ogs_pkbuf_t *emm_build_tau_reject(

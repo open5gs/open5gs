@@ -24,18 +24,37 @@
 ogs_pkbuf_t *nas_5gs_security_encode(
         amf_ue_t *amf_ue, ogs_nas_5gs_message_t *message)
 {
-    int integrity_protected = 0;
-    int new_security_context = 0;
-    int ciphered = 0;
-    ogs_nas_5gs_security_header_t h;
     ogs_pkbuf_t *new = NULL;
 
-    ogs_assert(amf_ue);
     ogs_assert(message);
 
-    switch (message->h.security_header_type) {
+    new = ogs_nas_5gs_plain_encode(message);
+    if (!new) {
+        ogs_error("ogs_nas_5gs_plain_encode() failed");
+        return NULL;
+    }
+
+    return nas_5gs_security_protect(
+            amf_ue, message->h.security_header_type, new);
+}
+
+/*
+ * TS 24.501 4.4.3.1: the NAS COUNT is increased after each new or retransmitted
+ * message, so a timer keeps the plain message and each sending protects it.
+ */
+ogs_pkbuf_t *nas_5gs_security_protect(amf_ue_t *amf_ue,
+        uint8_t security_header_type, ogs_pkbuf_t *new)
+{
+    int integrity_protected = 0;
+    int ciphered = 0;
+    ogs_nas_5gs_security_header_t h;
+
+    ogs_assert(amf_ue);
+    ogs_assert(new);
+
+    switch (security_header_type) {
     case OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-        return ogs_nas_5gs_plain_encode(message);
+        return new;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
         integrity_protected = 1;
         break;
@@ -45,23 +64,16 @@ ogs_pkbuf_t *nas_5gs_security_encode(
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
         integrity_protected = 1;
-        new_security_context = 1;
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
         integrity_protected = 1;
-        new_security_context = 1;
         ciphered = 1;
         break;
     default:
         ogs_error("Not implemented(security header type:0x%x)",
-                message->h.security_header_type);
+                security_header_type);
+        ogs_pkbuf_free(new);
         return NULL;
-    }
-
-    if (new_security_context) {
-        amf_ue->dl_count = 0;
-        amf_ue->ul_count.i32 = 0;
-        amf_ue->ul_count_accepted = false;
     }
 
     if (amf_ue->selected_enc_algorithm == 0)
@@ -70,16 +82,10 @@ ogs_pkbuf_t *nas_5gs_security_encode(
         integrity_protected = 0;
 
     memset(&h, 0, sizeof(h));
-    h.security_header_type = message->h.security_header_type;
+    h.security_header_type = security_header_type;
     h.extended_protocol_discriminator =
-        message->h.extended_protocol_discriminator;
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     h.sequence_number = (amf_ue->dl_count & 0xff);
-
-    new = ogs_nas_5gs_plain_encode(message);
-    if (!new) {
-        ogs_error("ogs_nas_5gs_plain_encode() failed");
-        return NULL;
-    }
 
     if (ciphered) {
         /* encrypt NAS message */
