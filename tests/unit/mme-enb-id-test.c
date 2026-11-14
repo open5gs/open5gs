@@ -104,12 +104,67 @@ static void reassignment_func(abts_case *tc, void *data)
     ogs_free(enb);
 }
 
+static void global_identity_func(abts_case *tc, void *data)
+{
+    static const S1AP_ENB_ID_PR types[] = {
+        S1AP_ENB_ID_PR_macroENB_ID, S1AP_ENB_ID_PR_homeENB_ID,
+        S1AP_ENB_ID_PR_short_macroENB_ID, S1AP_ENB_ID_PR_long_macroENB_ID
+    };
+    ogs_list_t saved;
+    mme_enb_t *enb = ogs_calloc(6, sizeof(*enb));
+    ogs_plmn_id_t first, second;
+    S1AP_Global_ENB_ID_t global = {0};
+    S1AP_ENB_ID_t id = {0};
+    size_t i;
+    ogs_assert(enb);
+    ogs_list_copy(&saved, &mme_self()->enb_list);
+    ogs_list_init(&mme_self()->enb_list);
+    ogs_plmn_id_build(&first, 310, 260, 3);
+    ogs_plmn_id_build(&second, 310, 26, 2);
+    for (i = 0; i < 6; i++) {
+        enb[i].enb_id_presence = true;
+        enb[i].state.s1_setup_success = true;
+        enb[i].enb_id = 0x1234;
+        enb[i].enb_type = i < 4 ? types[i] : types[0];
+        enb[i].plmn_id = i == 4 ? second : first;
+        ogs_list_add(&mme_self()->enb_list, &enb[i]);
+    }
+    /* A reconnect takes over only its own global identity. */
+    ABTS_PTR_EQUAL(tc, &enb[5],
+            mme_enb_find_by_global_id(&first, types[0], 0x1234));
+    ABTS_PTR_EQUAL(tc, &enb[4],
+            mme_enb_find_by_global_id(&second, types[0], 0x1234));
+    for (i = 1; i < 4; i++)
+        ABTS_PTR_EQUAL(tc, &enb[i],
+                mme_enb_find_by_global_id(&first, types[i], 0x1234));
+    enb[5].state.s1_setup_success = false;
+    ABTS_PTR_EQUAL(tc, &enb[0],
+            mme_enb_find_by_global_id(&first, types[0], 0x1234));
+    ABTS_PTR_EQUAL(tc, NULL, mme_enb_find_by_global_id(&first, types[0], 0x4321));
+    ABTS_PTR_EQUAL(tc, NULL, mme_enb_find_by_global_id(&second, types[1], 0x1234));
+    ogs_s1ap_uint32_to_ENB_ID(types[2], 0x1234, &id);
+    global.eNB_ID = &id;
+    global.pLMNidentity.buf = (uint8_t *)&first;
+    global.pLMNidentity.size = sizeof(first);
+    ABTS_PTR_EQUAL(tc, &enb[2], mme_enb_find_by_s1ap_global_id(&global));
+    global.pLMNidentity.size--;
+    ABTS_PTR_EQUAL(tc, NULL, mme_enb_find_by_s1ap_global_id(&global));
+    global.pLMNidentity.size++;
+    global.pLMNidentity.buf = NULL;
+    ABTS_PTR_EQUAL(tc, NULL, mme_enb_find_by_s1ap_global_id(&global));
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_ENB_ID, &id);
+    ogs_list_copy(&mme_self()->enb_list, &saved);
+    ogs_free(enb);
+}
+
 abts_suite *test_mme_enb_id(abts_suite *suite)
 {
     uint32_t id[] = { 0, 0x4001 };
     size_t i;
 
     suite = ADD_SUITE(suite)
+
+    abts_run_test(suite, global_identity_func, NULL);
 
     for (i = 0; i < sizeof(id) / sizeof(id[0]); i++) {
         abts_run_test(suite, replacement_func, &id[i]);

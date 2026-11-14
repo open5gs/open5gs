@@ -20,6 +20,7 @@
 #include "mme-event.h"
 #include "mme-sm.h"
 #include "mme-context.h"
+#include "mme-s10.h"
 #include "mme-timer.h"
 
 #include "s1ap-path.h"
@@ -1003,6 +1004,12 @@ void mme_s11_handle_create_bearer_request(
     } else {
         sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
         ogs_assert(sgw_ue);
+        if (mme_s10_handover_busy(mme_ue)) {
+            ogs_gtp2_send_error_message(xact, sgw_ue->sgw_s11_teid,
+                    OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_TEMPORARILY_REJECTED_DUE_TO_HANDOVER_IN_PROGRESS);
+            return;
+        }
 
         if (req->linked_eps_bearer_id.presence == 0) {
             ogs_error("No Linked EBI");
@@ -1229,6 +1236,12 @@ void mme_s11_handle_update_bearer_request(
     } else {
         sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
         ogs_assert(sgw_ue);
+        if (mme_s10_handover_busy(mme_ue)) {
+            ogs_gtp2_send_error_message(xact, sgw_ue->sgw_s11_teid,
+                    OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_TEMPORARILY_REJECTED_DUE_TO_HANDOVER_IN_PROGRESS);
+            return;
+        }
 
         if (req->bearer_contexts.presence == 0) {
             ogs_error("No Bearer");
@@ -1425,6 +1438,12 @@ void mme_s11_handle_delete_bearer_request(
     } else {
         sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
         ogs_assert(sgw_ue);
+        if (mme_s10_handover_busy(mme_ue)) {
+            ogs_gtp2_send_error_message(xact, sgw_ue->sgw_s11_teid,
+                    OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_TEMPORARILY_REJECTED_DUE_TO_HANDOVER_IN_PROGRESS);
+            return;
+        }
 
         if (req->linked_eps_bearer_id.presence == 1) {
            /*
@@ -1746,6 +1765,12 @@ void mme_s11_handle_downlink_data_notification(
     } else {
         sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
         ogs_assert(sgw_ue);
+        if (mme_s10_source_committed(mme_ue)) {
+            ogs_gtp2_send_error_message(xact, sgw_ue->sgw_s11_teid,
+                    OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE,
+                    OGS_GTP2_CAUSE_UE_ALREADY_RE_ATTACHED);
+            return;
+        }
 
         if (noti->eps_bearer_id.presence == 0) {
             ogs_error("No Bearer ID");

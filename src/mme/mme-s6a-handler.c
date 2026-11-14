@@ -24,6 +24,7 @@
 
 #include "mme-sm.h"
 #include "mme-s6a-handler.h"
+#include "mme-s10.h"
 
 /* Unfortunately fd doesn't distinguish
  * between result-code and experimental-result-code.
@@ -165,8 +166,9 @@ uint8_t mme_s6a_handle_ula(
         }
 
         /* Determine S1AP procedure and store it for reuse */
-        mme_ue->tracking_area_update_accept_proc =
-            S1AP_ProcedureCode_id_InitialContextSetup;
+        if (!mme_ue->s10.target_transfer)
+            mme_ue->tracking_area_update_accept_proc =
+                S1AP_ProcedureCode_id_InitialContextSetup;
 
         /* Update CSMAP from Tracking area update request */
         mme_ue->csmap = mme_csmap_find_by_tai(&mme_ue->tai);
@@ -312,6 +314,9 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
      *
      * We need more variable(detach_type)
      * to keep Detach-Type whether UE-initiated or MME-initiaed.  */
+    if (clr_message->cancellation_type == OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE &&
+            mme_s10_cancel_location(mme_ue)) return;
+
     mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
 
     ogs_debug("    OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);

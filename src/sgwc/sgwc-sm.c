@@ -103,10 +103,12 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         }
 
         e->pfcp_xact_id = pfcp_xact ? pfcp_xact->id : OGS_INVALID_POOL_ID;
+        ogs_pkbuf_t *gtp_snapshot = pfcp_xact->gtpbuf;
+        pfcp_xact->gtpbuf = NULL;
 
         e->gtp_message = NULL;
-        if (pfcp_xact->gtpbuf) {
-            rv = ogs_gtp2_parse_msg(&gtp_message, pfcp_xact->gtpbuf);
+        if (gtp_snapshot) {
+            rv = ogs_gtp2_parse_msg(&gtp_message, gtp_snapshot);
             e->gtp_message = &gtp_message;
         }
 
@@ -115,8 +117,7 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
             ogs_error("PFCP state machine exception");
         }
 
-        if (pfcp_xact->gtpbuf)
-            ogs_pkbuf_free(pfcp_xact->gtpbuf);
+        if (gtp_snapshot) ogs_pkbuf_free(gtp_snapshot);
         ogs_pkbuf_free(recvbuf);
         ogs_pfcp_message_free(pfcp_message);
         break;
@@ -185,6 +186,14 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+            if (sgwc_ue && sgwc_ue->gnode != gnode) {
+                /* A delayed request from the previous MME must not tear
+                 * down sessions whose control plane has moved. */
+                ogs_gtp_send_error_message(gtp_xact, 0,
+                        OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
+                        OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+                break;
+            }
             sgwc_s11_handle_delete_session_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
             break;
@@ -218,6 +227,9 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
             sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
                     sgwc_ue, gtp_xact, recvbuf, &gtp_message);
+            break;
+        case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
+            sgwc_s11_handle_delete_bearer_command(sgwc_ue, gtp_xact, &gtp_message);
             break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             sgwc_s11_handle_bearer_resource_command(
@@ -294,6 +306,9 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             sgwc_s5c_handle_delete_bearer_request(
                     sess, gtp_xact, recvbuf, &gtp_message);
+            break;
+        case OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+            sgwc_s5c_handle_delete_bearer_failure_indication(sess, gtp_xact, &gtp_message);
             break;
         case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");

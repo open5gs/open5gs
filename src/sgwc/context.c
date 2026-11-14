@@ -20,6 +20,7 @@
 #include <yaml.h>
 
 #include "context.h"
+#include "pfcp-path.h"
 
 static sgwc_context_t self;
 
@@ -210,8 +211,12 @@ sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp2_message_t *message)
      *   the message is received with a TEID not set to zero in the header.
      */
     sgwc_ue = sgwc_ue_find_by_imsi(req->imsi.data, req->imsi.len);
-    if (sgwc_ue)
-        sgwc_ue_remove(sgwc_ue);
+    if (sgwc_ue) {
+        sgwc_sess_t *sess;
+        if (ogs_list_empty(&sgwc_ue->sess_list)) sgwc_ue_remove(sgwc_ue);
+        else ogs_list_for_each(&sgwc_ue->sess_list, sess)
+            sgwc_pfcp_send_session_deletion_request(sess, OGS_INVALID_POOL_ID, NULL);
+    }
     sgwc_ue = sgwc_ue_add(req->imsi.data, req->imsi.len);
     if (!sgwc_ue) {
         ogs_error("sgwc_ue_add() failed");
@@ -468,6 +473,7 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
 
 int sgwc_sess_remove(sgwc_sess_t *sess)
 {
+    if (sess->relocation_timer) ogs_timer_delete(sess->relocation_timer);
     sgwc_ue_t *sgwc_ue = NULL;
 
     ogs_assert(sess);

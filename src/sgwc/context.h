@@ -57,6 +57,13 @@ typedef struct sgwc_ue_s {
     uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is derived from NODE */
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is received from MME */
 
+    /* Forwarding remains owned by its allocating MME after S11 relocation. */
+    ogs_pool_id_t relocation_xact_id;
+    unsigned int relocation_pending;
+    uint8_t relocation_cause;
+    ogs_gtp_node_t  *forwarding_gnode;
+    uint32_t        forwarding_mme_s11_teid;
+
     /* UE identity */
     uint8_t         imsi[OGS_MAX_IMSI_LEN];
     int             imsi_len;
@@ -85,6 +92,9 @@ typedef struct sgwc_sess_s {
 
     uint64_t        sgwc_sxa_seid;  /* SGW-C SEID is derived from NODE */
     uint64_t        sgwu_sxa_seid;  /* SGW-U SEID is received from Peer */
+
+    bool relocation_prepared;
+    ogs_timer_t *relocation_timer;
 
     /* APN Configuration */
     ogs_session_t   session;

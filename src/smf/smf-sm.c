@@ -176,6 +176,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+            if (sess && sess->gnode != gtp_xact->gnode) {
+                ogs_gtp2_send_error_message(gtp_xact,
+                        gtp2_sender_f_teid.teid_presence ? gtp2_sender_f_teid.teid : 0,
+                        OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+                break;
+            }
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_S5C_RX_DELETESESSIONREQ);
             smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ);
@@ -241,6 +247,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
+            break;
+        case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
+            smf_s5c_handle_delete_bearer_command(sess, gtp_xact,
+                    &gtp2_message.delete_bearer_command, &gtp2_sender_f_teid);
             break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
@@ -444,10 +454,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
 
         e->pfcp_xact_id = pfcp_xact ? pfcp_xact->id : OGS_INVALID_POOL_ID;
+        ogs_pkbuf_t *gtp_snapshot = pfcp_xact->gtpbuf;
+        pfcp_xact->gtpbuf = NULL;
 
         e->gtp2_message = NULL;
-        if (pfcp_xact->gtpbuf) {
-            rv = ogs_gtp2_parse_msg(&gtp2_message, pfcp_xact->gtpbuf);
+        if (gtp_snapshot) {
+            rv = ogs_gtp2_parse_msg(&gtp2_message, gtp_snapshot);
             e->gtp2_message = &gtp2_message;
         }
 
@@ -456,6 +468,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_error("PFCP state machine exception");
         }
 
+        if (gtp_snapshot) ogs_pkbuf_free(gtp_snapshot);
         ogs_pkbuf_free(recvbuf);
         ogs_pfcp_message_free(pfcp_message);
         break;

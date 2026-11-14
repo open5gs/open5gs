@@ -31,6 +31,7 @@
 #include "mme-gn-handler.h"
 #include "mme-gtp-path.h"
 #include "mme-s11-handler.h"
+#include "mme-s10.h"
 #include "mme-fd-path.h"
 #include "mme-s6a-handler.h"
 #include "mme-s13-handler.h"
@@ -829,6 +830,16 @@ cleanup:
         ogs_free(s13_message);
         break;
 
+    case MME_EVENT_S10_TIMER:
+        if (e->timer_id == 1) mme_s10_handover_tick(e->mme_ue_id);
+        else mme_s10_holding_expired(e->mme_ue_id);
+        break;
+
+    case MME_EVENT_S10_MESSAGE:
+        mme_s10_receive(e->gnode, e->pkbuf);
+        ogs_pkbuf_free(e->pkbuf);
+        break;
+
     case MME_EVENT_S11_MESSAGE:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
@@ -898,17 +909,28 @@ cleanup:
             break;
         case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_create_session_response(
+            if (xact->create_action == OGS_GTP_CREATE_IN_S10_RELOCATION ||
+                    xact->create_action == OGS_GTP_CREATE_IN_S10_TAU_RELOCATION)
+                mme_s10_sgw_create_response(xact, mme_ue, &gtp_message);
+            else mme_s11_handle_create_session_response(
                 xact, mme_ue, &gtp_message.create_session_response);
             break;
         case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_modify_bearer_response(
-                xact, mme_ue, &gtp_message.modify_bearer_response);
+            if (xact->modify_action == OGS_GTP_MODIFY_IN_S10_TAU)
+                mme_s10_sgw_response(xact, mme_ue, &gtp_message.modify_bearer_response);
+            else if (xact->modify_action == OGS_GTP_MODIFY_IN_S10_HANDOVER)
+                mme_s10_handover_sgw_response(xact, mme_ue,
+                        &gtp_message.modify_bearer_response);
+            else
+                mme_s11_handle_modify_bearer_response(
+                    xact, mme_ue, &gtp_message.modify_bearer_response);
             break;
         case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_delete_session_response(
+            if (xact->delete_action == OGS_GTP_DELETE_IN_S10_RELOCATION)
+                ogs_gtp_xact_commit(xact);
+            else mme_s11_handle_delete_session_response(
                 xact, mme_ue, &gtp_message.delete_session_response);
             break;
         case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
@@ -918,6 +940,11 @@ cleanup:
         case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_update_bearer_request(
                 xact, mme_ue, &gtp_message.update_bearer_request);
+            break;
+        case OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+            ogs_warn("Dedicated bearer release rejected by gateway");
+            rv = ogs_gtp_xact_commit(xact);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
             mme_s11_handle_delete_bearer_request(
@@ -934,15 +961,19 @@ cleanup:
             break;
         case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
-                xact, mme_ue,
-                &gtp_message.create_indirect_data_forwarding_tunnel_response);
+            if (!mme_s10_handover_indirect_response(xact, &gtp_message))
+                mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
+                    xact, mme_ue,
+                    &gtp_message.create_indirect_data_forwarding_tunnel_response);
             break;
         case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
-                xact, mme_ue,
-                &gtp_message.delete_indirect_data_forwarding_tunnel_response);
+            if (xact->delete_indirect_action == OGS_GTP_DELETE_INDIRECT_S10_COMPLETE ||
+                    xact->delete_indirect_action == OGS_GTP_DELETE_INDIRECT_S10_CANCEL)
+                mme_s10_handover_cleanup_response(xact, &gtp_message);
+            else mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
+                    xact, mme_ue,
+                    &gtp_message.delete_indirect_data_forwarding_tunnel_response);
             break;
         case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
             if (!gtp_message.h.teid_presence) ogs_error("No TEID");

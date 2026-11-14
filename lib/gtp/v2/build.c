@@ -264,3 +264,35 @@ void ogs_gtp2_fill_header(
         }
     }
 }
+
+ogs_pkbuf_t *ogs_gtp2_build_delete_bearer_failure_indication(
+        const ogs_gtp2_delete_bearer_command_t *cmd, uint8_t cause_value)
+{
+    ogs_gtp2_message_t *msg = ogs_calloc(1, sizeof(*msg));
+    ogs_gtp2_delete_bearer_failure_indication_t *ind;
+    ogs_gtp2_cause_t cause = {0};
+    ogs_pkbuf_t *p;
+    int i, n = 0;
+    ogs_assert(msg);
+    msg->h.type = OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE;
+    ind = &msg->delete_bearer_failure_indication;
+    cause.value = cause_value;
+    ind->cause.presence = 1;
+    ind->cause.data = &cause;
+    ind->cause.len = sizeof(cause);
+    /* TS 29.274 7.2.17.2: both the message and each failed bearer
+     * carry a Cause. Echo identities, never pointer-owned request IEs. */
+    for (i = 0; cmd && i < OGS_BEARER_PER_UE; i++) {
+        const ogs_gtp2_tlv_bearer_context_t *in = &cmd->bearer_contexts[i];
+        ogs_gtp2_tlv_bearer_context_t *out;
+        if (!in->presence) break;
+        if (!in->eps_bearer_id.presence) continue;
+        out = &ind->bearer_context[n++];
+        out->presence = 1;
+        out->eps_bearer_id = in->eps_bearer_id;
+        out->cause = ind->cause;
+    }
+    p = ogs_gtp2_build_msg(msg);
+    ogs_free(msg);
+    return p;
+}

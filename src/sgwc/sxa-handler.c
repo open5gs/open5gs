@@ -20,6 +20,16 @@
 #include "pfcp-path.h"
 #include "gtp-path.h"
 #include "sxa-handler.h"
+#include "s5c-handler.h"
+
+static void relocation_reservation_expired(void *data)
+{
+    sgwc_sess_t *sess = sgwc_sess_find_by_id(OGS_POINTER_TO_UINT(data));
+    if (sess && sess->relocation_prepared) {
+        sess->relocation_prepared = false;
+        sgwc_pfcp_send_session_deletion_request(sess, OGS_INVALID_POOL_ID, NULL);
+    }
+}
 
 static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause)
 {
@@ -268,6 +278,10 @@ void sgwc_sxa_handle_session_establishment_response(
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+        if (sess) {
+            sgwc_sess_remove(sess);
+            if (sgwc_ue && ogs_list_empty(&sgwc_ue->sess_list)) sgwc_ue_remove(sgwc_ue);
+        }
         return;
     }
 
@@ -352,6 +366,15 @@ void sgwc_sxa_handle_session_establishment_response(
         indication = create_session_request->indication_flags.data;
     }
 
+    if (sess->pgw_s5c_teid && (!indication || !indication->operation_indication)) {
+        sess->relocation_prepared = true;
+        sess->relocation_timer = ogs_timer_add(ogs_app()->timer_mgr,
+                relocation_reservation_expired, OGS_UINT_TO_POINTER(sess->id));
+        ogs_assert(sess->relocation_timer);
+        ogs_timer_start(sess->relocation_timer, ogs_time_from_sec(45));
+        sgwc_gtp_send_create_session_response(sess, s11_xact);
+        return;
+    }
     if (indication && indication->operation_indication) {
         ogs_gtp2_message_t send_message;
         ogs_gtp2_modify_bearer_request_t *modify_bearer_request =
@@ -370,6 +393,10 @@ void sgwc_sxa_handle_session_establishment_response(
         send_message.h.teid = sess->pgw_s5c_teid;
 
         /* Send Control Plane(DL) : SGW-S5C */
+        modify_bearer_request->serving_network = create_session_request->serving_network;
+        modify_bearer_request->rat_type = create_session_request->rat_type;
+        modify_bearer_request->user_location_information = create_session_request->user_location_information;
+        modify_bearer_request->ue_time_zone = create_session_request->ue_time_zone;
         modify_bearer_request->sender_f_teid_for_control_plane.presence = 1;
         modify_bearer_request->sender_f_teid_for_control_plane.
             data = &sgw_s5c_teid;
@@ -793,6 +820,9 @@ void sgwc_sxa_handle_session_modification_response(
                     }
                 }
 
+                sgwc_ue->forwarding_gnode = NULL;
+                sgwc_ue->forwarding_mme_s11_teid = 0;
+
                 if (!s11_xact) {
                     ogs_warn("S11 transaction has already been removed [%u]; "
                             "reclaimed [%d] local indirect tunnels",
@@ -815,7 +845,8 @@ void sgwc_sxa_handle_session_modification_response(
 
                 send_message.h.type =
                 OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE;
-                send_message.h.teid = sgwc_ue->mme_s11_teid;
+                send_message.h.teid = s11_xact->remote_teid ?
+                    s11_xact->remote_teid : sgwc_ue->mme_s11_teid;
 
                 pkbuf = ogs_gtp2_build_msg(&send_message);
                 if (!pkbuf) {
@@ -1228,6 +1259,8 @@ void sgwc_sxa_handle_session_modification_response(
                     indication = gtp_req->indication_flags.data;
                 }
 
+                if (sgwc_s5c_activate_relocated_sessions(sgwc_ue, s11_xact, gtp_req))
+                    return;
                 if (indication && indication->handover_indication) {
                     recv_message->h.type = OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE;
                     recv_message->h.teid = sess->pgw_s5c_teid;
@@ -1530,9 +1563,12 @@ void sgwc_sxa_handle_session_deletion_response(
     }
 
 cleanup:
-    if (sess)
+    if (sess) {
+        sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
         sgwc_sess_remove(sess);
-    else
+        if (sgwc_ue && ogs_list_empty(&sgwc_ue->sess_list))
+            sgwc_ue_remove(sgwc_ue);
+    } else
         ogs_error("No Session");
 }
 
