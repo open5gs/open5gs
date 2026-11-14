@@ -1,0 +1,863 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "test-common.h"
+
+static ogs_pkbuf_t *handover_required(test_ue_t *ue, uint32_t enb_id, bool direct)
+{
+    ogs_pkbuf_t *p = test_s1ap_build_handover_required(ue,
+            S1AP_HandoverType_intralte, S1AP_ENB_ID_PR_macroENB_ID, enb_id,
+            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_time_critical_handover);
+    ogs_s1ap_message_t msg;
+    S1AP_HandoverRequiredIEs_t *ie;
+    S1AP_HandoverRequired_t *required;
+    if (!p || !direct) return p;
+    memset(&msg, 0, sizeof(msg));
+    if (ogs_s1ap_decode(&msg, p) != OGS_OK) {
+        ogs_pkbuf_free(p);
+        return NULL;
+    }
+    ogs_pkbuf_free(p);
+    required = msg.choice.initiatingMessage->value.choice.HandoverRequired;
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ie->id = S1AP_ProtocolIE_ID_id_Direct_Forwarding_Path_Availability;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_HandoverRequiredIEs__value_PR_Direct_Forwarding_Path_Availability;
+    ie->value.choice.Direct_Forwarding_Path_Availability =
+        CALLOC(1, sizeof(*ie->value.choice.Direct_Forwarding_Path_Availability));
+    ogs_assert(ie->value.choice.Direct_Forwarding_Path_Availability);
+    *ie->value.choice.Direct_Forwarding_Path_Availability =
+        S1AP_Direct_Forwarding_Path_Availability_directPathAvailable;
+    ASN_SEQUENCE_ADD(required->protocolIEs, ie);
+    return ogs_s1ap_encode(&msg);
+}
+
+static ogs_pkbuf_t *configuration_transfer(test_ue_t *ue, int direction)
+{
+    ogs_pkbuf_t *p = test_s1ap_build_enb_configuration_transfer(direction);
+    ogs_s1ap_message_t msg;
+    S1AP_ENBConfigurationTransfer_t *transfer;
+    uint16_t tac = htobe16(ue->e_tai.tac);
+    int i;
+    memset(&msg, 0, sizeof(msg));
+    if (ogs_s1ap_decode(&msg, p) != OGS_OK) {
+        ogs_pkbuf_free(p);
+        return NULL;
+    }
+    ogs_pkbuf_free(p);
+    transfer = msg.choice.initiatingMessage->value.choice.ENBConfigurationTransfer;
+    for (i = 0; i < OGS_ASN_LIST_COUNT(transfer->protocolIEs); i++) {
+        S1AP_ENBConfigurationTransferIEs_t *ie = OGS_ASN_LIST_GET(transfer->protocolIEs, i);
+        if (ie->id == S1AP_ProtocolIE_ID_id_SONConfigurationTransferECT) {
+            S1AP_SONConfigurationTransfer_t *son = ie->value.choice.SONConfigurationTransfer;
+            /* The captured SON exchange has another operator's PLMN/TAC.
+             * Bind both identities to the eNBs announced in this fixture. */
+            memcpy(son->targeteNB_ID->global_ENB_ID->pLMNidentity.buf, &ue->e_tai.plmn_id, 3);
+            memcpy(son->sourceeNB_ID->global_ENB_ID->pLMNidentity.buf, &ue->e_tai.plmn_id, 3);
+            memcpy(son->targeteNB_ID->selected_TAI->pLMNidentity.buf, &ue->e_tai.plmn_id, 3);
+            memcpy(son->sourceeNB_ID->selected_TAI->pLMNidentity.buf, &ue->e_tai.plmn_id, 3);
+            memcpy(son->targeteNB_ID->selected_TAI->tAC.buf, &tac, 2);
+            memcpy(son->sourceeNB_ID->selected_TAI->tAC.buf, &tac, 2);
+        }
+    }
+    return ogs_s1ap_encode(&msg);
+}
+
+static int send_forwarded_downlink(ogs_socknode_t *node,
+        test_bearer_t *bearer, ogs_pkbuf_t *payload)
+{
+    test_bearer_t forwarding = *bearer;
+    ogs_gtp2_header_desc_t header = {0};
+    /* The advertised endpoint may be the eNB itself or the source SGW.
+     * Use its address, rather than always routing a forwarding TEID to SGW. */
+    forwarding.sgw_s1u_ip = bearer->handover.dl_ip;
+    header.type = OGS_GTPU_MSGTYPE_GPDU;
+    header.teid = bearer->handover.dl_teid;
+    header.pdcp_number_presence = true;
+    header.pdcp_number = 0x4567;
+    return test_gtpu_send(node, &forwarding, &header, payload);
+}
+
+/* Build a standards-compliant ACK with EBI 6 explicitly refused. */
+static ogs_pkbuf_t *partial_handover_ack(
+        test_ue_t *ue, test_sess_t *sess, uint8_t rejected_ebi)
+{
+    test_bearer_t *rejected = test_bearer_find_by_ue_ebi(ue, rejected_ebi);
+    ogs_pkbuf_t *p;
+    ogs_s1ap_message_t msg = {0};
+    S1AP_HandoverRequestAcknowledge_t *ack;
+    S1AP_HandoverRequestAcknowledgeIEs_t *ie;
+    S1AP_E_RABFailedtoSetupItemHOReqAckIEs_t *item;
+    S1AP_E_RABFailedToSetupItemHOReqAck_t *failed;
+    ogs_assert(rejected);
+    ogs_list_remove(&sess->bearer_list, rejected);
+    p = test_s1ap_build_handover_request_ack(ue);
+    ogs_list_add(&sess->bearer_list, rejected);
+    ogs_assert(p && ogs_s1ap_decode(&msg, p) == OGS_OK);
+    ogs_pkbuf_free(p);
+    ack = msg.choice.successfulOutcome->value.choice.HandoverRequestAcknowledge;
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(ack->protocolIEs, ie);
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABFailedToSetupListHOReqAck;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_HandoverRequestAcknowledgeIEs__value_PR_E_RABFailedtoSetupListHOReqAck;
+    ie->value.choice.E_RABFailedtoSetupListHOReqAck =
+        ogs_asn_calloc_constructed(&asn_DEF_S1AP_E_RABFailedtoSetupListHOReqAck);
+    item = CALLOC(1, sizeof(*item));
+    ogs_assert(item);
+    ASN_SEQUENCE_ADD(ie->value.choice.E_RABFailedtoSetupListHOReqAck, item);
+    item->id = S1AP_ProtocolIE_ID_id_E_RABFailedtoSetupItemHOReqAck;
+    item->criticality = S1AP_Criticality_ignore;
+    item->value.present = S1AP_E_RABFailedtoSetupItemHOReqAckIEs__value_PR_E_RABFailedToSetupItemHOReqAck;
+    failed = item->value.choice.E_RABFailedToSetupItemHOReqAck = CALLOC(1, sizeof(*failed));
+    ogs_assert(failed);
+    failed->e_RAB_ID = rejected_ebi;
+    failed->cause = CALLOC(1, sizeof(*failed->cause));
+    ogs_assert(failed->cause);
+    failed->cause->present = S1AP_Cause_PR_radioNetwork;
+    failed->cause->choice.radioNetwork =
+        S1AP_CauseRadioNetwork_no_radio_resources_available_in_target_cell;
+    return ogs_s1ap_encode(&msg);
+}
+
+static void assert_released_bearer(abts_case *tc, ogs_pkbuf_t *p)
+{
+    ogs_s1ap_message_t msg = {0};
+    S1AP_HandoverCommand_t *cmd;
+    int i, count = 0;
+    ABTS_INT_EQUAL(tc, OGS_OK, ogs_s1ap_decode(&msg, p));
+    cmd = msg.choice.successfulOutcome->value.choice.HandoverCommand;
+    for (i = 0; i < OGS_ASN_LIST_COUNT(cmd->protocolIEs); i++) {
+        S1AP_HandoverCommandIEs_t *ie = OGS_ASN_LIST_GET(cmd->protocolIEs, i);
+        if (ie->id == S1AP_ProtocolIE_ID_id_E_RABtoReleaseListHOCmd) {
+            S1AP_E_RABItemIEs_t *item;
+            count = OGS_ASN_LIST_COUNT(ie->value.choice.E_RABList);
+            ABTS_INT_EQUAL(tc, 1, count);
+            item = OGS_ASN_LIST_GET(ie->value.choice.E_RABList, 0);
+            ABTS_INT_EQUAL(tc, 6, item->value.choice.E_RABItem->e_RAB_ID);
+        }
+    }
+    ABTS_INT_EQUAL(tc, 1, count);
+    ogs_s1ap_free(&msg);
+}
+
+static void connected_handover(abts_case *tc, void *data)
+{
+    int rv;
+    bool direct = data != NULL;
+    bool partial = data == (void *)2;
+    bool rejected_default = data == (void *)3;
+    ogs_socknode_t *s1ap1, *s1ap2;
+    ogs_socknode_t *gtpu1, *gtpu2;
+    ogs_pkbuf_t *emmbuf;
+    ogs_pkbuf_t *esmbuf;
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+    ogs_pkbuf_t *pkbuf;
+    ogs_s1ap_message_t message;
+
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *bearer = NULL;
+
+    ogs_sockaddr_t *saved_addr, *target_addr;
+    uint32_t enb_ue_s1ap_id, serving_uplink_teid;
+    uint64_t mme_ue_s1ap_id;
+
+    bson_t *doc = NULL;
+
+    /* Setup Test UE & Session Context */
+    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
+
+    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    mobile_identity_suci.routing_indicator1 = 0;
+    mobile_identity_suci.routing_indicator2 = 0xf;
+    mobile_identity_suci.routing_indicator3 = 0xf;
+    mobile_identity_suci.routing_indicator4 = 0xf;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
+    mobile_identity_suci.home_network_pki_value = 0;
+
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, rejected_default ? "3746000010" : partial ? "3746000009" : direct ? "3746000008" : "3746000007");
+    ogs_assert(test_ue);
+
+    test_ue->e_cgi.cell_id = 0x1234560;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
+
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
+
+    sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
+    ogs_assert(sess);
+
+    /* Two eNB connects to MME */
+    s1ap1 = tests1ap_client(AF_INET);
+    ABTS_PTR_NOTNULL(tc, s1ap1);
+
+    ABTS_INT_EQUAL(tc, OGS_OK,
+            ogs_getaddrinfo(&target_addr, AF_INET, "127.0.0.12", 36412, 0));
+    saved_addr = test_self()->s1ap_addr;
+    test_self()->s1ap_addr = target_addr;
+    s1ap2 = tests1ap_client(AF_INET);
+    test_self()->s1ap_addr = saved_addr;
+    ogs_freeaddrinfo(target_addr);
+    ABTS_PTR_NOTNULL(tc, s1ap2);
+
+    /* eNB connects to SGW */
+    gtpu1 = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu1);
+
+    gtpu2 = test_gtpu_server(2, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu2);
+
+    /* S1-Setup Reqeust/Response for Source eNB */
+    sendbuf = test_s1ap_build_s1_setup_request(
+            S1AP_ENB_ID_PR_macroENB_ID, 0x1f2);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(NULL, recvbuf);
+
+    /* S1-Setup Reqeust/Response for Target eNB */
+    sendbuf = test_s1ap_build_s1_setup_request(
+            S1AP_ENB_ID_PR_macroENB_ID, 0x43);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(NULL, recvbuf);
+
+    /********** Insert Subscriber in Database */
+    doc = test_db_new_qos_flow(test_ue);
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
+
+    /* Send Attach Request */
+    memset(&sess->pdn_connectivity_param,
+            0, sizeof(sess->pdn_connectivity_param));
+    sess->pdn_connectivity_param.eit = 1;
+    sess->pdn_connectivity_param.pco = 1;
+    sess->pdn_connectivity_param.request_type =
+        OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
+    esmbuf = testesm_build_pdn_connectivity_request(
+            sess, false, OGS_NAS_EPS_PDN_TYPE_IPV4V6);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+
+    memset(&test_ue->attach_request_param,
+            0, sizeof(test_ue->attach_request_param));
+    test_ue->attach_request_param.guti = 1;
+    test_ue->attach_request_param.last_visited_registered_tai = 1;
+    test_ue->attach_request_param.drx_parameter = 1;
+    test_ue->attach_request_param.tmsi_status = 1;
+    test_ue->attach_request_param.mobile_station_classmark_2 = 1;
+    test_ue->attach_request_param.additional_update_type = 1;
+    test_ue->attach_request_param.ue_usage_setting = 1;
+    test_ue->attach_request_param.old_guti_type = 1;
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+
+    memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
+    test_ue->initial_ue_param.gummei_id = 1;
+    test_ue->initial_ue_param.gummei.mme_gid = 2;
+    test_ue->initial_ue_param.gummei.mme_code = 1;
+    sendbuf = test_s1ap_build_initial_ue_message(
+            test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, false);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Identity Request */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Identity response */
+    emmbuf = testemm_build_identity_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Authentication Request */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Authentication response */
+    emmbuf = testemm_build_authentication_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Security mode Command */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Security mode complete */
+    test_ue->mobile_identity_imeisv_presence = true;
+    emmbuf = testemm_build_security_mode_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive ESM Information Request */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send ESM Information Response */
+    esmbuf = testesm_build_esm_information_response(sess);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Initial Context Setup Request +
+     * Attach Accept +
+     * Activate Default Bearer Context Request */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send UE Capability Info Indication */
+    sendbuf = tests1ap_build_ue_radio_capability_info_indication(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Initial Context Setup Response */
+    sendbuf = test_s1ap_build_initial_context_setup_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Attach Complete + Activate default EPS bearer cotext accept */
+    test_ue->nr_cgi.cell_id = 0x1234502;
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    esmbuf = testesm_build_activate_default_eps_bearer_context_accept(
+            bearer, false);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    emmbuf = testemm_build_attach_complete(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive EMM information */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Receive E-RAB Setup Request +
+     * Activate dedicated EPS bearer context request */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send E-RAB Setup Response */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
+    ogs_assert(bearer);
+    sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Activate dedicated EPS bearer context accept */
+    esmbuf = testesm_build_activate_dedicated_eps_bearer_context_accept(bearer);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send ENB configuration transfer */
+    sendbuf = configuration_transfer(test_ue, 0);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive MME configuration transfer */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send ENB configuration transfer */
+    sendbuf = configuration_transfer(test_ue, 1);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive MME configuration transfer */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* DELAY is needed in dedicated EPS bearer */
+    ogs_msleep(100);
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Save the source radio identifiers independently of target preparation. */
+    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+    /* Send Handover Required */
+    sendbuf = handover_required(test_ue, 0x43, direct);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    serving_uplink_teid = bearer->sgw_s1u_teid;
+    /* Receive Handover Request */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ABTS_INT_EQUAL(tc, serving_uplink_teid, bearer->sgw_s1u_teid);
+    /* Send Handover Request Ack */
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        bearer->enb_s1u_addr = test_self()->gnb2_addr;
+        bearer->enb_s1u_addr6 = test_self()->gnb2_addr6;
+    }
+    sendbuf = (partial || rejected_default) ?
+        partial_handover_ack(test_ue, sess, rejected_default ? 5 : 6) :
+        test_s1ap_build_handover_request_ack(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    if (rejected_default) {
+        /* No PDN can survive: refuse the relocation and release the
+         * target reservation, retaining both serving source bearers. */
+        recvbuf = testenb_s1ap_read(s1ap1);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        memset(&message, 0, sizeof(message));
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_s1ap_decode(&message, recvbuf));
+        ABTS_INT_EQUAL(tc, S1AP_S1AP_PDU_PR_unsuccessfulOutcome, message.present);
+        ABTS_INT_EQUAL(tc, S1AP_UnsuccessfulOutcome__value_PR_HandoverPreparationFailure,
+                message.choice.unsuccessfulOutcome->value.present);
+        ogs_s1ap_free(&message);
+        ogs_pkbuf_free(recvbuf);
+        recvbuf = testenb_s1ap_read(s1ap2);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        tests1ap_recv(test_ue, recvbuf);
+        ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_UEContextRelease,
+                test_ue->s1ap_procedure_code);
+        sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+        ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(s1ap2, sendbuf));
+        test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
+        test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4));
+            recvbuf = test_gtpu_read(gtpu1);
+            ABTS_PTR_NOTNULL(tc, recvbuf);
+            ogs_pkbuf_free(recvbuf);
+        }
+        goto cleanup;
+    }
+
+    /* Receive Handover Command */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    if (partial) assert_released_bearer(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+
+    /* Copy ICMP Packet */
+    pkbuf = ogs_pkbuf_alloc(NULL, 200);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
+    ogs_pkbuf_put(pkbuf, 200-OGS_GTPV1U_5GC_HEADER_LEN);
+    memset(pkbuf->data, 0, pkbuf->len);
+    memcpy(pkbuf->data, recvbuf->data + 8, recvbuf->len - 8);
+
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U Packet with Indirect Data Forwarding */
+    rv = send_forwarded_downlink(gtpu1, bearer, pkbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive the forwarded downlink at the endpoint admitted by target eNB. */
+    recvbuf = testgnb_gtpu_read(gtpu2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ABTS_INT_EQUAL(tc, bearer->enb_s1u_teid + 10,
+            be32toh(((ogs_gtp2_header_t *)recvbuf->data)->teid));
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send eNB Status Transfer */
+    sendbuf = test_s1ap_build_enb_status_transfer(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive MME Status Transfer */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Handover Notify */
+    test_ue->e_cgi.cell_id = 0xabcdef0;
+    sendbuf = test_s1ap_build_handover_notify(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive End Mark */
+    recvbuf = test_gtpu_read(gtpu1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    if (!partial) {
+        /* The refused EBI has no target radio endpoint or End Marker. */
+        recvbuf = test_gtpu_read(gtpu1);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        ogs_pkbuf_free(recvbuf);
+    } else {
+        recvbuf = testenb_s1ap_read(s1ap2);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        tests1ap_recv(test_ue, recvbuf);
+        ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_downlinkNASTransport,
+                test_ue->s1ap_procedure_code);
+        ABTS_INT_EQUAL(tc, OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST,
+                test_ue->esm_message_type);
+        bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
+        esmbuf = testesm_build_deactivate_eps_bearer_context_accept(bearer);
+        sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+        ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(s1ap2, sendbuf));
+        test_bearer_remove(bearer);
+    }
+
+    /* Send TAU Request */
+    memset(&test_ue->tau_request_param, 0, sizeof(test_ue->tau_request_param));
+    test_ue->tau_request_param.ue_network_capability = 1;
+    test_ue->tau_request_param.last_visited_registered_tai = 1;
+    test_ue->tau_request_param.drx_parameter = 1;
+    test_ue->tau_request_param.eps_bearer_context_status =
+        partial ? 0x20 : 0x60; /* EBI 5, optionally EBI 6. */
+    test_ue->tau_request_param.ms_network_capability = 1;
+    test_ue->tau_request_param.tmsi_status = 1;
+    test_ue->tau_request_param.mobile_station_classmark_2 = 1;
+    test_ue->tau_request_param.ue_usage_setting = 1;
+    emmbuf = testemm_build_tau_request(
+            test_ue, true, OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING,
+            true, true);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive TAU Accept */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Inter-MME mobility allocates a target GUTI, requiring TAU Complete. */
+    emmbuf = testemm_build_tau_complete(test_ue);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(s1ap2, sendbuf));
+
+    /* Receive UE Context Release Command */
+    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send UE Context Release Complete */
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
+    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu2, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    if (partial) goto cleanup;
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu2, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send Handover Required */
+    sendbuf = handover_required(test_ue, 0x1f2, direct);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    serving_uplink_teid = bearer->sgw_s1u_teid;
+    /* Receive Handover Request */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ABTS_INT_EQUAL(tc, serving_uplink_teid, bearer->sgw_s1u_teid);
+    /* Send Handover Request Ack */
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        bearer->enb_s1u_addr = test_self()->gnb1_addr;
+        bearer->enb_s1u_addr6 = test_self()->gnb1_addr6;
+    }
+    sendbuf = test_s1ap_build_handover_request_ack(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Handover Command */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send eNB Status Transfer */
+    sendbuf = test_s1ap_build_enb_status_transfer(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive MME Status Transfer */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Handover Notify */
+    test_ue->e_cgi.cell_id = 0x1234560;
+    sendbuf = test_s1ap_build_handover_notify(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive End Mark */
+    recvbuf = test_gtpu_read(gtpu2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Receive End Mark */
+    recvbuf = test_gtpu_read(gtpu2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Register with the HSS after returning to the original MME. */
+    memset(&test_ue->tau_request_param, 0, sizeof(test_ue->tau_request_param));
+    test_ue->tau_request_param.ue_network_capability = 1;
+    emmbuf = testemm_build_tau_request(test_ue, true,
+            OGS_NAS_EPS_UPDATE_TYPE_TA_UPDATING, true, true);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(s1ap1, sendbuf));
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+    emmbuf = testemm_build_tau_complete(test_ue);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, testenb_s1ap_send(s1ap1, sendbuf));
+
+    /* Receive UE Context Release Command */
+    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send UE Context Release Complete */
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
+    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send Handover Required */
+    sendbuf = handover_required(test_ue, 0x43, direct);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    serving_uplink_teid = bearer->sgw_s1u_teid;
+    /* Receive Handover Request */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ABTS_INT_EQUAL(tc, serving_uplink_teid, bearer->sgw_s1u_teid);
+    /* Send Handover Request Ack */
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        bearer->enb_s1u_addr = test_self()->gnb1_addr;
+        bearer->enb_s1u_addr6 = test_self()->gnb1_addr6;
+    }
+    sendbuf = test_s1ap_build_handover_request_ack(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Handover Command */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Handover Cancel */
+    sendbuf = test_s1ap_build_handover_cancel(test_ue,
+            S1AP_Cause_PR_radioNetwork,
+            S1AP_CauseRadioNetwork_tS1relocprep_expiry);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send UE Context Release Complete */
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Recv HandoverCancelAcknowledge */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Cancellation removes forwarding reservations, preserving both serving
+     * bearers and the original source radio path. */
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        ABTS_INT_EQUAL(tc, OGS_OK, test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4));
+        recvbuf = test_gtpu_read(gtpu1);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        ogs_pkbuf_free(recvbuf);
+    }
+    ogs_msleep(300);
+
+cleanup:
+    /********** Remove Subscriber in Database */
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
+
+    /* eNB disonncect from SGW */
+    testgnb_gtpu_close(gtpu2);
+    testgnb_gtpu_close(gtpu1);
+
+    /* Two eNB disonncect from MME */
+    testenb_s1ap_close(s1ap1);
+    testenb_s1ap_close(s1ap2);
+
+    test_ue_remove(test_ue);
+}
+
+abts_suite *test_s10_connected(abts_suite *suite)
+{
+    suite = ADD_SUITE(suite);
+    abts_run_test(suite, connected_handover, NULL);
+    abts_run_test(suite, connected_handover, (void *)1);
+    abts_run_test(suite, connected_handover, (void *)2);
+    abts_run_test(suite, connected_handover, (void *)3);
+    return suite;
+}

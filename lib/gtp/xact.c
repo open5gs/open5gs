@@ -288,6 +288,11 @@ ogs_gtp_xact_t *ogs_gtp_xact_find_by_id(ogs_pool_id_t id)
     return ogs_pool_find_by_id(&pool, id);
 }
 
+void ogs_gtp_xact_cancel(ogs_gtp_xact_t *xact)
+{
+    ogs_gtp_xact_delete(xact);
+}
+
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode)
 {
     ogs_gtp_xact_t *xact = NULL, *next_xact = NULL;
@@ -420,6 +425,8 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
             OGS_PORT(&xact->gnode->addr));
 
     stage = ogs_gtp2_xact_get_stage(hdesc->type, xact->xid);
+    if (hdesc->type == OGS_GTP2_CONTEXT_RESPONSE_TYPE && xact->response_final)
+        stage = GTP_XACT_FINAL_STAGE;
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
@@ -523,6 +530,8 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
         stage = ogs_gtp1_xact_get_stage(type, xact->xid);
     else
         stage = ogs_gtp2_xact_get_stage(type, xact->xid);
+    if (xact->gtp_version == 2 && type == OGS_GTP2_CONTEXT_RESPONSE_TYPE &&
+            xact->response_final) stage = GTP_XACT_FINAL_STAGE;
 
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
@@ -704,6 +713,8 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
         stage = ogs_gtp1_xact_get_stage(type, xact->xid);
     else
         stage = ogs_gtp2_xact_get_stage(type, xact->xid);
+    if (xact->gtp_version == 2 && type == OGS_GTP2_CONTEXT_RESPONSE_TYPE &&
+            xact->response_final) stage = GTP_XACT_FINAL_STAGE;
 
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
@@ -1044,7 +1055,11 @@ int ogs_gtp_xact_receive(
         list = &gnode->local_list;
         break;
     case GTP_XACT_FINAL_STAGE:
-        if (xid & OGS_GTP_CMD_XACT_ID) {
+        if (type == OGS_GTP2_CONTEXT_ACKNOWLEDGE_TYPE) {
+            /* The third leg of the S10 Context transfer belongs to the
+             * transaction created when the old MME received the request. */
+            list = &gnode->remote_list;
+        } else if (xid & OGS_GTP_CMD_XACT_ID) {
             if (type == OGS_GTP2_MODIFY_BEARER_FAILURE_INDICATION_TYPE ||
                 type == OGS_GTP2_DELETE_BEARER_FAILURE_INDICATION_TYPE ||
                 type == OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE) {
@@ -1168,6 +1183,12 @@ static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t xid)
     ogs_gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
 
     switch (type) {
+    case OGS_GTP2_IDENTIFICATION_REQUEST_TYPE:
+    case OGS_GTP2_CONTEXT_REQUEST_TYPE:
+    case OGS_GTP2_FORWARD_RELOCATION_REQUEST_TYPE:
+    case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_NOTIFICATION_TYPE:
+    case OGS_GTP2_FORWARD_ACCESS_CONTEXT_NOTIFICATION_TYPE:
+    case OGS_GTP2_RELOCATION_CANCEL_REQUEST_TYPE:
     case OGS_GTP2_ECHO_REQUEST_TYPE:
     case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
     case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
@@ -1202,6 +1223,15 @@ static ogs_gtp_xact_stage_t ogs_gtp2_xact_get_stage(uint8_t type, uint32_t xid)
         else
             stage = GTP_XACT_INITIAL_STAGE;
         break;
+    case OGS_GTP2_CONTEXT_RESPONSE_TYPE:
+        stage = GTP_XACT_INTERMEDIATE_STAGE;
+        break;
+    case OGS_GTP2_IDENTIFICATION_RESPONSE_TYPE:
+    case OGS_GTP2_CONTEXT_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_FORWARD_RELOCATION_RESPONSE_TYPE:
+    case OGS_GTP2_FORWARD_RELOCATION_COMPLETE_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_FORWARD_ACCESS_CONTEXT_ACKNOWLEDGE_TYPE:
+    case OGS_GTP2_RELOCATION_CANCEL_RESPONSE_TYPE:
     case OGS_GTP2_ECHO_RESPONSE_TYPE:
     case OGS_GTP2_VERSION_NOT_SUPPORTED_INDICATION_TYPE:
     case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:

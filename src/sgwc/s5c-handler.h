@@ -44,6 +44,9 @@ void sgwc_s5c_handle_update_bearer_request(
 void sgwc_s5c_handle_delete_bearer_request(
         sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message);
+void sgwc_s5c_handle_delete_bearer_failure_indication(
+        sgwc_sess_t *sess, ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg);
+
 void sgwc_s5c_handle_bearer_resource_failure_indication(
         sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message);

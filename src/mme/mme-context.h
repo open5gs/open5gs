@@ -193,6 +193,7 @@ typedef struct mme_context_s {
     ogs_hash_t *guti_ue_hash;   /* hash table (GUTI : MME_UE) */
 
     ogs_hash_t *mme_s11_teid_hash;  /* hash table (MME-S11-TEID : MME_UE) */
+    ogs_hash_t *mme_s10_teid_hash;
     ogs_hash_t *mme_gn_teid_hash;  /* hash table (MME-GN-TEID : MME_UE) */
 
     struct {
@@ -294,6 +295,7 @@ typedef struct mme_enb_s {
 
     bool            enb_id_presence;
     uint32_t        enb_id;     /* eNB_ID received from eNB */
+    S1AP_ENB_ID_PR   enb_type;   /* The CHOICE is part of the global identity. */
     /* Optional human-readable eNB name from the S1SetupRequest eNBname
      * IE (S1AP id_eNBname).  Empty string when the eNB doesn't include
      * the IE.  Capped at 64 octets; the spec PrintableString upper
@@ -486,6 +488,15 @@ typedef struct mme_ue_memento_s {
     uint8_t selected_int_algorithm;
 } mme_ue_memento_t;
 
+typedef struct mme_as_security_s {
+    bool valid;
+    uint8_t kasme[OGS_SHA256_DIGEST_SIZE];
+    uint8_t ksi;
+    uint8_t nh[OGS_SHA256_DIGEST_SIZE];
+    uint8_t ncc;
+    ogs_pool_id_t enb_ue_id;
+} mme_as_security_t;
+
 struct mme_ue_s {
     ogs_lnode_t     lnode;
     ogs_pool_id_t   id;
@@ -579,6 +590,25 @@ struct mme_ue_s {
         ogs_pool_id_t   gtp_xact_id; /* 2g->4g SGSN Context Req/Resp/Ack gtp1c xact */
     } gn;
 
+    struct mme_s10_handover_s *s10_handover;
+    uint32_t mme_s10_teid;
+    struct {
+        ogs_pool_id_t xact_id;
+        struct mme_s10_peer_s *peer;
+        uint32_t remote_teid;
+        ogs_pool_id_t sgw_xact_id;
+        ogs_pkbuf_t *request;
+        bool target_transfer;
+        bool auth_pending;
+        bool fresh_security;
+        bool gateway_updated;
+        bool source_transfer;
+        bool acknowledged;
+        bool cancel_location;
+        ogs_timer_t *holding;
+
+    } s10;
+
     /* Received TAU identity, separate from the pending GUTI allocation. */
     ogs_nas_eps_guti_t old_guti;
 
@@ -653,6 +683,10 @@ struct mme_ue_s {
 
     /* Memento of context fields */
     mme_ue_memento_t memento;
+
+    mme_as_security_t as_security;
+    mme_as_security_t as_pending;
+    int as_pending_procedure;
 
     /* Security Context */
     ogs_nas_ue_network_capability_t ue_network_capability;
@@ -908,7 +942,7 @@ struct mme_ue_s {
         CLEAR_MME_UE_TIMER((__mME)->t_mobile_reachable); \
         CLEAR_MME_UE_TIMER((__mME)->t_implicit_detach); \
         \
-        ogs_list_for_each(&mme_ue->sess_list, sess) { \
+        ogs_list_for_each(&(__mME)->sess_list, sess) { \
             ogs_list_for_each(&sess->bearer_list, bearer) { \
                 CLEAR_BEARER_ALL_TIMERS(bearer); \
             } \
@@ -1142,6 +1176,8 @@ typedef struct mme_bearer_s {
     uint32_t        pgw_s5u_teid;
     ogs_ip_t        pgw_s5u_ip;
 
+    ogs_pool_id_t   release_xact_id; /* MME-initiated dedicated release. */
+    bool            s10_not_admitted; /* No radio bearer exists after S10 HO. */
     uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
     ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
 
@@ -1262,6 +1298,9 @@ int mme_enb_remove(mme_enb_t *enb);
 int mme_enb_remove_all(void);
 mme_enb_t *mme_enb_find_by_addr(const ogs_sockaddr_t *addr);
 mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
+mme_enb_t *mme_enb_find_by_global_id(
+        const ogs_plmn_id_t *plmn, S1AP_ENB_ID_PR type, uint32_t id);
+mme_enb_t *mme_enb_find_by_s1ap_global_id(const S1AP_Global_ENB_ID_t *global);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
 mme_enb_t *mme_enb_find_by_id(ogs_pool_id_t id);
@@ -1321,6 +1360,8 @@ typedef enum {
     MME_UE_IMSI_FROM_ATTACH_REQUEST = 0,
     MME_UE_IMSI_FROM_IDENTITY_RESPONSE,
     MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE,
+    MME_UE_IMSI_FROM_S10_IDENTIFICATION,
+    MME_UE_IMSI_FROM_S10_CONTEXT,
 } mme_ue_imsi_source_e;
 
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,

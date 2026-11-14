@@ -59,6 +59,9 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
         sgwc_ue_t *sgwc_ue, ogs_gtp_xact_t *s11_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message);
 
+void sgwc_s11_handle_delete_bearer_command(
+        sgwc_ue_t *ue, ogs_gtp_xact_t *xact, ogs_gtp2_message_t *msg);
+
 void sgwc_s11_handle_bearer_resource_command(
         sgwc_ue_t *sgwc_ue, ogs_gtp_xact_t *s11_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message);

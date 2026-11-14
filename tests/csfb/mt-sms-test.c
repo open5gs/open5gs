@@ -21,6 +21,46 @@
 
 extern ogs_socknode_t *sgsap;
 
+static ogs_pkbuf_t *build_s1ap_barrier(void)
+{
+    ogs_s1ap_message_t message;
+    S1AP_InitiatingMessage_t *initiatingMessage;
+    S1AP_ENBConfigurationUpdate_t *update;
+    S1AP_ENBConfigurationUpdateIEs_t *ie;
+
+    memset(&message, 0, sizeof(message));
+    message.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    message.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
+    initiatingMessage = message.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_ENBConfigurationUpdate;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_ENBConfigurationUpdate;
+    initiatingMessage->value.choice.ENBConfigurationUpdate =
+        CALLOC(1, sizeof(*update));
+    update = initiatingMessage->value.choice.ENBConfigurationUpdate;
+    ogs_assert(update);
+    update->protocolIEs = ogs_asn_calloc_protocol_ies(
+            &asn_DEF_S1AP_ENBConfigurationUpdate);
+    ogs_assert(update->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(update->protocolIEs, ie);
+    ie->id = S1AP_ProtocolIE_ID_id_DefaultPagingDRX;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_ENBConfigurationUpdateIEs__value_PR_PagingDRX;
+    ie->value.choice.PagingDRX = CALLOC(1, sizeof(S1AP_PagingDRX_t));
+    ogs_assert(ie->value.choice.PagingDRX);
+    *ie->value.choice.PagingDRX = S1AP_PagingDRX_v64;
+
+    return ogs_s1ap_encode(&message);
+}
+
 static void test1_func(abts_case *tc, void *data)
 {
     int rv;
@@ -252,11 +292,30 @@ static void test1_func(abts_case *tc, void *data)
      * than S1AP Paging. This test would then block waiting for an S1AP
      * Paging message that is never sent.
      *
-     * There is no S1AP response to UEContextReleaseComplete that can be
-     * used as a protocol barrier, so allow the asynchronous S1 release
-     * processing to complete before testing the ECM-IDLE paging path.
+     * Both eNB messages use stream 0 on the same ordered association.
+     * Waiting for ENBConfigurationUpdateAcknowledge therefore confirms
+     * that the MME has processed the preceding release before paging.
+     * Repeat the existing default DRX without changing the served TAs.
      */
-    ogs_msleep(100);
+    sendbuf = build_s1ap_barrier();
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    rv = ogs_s1ap_decode(&message, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    if (rv == OGS_OK) {
+        ABTS_INT_EQUAL(tc, S1AP_S1AP_PDU_PR_successfulOutcome,
+                message.present);
+        if (message.present == S1AP_S1AP_PDU_PR_successfulOutcome) {
+            ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_ENBConfigurationUpdate,
+                    message.choice.successfulOutcome->procedureCode);
+        }
+        ogs_s1ap_free(&message);
+    }
+    ogs_pkbuf_free(recvbuf);
 
     /* Send SGsAP-Paging-Request */
     sendbuf = test_sgsap_paging_request(2);

@@ -59,6 +59,19 @@ void ogs_s1ap_uint32_to_ENB_ID(
         bit_string->buf[3] = (enb_id & 0xf) << 4;
 
         bit_string->bits_unused = 4;
+    } else if (present == S1AP_ENB_ID_PR_short_macroENB_ID ||
+               present == S1AP_ENB_ID_PR_long_macroENB_ID) {
+        BIT_STRING_t *bits = present == S1AP_ENB_ID_PR_short_macroENB_ID ?
+            &eNB_ID->choice.short_macroENB_ID : &eNB_ID->choice.long_macroENB_ID;
+        unsigned int unused = present == S1AP_ENB_ID_PR_short_macroENB_ID ? 6 : 3;
+        uint32_t aligned = enb_id << unused;
+        bits->size = 3;
+        bits->buf = CALLOC(bits->size, sizeof(uint8_t));
+        ogs_assert(bits->buf);
+        bits->bits_unused = unused;
+        bits->buf[0] = aligned >> 16;
+        bits->buf[1] = aligned >> 8;
+        bits->buf[2] = aligned;
     } else {
         ogs_assert_if_reached();
     }
@@ -84,6 +97,15 @@ int ogs_s1ap_ENB_ID_to_uint32(S1AP_ENB_ID_t *eNB_ID, uint32_t *uint32)
                 eNB_ID->choice.macroENB_ID.bits_unused != 4)
             return OGS_ERROR;
         *uint32 = (buf[0] << 12) + (buf[1] << 4) + ((buf[2] & 0xf0) >> 4);
+    } else if (eNB_ID->present == S1AP_ENB_ID_PR_short_macroENB_ID ||
+               eNB_ID->present == S1AP_ENB_ID_PR_long_macroENB_ID) {
+        BIT_STRING_t *bits = eNB_ID->present == S1AP_ENB_ID_PR_short_macroENB_ID ?
+            &eNB_ID->choice.short_macroENB_ID : &eNB_ID->choice.long_macroENB_ID;
+        unsigned int unused = eNB_ID->present == S1AP_ENB_ID_PR_short_macroENB_ID ? 6 : 3;
+        if (!bits->buf || bits->size != 3 || bits->bits_unused != unused)
+            return OGS_ERROR;
+        *uint32 = ((uint32_t)bits->buf[0] << 16 |
+                (uint32_t)bits->buf[1] << 8 | bits->buf[2]) >> unused;
     } else {
         return OGS_ERROR;
     }
