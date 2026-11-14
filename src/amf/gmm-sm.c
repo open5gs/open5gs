@@ -2871,6 +2871,13 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
+            /* TS 24.501 4.4.5: discard an unciphered message that shall
+             * have been ciphered, as this one is (5.4.2.3), with 5G-EA0 too. */
+            if (h.ciphered == 0) {
+                ogs_error("[%s] Security-mode : Not Ciphered", amf_ue->supi);
+                break;
+            }
+
             if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_error("[%s] No Security Context", amf_ue->supi);
                 break;

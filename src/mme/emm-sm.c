@@ -1381,6 +1381,13 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
+            /* TS 24.301 4.4.5: discard an unciphered message that shall
+             * have been ciphered, as this one is (5.4.3.3), with EEA0 too. */
+            if (h.ciphered == 0) {
+                ogs_error("[%s] Not Ciphered", mme_ue->imsi_bcd);
+                break;
+            }
+
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_error("[%s] No Security Context", mme_ue->imsi_bcd);
                 break;
