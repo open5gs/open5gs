@@ -170,9 +170,9 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     ogs_assert(ran_ue);
     ogs_assert(nasPdu);
 
+    /* TS24.501 4.4.4.3, 7.2.1: discard the message, keep the NG context */
     if (nasPdu->size < sizeof(ogs_nas_5gmm_header_t)) {
         ogs_error("NAS PDU too short [%d]", (int)nasPdu->size);
-        ran_ue_remove(ran_ue);
         return OGS_ERROR;
     }
 
@@ -212,7 +212,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         ogs_error("Not implemented(security header type:0x%x)",
                 sh->security_header_type);
         ogs_pkbuf_free(nasbuf);
-        ran_ue_remove(ran_ue);
         return OGS_ERROR;
     }
 
@@ -228,7 +227,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
             ogs_error("NAS PDU too short for security header [%d]",
                     (int)nasPdu->size);
             ogs_pkbuf_free(nasbuf);
-            ran_ue_remove(ran_ue);
             return OGS_ERROR;
         }
     }
@@ -241,7 +239,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     if (nasbuf->len < sizeof(ogs_nas_5gmm_header_t)) {
         ogs_error("NAS PDU too short for 5GMM header [%d]", (int)nasbuf->len);
         ogs_pkbuf_free(nasbuf);
-        ran_ue_remove(ran_ue);
         return OGS_ERROR;
     }
 
@@ -250,7 +247,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_5gs_security_decode failed()");
             ogs_pkbuf_free(nasbuf);
-            ran_ue_remove(ran_ue);
             return OGS_ERROR;
         }
     }
@@ -267,7 +263,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
             /*
              * 3GPP TS 38.413 clause 10.4:
              * Logical error in the NAS PDU carried in INITIAL UE MESSAGE.
-             * Reply with ERROR INDICATION before cleaning up the
+             * Reply with ERROR INDICATION; the caller cleans up the
              * (newly-created) ran_ue context.
              */
             ogs_expect(OGS_OK == ngap_send_error_indication2(ran_ue,
@@ -275,7 +271,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
                     NGAP_CauseProtocol_semantic_error));
 
             ogs_pkbuf_free(nasbuf);
-            ran_ue_remove(ran_ue);
 
             return OGS_ERROR;
         }
@@ -301,7 +296,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
                     NGAP_CauseProtocol_message_not_compatible_with_receiver_state));
 
             ogs_pkbuf_free(nasbuf);
-            ran_ue_remove(ran_ue);
 
             return OGS_ERROR;
         }
@@ -318,6 +312,8 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         e->ran_ue_id = ran_ue->id;
         e->ngap.code = procedureCode;
         e->nas.type = security_header_type.type;
+        if (amf_ue)
+            e->nas.mac_failed = amf_ue->mac_failed;
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
@@ -342,7 +338,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
                   h->extended_protocol_discriminator);
 
         ogs_pkbuf_free(nasbuf);
-        ran_ue_remove(ran_ue);
 
         return OGS_ERROR;
     }

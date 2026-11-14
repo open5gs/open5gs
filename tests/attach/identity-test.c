@@ -28,8 +28,8 @@
  *
  * Before: mme_ue_set_imsi() moves UE-2's session into UE-1's context
  *         -> ogs_assert(ogs_list_empty(&mme_ue->sess_list)) -> abort
- * After:  access bearers released, S1 released, Attach dropped, and
- *         UE-1 keeps its own session
+ * After:  Attach discarded (TS 24.301 4.4.4.3), and UE-1 keeps its own
+ *         session
  *
  * In the field the S1 context was mis-associated by a stale GUTI, but
  * that only explains how UE-1's context ended up on this connection.
@@ -388,9 +388,16 @@ static void attach_identity_mismatch_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /*
-     * Expect the release, not a reply to the Attach.
-     * Without the fix the MME is already gone by now.
+     * TS 24.301 4.4.4.3: the Attach is not integrity protected on the
+     * secured S1 context of UE-1, so it is discarded. The eNB then
+     * releases UE-1, as nothing answers the Attach.
      */
+    sendbuf = test_s1ap_build_ue_context_release_request(test_ue1,
+            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_user_inactivity);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue1, recvbuf);
@@ -737,9 +744,16 @@ static void attach_unknown_identity_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /*
-     * Expect the release, not a reply to the Attach.
-     * Without the fix the MME is already gone by now.
+     * TS 24.301 4.4.4.3: the Attach is not integrity protected on the
+     * secured S1 context of UE-1, so it is discarded. The eNB then
+     * releases UE-1, as nothing answers the Attach.
      */
+    sendbuf = test_s1ap_build_ue_context_release_request(test_ue1,
+            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_user_inactivity);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue1, recvbuf);
@@ -1258,9 +1272,10 @@ static void attach_during_authentication_func(
  *   Attach Request(IMSI of UE-2) sent with the S1AP IDs of UE-1
  *
  * This context cannot be re-labelled - moving UE-2's session into it is
- * what breaks Phase-2 of mme_ue_set_imsi() - so it is released like any
- * other. UE-1 then attaches again to show that what the MME kept does
- * not get in the way, and UE-2 is detached to show it was untouched.
+ * what breaks Phase-2 of mme_ue_set_imsi(). The Attach, not integrity
+ * protected after the secure exchange, is discarded, and UE-1 released.
+ * UE-1 then attaches again to show that what the MME kept does not get
+ * in the way, and UE-2 is detached to show it was untouched.
  */
 static void attach_during_session_setup_func(abts_case *tc, void *data)
 {
@@ -1597,9 +1612,16 @@ static void attach_during_session_setup_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /*
-     * Expect the release, not a reply to the Attach.
-     * Without the fix the MME is already gone by now.
+     * TS 24.301 4.4.4.3: the Attach is not integrity protected on the
+     * secured S1 context of UE-1, so it is discarded. The eNB then
+     * releases UE-1, as nothing answers the Attach.
      */
+    sendbuf = test_s1ap_build_ue_context_release_request(test_ue1,
+            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_user_inactivity);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue1, recvbuf);

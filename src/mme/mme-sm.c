@@ -68,6 +68,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     int rc, r;
 
     ogs_nas_eps_message_t nas_message;
+    ogs_nas_security_header_type_t h;
     enb_ue_t *enb_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -267,6 +268,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
+        /* The integrity verdict of this message, checked when queued */
+        if (mme_ue)
+            mme_ue->mac_failed = e->mac_failed;
+
         if (mme_ue && mme_ue->attach_session_delete_pending) {
             ogs_error("[%s] NAS message while deleting old Attach sessions",
                     mme_ue->imsi_bcd);
@@ -306,8 +311,22 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          */
         if (mme_ue && MME_UE_HAVE_IMSI(mme_ue) &&
             nas_message.emm.h.message_type == OGS_NAS_EPS_ATTACH_REQUEST) {
-            mme_ue_t *attaching_ue = mme_ue_find_by_message(&nas_message, NULL);
+            mme_ue_t *attaching_ue = NULL;
 
+            /* TS 24.301 4.4.4.3: discard it, as emm-sm.c, before its identity */
+            h.type = e->nas_type;
+            if (e->s1ap_code == S1AP_ProcedureCode_id_uplinkNASTransport &&
+                mme_ue->integrity_verified &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue))) {
+                ogs_warn("[%s] Discard unverified Attach request",
+                        mme_ue->imsi_bcd);
+                /* The verdict was this message's only */
+                mme_ue->mac_failed = 0;
+                ogs_pkbuf_free(pkbuf);
+                return;
+            }
+
+            attaching_ue = mme_ue_find_by_message(&nas_message, NULL);
             if (attaching_ue != mme_ue &&
                 (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered) ||
                  ogs_list_count(&mme_ue->sess_list))) {
@@ -341,7 +360,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         if (!mme_ue) {
             bool pending_guti;
-            ogs_nas_security_header_type_t h;
 
             h.type = e->nas_type;
             mme_ue = mme_ue_find_by_message(&nas_message, &pending_guti);
@@ -460,6 +478,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         e->mme_ue_id = mme_ue->id;
         e->nas_message = &nas_message;
 
+        /* A discarded message leaves the secure exchange established */
+        h.type = e->nas_type;
+        if ((h.integrity_protected || h.service_request) &&
+            SECURITY_CONTEXT_IS_VALID(mme_ue))
+            mme_ue->integrity_verified = true;
+        else if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage)
+            mme_ue->integrity_verified = false;
+
         ogs_fsm_dispatch(&mme_ue->sm, e);
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
             mme_send_delete_session_or_mme_ue_context_release(enb_ue, mme_ue);
@@ -498,6 +524,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_pkbuf_free(pkbuf);
             break;
         }
+        /* The integrity verdict of this message, as for EMM above */
+        mme_ue->mac_failed = e->mac_failed;
 
         if (mme_ue->attach_session_delete_pending || mme_ue->eir_check_pending) {
             ogs_error("[%s] ESM message while "

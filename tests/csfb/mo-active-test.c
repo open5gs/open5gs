@@ -227,7 +227,7 @@ static void test1_func(abts_case *tc, void *data)
     /* Send Extended Service Request */
     memset(&test_ue->extended_service_request_param,
             0, sizeof(test_ue->extended_service_request_param));
-    emmbuf = testemm_build_extended_service_request(test_ue, 0, false, false);
+    emmbuf = testemm_build_extended_service_request(test_ue, 0, true, true);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

@@ -145,6 +145,7 @@ int s1ap_send_to_esm(
     e->mme_ue_id = mme_ue->id;
     e->pkbuf = esmbuf;
     e->nas_type = nas_type;
+    e->mac_failed = mme_ue->mac_failed;
     e->create_action = create_action;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
@@ -173,9 +174,9 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(enb_ue);
     ogs_assert(nasPdu);
 
+    /* TS24.301 4.4.4.3, 7.2: discard the message, keep the S1 context */
     if (nasPdu->size < sizeof(ogs_nas_emm_header_t)) {
         ogs_error("NAS PDU too short [%d]", (int)nasPdu->size);
-        enb_ue_remove(enb_ue);
         return OGS_ERROR;
     }
 
@@ -218,7 +219,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         ogs_error("Not implemented(security header type:0x%x)",
                 sh->security_header_type);
         ogs_pkbuf_free(nasbuf);
-        enb_ue_remove(enb_ue);
         return OGS_ERROR;
     }
 
@@ -237,7 +237,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_error("NAS PDU too short for security header [%d]",
                     (int)nasPdu->size);
             ogs_pkbuf_free(nasbuf);
-            enb_ue_remove(enb_ue);
             return OGS_ERROR;
         }
     }
@@ -250,7 +249,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     if (nasbuf->len < sizeof(ogs_nas_emm_header_t)) {
         ogs_error("NAS PDU too short for EMM header [%d]", (int)nasbuf->len);
         ogs_pkbuf_free(nasbuf);
-        enb_ue_remove(enb_ue);
         return OGS_ERROR;
     }
 
@@ -259,7 +257,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
             ogs_pkbuf_free(nasbuf);
-            enb_ue_remove(enb_ue);
             return OGS_ERROR;
         }
     }
@@ -274,7 +271,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
                     h->protocol_discriminator);
 
             ogs_pkbuf_free(nasbuf);
-            enb_ue_remove(enb_ue);
 
             return OGS_ERROR;
         }
@@ -289,7 +285,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_error("Invalid EMM message type [%d]", h->message_type);
 
             ogs_pkbuf_free(nasbuf);
-            enb_ue_remove(enb_ue);
 
             return OGS_ERROR;
         }
@@ -306,6 +301,8 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         e->enb_ue_id = enb_ue->id;
         e->s1ap_code = procedureCode;
         e->nas_type = security_header_type.type;
+        if (mme_ue)
+            e->mac_failed = mme_ue->mac_failed;
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
@@ -321,6 +318,20 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_pkbuf_free(nasbuf);
             return OGS_ERROR;
         }
+        /*
+         * TS 24.301 4.4.4.3: all ESM messages are integrity protected except
+         * a PDN CONNECTIVITY REQUEST piggybacked in ATTACH REQUEST. Discard
+         * one that is not, or that fails the integrity check.
+         */
+        if (!security_header_type.integrity_protected ||
+            !SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+            ogs_error("[%s] Discard unverified ESM message",
+                    mme_ue->imsi_bcd);
+            /* The verdict was this message's only */
+            mme_ue->mac_failed = 0;
+            ogs_pkbuf_free(nasbuf);
+            return OGS_ERROR;
+        }
         rv = s1ap_send_to_esm(
                 mme_ue, nasbuf, security_header_type.type,
                 OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT);
@@ -331,7 +342,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
                   h->protocol_discriminator);
 
         ogs_pkbuf_free(nasbuf);
-        enb_ue_remove(enb_ue);
 
         return OGS_ERROR;
     }

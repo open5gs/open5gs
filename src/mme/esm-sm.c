@@ -75,7 +75,6 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     ogs_nas_eps_message_t *message = NULL;
-    ogs_nas_security_header_type_t h;
 
     ogs_nas_eps_activate_dedicated_eps_bearer_context_reject_t
         *activate_dedicated_eps_bearer_context_reject = NULL;
@@ -163,42 +162,6 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             }
 
             CLEAR_BEARER_TIMER(bearer->t3489);
-
-            h.type = e->nas_type;
-
-            if (h.integrity_protected == 0) {
-                ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
-
-                r = nas_eps_send_attach_reject(enb_ue, mme_ue,
-                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                r = s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &esm_state_exception);
-                break;
-            }
-
-            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
-
-                r = nas_eps_send_attach_reject(enb_ue, mme_ue,
-                        OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                r = s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &esm_state_exception);
-                break;
-            }
 
             rv = esm_handle_information_response(
                     enb_ue, sess, &message->esm.esm_information_response);

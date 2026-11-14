@@ -117,9 +117,14 @@ ogs_pkbuf_t *nas_eps_security_encode(
 int nas_eps_security_decode(mme_ue_t *mme_ue, 
     ogs_nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf)
 {
+    bool ciphered = security_header_type.ciphered;
+
     ogs_assert(mme_ue);
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
+
+    /* TS24.301 4.4.4.3: a failed check discards this message only */
+    mme_ue->mac_failed = 0;
 
     if (security_header_type.service_request) {
 #define SHORT_MAC_SIZE 2
@@ -256,6 +261,14 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
             if (h->message_authentication_code != mac32) {
                 ogs_warn("NAS MAC verification failed(0x%x != 0x%x)",
                     be32toh(h->message_authentication_code), be32toh(mac32));
+
+                /*
+                 * TS24.301 4.4.4.3: a ciphered message (with EEA0 too,
+                 * 4.4.5) that fails the integrity check is discarded
+                 */
+                if (ciphered)
+                    return OGS_ERROR;
+
                 mme_ue->mac_failed = 1;
             } else {
                 /*
