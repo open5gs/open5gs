@@ -21,7 +21,8 @@
 #include "sbi-path.h"
 
 bool udm_nudr_dr_handle_subscription_authentication(
-    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, int state,
+    ogs_sbi_message_t *recvmsg)
 {
     char *strerror = NULL;
     ogs_sbi_server_t *server = NULL;
@@ -185,6 +186,28 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 strlen(AuthenticationSubscription->sequence_number->sqn),
                 udm_ue->sqn, sizeof(udm_ue->sqn));
 
+            if (state == UDM_SBI_UE_RESYNC) {
+                uint64_t sqn_he = ogs_buffer_to_uint64(
+                        udm_ue->sqn, OGS_SQN_LEN);
+                uint64_t sqn = ogs_auc_resync_sqn(sqn_he, udm_ue->sqn_ms);
+                int r;
+
+                if (sqn != sqn_he) {
+                    ogs_uint64_to_buffer(
+                            sqn, OGS_SQN_LEN, udm_ue->resync_sqn);
+
+                    r = udm_ue_sbi_discover_and_send(
+                            OpenAPI_service_name_nudr_dr, NULL,
+                            udm_nudr_dr_build_authentication_subscription,
+                            udm_ue, stream, UDM_SBI_NO_STATE,
+                            udm_ue->resync_sqn);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+
+                    return true;
+                }
+            }
+
         CASE(OGS_SBI_HTTP_METHOD_PATCH)
             if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK &&
                 recvmsg->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
@@ -201,6 +224,11 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 ogs_free(strerror);
                 return false;
             }
+
+            /* PATCH is sent only for re-synchronisation : use the SQN it
+             * wrote, another request may have overwritten udm_ue->sqn */
+            if (!strcmp(recvmsg->h.method, OGS_SBI_HTTP_METHOD_PATCH))
+                memcpy(udm_ue->sqn, udm_ue->resync_sqn, OGS_SQN_LEN);
 
             memset(&AuthenticationInfoResult,
                     0, sizeof(AuthenticationInfoResult));
