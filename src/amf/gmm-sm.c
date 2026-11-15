@@ -3317,22 +3317,24 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
-                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
-                    ogs_error("[%s] HTTP response error [%d]",
-                            amf_ue->supi, sbi_message->res_status);
-                    r = nas_5gs_send_gmm_reject(
-                            ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
-                            OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
-                    break;
-                }
-
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
+                    if (sbi_message->res_status !=
+                            OGS_SBI_HTTP_STATUS_CREATED &&
+                        sbi_message->res_status !=
+                            OGS_SBI_HTTP_STATUS_NO_CONTENT &&
+                        sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->supi, sbi_message->res_status);
+                        r = nas_5gs_send_gmm_reject(
+                                ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
+                                OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                        break;
+                    }
+
                     r = amf_ue_sbi_discover_and_send(
                             OpenAPI_service_name_nudm_sdm, NULL,
                             amf_nudm_sdm_build_get_datasets,
