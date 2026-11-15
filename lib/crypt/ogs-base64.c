@@ -249,11 +249,8 @@ int ogs_base64_encode_from_string(
 }
 
 /*
- * Independently implemented for Open5GS, with the PEM parsing approach
- * informed by aws-c-io (Apache License, Version 2.0).
- * Reference implementation copyright Amazon.com, Inc. or its affiliates.
+ * PEM parsing approach informed by aws-c-io (Apache-2.0).
  * https://github.com/awslabs/aws-c-io/blob/main/source/pem.c
- * https://github.com/awslabs/aws-c-io/blob/main/LICENSE
  */
 int ogs_fbase64_decode(const char *header,
         const uint8_t *data, size_t data_size, ogs_datum_t *result)

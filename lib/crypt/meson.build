@@ -20,8 +20,6 @@ libcrypt_sources = files('''
 
     ogs-aes.h
     ogs-aes-cmac.h
-    ogs-sha1.h
-    ogs-sha1-hmac.h
     ogs-sha2.h
     ogs-sha2-hmac.h
     milenage.h
@@ -32,8 +30,6 @@ libcrypt_sources = files('''
 
     ogs-aes.c
     ogs-aes-cmac.c
-    ogs-sha1.c
-    ogs-sha1-hmac.c
     ogs-sha2.c
     ogs-sha2-hmac.c
     milenage.c

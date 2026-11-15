@@ -430,12 +430,6 @@ static void security_test10(abts_case *tc, void *data)
         const char *block_size_key_mac;
     } test_vector[] = {
         {
-            ogs_hmac_sha1, OGS_SHA1_DIGEST_SIZE, OGS_SHA1_BLOCK_SIZE,
-            "56a8d203b357db47b98ca74a5b21466832467c72",
-            "123505d2066bc7c33c3b329b9659fa614ba06a47",
-            "3fc920f32d2f747af7f9c0ad886cdd01aebc53e7",
-        },
-        {
             ogs_hmac_sha224, OGS_SHA224_DIGEST_SIZE, OGS_SHA224_BLOCK_SIZE,
             "c4c4d3cfadfee804dba5ef6839f22ae7779d9f99f81e73fdb3272d56",
             "c1d53c767acc64f8dd96a5fb4512c2973d675dfc8dc9461871919373",
