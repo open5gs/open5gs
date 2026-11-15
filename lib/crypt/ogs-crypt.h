@@ -34,7 +34,6 @@
 #include "crypt/milenage.h"
 #include "crypt/snow-3g.h"
 #include "crypt/zuc.h"
-#include "crypt/kasumi.h"
 #include "crypt/ecc.h"
 
 #include "crypt/ogs-kdf.h"

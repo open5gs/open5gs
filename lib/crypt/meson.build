@@ -27,7 +27,6 @@ libcrypt_sources = files('''
     milenage.h
     snow-3g.h
     zuc.h
-    kasumi.h
     ogs-kdf.h
     ecc.h
 
@@ -40,7 +39,6 @@ libcrypt_sources = files('''
     milenage.c
     snow-3g.c
     zuc.c
-    kasumi.c
 
     ogs-kdf.c
     ogs-base64.c
