@@ -1460,6 +1460,8 @@ ogs_pkbuf_t *s1ap_build_e_rab_setup_request(
     memcpy(nasPdu->buf, esmbuf->data, nasPdu->size);
     ogs_pkbuf_free(esmbuf);
 
+    bearer->e_rab_setup_request_pending = true;
+
     return ogs_s1ap_encode(&pdu);
 }
 

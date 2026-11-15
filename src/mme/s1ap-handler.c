@@ -1853,6 +1853,17 @@ void s1ap_handle_e_rab_setup_response(
                 return;
             }
 
+            /*
+             * TS 36.413 8.2.1.2 and 10.4: the item answers an E-RAB SETUP
+             * REQUEST for this bearer. Without one, ignore it.
+             */
+            if (bearer->e_rab_setup_request_pending == false) {
+                ogs_error("No E-RABSetupRequest to answer [EBI:%d]",
+                        bearer->ebi);
+                continue;
+            }
+            bearer->e_rab_setup_request_pending = false;
+
             if (e_rab->gTP_TEID.size != sizeof(bearer->enb_s1u_teid)) {
                 ogs_error("Invalid e_rab->gTP_TEID.size = %d (expected %d)",
                         (int)e_rab->gTP_TEID.size,
@@ -1963,6 +1974,13 @@ void s1ap_handle_e_rab_setup_response(
                 ogs_assert(r != OGS_ERROR);
                 return;
             }
+
+            if (bearer->e_rab_setup_request_pending == false) {
+                ogs_error("No E-RABSetupRequest to answer [EBI:%d]",
+                        bearer->ebi);
+                continue;
+            }
+            bearer->e_rab_setup_request_pending = false;
 
             linked_bearer = mme_linked_bearer(bearer);
             ogs_assert(linked_bearer);
