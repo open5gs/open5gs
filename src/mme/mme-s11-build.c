@@ -21,11 +21,14 @@
 #include "mme-dns.h"
 
 #include "mme-s11-build.h"
+#include "mme-s10.h"
 
 ogs_pkbuf_t *mme_s11_build_create_session_request(
         uint8_t type, mme_sess_t *sess, int create_action)
 {
     int rv;
+    bool relocation = create_action == OGS_GTP_CREATE_IN_S10_RELOCATION ||
+        create_action == OGS_GTP_CREATE_IN_S10_TAU_RELOCATION;
     ogs_session_t *session = NULL;
     mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
@@ -120,7 +123,13 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     memset(&pgw_s5c_teid, 0, sizeof(ogs_gtp2_f_teid_t));
     pgw_s5c_teid.interface_type = OGS_GTP2_F_TEID_S5_S8_PGW_GTP_C;
     pgw_s5c_teid.teid = htobe32(sess->pgw_s5c_teid);
-    if (session->smf_ip.ipv4 || session->smf_ip.ipv6) {
+    if (relocation) {
+        rv = ogs_gtp2_ip_to_f_teid(&sess->pgw_s5c_ip, &pgw_s5c_teid, &len);
+        if (rv != OGS_OK || !sess->pgw_s5c_teid) return NULL;
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
+    } else if (session->smf_ip.ipv4 || session->smf_ip.ipv6) {
         pgw_s5c_teid.ipv4 = session->smf_ip.ipv4;
         pgw_s5c_teid.ipv6 = session->smf_ip.ipv6;
         if (pgw_s5c_teid.ipv4 && pgw_s5c_teid.ipv6) {
@@ -212,7 +221,9 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
      * but creates PDN Type by reflecting the information
      * in the Request Type as it is.
      */
-    if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
+    if (relocation) {
+        req->pdn_type.u8 = sess->paa.session_type;
+    } else if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
         req->pdn_type.u8 = sess->ue_request_type.type;
     } else {
         if (session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
@@ -248,23 +259,24 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     if (sess->ue_request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER)
         indication.handover_indication = 1;
 
-    if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST ||
+    if (create_action == OGS_GTP_CREATE_IN_S10_TAU_RELOCATION ||
+        create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST ||
         create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE)
         indication.operation_indication = 1;
 
-    sess->paa.session_type = req->pdn_type.u8;
+    if (!relocation) sess->paa.session_type = req->pdn_type.u8;
     ogs_debug("sess->paa.session_type = %d", sess->paa.session_type);
     req->pdn_address_allocation.data = &sess->paa;
     if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4) {
         req->pdn_address_allocation.len = OGS_PAA_IPV4_LEN;
-        sess->paa.addr = session->ue_ip.addr;
+        if (!relocation) sess->paa.addr = session->ue_ip.addr;
     } else if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV6) {
         req->pdn_address_allocation.len = OGS_PAA_IPV6_LEN;
-        memcpy(sess->paa.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
+        if (!relocation) memcpy(sess->paa.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
     } else if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6) {
         req->pdn_address_allocation.len = OGS_PAA_IPV4V6_LEN;
-        sess->paa.both.addr = session->ue_ip.addr;
-        memcpy(sess->paa.both.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
+        if (!relocation) sess->paa.both.addr = session->ue_ip.addr;
+        if (!relocation) memcpy(sess->paa.both.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
     } else {
         ogs_error("Invalid PDN-TYPE[%d:%d:%d]", req->pdn_type.u8,
                 session->session_type, sess->ue_request_type.type);
@@ -328,7 +340,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
                 enb_s1u_len[i];
         }
 
-        if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST ||
+        if (relocation || create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST ||
             create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
 
             /* Data Plane(DL) : PGW-S5U */
@@ -352,6 +364,17 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
             session->qos.arp.pre_emption_capability;
         bearer_qos.pre_emption_vulnerability =
             session->qos.arp.pre_emption_vulnerability;
+        if (relocation) {
+            bearer_qos.qci = bearer->qos.index;
+            bearer_qos.priority_level = bearer->qos.arp.priority_level;
+            bearer_qos.pre_emption_capability = bearer->qos.arp.pre_emption_capability;
+            bearer_qos.pre_emption_vulnerability = bearer->qos.arp.pre_emption_vulnerability;
+            bearer_qos.ul_mbr = bearer->qos.mbr.uplink;
+            bearer_qos.dl_mbr = bearer->qos.mbr.downlink;
+            bearer_qos.ul_gbr = bearer->qos.gbr.uplink;
+            bearer_qos.dl_gbr = bearer->qos.gbr.downlink;
+            req->bearer_contexts_to_be_created[i].tft = bearer->tft;
+        }
         req->bearer_contexts_to_be_created[i].bearer_level_qos.presence = 1;
         ogs_gtp2_build_bearer_qos(
                 &req->bearer_contexts_to_be_created[i].bearer_level_qos,
@@ -548,7 +571,8 @@ ogs_pkbuf_t *mme_s11_build_delete_session_request(
             uli_buf, OGS_GTP2_MAX_ULI_LEN);
 
     memset(&indication, 0, sizeof(ogs_gtp2_indication_t));
-    if (action == OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST) {
+    if (action == OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST ||
+            (bearer->s10_not_admitted && mme_s10_sgw_relocated(mme_ue))) {
         indication.scope_indication = 1;
     } else {
         indication.operation_indication = 1;
@@ -941,7 +965,7 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer)) {
                 memset(&dl_teid[i], 0, sizeof(ogs_gtp2_f_teid_t));
                 dl_teid[i].interface_type =
-                    OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING;
+                    mme_ue->s10.sgw_changed ? OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING : OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING;
                 dl_teid[i].teid = htobe32(bearer->enb_dl_teid);
                 rv = ogs_gtp2_ip_to_f_teid(
                         &bearer->enb_dl_ip, &dl_teid[i], &len);
@@ -957,7 +981,7 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
             if (MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer)) {
                 memset(&ul_teid[i], 0, sizeof(ogs_gtp2_f_teid_t));
                 ul_teid[i].interface_type =
-                    OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING;
+                    mme_ue->s10.sgw_changed ? OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING : OGS_GTP2_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING;
                 ul_teid[i].teid = htobe32(bearer->enb_ul_teid);
                 rv = ogs_gtp2_ip_to_f_teid(
                         &bearer->enb_ul_ip, &ul_teid[i], &len);

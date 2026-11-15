@@ -32,6 +32,7 @@ libgtp_sources = files('''
     v2/message.h
     v2/path.h
     v2/types.h
+    v2/mm-context.h
 
     context.c
     path.c
@@ -47,6 +48,7 @@ libgtp_sources = files('''
     v2/message.c
     v2/path.c
     v2/types.c
+    v2/mm-context.c
 '''.split())
 
 libgtp_inc = include_directories('.')

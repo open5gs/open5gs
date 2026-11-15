@@ -483,6 +483,8 @@ typedef struct test_bearer_s {
 
     ogs_qos_t       qos;            /* 5GC : from NGAP QoS flow parameters */
 
+    uint32_t target_sgw_s1u_teid;
+    ogs_ip_t target_sgw_s1u_ip;
     uint32_t        sgw_s1u_teid;   /* SGW-S1U TEID */
     ogs_ip_t        sgw_s1u_ip;     /* SGW-S1U IPv4/IPv6 */
     struct {

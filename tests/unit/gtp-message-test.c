@@ -456,11 +456,59 @@ static void gtp2_tft_ipv6_prefix_length_test(abts_case *tc, void *data)
             tft.pf[0].content.component[0].ipv6.prefixlen);
 }
 
+static void delete_bearer_command_vectors(abts_case *tc, void *data)
+{
+    static const uint8_t command[] = {
+        93, 0, 5, 0, 73, 0, 1, 0, 6,
+        93, 0, 5, 0, 73, 0, 1, 0, 7
+    };
+    static const uint8_t failure[] = {
+        2, 0, 2, 0, 64, 0,
+        93, 0, 11, 0, 73, 0, 1, 0, 6, 2, 0, 2, 0, 64, 0,
+        93, 0, 11, 0, 73, 0, 1, 0, 7, 2, 0, 2, 0, 64, 0
+    };
+    ogs_gtp2_message_t *msg = ogs_calloc(1, sizeof(*msg));
+    ogs_pkbuf_t *p, *built;
+    int i;
+    ogs_assert(msg);
+    p = ogs_pkbuf_alloc(NULL, sizeof(command));
+    ogs_assert(p);
+    ogs_pkbuf_put_data(p, command, sizeof(command));
+    ABTS_INT_EQUAL(tc, OGS_OK, ogs_tlv_parse_msg(&msg->delete_bearer_command,
+                &ogs_gtp2_tlv_desc_delete_bearer_command, p, OGS_TLV_MODE_T1_L2_I1));
+    for (i = 0; i < 2; i++) {
+        ABTS_INT_EQUAL(tc, 1, msg->delete_bearer_command.bearer_contexts[i].presence);
+        ABTS_INT_EQUAL(tc, 6+i,
+                msg->delete_bearer_command.bearer_contexts[i].eps_bearer_id.u8);
+    }
+    msg->h.type = OGS_GTP2_DELETE_BEARER_COMMAND_TYPE;
+    built = ogs_gtp2_build_msg(msg);
+    ABTS_PTR_NOTNULL(tc, built);
+    ABTS_INT_EQUAL(tc, sizeof(command), built->len);
+    ABTS_TRUE(tc, !memcmp(command, built->data, sizeof(command)));
+    ogs_pkbuf_free(built);
+    built = ogs_gtp2_build_delete_bearer_failure_indication(
+            &msg->delete_bearer_command, OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+    ABTS_PTR_NOTNULL(tc, built);
+    ABTS_INT_EQUAL(tc, sizeof(failure), built->len);
+    ABTS_TRUE(tc, !memcmp(failure, built->data, sizeof(failure)));
+    memset(msg, 0, sizeof(*msg));
+    ABTS_INT_EQUAL(tc, OGS_OK, ogs_tlv_parse_msg(&msg->delete_bearer_failure_indication,
+                &ogs_gtp2_tlv_desc_delete_bearer_failure_indication,
+                built, OGS_TLV_MODE_T1_L2_I1));
+    ABTS_INT_EQUAL(tc, 7,
+            msg->delete_bearer_failure_indication.bearer_context[1].eps_bearer_id.u8);
+    ogs_pkbuf_free(built);
+    ogs_pkbuf_free(p);
+    ogs_free(msg);
+}
+
 abts_suite *test_gtp_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, gtp_message_test1, NULL);
+    abts_run_test(suite, delete_bearer_command_vectors, NULL);
     abts_run_test(suite, gtp1_mm_context_test, NULL);
     abts_run_test(suite, gtp2_tft_ipv6_prefix_length_test, NULL);
 

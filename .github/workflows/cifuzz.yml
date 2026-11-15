@@ -11,6 +11,37 @@ jobs:
    permissions:
      security-events: write
    steps:
+   - name: Check Ubuntu DNS and recover resolver
+     timeout-minutes: 2
+     run: |
+         cat /etc/resolv.conf
+         resolvectl status
+         if timeout 10 getent ahostsv4 archive.ubuntu.com &&
+            timeout 10 getent ahostsv4 security.ubuntu.com; then
+             exit 0
+         fi
+         echo "::warning::Ubuntu repository names do not resolve with the runner DNS"
+         recovered=false
+         for resolver in 1.1.1.1 8.8.8.8; do
+             echo "Testing resolver $resolver"
+             if dig +time=2 +tries=1 +short @"$resolver" archive.ubuntu.com A | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' &&
+                dig +time=2 +tries=1 +short @"$resolver" security.ubuntu.com A | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+                 interface="$(ip -4 route show default | awk 'NR == 1 {print $5}')"
+                 sudo resolvectl dns "$interface" "$resolver"
+                 sudo resolvectl domain "$interface" '~.'
+                 sudo resolvectl flush-caches
+                 if timeout 10 getent ahostsv4 archive.ubuntu.com &&
+                    timeout 10 getent ahostsv4 security.ubuntu.com; then
+                     echo "::notice::Ubuntu DNS recovered using $resolver"
+                     recovered=true
+                     break
+                 fi
+             fi
+         done
+         if [ "$recovered" != true ]; then
+             echo "::error::Ubuntu DNS failed with the runner resolver and public resolvers"
+             exit 1
+         fi
    - name: Build Fuzzers
      id: build
      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master

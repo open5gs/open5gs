@@ -838,6 +838,7 @@ int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)
             xact->org == OGS_PFCP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             ogs_sockaddr_to_string_static(xact->node->addr_list));
 
+    if (xact->gtpbuf) ogs_pkbuf_free(xact->gtpbuf);
     if (xact->seq[0].pkbuf)
         ogs_pkbuf_free(xact->seq[0].pkbuf);
     if (xact->seq[1].pkbuf)

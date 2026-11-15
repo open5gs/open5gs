@@ -81,6 +81,37 @@ jobs:
         ports:
           - 27017:27017
     steps:
+    - name: Check Ubuntu DNS and recover resolver
+      timeout-minutes: 2
+      run: |
+          cat /etc/resolv.conf
+          resolvectl status
+          if timeout 10 getent ahostsv4 archive.ubuntu.com &&
+             timeout 10 getent ahostsv4 security.ubuntu.com; then
+              exit 0
+          fi
+          echo "::warning::Ubuntu repository names do not resolve with the runner DNS"
+          recovered=false
+          for resolver in 1.1.1.1 8.8.8.8; do
+              echo "Testing resolver $resolver"
+              if dig +time=2 +tries=1 +short @"$resolver" archive.ubuntu.com A | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' &&
+                 dig +time=2 +tries=1 +short @"$resolver" security.ubuntu.com A | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+                  interface="$(ip -4 route show default | awk 'NR == 1 {print $5}')"
+                  sudo resolvectl dns "$interface" "$resolver"
+                  sudo resolvectl domain "$interface" '~.'
+                  sudo resolvectl flush-caches
+                  if timeout 10 getent ahostsv4 archive.ubuntu.com &&
+                     timeout 10 getent ahostsv4 security.ubuntu.com; then
+                      echo "::notice::Ubuntu DNS recovered using $resolver"
+                      recovered=true
+                      break
+                  fi
+              fi
+          done
+          if [ "$recovered" != true ]; then
+              echo "::error::Ubuntu DNS failed with the runner resolver and public resolvers"
+              exit 1
+          fi
     - name: Create the TUN device with the interface name `ogstun`.
       run: |
           sudo ip tuntap add name ogstun mode tun
@@ -88,6 +119,7 @@ jobs:
           sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
           sudo ip link set ogstun up
     - name: Install the dependencies for building the source code.
+      timeout-minutes: 5
       run: |
           sudo apt update
           sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev libc-ares-dev meson

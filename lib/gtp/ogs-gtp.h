@@ -33,6 +33,7 @@
 #include "gtp/v2/message.h"
 #include "gtp/v1/types.h"
 #include "gtp/v2/types.h"
+#include "gtp/v2/mm-context.h"
 #include "gtp/v1/conv.h"
 #include "gtp/v2/conv.h"
 #include "gtp/context.h"

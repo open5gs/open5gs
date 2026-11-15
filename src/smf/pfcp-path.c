@@ -19,6 +19,7 @@
 
 #include "sbi-path.h"
 #include "pfcp-path.h"
+#include "s5c-handler.h"
 
 /* Converts PFCP "Usage Report" "Report Trigger" bitmask to Gy "Reporting-Reason" AVP enum value.
  * PFCP: 3GPP TS 29.244 sec 8.2.41
@@ -521,6 +522,9 @@ static void bearer_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
         if (xact->modify_flags &
                 (OGS_PFCP_MODIFY_ERROR_INDICATION|OGS_PFCP_MODIFY_REMOVE))
             bearer->ei_deactivation = false;
+        smf_s5c_fail_delete_bearer_command(
+                ogs_gtp_xact_find_by_id(xact->assoc_xact_id), bearer,
+                OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING);
         ogs_error("No PFCP session modification response");
         break;
     default:
