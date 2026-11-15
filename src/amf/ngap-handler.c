@@ -2367,6 +2367,18 @@ void ngap_handle_pdu_session_resource_setup_response(
                 return;
             }
 
+            /*
+             * TS 38.413 8.2.1.2 and 10.4: the item answers a PDU SESSION
+             * RESOURCE SETUP REQUEST for this session. Without one,
+             * ignore it.
+             */
+            if (sess->pdu_session_resource_setup_request_pending == false) {
+                ogs_error("No PDUSessionResourceSetupRequest to answer "
+                        "[PSI:%d]", sess->psi);
+                continue;
+            }
+            sess->pdu_session_resource_setup_request_pending = false;
+
             ogs_debug("    SUPI[%s] PSI[%d] OLD ACTIVATED[0x%x]",
                     amf_ue->supi, sess->psi, ran_ue->psimask.activated);
             ran_ue->psimask.activated |= ((1 << sess->psi));
@@ -2455,6 +2467,13 @@ void ngap_handle_pdu_session_resource_setup_response(
                 ogs_assert(r != OGS_ERROR);
                 return;
             }
+
+            if (sess->pdu_session_resource_setup_request_pending == false) {
+                ogs_error("No PDUSessionResourceSetupRequest to answer "
+                        "[PSI:%d]", sess->psi);
+                continue;
+            }
+            sess->pdu_session_resource_setup_request_pending = false;
 
             /*
              * TS23.502

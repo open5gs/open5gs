@@ -1145,6 +1145,9 @@ typedef struct mme_bearer_s {
     uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
     ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
 
+    /* E-RABSetupRequest sent, its response not yet */
+    bool            e_rab_setup_request_pending;
+
     uint32_t        enb_dl_teid;
     ogs_ip_t        enb_dl_ip;
     uint32_t        enb_ul_teid;

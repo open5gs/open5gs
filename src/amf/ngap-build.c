@@ -1687,6 +1687,7 @@ ogs_pkbuf_t *ngap_ue_build_pdu_session_resource_setup_request(
         ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
         PDUSessionItem->pDUSessionID = sess->psi;
+        sess->pdu_session_resource_setup_request_pending = true;
 
         s_NSSAI = CALLOC(1, sizeof(*s_NSSAI));
         ogs_assert(s_NSSAI);
@@ -1848,6 +1849,7 @@ ogs_pkbuf_t *ngap_sess_build_pdu_session_resource_setup_request(
     ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
     PDUSessionItem->pDUSessionID = sess->psi;
+    sess->pdu_session_resource_setup_request_pending = true;
 
     if (gmmbuf) {
         PDUSessionItem->pDUSessionNAS_PDU =
