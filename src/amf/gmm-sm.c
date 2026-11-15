@@ -2025,6 +2025,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 ogs_assert(r != OGS_ERROR);
             }
 
+            /*
+             * Another context with this SUCI moves its sessions here once
+             * the SUPI is confirmed (amf_ue_set_supi()); release them after
+             * the authentication.
+             */
+            amf_ue->registration_session_release_after_authentication = true;
+
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
 
