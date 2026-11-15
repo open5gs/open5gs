@@ -4481,9 +4481,12 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
                 source == MME_UE_IMSI_FROM_IDENTITY_RESPONSE)) {
         /*
          * The IMSI is not authenticated yet: the context that has it keeps
-         * it, and its sessions, until this one is. The Authentication
-         * Response calls this function again (TS 24.301 5.5.1.2.7 f)).
+         * it, and its sessions, until this one is. The security context of
+         * this one was not set up for that IMSI, so the request is
+         * authenticated, and the Authentication Response calls this
+         * function again (TS 24.301 5.5.1.2.7 f)).
          */
+        CLEAR_SECURITY_CONTEXT(mme_ue);
         old_mme_ue = NULL;
     }
     if (old_mme_ue) {
@@ -4495,9 +4498,9 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
             /*
              * Who reached the OLD UE context migration?
              *
-             *   ATTACH_REQUEST         identity is in the message
-             *   IDENTITY_RESPONSE      identity arrives mid-procedure
-             *   SGSN_CONTEXT_RESPONSE  identity arrives mid-procedure
+             *   AUTHENTICATION_RESPONSE  identity of an ATTACH_REQUEST or
+             *                            IDENTITY_RESPONSE, authenticated
+             *   SGSN_CONTEXT_RESPONSE    identity arrives mid-procedure
              *
              * The migration hands session, bearer, EBI and SGW-S11-TEID
              * ownership from one context to another. Replacing it means

@@ -2439,9 +2439,12 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
      * The SUCI is not authenticated yet. If another context has it, that
      * context keeps the SUCI and its sessions until this one is
      * authenticated: amf_ue_set_supi() then releases it
-     * (TS 24.501 5.5.1.2.8 f)).
+     * (TS 24.501 5.5.1.2.8 f)). The security context of this one was not
+     * set up for that SUCI, so the request is authenticated.
      */
     old_amf_ue = amf_ue_find_by_suci(suci);
+    if (old_amf_ue && old_amf_ue != amf_ue)
+        CLEAR_SECURITY_CONTEXT(amf_ue);
 
     if (amf_ue->suci) {
         ogs_hash_unset_if_owner(self.suci_hash,

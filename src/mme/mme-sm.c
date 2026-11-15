@@ -290,8 +290,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          *     -> dispatched to A's context, not to B's
          *
          * The identity in the message is never looked at, so
-         * mme_ue_set_imsi() re-labels A's context as B and moves B's
-         * sessions into it. If A still owns sessions, Phase-2 hits
+         * mme_ue_set_imsi() re-labels A's context as B, and once the
+         * Attach is authenticated moves B's sessions into it. If A still
+         * owns sessions, Phase-2 hits
          *
          *     ogs_assert(ogs_list_empty(&mme_ue->sess_list));
          *

@@ -953,9 +953,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
          *     -> dispatched to A's context, not to B's
          *
          * The identity in the message is never looked at, so
-         * amf_ue_set_suci() re-labels A's context as B and
-         * amf_ue_release_old_context() moves B's sessions into it. If A
-         * still owns sessions, that hits
+         * amf_ue_set_suci() re-labels A's context as B, and once the
+         * request is authenticated amf_ue_release_old_context() moves B's
+         * sessions into it. If A still owns sessions, that hits
          *
          *     ogs_assert(ogs_list_empty(&amf_ue->sess_list));
          *
