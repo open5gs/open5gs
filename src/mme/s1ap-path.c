@@ -498,6 +498,7 @@ int s1ap_send_ue_context_release_command(
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     ogs_debug("UEContextReleaseCommand");
 
@@ -511,6 +512,13 @@ int s1ap_send_ue_context_release_command(
 
     ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
     enb_ue->ue_ctx_rel_action = action;
+
+    /* A held S1 context that is being released cannot be given back */
+    mme_ue = mme_ue_find_by_id(enb_ue->holding_mme_ue_id);
+    if (mme_ue && mme_ue->enb_ue_holding_id == enb_ue->id) {
+        mme_ue->enb_ue_holding_id = OGS_INVALID_POOL_ID;
+        mme_ue->enb_ue_holding_released = true;
+    }
 
     ogs_debug("    Group[%d] Cause[%d] Action[%d] Duration[%d]",
             group, (int)cause, action, (int)duration);

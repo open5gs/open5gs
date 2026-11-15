@@ -647,17 +647,26 @@ static void test_amf_case(abts_case *tc, void *data)
         if (!receive_ngap(tc, ngap, peer, NGAP_ProcedureCode_id_DownlinkNASTransport,
                     OGS_NAS_5GS_AUTHENTICATION_REJECT, 0))
             goto cleanup;
+        /* The victim gets its held NG context back; the peer's is released */
+        if (!receive_ngap(tc, ngap, peer,
+                    NGAP_ProcedureCode_id_UEContextRelease, 0, 0) ||
+            !send_ngap(tc, ngap,
+                    testngap_build_ue_context_release_complete(peer)))
+            goto cleanup;
     }
     if (scenario != REREGISTER &&
         !check_bearers(tc, gtpu, old_flows, sessions, true))
         goto cleanup;
     /* A protected Deregistration with the original keys verifies rollback.
      * SMC Reject has no reply, so this follows it on the same SCTP stream.
-     * This stage retains the peer's NG association after failure; use current
-     * IDs here and revise cleanup when NG association restoration is added. */
+     * After a failed authentication the victim is on its own NG context again;
+     * after an SMC failure it stays on the peer's, so use the peer's IDs then. */
     cleanup_ue = scenario == REREGISTER ? peer : victim;
-    cleanup_ue->ran_ue_ngap_id = peer->ran_ue_ngap_id;
-    cleanup_ue->amf_ue_ngap_id = peer->amf_ue_ngap_id;
+    if (scenario != BAD_RES && scenario != AUTH_FAILURE &&
+        scenario != DEREG_DURING_AUTH) {
+        cleanup_ue->ran_ue_ngap_id = peer->ran_ue_ngap_id;
+        cleanup_ue->amf_ue_ngap_id = peer->amf_ue_ngap_id;
+    }
     if (!send_nas(tc, ngap, cleanup_ue,
                 testgmm_build_de_registration_request(cleanup_ue, false, true, false)) ||
         !receive_ngap(tc, ngap, cleanup_ue, NGAP_ProcedureCode_id_DownlinkNASTransport,

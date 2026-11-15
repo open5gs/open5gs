@@ -487,6 +487,7 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
 {
     int rv;
     ran_ue_t *ran_ue = NULL;
+    ran_ue_t *ran_ue_holding = NULL;
     ogs_pkbuf_t *gmmbuf = NULL;
 
     if (!amf_ue) {
@@ -520,6 +521,19 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
     }
     ogs_timer_start(amf_ue->t3560.timer,
             amf_timer_cfg(AMF_TIMER_T3560)->duration);
+
+    /*
+     * The held NG context waits for the authentication: the first
+     * retransmission restarts t_ng_holding, so that the hold outlasts
+     * T3560. It is restarted once, so a repeated request cannot keep it.
+     */
+    ran_ue_holding = ran_ue_find_by_id(amf_ue->ran_ue_holding_id);
+    if (ran_ue_holding && amf_ue->t3560.retry_count &&
+        !amf_ue->ran_ue_holding_restarted) {
+        ogs_timer_start(ran_ue_holding->t_ng_holding,
+                amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration);
+        amf_ue->ran_ue_holding_restarted = true;
+    }
 
     amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_AMF_AUTH_REQ);
 

@@ -647,6 +647,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
     ran_ue_t *ran_ue = NULL;
     amf_ue_t *amf_ue = NULL;
+    ogs_pool_id_t ran_ue_holding_id = OGS_INVALID_POOL_ID;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_InitialUEMessage_t *InitialUEMessage = NULL;
@@ -855,6 +856,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             ogs_assert(r != OGS_ERROR);
             return;
         }
+        ran_ue_holding_id = amf_ue->ran_ue_holding_id;
         /* If NAS(amf_ue_t) has already been associated with
          * older NG(ran_ue_t) context */
         if (CM_CONNECTED(amf_ue)) {
@@ -909,11 +911,17 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         }
     }
 
-    if (ngap_send_to_nas(ran_ue,
-                NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU) != OGS_OK) {
+    r = ngap_send_to_nas(
+            ran_ue, NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU);
+    if (r != OGS_OK) {
         /* Release the RAN-UE context allocated above */
         ran_ue_remove(ran_ue);
     }
+    /* TS 38.413 10.4: a refused NAS-PDU authenticated nobody; a hold
+     * kept for another request waits for that request's end */
+    if (r != OGS_OK && amf_ue &&
+            amf_ue->ran_ue_holding_id != ran_ue_holding_id)
+        RESTORE_NG_CONTEXT(amf_ue);
 }
 
 void ngap_handle_uplink_nas_transport(
@@ -2094,6 +2102,10 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
          * to prevent retransmission of NAS messages.
          */
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+
+        /* The mark of a released hold ends with its request's connection */
+        if (amf_ue->ran_ue_id == ran_ue->id)
+            amf_ue->ran_ue_holding_released = false;
     }
 
     switch (ran_ue->ue_ctx_rel_action) {

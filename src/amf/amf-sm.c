@@ -29,6 +29,65 @@
 #include "nas-security.h"
 #include "gmm-handler.h"
 
+/*
+ * TS 24.501 5.4.1.3.7 a): abort the authentication, its connection is gone.
+ * Not to be called from inside the UE's state machine: it makes a transition.
+ */
+void gmm_abort_authentication(amf_ue_t *amf_ue)
+{
+    ogs_fsm_t sm;
+    amf_event_t e;
+
+    ogs_assert(amf_ue);
+
+    /* The macro picks the next state; ogs_fsm_tran() exits and enters */
+    sm = amf_ue->sm;
+    AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, &sm);
+
+    memset(&e, 0, sizeof(e));
+    e.amf_ue_id = amf_ue->id;
+    ogs_fsm_tran(&amf_ue->sm, OGS_FSM_STATE(&sm), &e);
+
+    /* TS 24.501 5.3.7: an idle registered UE runs the mobile reachable timer */
+    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) && CM_IDLE(amf_ue)) {
+        ogs_info("[%s] Mobile Reachable timer started", amf_ue->supi);
+        ogs_timer_start(amf_ue->mobile_reachable.timer,
+            ogs_time_from_sec(amf_self()->time.t3512.value + 240));
+    }
+}
+
+/*
+ * TS 24.501 5.5.1.2.8 f): the request on ran_ue put the UE's NG context on
+ * hold, failed before it was authenticated, and the held NG context is gone.
+ * The UE keeps its 5GMM context and is left idle: ran_ue is released as on a
+ * RAN-initiated release, the PDU sessions deactivated first, and the release
+ * runs the mobile reachable timer.
+ */
+void gmm_release_request_connection(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
+{
+    int r, xact_count;
+
+    ogs_assert(amf_ue);
+    ogs_assert(ran_ue);
+
+    xact_count = amf_sess_xact_count(amf_ue);
+
+    ran_ue->deactivation.group = NGAP_Cause_PR_nas;
+    ran_ue->deactivation.cause = NGAP_CauseNas_normal_release;
+
+    amf_sbi_send_deactivate_all_sessions(
+            ran_ue, amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
+            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+
+    if (amf_sess_xact_count(amf_ue) == xact_count) {
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
+                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    }
+}
+
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_sm_debug(e);
@@ -922,13 +981,17 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
 
+        amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
+
         if (ogs_nas_5gmm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_5gmm_decode() failed");
             ogs_pkbuf_free(pkbuf);
+            if (amf_ue && amf_ue->ran_ue_id == ran_ue->id &&
+                ran_ue_find_by_id(amf_ue->ran_ue_holding_id) &&
+                e->ngap.code == NGAP_ProcedureCode_id_InitialUEMessage)
+                REFUSE_NG_REQUEST(amf_ue, ran_ue);
             break;
         }
-
-        amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
         /* The integrity verdict of this message, checked when queued */
         if (amf_ue) {
@@ -1012,6 +1075,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_warn("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
                         (long long)ran_ue->ran_ue_ngap_id,
                         (long long)ran_ue->amf_ue_ngap_id);
+
+                if (amf_ue->ran_ue_id == ran_ue->id &&
+                    ran_ue_find_by_id(amf_ue->ran_ue_holding_id) &&
+                    e->ngap.code == NGAP_ProcedureCode_id_InitialUEMessage) {
+                    REFUSE_NG_REQUEST(amf_ue, ran_ue);
+                    ogs_pkbuf_free(pkbuf);
+                    break;
+                }
 
                 /* Same teardown as a RAN-initiated release request */
                 CLEAR_AMF_UE_ALL_TIMERS(amf_ue);

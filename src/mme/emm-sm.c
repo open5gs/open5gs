@@ -1192,6 +1192,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
         case OGS_NAS_EPS_ATTACH_REQUEST:
             ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
+            /* The request being authenticated is now this connection's */
+            mme_ue->enb_ue_holding_authenticating = false;
             rv = emm_handle_attach_request(
                     enb_ue, mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
@@ -1224,6 +1226,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 break;
 
             ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
+            /* The authentication ends with this connection's request */
+            mme_ue->enb_ue_holding_authenticating = false;
             rv = emm_handle_detach_request(
                     enb_ue, mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {

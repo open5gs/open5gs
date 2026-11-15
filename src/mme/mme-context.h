@@ -395,6 +395,12 @@ struct enb_ue_s {
     /* Related Context */
     ogs_pool_id_t   enb_id;
     ogs_pool_id_t   mme_ue_id;
+
+    /*
+     * The MME-UE context holding this S1 context. HOLDING_S1_CONTEXT()
+     * invalidates mme_ue_id, so this is the way back to the UE.
+     */
+    ogs_pool_id_t   holding_mme_ue_id;
 };
 
 struct sgw_ue_s {
@@ -806,10 +812,13 @@ struct mme_ue_s {
                     (__hOLDER)->imsi_bcd); \
         } \
         (__hOLDER)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
+        (__hOLDER)->enb_ue_holding_released = false; \
+        (__hOLDER)->enb_ue_holding_restarted = false; \
         \
         /* The context being held is __sERVING's, and is named after it */ \
         enb_ue_holding = enb_ue_find_by_id((__sERVING)->enb_ue_id); \
         if (enb_ue_holding) { \
+            enb_ue_holding->holding_mme_ue_id = (__hOLDER)->id; \
             enb_ue_holding->mme_ue_id = OGS_INVALID_POOL_ID; \
             \
             ogs_warn("[%s] Holding S1 Context", (__sERVING)->imsi_bcd); \
@@ -824,12 +833,41 @@ struct mme_ue_s {
                     mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration); \
             \
             (__hOLDER)->enb_ue_holding_id = (__sERVING)->enb_ue_id; \
+            (__hOLDER)->enb_ue_holding_authenticating = false; \
         } else \
             ogs_error("[%s] S1 Context has already been removed", \
                     (__sERVING)->imsi_bcd); \
     } while(0)
+/*
+ * TS 24.301 5.5.1.2.7 f): until the request in progress is authenticated,
+ * keep the S1 context already held, the UE's, and release the request's. If
+ * the held S1 context has been released, no other is held in its place.
+ */
 #define HOLDING_S1_CONTEXT(__mME) \
-    HOLDING_S1_CONTEXT_FOR((__mME), (__mME))
+    do { \
+        enb_ue_t *enb_ue_serving = NULL; \
+        \
+        if (((__mME)->enb_ue_holding_id != OGS_INVALID_POOL_ID || \
+             (__mME)->enb_ue_holding_released) && \
+            !OGS_FSM_CHECK(&(__mME)->sm, emm_state_security_mode)) { \
+            ogs_warn("[%s] Holding S1 context already exists", \
+                    (__mME)->imsi_bcd); \
+            enb_ue_serving = enb_ue_find_by_id((__mME)->enb_ue_id); \
+            if (enb_ue_serving) { \
+                int r; \
+                enb_ue_serving->mme_ue_id = OGS_INVALID_POOL_ID; \
+                r = s1ap_send_ue_context_release_command( \
+                        enb_ue_serving, \
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
+                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+            } \
+        } else { \
+            HOLDING_S1_CONTEXT_FOR((__mME), (__mME)); \
+            (__mME)->enb_ue_holding_authenticating = \
+                OGS_FSM_CHECK(&(__mME)->sm, emm_state_authentication); \
+        } \
+    } while(0)
 #define CLEAR_S1_CONTEXT(__mME) \
     do { \
         enb_ue_t *enb_ue_holding = NULL; \
@@ -851,8 +889,104 @@ struct mme_ue_s {
             ogs_assert(r != OGS_ERROR); \
         } \
         (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
+        (__mME)->enb_ue_holding_released = false; \
+    } while(0)
+/*
+ * TS 24.301 5.5.1.2.7 f): the EMM context gives way only to a genuine UE.
+ * A request that fails before that gives the UE its held S1 context back. If
+ * that S1 context is gone, the request's is released too and the UE is left
+ * idle with its context: the access bearers are released, also when the
+ * request's S1 context is gone as well.
+ */
+#define RESTORE_S1_CONTEXT(__mME) \
+    do { \
+        enb_ue_t *enb_ue_holding = NULL, *enb_ue_request = NULL; \
+        \
+        enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_holding_id); \
+        if (enb_ue_holding) { \
+            int r; \
+            ogs_warn("[%s] Restore S1 Context", (__mME)->imsi_bcd); \
+            \
+            enb_ue_request = enb_ue_find_by_id((__mME)->enb_ue_id); \
+            if (enb_ue_request) { \
+                enb_ue_request->mme_ue_id = OGS_INVALID_POOL_ID; \
+                r = s1ap_send_ue_context_release_command( \
+                        enb_ue_request, \
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
+                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
+                ogs_expect(r == OGS_OK); \
+            } \
+            \
+            ogs_timer_stop(enb_ue_holding->t_s1_holding); \
+            enb_ue_holding->ue_ctx_rel_action = \
+                S1AP_UE_CTX_REL_INVALID_ACTION; \
+            enb_ue_holding->holding_mme_ue_id = OGS_INVALID_POOL_ID; \
+            enb_ue_associate_mme_ue(enb_ue_holding, (__mME)); \
+        } else if ((__mME)->enb_ue_holding_released || \
+                (__mME)->enb_ue_holding_id != OGS_INVALID_POOL_ID) { \
+            enb_ue_request = enb_ue_find_by_id((__mME)->enb_ue_id); \
+            if (enb_ue_request) { \
+                ogs_warn("[%s] Held S1 Context has been released", \
+                        (__mME)->imsi_bcd); \
+                enb_ue_request->relcause.group = S1AP_Cause_PR_nas; \
+                enb_ue_request->relcause.cause = \
+                    S1AP_CauseNas_normal_release; \
+                mme_send_release_access_bearer_or_ue_context_release( \
+                        enb_ue_request); \
+            } else { \
+                /* No S1 context is left, as after the loss of the eNB: \
+                 * only the access bearers are released */ \
+                ogs_warn("[%s] Held S1 Context has been released", \
+                        (__mME)->imsi_bcd); \
+                ogs_assert(OGS_OK == \
+                    mme_gtp_send_release_access_bearers_request(NULL, \
+                        (__mME), \
+                        OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED)); \
+            } \
+        } \
+        (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
+        (__mME)->enb_ue_holding_released = false; \
+    } while(0)
+/*
+ * TS 24.301 5.5.1.2.7 f): a NAS message refused on the connection __eNB that
+ * put the S1 context on hold authenticated nobody. While a request is being
+ * authenticated, only __eNB is released and that authentication, left with no
+ * connection, is aborted (TS 24.301 5.4.2.7 a)), also before the HSS has
+ * answered. Otherwise, or if __eNB put the connection of that authentication
+ * on hold, the held S1 context is given back. If the held S1 context is
+ * gone, __eNB is released with the access bearers and the UE left idle.
+ */
+#define REFUSE_S1_REQUEST(__mME, __eNB) \
+    do { \
+        if (OGS_FSM_CHECK(&(__mME)->sm, emm_state_authentication) && \
+            !enb_ue_find_by_id((__mME)->enb_ue_holding_id) && \
+            ((__mME)->enb_ue_holding_released || \
+             (__mME)->enb_ue_holding_id != OGS_INVALID_POOL_ID)) { \
+            /* RESTORE_S1_CONTEXT() releases __eNB */ \
+            emm_abort_authentication(__mME); \
+        } else if (OGS_FSM_CHECK(&(__mME)->sm, emm_state_authentication) && \
+            !(enb_ue_find_by_id((__mME)->enb_ue_holding_id) && \
+              (__mME)->enb_ue_holding_authenticating)) { \
+            int r; \
+            enb_ue_deassociate_mme_ue((__eNB), (__mME)); \
+            (__eNB)->mme_ue_id = OGS_INVALID_POOL_ID; \
+            r = s1ap_send_ue_context_release_command((__eNB), \
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
+                    S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+            emm_abort_authentication(__mME); \
+        } else \
+            RESTORE_S1_CONTEXT(__mME); \
     } while(0)
     ogs_pool_id_t   enb_ue_holding_id;
+    /* A new connection put the connection of the authentication in
+     * progress on hold, and the authentication state has not taken a
+     * request of the new connection yet */
+    bool            enb_ue_holding_authenticating;
+    /* The S1 context put on hold has been released */
+    bool            enb_ue_holding_released;
+    /* t_s1_holding of the held S1 context has been restarted */
+    bool            enb_ue_holding_restarted;
 
     struct {
 #define MME_CLEAR_PAGING_INFO(__mME) \

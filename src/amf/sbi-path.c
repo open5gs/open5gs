@@ -765,8 +765,10 @@ void amf_sbi_send_deactivate_stale_user_plane(ran_ue_t *ran_ue)
      * reused, so a reference left behind can later resolve to an unrelated
      * NG context and have a UEContextReleaseCommand sent to it.
      */
-    if (amf_ue->ran_ue_holding_id == ran_ue->id)
+    if (amf_ue->ran_ue_holding_id == ran_ue->id) {
         amf_ue->ran_ue_holding_id = OGS_INVALID_POOL_ID;
+        amf_ue->ran_ue_holding_released = true;
+    }
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         if (sess->stale_ran_ue_id != ran_ue->id)

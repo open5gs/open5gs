@@ -629,7 +629,6 @@ int mme_gtp_send_release_access_bearers_request(
     ogs_gtp_xact_t *xact = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
-    ogs_assert(enb_ue);
     ogs_assert(action);
     ogs_assert(mme_ue);
     sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
@@ -654,7 +653,8 @@ int mme_gtp_send_release_access_bearers_request(
     }
     xact->release_action = action;
     xact->local_teid = mme_ue->gn.mme_gn_teid;
-    xact->enb_ue_id = enb_ue->id;
+    /* No S1 context: OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED */
+    xact->enb_ue_id = enb_ue ? enb_ue->id : OGS_INVALID_POOL_ID;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

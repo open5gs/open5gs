@@ -628,6 +628,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue_from_stmsi = NULL;
+    ogs_pool_id_t enb_ue_holding_id = OGS_INVALID_POOL_ID;
     bool enb_ue_new = false;
 
     ogs_assert(enb);
@@ -878,6 +879,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             }
             return;
         }
+        enb_ue_holding_id = mme_ue_from_stmsi->enb_ue_holding_id;
         /* If NAS(mme_ue_t) has already been associated with
          * older S1(enb_ue_t) context */
         if (ECM_CONNECTED(mme_ue_from_stmsi)) {
@@ -916,10 +918,15 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
         enb_ue->saved.tai.tac, enb_ue->saved.e_cgi.cell_id);
 
-    if (s1ap_send_to_nas(enb_ue,
-                S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU) != OGS_OK) {
-        if (enb_ue_new) enb_ue_remove(enb_ue);
-    }
+    r = s1ap_send_to_nas(
+            enb_ue, S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU);
+    if (r != OGS_OK && enb_ue_new)
+        enb_ue_remove(enb_ue);
+    /* TS 36.413 10.4: a refused NAS-PDU authenticated nobody; a hold
+     * kept for another request waits for that request's end */
+    if (r != OGS_OK && mme_ue_from_stmsi &&
+            mme_ue_from_stmsi->enb_ue_holding_id != enb_ue_holding_id)
+        RESTORE_S1_CONTEXT(mme_ue_from_stmsi);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -2334,6 +2341,10 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
          */
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
+        /* The mark of a released hold ends with its request's connection */
+        if (mme_ue->enb_ue_id == enb_ue->id)
+            mme_ue->enb_ue_holding_released = false;
+
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
             ogs_info("Mobile Reachable timer started for IMSI[%s]",
                 mme_ue->imsi_bcd);
@@ -2397,6 +2408,13 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
     switch (enb_ue->ue_ctx_rel_action) {
     case S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE:
         ogs_debug("    Action: S1 context remove");
+        /* A held S1 context that is removed cannot be given back, also
+         * when t_s1_holding removes it without a release command */
+        mme_ue = mme_ue_find_by_id(enb_ue->holding_mme_ue_id);
+        if (mme_ue && mme_ue->enb_ue_holding_id == enb_ue->id) {
+            mme_ue->enb_ue_holding_id = OGS_INVALID_POOL_ID;
+            mme_ue->enb_ue_holding_released = true;
+        }
         enb_ue_remove(enb_ue);
         break;
     case S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK:

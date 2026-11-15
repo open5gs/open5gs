@@ -37,6 +37,34 @@
 #include "mme-path.h"
 #include "mme-dns.h"
 
+/*
+ * TS 24.301 5.4.2.7 a): abort the authentication, its connection is gone.
+ * Not to be called from inside the UE's state machine: it makes a transition.
+ */
+void emm_abort_authentication(mme_ue_t *mme_ue)
+{
+    ogs_fsm_t sm;
+    mme_event_t e;
+
+    ogs_assert(mme_ue);
+
+    /* The macro picks the next state; ogs_fsm_tran() exits and enters */
+    sm = mme_ue->sm;
+    MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, &sm);
+
+    memset(&e, 0, sizeof(e));
+    e.mme_ue_id = mme_ue->id;
+    ogs_fsm_tran(&mme_ue->sm, OGS_FSM_STATE(&sm), &e);
+
+    /* TS 24.301 5.3.5: an idle attached UE runs the mobile reachable timer */
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered) && ECM_IDLE(mme_ue)) {
+        ogs_info("Mobile Reachable timer started for IMSI[%s]",
+            mme_ue->imsi_bcd);
+        ogs_timer_start(mme_ue->t_mobile_reachable.timer,
+            ogs_time_from_sec(mme_self()->time.t3412.value + 240));
+    }
+}
+
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
     mme_sm_debug(e);
@@ -259,13 +287,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
 
+        mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+
         if (ogs_nas_emm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_emm_decode() failed");
             ogs_pkbuf_free(pkbuf);
+            if (mme_ue && mme_ue->enb_ue_id == enb_ue->id &&
+                enb_ue_find_by_id(mme_ue->enb_ue_holding_id) &&
+                e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage)
+                REFUSE_S1_REQUEST(mme_ue, enb_ue);
             return;
         }
-
-        mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
         /* The integrity verdict of this message, checked when queued */
         if (mme_ue) {
@@ -335,6 +367,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                             "context yet");
                 ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+                if (mme_ue->enb_ue_id == enb_ue->id &&
+                    enb_ue_find_by_id(mme_ue->enb_ue_holding_id) &&
+                    e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
+                    REFUSE_S1_REQUEST(mme_ue, enb_ue);
+                    ogs_pkbuf_free(pkbuf);
+                    break;
+                }
 
                 enb_ue->relcause.group = S1AP_Cause_PR_nas;
                 enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
@@ -721,7 +761,15 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
                 if (mme_ue->can_restore_context &&
                     OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
+                    /* RESTORE_S1_CONTEXT() releases the request's S1 context
+                     * if the request put one on hold */
+                    bool released =
+                        mme_ue->enb_ue_holding_id != OGS_INVALID_POOL_ID ||
+                        mme_ue->enb_ue_holding_released;
+
                     MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, &mme_ue->sm);
+                    if (released)
+                        break;
                     r = s1ap_send_ue_context_release_command(enb_ue,
                             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);

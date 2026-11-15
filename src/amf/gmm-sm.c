@@ -36,24 +36,6 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
-#define AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s) do {                   \
-    CLEAR_AMF_UE_TIMER((amf_ue)->t3560);                                 \
-    (amf_ue)->registration_session_release_after_authentication = false; \
-    if ((amf_ue)->can_restore_context) {                                 \
-        amf_ue_restore_memento((amf_ue), &((amf_ue)->memento));            \
-        (amf_ue)->security_context_available = 1;                        \
-        (amf_ue)->mac_failed = 0;                                        \
-        if (!OGS_FSM_CHECK((s), gmm_state_registered))                   \
-            OGS_FSM_TRAN((s), &gmm_state_registered);                    \
-        ogs_warn("[%s] Failure in transaction; restoring context and "  \
-                  "transitioning to REGISTERED.", (amf_ue)->supi);      \
-    } else {                                                           \
-        OGS_FSM_TRAN((s), &gmm_state_exception);                         \
-        ogs_warn("[%s] Failure in transaction; no context "             \
-                  "restoration.", (amf_ue)->supi);                      \
-    }                                                                  \
-} while (0)
-
 typedef enum {
     GMM_COMMON_STATE_DEREGISTERED,
     GMM_COMMON_STATE_REGISTERED,
@@ -2295,6 +2277,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_warn("Registration request");
+            /* The request being authenticated is now this connection's */
+            amf_ue->ran_ue_holding_authenticating = false;
             gmm_cause = gmm_handle_registration_request(
                     amf_ue, h, e->ngap.code,
                     &nas_message->gmm.registration_request);
@@ -2333,6 +2317,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
             ogs_error("[%s] Deregistration request", amf_ue->supi);
+            /* The authentication ends with this connection's request */
+            amf_ue->ran_ue_holding_authenticating = false;
 
             gmm_handle_deregistration_request(
                     amf_ue, &nas_message->gmm.deregistration_request_from_ue);

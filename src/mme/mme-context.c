@@ -4053,7 +4053,17 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 void mme_ue_remove(mme_ue_t *mme_ue)
 {
     sgw_ue_t *sgw_ue = NULL;
+    enb_ue_t *enb_ue_holding = NULL;
     ogs_assert(mme_ue);
+
+    /*
+     * A held S1 context keeps a reference back to this context. Sever it
+     * before the pool id can be reused.
+     */
+    enb_ue_holding = enb_ue_find_by_id(mme_ue->enb_ue_holding_id);
+    if (enb_ue_holding &&
+        enb_ue_holding->holding_mme_ue_id == mme_ue->id)
+        enb_ue_holding->holding_mme_ue_id = OGS_INVALID_POOL_ID;
 
     ogs_list_remove(&self.mme_ue_list, mme_ue);
 

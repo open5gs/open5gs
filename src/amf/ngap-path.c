@@ -483,6 +483,7 @@ int ngap_send_ran_ue_context_release_command(
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
+    amf_ue_t *amf_ue = NULL;
 
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
@@ -496,6 +497,13 @@ int ngap_send_ran_ue_context_release_command(
 
     ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
     ran_ue->ue_ctx_rel_action = action;
+
+    /* A held NG context that is being released cannot be given back */
+    amf_ue = amf_ue_find_by_id(ran_ue->holding_amf_ue_id);
+    if (amf_ue && amf_ue->ran_ue_holding_id == ran_ue->id) {
+        amf_ue->ran_ue_holding_id = OGS_INVALID_POOL_ID;
+        amf_ue->ran_ue_holding_released = true;
+    }
 
     ogs_debug("    Group[%d] Cause[%d] Action[%d] Duration[%d]",
             group, (int)cause, action, (int)duration);
