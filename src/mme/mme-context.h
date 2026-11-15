@@ -1321,6 +1321,7 @@ typedef enum {
     MME_UE_IMSI_FROM_ATTACH_REQUEST = 0,
     MME_UE_IMSI_FROM_IDENTITY_RESPONSE,
     MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE,
+    MME_UE_IMSI_FROM_AUTHENTICATION_RESPONSE,
 } mme_ue_imsi_source_e;
 
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,

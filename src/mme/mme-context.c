@@ -4405,6 +4405,8 @@ static const char *mme_ue_imsi_source_name(mme_ue_imsi_source_e source)
         return "IDENTITY_RESPONSE";
     case MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE:
         return "SGSN_CONTEXT_RESPONSE";
+    case MME_UE_IMSI_FROM_AUTHENTICATION_RESPONSE:
+        return "AUTHENTICATION_RESPONSE";
     }
     return "UNKNOWN";
 }
@@ -4475,6 +4477,15 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
 
     /* Check if OLD mme_ue_t is existed */
     old_mme_ue = mme_ue_find_by_imsi(mme_ue->imsi, mme_ue->imsi_len);
+    if (old_mme_ue && (source == MME_UE_IMSI_FROM_ATTACH_REQUEST ||
+                source == MME_UE_IMSI_FROM_IDENTITY_RESPONSE)) {
+        /*
+         * The IMSI is not authenticated yet: the context that has it keeps
+         * it, and its sessions, until this one is. The Authentication
+         * Response calls this function again (TS 24.301 5.5.1.2.7 f)).
+         */
+        old_mme_ue = NULL;
+    }
     if (old_mme_ue) {
         /* Check if OLD mme_ue_t is different with NEW mme_ue_t */
         if (ogs_pool_index(&mme_ue_pool, mme_ue) !=
@@ -4641,9 +4652,12 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
         }
     }
 
-    /* Register new IMSI in hash.
+    /* Register new IMSI in hash, unless another context keeps it.
      * Old IMSI hash entry was already removed at the top of this function. */
-    ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
+    old_mme_ue = mme_ue_find_by_imsi(mme_ue->imsi, mme_ue->imsi_len);
+    if (!old_mme_ue || old_mme_ue == mme_ue)
+        ogs_hash_set(self.imsi_ue_hash,
+                mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     mme_ue->hssmap = mme_hssmap_find_by_imsi_bcd(mme_ue->imsi_bcd);
     if (mme_ue->hssmap) {

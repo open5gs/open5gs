@@ -2345,23 +2345,14 @@ amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id)
 
 /*
  * Release an OLD amf_ue that collides with a freshly registering amf_ue on
- * one of the UE indexes, moving any session context to the NEW amf_ue.
+ * the SUPI, moving any session context to the NEW amf_ue.
  *
- * Reached from two complementary detection points:
- *
- *   - amf_ue_set_suci(): the UE re-attached re-using the SAME SUCI, so the
- *     old context is found via suci_hash (delete-path collision).
- *
- *   - amf_ue_set_supi(): the UE re-attached with a FRESH SUCI (USIM-toggle,
- *     post-deregistration timer, flight-mode, push-driven re-registration,
- *     PoC radio attach loop), so amf_ue_set_suci() could NOT detect it
- *     (suci_hash miss). The old context is only discovered later, once
- *     AKA-Auth reveals the SUPI and supi_hash still points at the stale
- *     slot. Without this the slot leaks until the mobile-reachable timer
- *     expires (create-path collision).
- *
- * Unifying the two paths here makes them behave identically, mirroring the
- * SMF-side unification of the IMSI/SUPI indexes (commit eeeef3d1b).
+ * Reached from amf_ue_set_supi(), once AKA-Auth has confirmed the SUPI of
+ * the NEW amf_ue, whether the UE re-attached re-using the SAME SUCI (an
+ * Identity Response: amf_ue_set_suci() leaves the old context alone until
+ * then) or with a FRESH SUCI (USIM-toggle, post-deregistration timer,
+ * flight-mode, push-driven re-registration, PoC radio attach loop). Without
+ * this the slot leaks until the mobile-reachable timer expires.
  */
 static void amf_ue_release_old_context(
         amf_ue_t *amf_ue, amf_ue_t *old_amf_ue, const char *display)
@@ -2444,16 +2435,13 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
     suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
     ogs_assert(suci);
 
-    /* Check if OLD amf_ue_t is existed */
+    /*
+     * The SUCI is not authenticated yet. If another context has it, that
+     * context keeps the SUCI and its sessions until this one is
+     * authenticated: amf_ue_set_supi() then releases it
+     * (TS 24.501 5.5.1.2.8 f)).
+     */
     old_amf_ue = amf_ue_find_by_suci(suci);
-    if (old_amf_ue) {
-        /* Check if OLD amf_ue_t is different with NEW amf_ue_t */
-        if (ogs_pool_index(&amf_ue_pool, amf_ue) !=
-            ogs_pool_index(&amf_ue_pool, old_amf_ue)) {
-            /* Same-SUCI re-attach: tear the old context down. */
-            amf_ue_release_old_context(amf_ue, old_amf_ue, suci);
-        }
-    }
 
     if (amf_ue->suci) {
         ogs_hash_unset_if_owner(self.suci_hash,
@@ -2461,7 +2449,9 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_free(amf_ue->suci);
     }
     amf_ue->suci = suci;
-    ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), amf_ue);
+    if (!old_amf_ue || old_amf_ue == amf_ue)
+        ogs_hash_set(self.suci_hash,
+                amf_ue->suci, strlen(amf_ue->suci), amf_ue);
 }
 
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
@@ -2478,14 +2468,12 @@ void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
         /*
          * First SUPI assignment for this amf_ue.
          *
-         * Fresh-SUCI re-attach orphan cleanup (create path): if another
-         * amf_ue already holds this SUPI, it is an orphan from a previous
-         * attach cycle that amf_ue_set_suci() could NOT detect, because the
-         * UE re-attached with a fresh SUCI (suci_hash miss). The delete-path
-         * guard keeps the live entry findable but does not reclaim the stale
-         * slot - without this the pool grows by one slot on every fresh-SUCI
-         * re-registration, until the mobile-reachable timer expires. Tear it
-         * down through the same unified path the same-SUCI re-attach uses.
+         * Re-attach orphan cleanup: if another amf_ue already holds this
+         * SUPI, it is the context of a previous attach cycle, which the UE
+         * reached with the same SUCI (amf_ue_set_suci() leaves it alone
+         * until the authentication) or with a fresh SUCI (suci_hash miss).
+         * Without this the pool grows by one slot on every re-registration,
+         * until the mobile-reachable timer expires.
          */
         amf_ue_t *old_amf_ue = amf_ue_find_by_supi(supi);
         if (old_amf_ue && old_amf_ue != amf_ue)
@@ -2494,6 +2482,11 @@ void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
     amf_ue->supi = ogs_strdup(supi);
     ogs_assert(amf_ue->supi);
     ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), amf_ue);
+
+    /* Take the SUCI that amf_ue_set_suci() left to another context */
+    if (amf_ue->suci && !amf_ue_find_by_suci(amf_ue->suci))
+        ogs_hash_set(self.suci_hash,
+                amf_ue->suci, strlen(amf_ue->suci), amf_ue);
 }
 
 OpenAPI_rat_type_e amf_ue_rat_type(amf_ue_t *amf_ue)
