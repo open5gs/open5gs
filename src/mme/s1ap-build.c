@@ -1025,6 +1025,8 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
             NRUESecurityCapabilities->nRintegrityProtectionAlgorithms.size);
     }
 
+    enb_ue->initial_context_setup_request_pending = true;
+
     return ogs_s1ap_encode(&pdu);
 }
 

@@ -436,10 +436,10 @@ static void test2_func(abts_case *tc, void *data)
 
     ogs_msleep(300);
 
-    /* Send Initial context setup failure */
-    sendbuf = testngap_build_initial_context_setup_failure(test_ue,
+    /* Send UEContextReleaseRequest */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
             NGAP_Cause_PR_radioNetwork,
-            NGAP_CauseRadioNetwork_radio_connection_with_ue_lost);
+            NGAP_CauseRadioNetwork_radio_connection_with_ue_lost, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
 
