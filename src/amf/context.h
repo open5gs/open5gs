@@ -669,15 +669,17 @@ struct amf_ue_s {
                     amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration); \
             \
             (__hOLDER)->ran_ue_holding_id = (__sERVING)->ran_ue_id; \
+            (__hOLDER)->ran_ue_holding_verified = false; \
             (__hOLDER)->ran_ue_holding_authenticating = false; \
         } else \
             ogs_error("[%s] NG Context has already been removed", \
                     (__sERVING)->suci); \
     } while(0)
 /*
- * TS 24.501 5.5.1.2.8 f): until the request in progress is authenticated,
- * keep the NG context already held, the UE's, and release the request's. If
- * the held NG context has been released, no other is held in its place.
+ * TS 24.501 5.5.1.2.8 f): until the request in progress is authenticated or
+ * has passed the integrity check, keep the NG context already held, the
+ * UE's, and release the request's. If the held NG context has been released,
+ * no other is held in its place.
  */
 #define HOLDING_NG_CONTEXT(__aMF) \
     do { \
@@ -685,6 +687,7 @@ struct amf_ue_s {
         \
         if (((__aMF)->ran_ue_holding_id != OGS_INVALID_POOL_ID || \
              (__aMF)->ran_ue_holding_released) && \
+            !(__aMF)->ran_ue_holding_verified && \
             !OGS_FSM_CHECK(&(__aMF)->sm, gmm_state_security_mode)) { \
             ogs_warn("[%s] Holding NG context already exists", \
                     (__aMF)->suci); \
@@ -739,7 +742,10 @@ struct amf_ue_s {
         amf_sess_t *sess = NULL; \
         \
         ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_holding_id); \
-        if (ran_ue_holding) { \
+        if (ran_ue_holding && (__aMF)->ran_ue_holding_verified) { \
+            /* The verified request is the UE's own: the hold goes */ \
+            CLEAR_NG_CONTEXT(__aMF); \
+        } else if (ran_ue_holding) { \
             int r; \
             ogs_warn("[%s] Restore NG Context", (__aMF)->suci); \
             \
@@ -765,7 +771,7 @@ struct amf_ue_s {
         } else if ((__aMF)->ran_ue_holding_released || \
                 (__aMF)->ran_ue_holding_id != OGS_INVALID_POOL_ID) { \
             ran_ue_request = ran_ue_find_by_id((__aMF)->ran_ue_id); \
-            if (ran_ue_request) { \
+            if (ran_ue_request && !(__aMF)->ran_ue_holding_verified) { \
                 ogs_warn("[%s] Held NG Context has been released", \
                         (__aMF)->suci); \
                 gmm_release_request_connection((__aMF), ran_ue_request); \
@@ -799,6 +805,8 @@ struct amf_ue_s {
             RESTORE_NG_CONTEXT(__aMF); \
     } while(0)
     ogs_pool_id_t   ran_ue_holding_id;
+    /* The request on the UE's current connection passed the integrity check */
+    bool            ran_ue_holding_verified;
     /* A new connection put the connection of the authentication in
      * progress on hold, and the authentication state has not taken a
      * request of the new connection yet */

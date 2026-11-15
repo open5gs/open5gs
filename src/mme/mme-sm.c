@@ -492,6 +492,21 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
         }
 
+        /* TS 24.301 5.5.1.2.7 f): a request that passed the integrity check
+         * is the UE's own: the S1 context it put on hold is never given back,
+         * and goes when the state machine ends the request */
+        if (mme_ue && mme_ue->enb_ue_id == enb_ue->id &&
+            (mme_ue->enb_ue_holding_id != OGS_INVALID_POOL_ID ||
+             mme_ue->enb_ue_holding_released)) {
+            ogs_nas_security_header_type_t h;
+
+            /* The SERVICE REQUEST format carries its own short MAC */
+            h.type = e->nas_type;
+            if ((h.integrity_protected || h.service_request) &&
+                SECURITY_CONTEXT_IS_VALID(mme_ue))
+                mme_ue->enb_ue_holding_verified = true;
+        }
+
         ogs_assert(mme_ue);
         if (!OGS_FSM_STATE(&mme_ue->sm)) {
             ogs_fatal("MESSAGE[%d]", nas_message.emm.h.message_type);
@@ -762,10 +777,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 if (mme_ue->can_restore_context &&
                     OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
                     /* RESTORE_S1_CONTEXT() releases the request's S1 context
-                     * if the request put one on hold */
+                     * if the request put one on hold and did not pass the
+                     * integrity check */
                     bool released =
-                        mme_ue->enb_ue_holding_id != OGS_INVALID_POOL_ID ||
-                        mme_ue->enb_ue_holding_released;
+                        (mme_ue->enb_ue_holding_id != OGS_INVALID_POOL_ID ||
+                         mme_ue->enb_ue_holding_released) &&
+                        !mme_ue->enb_ue_holding_verified;
 
                     MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, &mme_ue->sm);
                     if (released)
