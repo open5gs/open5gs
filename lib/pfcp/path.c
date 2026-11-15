@@ -596,6 +596,12 @@ void ogs_pfcp_send_error_message(
         cause = &errmsg.pfcp_session_set_deletion_response.cause;
         offending_ie = &errmsg.pfcp_session_set_deletion_response.offending_ie;
         break;
+    case OGS_PFCP_SESSION_SET_MODIFICATION_RESPONSE_TYPE:
+        node_id = &errmsg.pfcp_session_set_modification_response.node_id;
+        cause = &errmsg.pfcp_session_set_modification_response.cause;
+        offending_ie =
+            &errmsg.pfcp_session_set_modification_response.offending_ie;
+        break;
     case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
         node_id = &errmsg.pfcp_session_establishment_response.node_id;
         cause = &errmsg.pfcp_session_establishment_response.cause;

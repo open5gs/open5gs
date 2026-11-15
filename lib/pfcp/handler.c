@@ -160,6 +160,25 @@ bool ogs_pfcp_up_handle_association_setup_request(
     return true;
 }
 
+bool ogs_pfcp_up_handle_association_update_request(
+        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_association_update_request_t *req)
+{
+    ogs_assert(xact);
+
+    /* TS 29.244 6.2.7.2.2: update the CP function features and answer */
+    if (req->cp_function_features.presence) {
+        ogs_pfcp_self()->cp_function_features.octet5 =
+            req->cp_function_features.u8;
+    }
+
+    ogs_pfcp_send_error_message(xact, 0,
+            OGS_PFCP_ASSOCIATION_UPDATE_RESPONSE_TYPE,
+            OGS_PFCP_CAUSE_REQUEST_ACCEPTED, 0);
+
+    return true;
+}
+
 bool ogs_pfcp_up_handle_association_setup_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_response_t *rsp)

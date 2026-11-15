@@ -272,6 +272,16 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
             ogs_pfcp_up_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
             break;
+        case OGS_PFCP_ASSOCIATION_UPDATE_REQUEST_TYPE:
+            ogs_pfcp_up_handle_association_update_request(node, xact,
+                    &message->pfcp_association_update_request);
+            break;
+        /* TS 29.244 8.2.1: answer "Service not supported" */
+        case OGS_PFCP_SESSION_SET_DELETION_REQUEST_TYPE:
+            ogs_pfcp_send_error_message(xact, 0,
+                    OGS_PFCP_SESSION_SET_DELETION_RESPONSE_TYPE,
+                    OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED, 0);
+            break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
             sess = sgwu_sess_add_by_message(message);
             if (sess)

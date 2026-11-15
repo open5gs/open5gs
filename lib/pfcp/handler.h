@@ -44,6 +44,9 @@ bool ogs_pfcp_up_handle_association_setup_request(
 bool ogs_pfcp_up_handle_association_setup_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_response_t *req);
+bool ogs_pfcp_up_handle_association_update_request(
+        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_association_update_request_t *req);
 
 bool ogs_pfcp_up_handle_pdr(
         ogs_pfcp_pdr_t *pdr, uint8_t type, int len,
