@@ -350,6 +350,14 @@ static void security_test8(abts_case *tc, void *data)
             ik, 0xa94059da, 0xa, 1, pkbuf, mac);
     ABTS_TRUE(tc, memcmp(mac, mact, 4) == 0);
     ogs_pkbuf_free(pkbuf);
+
+    /* TS 35.223, 128-EIA3 test set 3. Only the high bit of byte 73 counts. */
+    zuc_eia3(ik, 0xa94059da, 0xa, 1, 577, message, &mac32);
+    ABTS_TRUE(tc, mac32 == 0xfae8ff0b);
+
+    message[sizeof(message) - 1] ^= 0x7f;
+    zuc_eia3(ik, 0xa94059da, 0xa, 1, 577, message, &mac32);
+    ABTS_TRUE(tc, mac32 == 0xfae8ff0b);
 }
 
 static void security_test9(abts_case *tc, void *data)
@@ -397,6 +405,15 @@ static void security_test9(abts_case *tc, void *data)
         memcmp(pkbuf->data, ogs_hex_from_string(_cipher, tmp, sizeof(tmp)),
             SECURITY_TEST9_LEN) == 0);
     ogs_pkbuf_free(pkbuf);
+
+    /* TS 35.223, 128-EEA3 test set 1. Clear unused bits of the ciphertext. */
+    ogs_hex_from_string(_plain, plain, sizeof(plain));
+    plain[sizeof(plain) - 1] ^= 0x7f;
+    tmp[sizeof(tmp) - 1] = 0;
+    zuc_eea3(ck, 0x66035492, 0xf, 0, 193, plain, cipher);
+    ABTS_TRUE(tc, memcmp(cipher, tmp, sizeof(cipher)) == 0);
+    zuc_eea3(ck, 0x66035492, 0xf, 0, 193, plain, plain);
+    ABTS_TRUE(tc, memcmp(plain, tmp, sizeof(plain)) == 0);
 }
 
 static void security_test10(abts_case *tc, void *data)
