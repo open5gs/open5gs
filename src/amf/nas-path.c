@@ -849,6 +849,10 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
         }
     }
 
+    /* TS 38.413 8.2.2.2, TS 24.501 6.3.3.3: wait for the answers */
+    sess->pdu_session_resource_release_response_received = false;
+    sess->pdu_session_release_complete_received = false;
+
     /*
      * Issues #1925
      *
