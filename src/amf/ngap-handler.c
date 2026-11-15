@@ -5620,7 +5620,18 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         if (!ran_ue)
             ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                     (long long)amf_ue_ngap_id);
-        else
+        else if (ran_ue->gnb_id != gnb->id) {
+            /*
+             * TS 38.413 10.6: the local release is of a connection of
+             * the same NG interface; a UE of another gNB is unknown here
+             */
+            ogs_warn("AMF_UE_NGAP_ID[%lld] does not belong to this gNB "
+                    "[UE:gNB-ID:%llu, Message:gNB-ID:%llu]",
+                    (long long)amf_ue_ngap_id,
+                    (unsigned long long)ran_ue->gnb_id,
+                    (unsigned long long)gnb->id);
+            ran_ue = NULL;
+        } else
             ogs_warn("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
                     (long long)ran_ue->ran_ue_ngap_id,
                     (long long)ran_ue->amf_ue_ngap_id);
