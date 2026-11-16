@@ -19,6 +19,33 @@
 
 #include "sbi-path.h"
 
+static bool should_defer_tls_negotiation(
+        const OpenAPI_sec_negotiate_req_data_t *request)
+{
+    OpenAPI_lnode_t *node = NULL;
+    bool tls = false;
+
+    if (ogs_local_conf()->num_of_serving_plmn_id ||
+        !sepp_self()->security_capability.tls)
+        return false;
+
+    OpenAPI_list_for_each(request->supported_sec_capability_list, node) {
+        OpenAPI_security_capability_e capability = (uintptr_t)node->data;
+
+        /*
+         * Same precedence as
+         * sepp_n32c_handshake_handle_security_capability_request():
+         * NONE takes precedence over TLS.
+         */
+        if (capability == OpenAPI_security_capability_NONE)
+            return false;
+        if (capability == OpenAPI_security_capability_TLS)
+            tls = true;
+    }
+
+    return tls;
+}
+
 void sepp_state_initial(ogs_fsm_t *s, sepp_event_t *e)
 {
     sepp_sm_debug(e);
@@ -181,22 +208,43 @@ void sepp_state_operational(ogs_fsm_t *s, sepp_event_t *e)
                         return;
                     }
 
+                    /*
+                     * The TLS response carries our serving PLMN list, which
+                     * is learned from NRF unless configured locally. Until
+                     * it is known, let the peer retry instead of
+                     * establishing with an empty list.
+                     */
+                    if (should_defer_tls_negotiation(
+                            message.SecNegotiateReqData)) {
+                        ogs_warn("Serving PLMN list not available yet "
+                                "Sender [%s]",
+                                message.SecNegotiateReqData->sender);
+                        ogs_assert(true == ogs_sbi_server_send_error(stream,
+                                    OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE,
+                                    &message, "Serving PLMN list unavailable",
+                                    message.SecNegotiateReqData->sender,
+                                    NULL));
+                        ogs_sbi_message_free(&message);
+                        return;
+                    }
+
                     sepp_node = sepp_node_find_by_receiver(
                             message.SecNegotiateReqData->sender);
                     if (!sepp_node)
-                        sepp_node = sepp_node_add(message.SecNegotiateReqData->sender);
+                        sepp_node = sepp_node_add(
+                                message.SecNegotiateReqData->sender);
                     if (!sepp_node) {
                         node_allocation_failed = true;
                         break; /* Answer with error below */
                     }
                     /*
-                    * Since FSM initialization only needs to be done once
-                    * at the beginning, it only performs initialization
-                    * when the state variable(OGS_FSM_STATE()) is NULL.
-                    */
+                     * Since FSM initialization only needs to be done once
+                     * at the beginning, it only performs initialization
+                     * when the state variable(OGS_FSM_STATE()) is NULL.
+                     */
                     if (!OGS_FSM_STATE(&sepp_node->sm))
                         sepp_handshake_fsm_init(sepp_node, false);
-                break;
+                    break;
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]", message.h.method);
@@ -319,6 +367,12 @@ void sepp_state_operational(ogs_fsm_t *s, sepp_event_t *e)
 
                     /* Initialize SEPP Peer List */
                     ogs_list_for_each(&sepp_self()->peer_list, sepp_node) {
+                        /*
+                         * A peer added by an inbound request has no client
+                         * and cannot send the N32-c request.
+                         */
+                        if (!sepp_node->client)
+                            continue;
 
                         /*
                          * Since FSM initialization only needs to be done once
