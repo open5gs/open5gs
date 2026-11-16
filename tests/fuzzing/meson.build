@@ -138,3 +138,11 @@ executable(
     dependencies : [libipfw_dep, libproto_dep, libcore_dep],
     link_args: lib_fuzzing_engine
 )
+
+executable(
+    'pfcp_session_fuzz',
+    sources : files('pfcp-session-fuzz.c'),
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libpfcp_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
