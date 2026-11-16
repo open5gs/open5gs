@@ -27,17 +27,36 @@ restify.serve(router, Profile, {
  * document back, so a non-admin's other fields (roles, username) are dropped
  * rather than rejected.
  */
+const Account = require('../models/account');
+
+/*
+ * The token keeps the username and roles it was issued with and does not
+ * expire, so look the caller up again by _id and apply the rules to the
+ * stored account. A deleted account, a role change, or a username reused by
+ * a new account then takes effect on the next request.
+ */
+const loadCaller = (req, res, next) => {
+  Account.findById(req.user._id, 'username roles', (err, account) => {
+    if (err)
+      return next(err);
+    if (!account)
+      return res.sendStatus(401);
+    req.caller = account;
+    next();
+  });
+};
+
 const isAdmin = req =>
-  Array.isArray(req.user.roles) && req.user.roles.indexOf('admin') !== -1;
+  Array.isArray(req.caller.roles) && req.caller.roles.indexOf('admin') !== -1;
 
 const requireAdmin = (req, res, next) =>
   isAdmin(req) ? next() : res.sendStatus(403);
 
-const Account = require('../models/account');
 restify.serve(router, Account, {
   prefix: '',
   version: '',
   idProperty: 'username',
+  preMiddleware: loadCaller,
   preRead: (req, res, next) => {
     /*
      * hash and salt are select:false in the schema, but the select,
@@ -52,7 +71,7 @@ restify.serve(router, Account, {
     if (isAdmin(req))
       return next();
 
-    if (req.params.id !== req.user.username)
+    if (req.params.id !== req.caller.username)
       return res.sendStatus(403);
 
     const body = {};
