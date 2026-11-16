@@ -657,6 +657,40 @@ static void test8_func(abts_case *tc, void *data)
     ogs_pollset_destroy(pollset);
 }
 
+static void fd_reuse_handler(short when, ogs_socket_t fd, void *data)
+{
+}
+
+static void fd_reuse_func(abts_case *tc, void *data)
+{
+    ogs_pollset_t *pollset;
+    ogs_poll_t *poll;
+    ogs_socket_t first, second;
+
+    pollset = ogs_pollset_create(512);
+    ABTS_PTR_NOTNULL(tc, pollset);
+
+    first = socket(AF_INET, SOCK_STREAM, 0);
+    ABTS_TRUE(tc, first != INVALID_SOCKET);
+    poll = ogs_pollset_add(pollset, OGS_POLLIN, first, fd_reuse_handler, NULL);
+    ABTS_PTR_NOTNULL(tc, poll);
+
+    /* Closed without ogs_pollset_remove(), so `poll` is abandoned and
+     * ogs_pollset_destroy() reports it. That is what is being tested. */
+    ogs_closesocket(first);
+
+    second = socket(AF_INET, SOCK_STREAM, 0);
+    ABTS_INT_EQUAL(tc, first, second);
+
+    poll = ogs_pollset_add(pollset, OGS_POLLIN, second, fd_reuse_handler, NULL);
+    ABTS_PTR_NOTNULL(tc, poll);
+    if (poll)
+        ogs_pollset_remove(poll);
+
+    ogs_closesocket(second);
+    ogs_pollset_destroy(pollset);
+}
+
 abts_suite *test_poll(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -672,6 +706,7 @@ abts_suite *test_poll(abts_suite *suite)
     abts_run_test(suite, test6_func, NULL);
     abts_run_test(suite, test7_func, NULL);
     abts_run_test(suite, test8_func, NULL);
+    abts_run_test(suite, fd_reuse_func, NULL);
 
     return suite;
 }
