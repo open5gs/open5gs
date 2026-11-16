@@ -138,3 +138,11 @@ executable(
     dependencies : [libipfw_dep, libproto_dep, libcore_dep],
     link_args: lib_fuzzing_engine
 )
+
+executable(
+    'sbi_openapi_extra_fuzz',
+    sources : files('sbi-openapi-extra-fuzz.c'),
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libsbi_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
