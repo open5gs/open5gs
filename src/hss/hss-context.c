@@ -935,16 +935,23 @@ void hss_cx_associate_msisdn(
         ogs_ims_data_t *ims_data)
 {
     int i;
+    const char *realm = NULL;
+    const char *home_domain = NULL;
 
     ogs_assert(user_name);
     ogs_assert(visited_network_identifier);
     ogs_assert(ims_data);
 
+    /* Use the IMPI realm for the generated SIP public identity. */
+    realm = strchr(user_name, '@');
+    home_domain = realm && realm[1] ?
+        realm + 1 : visited_network_identifier;
+
     for (i = 0; i < ims_data->num_of_msisdn; i++) {
         char *public_identity = NULL;
 
         public_identity = ogs_msprintf("sip:%s@%s",
-                ims_data->msisdn[i].bcd, visited_network_identifier);
+                ims_data->msisdn[i].bcd, home_domain);
         ogs_assert(public_identity);
         hss_cx_associate_identity(user_name, public_identity);
         ogs_free(public_identity);
