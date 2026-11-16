@@ -930,23 +930,16 @@ void hss_cx_set_server_name(
     ogs_thread_mutex_unlock(&self.cx_lock);
 }
 
-char *hss_cx_download_user_data(
+void hss_cx_associate_msisdn(
         char *user_name, char *visited_network_identifier,
         ogs_ims_data_t *ims_data)
 {
-    char *user_data = NULL;
-
-    hss_impi_t *impi = NULL;
-    hss_impu_t *impu = NULL;
-
-    bool barring_indication_presence = true;
-    int i, n, m;
+    int i;
 
     ogs_assert(user_name);
     ogs_assert(visited_network_identifier);
     ogs_assert(ims_data);
 
-    /* Download User-Data */
     for (i = 0; i < ims_data->num_of_msisdn; i++) {
         char *public_identity = NULL;
 
@@ -961,7 +954,20 @@ char *hss_cx_download_user_data(
         hss_cx_associate_identity(user_name, public_identity);
         ogs_free(public_identity);
     }
+}
 
+char *hss_cx_download_user_data(char *user_name, ogs_ims_data_t *ims_data)
+{
+    char *user_data = NULL;
+
+    hss_impi_t *impi = NULL;
+    hss_impu_t *impu = NULL;
+
+    bool barring_indication_presence = true;
+    int n, m;
+
+    ogs_assert(user_name);
+    ogs_assert(ims_data);
 
     /* Generate XML Data */
 
