@@ -4102,23 +4102,17 @@ void ngap_handle_handover_request_ack(
         return;
     }
 
-    /*
-     * The RAN UE NGAP ID assigned by the target gNB is stored only after
-     * the sender is confirmed to own the Target-UE context and the
-     * Source-UE/AMF-UE contexts have been resolved.
-     */
-    target_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
-
     ogs_debug("    Source : RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld] ",
         (long long)source_ue->ran_ue_ngap_id,
         (long long)source_ue->amf_ue_ngap_id);
     ogs_debug("    Target : RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld] ",
-        (long long)target_ue->ran_ue_ngap_id,
+        (long long)*RAN_UE_NGAP_ID,
         (long long)target_ue->amf_ue_ngap_id);
 
     if (!PDUSessionList) {
         ogs_error("No PDUSessionList");
-        r = ngap_send_error_indication2(target_ue,
+        r = ngap_send_error_indication(gnb,
+                    (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -4127,17 +4121,15 @@ void ngap_handle_handover_request_ack(
 
     if (!TargetToSource_TransparentContainer) {
         ogs_error("No TargetToSource_TransparentContainer");
-        r = ngap_send_error_indication2(target_ue,
+        r = ngap_send_error_indication(gnb,
+                    (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
     }
 
-    /* Store Container */
-    OGS_ASN_STORE_DATA(&amf_ue->handover.container,
-            TargetToSource_TransparentContainer);
-
+    /* Check the entire list before sending any session update to the SMF. */
     for (i = 0; i < OGS_ASN_LIST_COUNT(PDUSessionList); i++) {
         amf_sess_t *sess = NULL;
         PDUSessionItem = (NGAP_PDUSessionResourceAdmittedItem_t *)
@@ -4145,7 +4137,8 @@ void ngap_handle_handover_request_ack(
 
         if (!PDUSessionItem) {
             ogs_error("No PDUSessionResourceAdmittedItem");
-            r = ngap_send_error_indication2(target_ue,
+            r = ngap_send_error_indication(gnb,
+                    (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -4155,7 +4148,8 @@ void ngap_handle_handover_request_ack(
         transfer = &PDUSessionItem->handoverRequestAcknowledgeTransfer;
         if (!transfer) {
             ogs_error("No handoverRequestAcknowledgeTransfer");
-            r = ngap_send_error_indication2(target_ue,
+            r = ngap_send_error_indication(gnb,
+                    (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -4165,7 +4159,8 @@ void ngap_handle_handover_request_ack(
         if (PDUSessionItem->pDUSessionID ==
                 OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
             ogs_error("PDU Session Identity is unassigned");
-            r = ngap_send_error_indication2(target_ue,
+            r = ngap_send_error_indication(gnb,
+                    (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -4176,7 +4171,8 @@ void ngap_handle_handover_request_ack(
         if (!sess) {
             ogs_error("Cannot find PDU Session ID [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(target_ue,
+            r = ngap_send_error_indication(gnb,
+                    (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -4187,13 +4183,34 @@ void ngap_handle_handover_request_ack(
         if (!SESSION_CONTEXT_IN_SMF(sess)) {
             ogs_error("Session Context is not in SMF [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(target_ue,
+            r = ngap_send_error_indication(gnb,
+                    (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
             return;
         }
+    }
+
+    /*
+     * A valid RAN_UE_NGAP_ID marks this request as acknowledged.
+     * Keep it unset until validation succeeds so a rejected ACK does
+     * not cause a subsequent ACK to be discarded as a duplicate.
+     */
+    target_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
+    /* Store Container */
+    OGS_ASN_STORE_DATA(&amf_ue->handover.container,
+            TargetToSource_TransparentContainer);
+
+    /* Forward each admitted session's ACK transfer to the SMF. */
+    for (i = 0; i < OGS_ASN_LIST_COUNT(PDUSessionList); i++) {
+        amf_sess_t *sess;
+
+        PDUSessionItem = (NGAP_PDUSessionResourceAdmittedItem_t *)
+            OGS_ASN_LIST_GET(PDUSessionList, i);
+        sess = amf_sess_find_by_psi(amf_ue, PDUSessionItem->pDUSessionID);
+        transfer = &PDUSessionItem->handoverRequestAcknowledgeTransfer;
 
         memset(&param, 0, sizeof(param));
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
