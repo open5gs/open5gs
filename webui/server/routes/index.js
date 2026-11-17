@@ -10,6 +10,8 @@ const passport = require('passport');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 
+const Account = require('../models/account');
+
 passport.use(
   new JWTstrategy(
     {
@@ -18,7 +20,18 @@ passport.use(
     },
     async (token, done) => {
       try {
-        return done(null, token.user);
+        // The token only names the account; take the roles from the
+        // database so that a deleted or demoted account loses access.
+        const account = token.user && token.user._id &&
+          await Account.findById(token.user._id).lean();
+        if (!account) {
+          return done(null, false);
+        }
+        return done(null, {
+          '_id': account._id,
+          'username': account.username,
+          'roles': account.roles
+        });
       } catch (error) {
         done(error);
       }
