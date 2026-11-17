@@ -324,7 +324,7 @@ components:
         triggers:
           type: array
           items:
-            $ref: '#/components/schemas/Trigger'
+            $ref: '#/components/schemas/ChargingTrigger'
           minItems: 0
         easid:
           type: string
@@ -409,7 +409,7 @@ components:
         triggers:
           type: array
           items:
-            $ref: '#/components/schemas/Trigger'
+            $ref: '#/components/schemas/ChargingTrigger'
           minItems: 0
         pDUSessionChargingInformation:
           $ref: '#/components/schemas/PDUSessionChargingInformation'
@@ -428,7 +428,7 @@ components:
       type: object
       properties:
         notificationType:
-          $ref: '#/components/schemas/NotificationType'
+          $ref: '#/components/schemas/ChargingNotificationType'
         reauthorizationDetails:
           type: array
           items:
@@ -510,6 +510,29 @@ components:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
       required:
         - triggerCategory
+    ChargingTrigger:
+      type: object
+      properties:
+        triggerType:
+          $ref: '#/components/schemas/TriggerType'
+        triggerCategory:
+          $ref: '#/components/schemas/TriggerCategory'
+        timeLimit:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        volumeLimit:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        volumeLimit64:
+          type: integer
+          format: int64
+          minimum: 0
+        eventLimit:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxNumberOfccc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        tariffTimeChange:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - triggerCategory
     MultipleUnitInformation:
       type: object
       properties:
@@ -524,7 +547,7 @@ components:
         triggers:
           type: array
           items:
-            $ref: '#/components/schemas/Trigger'
+            $ref: '#/components/schemas/ChargingTrigger'
           minItems: 0
         validityTime:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
@@ -535,7 +558,9 @@ components:
         timeQuotaThreshold:
           type: integer
         volumeQuotaThreshold:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         unitQuotaThreshold:
           type: integer
         uPFID:
@@ -552,13 +577,21 @@ components:
         time:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
         totalVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         uplinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         downlinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         serviceSpecificUnits:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
     UsedUnitContainer:
       type: object
       properties:
@@ -569,20 +602,28 @@ components:
         triggers:
           type: array
           items:
-            $ref: '#/components/schemas/Trigger'
+            $ref: '#/components/schemas/ChargingTrigger'
           minItems: 0
         triggerTimestamp:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
         time:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
         totalVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         uplinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         downlinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         serviceSpecificUnits:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         eventTimeStamps:
           
           type: array
@@ -618,7 +659,7 @@ components:
         triggers:
           type: array
           items:
-            $ref: '#/components/schemas/Trigger'
+            $ref: '#/components/schemas/ChargingTrigger'
           minItems: 0
         triggerTimestamp:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
@@ -636,13 +677,21 @@ components:
         time:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
         totalVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         uplinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         downlinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         serviceSpecificUnits:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
     FinalUnitIndication:
       type: object
       properties:
@@ -670,7 +719,7 @@ components:
       type: object
       properties:
         redirectAddressType:
-          $ref: '#/components/schemas/RedirectAddressType'
+          $ref: '#/components/schemas/ChargingRedirectAddressType'
         redirectServerAddress:
           type: string
       required:
@@ -699,11 +748,11 @@ components:
         userInformation:
           $ref: '#/components/schemas/UserInformation'
         userLocationinfo:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         iMSSessionInformation:
           $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/CallInfo'
         mAPDUNon3GPPUserLocationInfo:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         non3GPPUserLocationTime:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
         mAPDUNon3GPPUserLocationTime:
@@ -831,7 +880,7 @@ components:
         afChargingIdString:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationChargingId'
         userLocationInformation:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         uetimeZone:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
         rATType:
@@ -863,7 +912,7 @@ components:
         qosMonitoringReport:
           type: array
           items:
-            $ref: '#/components/schemas/QosMonitoringReport'
+            $ref: '#/components/schemas/ChargingQosMonitoringReport'
           minItems: 0
         mBSSessionID:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
@@ -885,7 +934,7 @@ components:
         maximumPacketLossRateDL:
           type: integer
         serviceExperienceStatisticsData:
-          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ServiceExperienceInfo'
+          $ref: '#/components/schemas/ChargingServiceExperienceInfo'
         theNumberOfPDUSessions:
           type: integer
         theNumberOfRegisteredSubscribers:
@@ -982,18 +1031,24 @@ components:
         triggers:
           type: array
           items:
-            $ref: '#/components/schemas/Trigger'
+            $ref: '#/components/schemas/ChargingTrigger'
           minItems: 0
         triggerTimestamp:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
         time:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
         totalVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         uplinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         downlinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         localSequenceNumber:
           type: integer
         qFIContainerInformation:
@@ -1016,7 +1071,7 @@ components:
         qoSCharacteristics:
           $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/QosCharacteristics'
         userLocationInformation:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         uetimeZone:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
         presenceReportingAreaInformation:
@@ -1068,7 +1123,7 @@ components:
         roamerInOut:
           $ref: '#/components/schemas/RoamerInOut'
         userLocationinfo:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         uetimeZone:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
         rATType:
@@ -1212,9 +1267,13 @@ components:
         endTimestamp:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
         uplinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         downlinkVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
     5GLANTypeService:
       type: object
       properties:
@@ -1224,7 +1283,9 @@ components:
       type: object
       properties:
         bridgeId:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         nWTTPortNumber:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
         dSTTPortNumber:
@@ -1287,7 +1348,7 @@ components:
         userInformation:
           $ref: '#/components/schemas/UserInformation'
         userLocationinfo:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         pSCellInformation:
           $ref: '#/components/schemas/PSCellInformation'
         uetimeZone:
@@ -1389,7 +1450,7 @@ components:
         userInformation:
           $ref: '#/components/schemas/UserInformation'
         userLocationinfo:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         pSCellInformation:
           $ref: '#/components/schemas/PSCellInformation'
         uetimeZone:
@@ -1447,7 +1508,7 @@ components:
         userInformation:
           $ref: '#/components/schemas/UserInformation'
         userLocationinfo:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         pSCellInformation:
           $ref: '#/components/schemas/PSCellInformation'
         uetimeZone:
@@ -1557,7 +1618,7 @@ components:
       type: array
       items:
         $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RanNasRelCause'
-    QosMonitoringReport:
+    ChargingQosMonitoringReport:
       description: Contains reporting information on QoS monitoring.
       type: object
       properties:
@@ -1659,7 +1720,7 @@ components:
         userInformation:
           $ref: '#/components/schemas/UserInformation'
         userLocationInfo:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         ueTimeZone:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
         3gppPSDataOffStatus:
@@ -1860,9 +1921,13 @@ components:
         meanVirtualDiskUsage:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
         measuredInBytes:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         measuredOutBytes:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         durationStartTime:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
         durationEndTime:
@@ -1891,7 +1956,7 @@ components:
             $ref: '#/components/schemas/MMRecipientInfo'
           minItems: 0
         userLocationinfo:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         uetimeZone:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
         rATType:
@@ -1974,7 +2039,7 @@ components:
         tSNQoSInformation:
           $ref: '#/components/schemas/TSNQoSInformation'
         tSCAssistanceInformation:
-          $ref: '#/components/schemas/TSCAssistanceInformation'
+          $ref: '#/components/schemas/ChargingTSCAssistanceInformation'
         timeSynchronizationInformation:
           $ref: '#/components/schemas/TimeSynchronizationInformation'
 
@@ -1989,7 +2054,7 @@ components:
             type: integer
           minItems: 0
 
-    TSCAssistanceInformation:
+    ChargingTSCAssistanceInformation:
       type: object
       properties:
         flowDirection:
@@ -2049,7 +2114,7 @@ components:
         locationInfo:
           type: array
           items:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+            $ref: '#/components/schemas/ChargingUserLocation'
           minItems: 0
           
     RadioParameterSetInfo:
@@ -2234,7 +2299,7 @@ components:
       type: object
       properties:
         userLocationInformation:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         horizontalAccuracy:
           $ref: '#/components/schemas/OctetString'
         verticalAccuracy:
@@ -2262,7 +2327,7 @@ components:
         qoSCharacteristics:
           $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/QosCharacteristics'
         userLocationInformation:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         uetimeZone:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone' 
         presenceReportingAreaInformation:
@@ -2281,9 +2346,11 @@ components:
         coverageStatus:
           type: boolean
         userLocationInformation:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+          $ref: '#/components/schemas/ChargingUserLocation'
         dataVolume:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          type: integer
+          format: int64
+          minimum: 0
         changeCondition:
           type: string
         radioResourcesId:
@@ -2613,7 +2680,7 @@ components:
           maxItems: 1
         gEOSatelliteID:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/GeoSatelliteId'
-    NotificationType:
+    ChargingNotificationType:
       anyOf:
         - type: string
           enum:
@@ -2756,7 +2823,7 @@ components:
             - REDIRECT
             - RESTRICT_ACCESS
         - type: string
-    RedirectAddressType:
+    ChargingRedirectAddressType:
       anyOf:
         - type: string
           enum:
@@ -2904,7 +2971,7 @@ components:
             - VAS4SMS_SHORT_MESSAGE_RECEIPT
             - VAS4SMS_SHORT_MESSAGE_NETWORK_STORAGE
             - VAS4SMS_SHORT_MESSAGE_TO_MULTIPLE_DESTINATIONS
-            - VAS4SMS_SHORT_MESSAGE_VIRTUAL_PRIVATE_NETWORK(VPN)
+            - VAS4SMS_SHORT_MESSAGE_VIRTUAL_PRIVATE_NETWORK_VPN
             - VAS4SMS_SHORT_MESSAGE_AUTO_REPLY
             - VAS4SMS_SHORT_MESSAGE_PERSONAL_SIGNATURE
             - VAS4SMS_SHORT_MESSAGE_DEFERRED_DELIVERY
@@ -3279,7 +3346,7 @@ components:
           enum: 
             - Authenticate
             - Re-Authentication-Notification
-            - Revocation Notification
+            - Revocation-Notification
         - type: string
     LocationType:
       anyOf:
@@ -3291,5 +3358,180 @@ components:
             - DEFERRED_LOCATION
             - NOTIFICATION_VERIFICATION
         - type: string
+#
+# Charging-local copies of definitions in TS 29.520 and TS 29.571. Other NFs use the
+# originals, and the C generator keeps one model per name, so the charging run must not
+# reach them.
+#
+    ChargingServiceExperienceInfo:
+      description: Represents service experience information.
+      type: object
+      properties:
+        svcExprc:
+          $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/SvcExperience'
+        svcExprcVariance:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        supis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        srvExpcType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ServiceExperienceType'
+        ueLocs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargingLocationInfo'
+          minItems: 1
+        upfInfo:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/UpfInformation'
+        dnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        appServerInst:
+          $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/AddrFqdn'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        networkArea:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        nsiId:
+          $ref: 'TS29531_Nnssf_NSSelection.yaml#/components/schemas/NsiId'
+        ratio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        ratFreq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RatFreqInformation'
+        pduSesInfo:
+          $ref: '#/components/schemas/ChargingPduSessionInfo'
+      required:
+        - svcExprc
+    ChargingPduSessionInfo:
+      description: Represents combination of PDU Session parameter(s) information.
+      type: object
+      properties:
+        pduSessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        sscMode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SscMode'
+        accessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+    ChargingLocationInfo:
+      description: Represents UE location information.
+      type: object
+      properties:
+        loc:
+          $ref: '#/components/schemas/ChargingUserLocation'
+        geoLoc:
+          $ref: 'TS29522_AMPolicyAuthorization.yaml#/components/schemas/GeographicalArea'
+        ratio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        geoDistrInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargingGeoDistributionInfo'
+          minItems: 1
+        distThreshold:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - loc
+    ChargingGeoDistributionInfo:
+      description: Represents the geographical distribution of the UEs.
+      type: object
+      properties:
+        loc:
+          $ref: '#/components/schemas/ChargingUserLocation'
+        supis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+      required:
+        - loc
+      oneOf:
+        - required: [supis]
+        - required: [gpsis]
+    ChargingUserLocation:
+      type: object
+      properties:
+        eutraLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/EutraLocation'
+        nrLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NrLocation'
+        n3gaLocation:
+          $ref: '#/components/schemas/ChargingN3gaLocation'
+        utraLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UtraLocation'
+        geraLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GeraLocation'
+      description: >
+        At least one of eutraLocation, nrLocation, n3gaLocation, utraLocation, geraLocation
+        and plmnLocation shall be present. Several of them may be present.
+    ChargingN3gaLocation:
+      description: Contains the Non-3GPP access user location.
+      type: object
+      properties:
+        n3gppTai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+        n3IwfId:
+          type: string
+          pattern: '^[A-Fa-f0-9]+$'
+          description: >
+            This IE shall contain the N3IWF identifier received over NGAP and shall be encoded as a 
+            string of hexadecimal characters. Each character in the string shall take a value of "0" 
+            to "9", "a" to "f" or "A" to "F" and shall represent 4 bits. The most significant 
+            character representing the 4 most significant bits of the N3IWF ID shall appear first in 
+            the string, and the character representing the 4 least significant bit of the N3IWF ID 
+            shall appear last in the string. 
+
+        ueIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        portNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        protocol:
+          $ref: '#/components/schemas/ChargingTransportProtocol'
+        tnapId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TnapId'
+        twapId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TwapId'
+        hfcNodeId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/HfcNodeId'
+        gli:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gli'
+        w5gbanLineType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/LineType'
+        gci:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gci'
+    ChargingTransportProtocol:
+      anyOf:
+      - type: string
+        enum:
+          - UDP
+          - TCP
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API. 
+
+      description: |
+        Possible values are:
+        - UDP: User Datagram Protocol.
+        - TCP: Transmission Control Protocol. 
 
 
