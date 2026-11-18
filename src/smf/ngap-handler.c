@@ -803,9 +803,6 @@ int ngap_handle_handover_required_transfer(
 
     NGAP_HandoverRequiredTransfer_t message;
 
-    NGAP_DirectForwardingPathAvailability_t
-        *directForwardingPathAvailability = NULL;
-
     ogs_pkbuf_t *n2smbuf = NULL;
 
     ogs_assert(pkbuf);
@@ -829,15 +826,25 @@ int ngap_handle_handover_required_transfer(
     }
 
     /*
-     * Always re-evaluate per HO prep: the flag must not carry state
-     * from a previous handover.  The source gNB sets the optional
-     * directForwardingPathAvailability IE inside HandoverRequiredTransfer
-     * when direct forwarding between source and target is available;
-     * the AMF passes the container through transparently.
+     * Always re-evaluate per HO prep: the flag must not carry state from a
+     * previous handover.
+     *
+     * The optional directForwardingPathAvailability IE states that a direct
+     * path between source and target exists. Its absence is the normal
+     * trigger for indirect forwarding through the UPF, not a statement that
+     * forwarding is impossible, so it must not raise DataForwardingNotPossible
+     * towards the target: that stops the target allocating a forwarding tunnel
+     * and loses everything the source had buffered for the UE.
+     *
+     * What this SMF builds is indirect forwarding either way, since the tunnel
+     * it hands the source is the UPF's, so forwarding is offered whichever way
+     * the IE reads. A target that cannot accept it still says so by answering
+     * without dataForwardingAccepted.
      */
-    directForwardingPathAvailability = message.directForwardingPathAvailability;
-    sess->handover.data_forwarding_not_possible =
-            (directForwardingPathAvailability == NULL);
+    ogs_debug("    Direct forwarding path [%s]",
+            message.directForwardingPathAvailability ?
+                "available" : "not offered");
+    sess->handover.data_forwarding_not_possible = false;
 
     n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(sess);
     ogs_assert(n2smbuf);
