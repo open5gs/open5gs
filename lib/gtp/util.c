@@ -105,13 +105,23 @@ int ogs_gtpu_parse_header(
             switch (ext_hdesc.array[i].type) {
             case OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER:
                 header_desc->pdu_type = ext_hdesc.array[i].pdu_type;
-                if (ext_hdesc.array[i].pdu_type ==
-                    OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION) {
-                        header_desc->qos_flow_identifier =
-                            ext_hdesc.array[i].qos_flow_identifier;
-                        ogs_trace("   QFI [0x%x]",
-                                header_desc->qos_flow_identifier);
-                }
+                /*
+                 * Both PDU types carry the QFI in the same bits (TS 38.415),
+                 * and one layout declares both, so the field is valid
+                 * whichever arrived.
+                 *
+                 * A downlink container reaches a UPF in one case that
+                 * matters: an indirect data forwarding tunnel, where the
+                 * source gNB sends the downlink it buffered for the UE.
+                 * Honouring the uplink container alone left the QFI at zero
+                 * on those packets, so the PDR owning the forwarding tunnel
+                 * failed its QFI check and every forwarded packet was
+                 * dropped as off-filter.
+                 */
+                header_desc->qos_flow_identifier =
+                    ext_hdesc.array[i].qos_flow_identifier;
+                ogs_trace("   QFI [0x%x]",
+                        header_desc->qos_flow_identifier);
                 break;
             case OGS_GTP2_EXTENSION_HEADER_TYPE_UDP_PORT:
                 header_desc->udp.presence = true;
