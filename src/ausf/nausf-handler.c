@@ -133,6 +133,26 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
     return true;
 }
 
+bool ausf_nausf_auth_handle_unconfirmed_delete(ausf_ue_t *ausf_ue,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(ausf_ue);
+    ogs_assert(stream);
+
+    ogs_info("[%s] Remove unconfirmed authentication context [%s]",
+            ausf_ue->supi, ausf_ue->suci);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    return true;
+}
+
 bool ausf_nausf_auth_handle_authenticate_delete(ausf_ue_t *ausf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {

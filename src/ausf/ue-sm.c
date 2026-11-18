@@ -129,6 +129,20 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 break;
             }
 
+            if (!ausf_ue->auth_event.resource_uri &&
+                !ogs_list_count(&ausf_ue->sbi.xact_list)) {
+                /*
+                 * Never confirmed (e.g. the UE failed authentication), so
+                 * there is no result at the UDM to remove: just release it.
+                 * Answering 404 here would leave it in the pool for good,
+                 * as nothing else ever removes it.
+                 */
+                ausf_nausf_auth_handle_unconfirmed_delete(
+                        ausf_ue, stream, message);
+                OGS_FSM_TRAN(s, &ausf_ue_state_deleted);
+                break;
+            }
+
             handled = ausf_nausf_auth_handle_authenticate_delete(
                     ausf_ue, stream, message);
             if (!handled) {

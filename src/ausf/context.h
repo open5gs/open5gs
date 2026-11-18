@@ -89,6 +89,7 @@ int ausf_context_parse_config(void);
 
 ausf_ue_t *ausf_ue_add(char *suci);
 void ausf_ue_remove(ausf_ue_t *ausf_ue);
+void ausf_ue_remove_stale_by_supi(ausf_ue_t *current, char *supi);
 void ausf_ue_remove_all(void);
 ausf_ue_t *ausf_ue_find_by_suci(char *suci);
 ausf_ue_t *ausf_ue_find_by_supi(char *supi);
