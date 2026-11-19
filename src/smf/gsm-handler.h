@@ -35,6 +35,7 @@ uint8_t *gsm_decode_qos_flow_description_ie(const char *src, int *len);
 bool gsm_qos_flow_description_ie_is_valid(const char *src);
 int gsm_parse_qos_flow_description_ie(
         ogs_nas_qos_flow_description_t *description, const char *src);
+int gsm_parse_qos_rule_ie(ogs_nas_qos_rule_t *rule, const char *src);
 
 int gsm_handle_pdu_session_establishment_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,

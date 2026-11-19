@@ -2359,6 +2359,8 @@ bool smf_nsmf_handle_update_data_in_vsmf(
     smf_n1_n2_message_transfer_param_t param;
     ogs_nas_qos_flow_description_t qos_flow_description;
     int num_qos_flow_descriptions = 0;
+    ogs_nas_qos_rule_t qos_rule;
+    int num_qos_rules = 0;
 
     ogs_assert(stream);
     ogs_assert(message);
@@ -2456,7 +2458,9 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                     return false;
                 }
                 if (src->qos_rules &&
-                    ogs_base64_decoded_size(src->qos_rules) <= 0) {
+                    (++num_qos_rules > OGS_NAS_MAX_NUM_OF_QOS_RULE ||
+                    gsm_parse_qos_rule_ie(
+                        &qos_rule, src->qos_rules) != OGS_OK)) {
                     ogs_error("[%s:%d] Invalid qosRules",
                             smf_ue->supi, sess->psi);
                     smf_sbi_send_vsmf_update_error(stream,
@@ -2538,7 +2542,9 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                     return false;
                 }
                 if (src->qos_rules &&
-                    ogs_base64_decoded_size(src->qos_rules) <= 0) {
+                    (++num_qos_rules > OGS_NAS_MAX_NUM_OF_QOS_RULE ||
+                    gsm_parse_qos_rule_ie(
+                        &qos_rule, src->qos_rules) != OGS_OK)) {
                     ogs_error("[%s:%d] Invalid qosRules",
                             smf_ue->supi, sess->psi);
                     smf_sbi_send_vsmf_update_error(stream,
