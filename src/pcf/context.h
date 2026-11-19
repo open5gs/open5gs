@@ -267,15 +267,13 @@ int pcf_instance_get_load(void);
 /*------------------------------------------------------------------
  * pcf_get_session_data - Retrieve session data from policy config or DB.
  *
- * This function retrieves session data for the given subscriber by
+ * This function retrieves session data for the given session by
  * first checking for a policy configuration; if none is found, it
- * falls back to querying the database.
+ * takes the default QoS and Session-AMBR the SMF subscribed with and
+ * the PCC rules from the database.
  *
  * Parameters:
- *   supi         - Subscriber identifier (read-only).
- *   plmn_id      - Pointer to a PLMN ID structure (read-only).
- *   s_nssai      - Pointer to an S-NSSAI structure (read-only).
- *   dnn          - Data network name (read-only).
+ *   sess         - The SM policy session.
  *   session_data - Pointer to the session data structure to be filled.
  *   flags        - Flags to control behavior (e.g., error logging).
  *
@@ -287,10 +285,7 @@ int pcf_instance_get_load(void);
  *   PCF_SESSION_DATA_FLAG_NO_ERROR_LOG in the flags parameter.
  *------------------------------------------------------------------
  */
-int pcf_get_session_data(const char *supi,
-                         const ogs_plmn_id_t *plmn_id,
-                         const ogs_s_nssai_t *s_nssai,
-                         const char *dnn,
+int pcf_get_session_data(pcf_sess_t *sess,
                          ogs_session_data_t *session_data,
                          int flags);
 
