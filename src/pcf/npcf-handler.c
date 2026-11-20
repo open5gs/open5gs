@@ -1801,6 +1801,7 @@ bool pcf_npcf_policyauthorization_handle_delete(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     int i;
+    bool rc = true;
 
     OpenAPI_sm_policy_decision_t SmPolicyDecision;
 
@@ -1811,8 +1812,6 @@ bool pcf_npcf_policyauthorization_handle_delete(
     OpenAPI_map_t *QosDecisionMap = NULL;
 
     OpenAPI_lnode_t *node = NULL;
-
-    ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
     ogs_assert(app_session);
 
@@ -1846,12 +1845,9 @@ bool pcf_npcf_policyauthorization_handle_delete(
     if (QosDecisionList->count)
         SmPolicyDecision.qos_decs = QosDecisionList;
 
-    if (PccRuleList->count || QosDecisionList->count) {
-        ogs_assert(true == pcf_sbi_send_smpolicycontrol_delete_notify(
-                            sess, app_session, &SmPolicyDecision));
-    } else {
-        pcf_app_remove(app_session);
-    }
+    if (PccRuleList->count || QosDecisionList->count)
+        rc = pcf_sbi_send_smpolicycontrol_update_notify(
+                sess, &SmPolicyDecision);
 
     OpenAPI_list_for_each(PccRuleList, node) {
         PccRuleMap = node->data;
@@ -1868,6 +1864,20 @@ bool pcf_npcf_policyauthorization_handle_delete(
         }
     }
     OpenAPI_list_free(QosDecisionList);
+
+    if (!rc) {
+        ogs_assert(true == ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, recvmsg,
+                    "Cannot send SM policy update notification", NULL, NULL));
+        return false;
+    }
+
+    /*
+     * The SMF response does not need the app session.
+     * Remove it now so that a repeated delete gets 404.
+     */
+    pcf_app_remove(app_session);
+    ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
     return true;
 }

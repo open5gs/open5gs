@@ -628,6 +628,8 @@ struct mme_ue_s {
     } while(0)
     int             security_context_available;
     int             mac_failed;
+    /* The secure exchange of NAS messages is established on the connection */
+    bool            integrity_verified;
 
     /* Authentication synch failure counter */
     uint8_t auth_synch_fail_count;
@@ -1145,6 +1147,9 @@ typedef struct mme_bearer_s {
     uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
     ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
 
+    /* E-RABSetupRequest sent, its response not yet */
+    bool            e_rab_setup_request_pending;
+
     uint32_t        enb_dl_teid;
     ogs_ip_t        enb_dl_ip;
     uint32_t        enb_ul_teid;
@@ -1321,6 +1326,7 @@ typedef enum {
     MME_UE_IMSI_FROM_ATTACH_REQUEST = 0,
     MME_UE_IMSI_FROM_IDENTITY_RESPONSE,
     MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE,
+    MME_UE_IMSI_FROM_AUTHENTICATION_RESPONSE,
 } mme_ue_imsi_source_e;
 
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,

@@ -1,36 +1,10 @@
-/**
- *
- * Orcania library
- *
- * Different functions for different purposes but that can be shared between
- * other projects
- *
- * orcania.c: main functions definitions
- *
- * Copyright 2015-2020 Nicolas Mora <mail@babelouest.org>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation;
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU GENERAL PUBLIC LICENSE for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
@@ -94,16 +68,6 @@ char *ogs_strdup_debug(const char *s, const char *file_line);
 char *ogs_strndup_debug(const char *s, size_t n, const char *file_line);
 void *ogs_memdup_debug(const void *m, size_t n, const char *file_line);
 
-/*
- * char *ogs_msprintf(const char *message, ...)
- * char *mstrcatf(char *source, const char *message, ...)
- *
- * Orcania library
- * Copyright 2015-2018 Nicolas Mora <mail@babelouest.org>
- * License: LGPL-2.1
- *
- * https://github.com/babelouest/orcania.git
- */
 char *ogs_msprintf_debug(const char *file_line, const char *message, ...)
     OGS_GNUC_PRINTF(2, 3);
 char *ogs_mstrcatf_debug(
@@ -141,13 +105,6 @@ char *ogs_mstrcatf_debug(
     ogs_mstrcatf_debug(source, OGS_FILE_LINE, __VA_ARGS__)
 
 #endif
-
-
-char *ogs_trimwhitespace(char *str);
-
-char *ogs_left_trimcharacter(char *str, char to_remove);
-char *ogs_right_trimcharacter(char *str, char to_remove);
-char *ogs_trimcharacter(char *str, char to_remove);
 
 char *ogs_strrstr(const char *haystack, const char *needle);
 

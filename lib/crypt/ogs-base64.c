@@ -15,29 +15,6 @@
  */
 
 /*
- * Copyright (C) 2000-2012 Free Software Foundation, Inc.
- * Copyright (C) 2017 Red Hat, Inc.
- *
- * Author: Nikos Mavrogiannopoulos
- *
- * This file is part of GnuTLS.
- *
- * The GnuTLS is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>
- *
- */
-
-/*
  * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -54,6 +31,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include "core-config-private.h"
+
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
 
 #include "ogs-crypt.h"
 
@@ -265,60 +248,24 @@ int ogs_base64_encode_from_string(
             out, out_size, (const uint8_t *)in, strlen(in));
 }
 
-/* copies data to result but removes newlines and <CR>
- * returns the size of the data copied.
- *
- * It will fail with GNUTLS_E_BASE64_DECODING_ERROR if the
- * end-result is the empty string.
+/*
+ * PEM parsing approach informed by aws-c-io (Apache-2.0).
+ * https://github.com/awslabs/aws-c-io/blob/main/source/pem.c
  */
-inline static int
-cpydata(const uint8_t *data, int data_size, uint8_t **result, int *result_size)
-{
-	int i, j;
-
-	*result = ogs_malloc(data_size + 1);
-	if (*result == NULL) {
-        ogs_error("ogs_malloc failed[%d]", data_size+1);
-        return OGS_ERROR;
-    }
-
-	for (j = i = 0; i < data_size; i++) {
-		if (data[i] == '\n' || data[i] == '\r' || data[i] == ' '
-		    || data[i] == '\t')
-			continue;
-		else if (data[i] == '-')
-			break;
-		(*result)[j] = data[i];
-		j++;
-	}
-
-	*result_size = j;
-	(*result)[j] = 0;
-
-	if (j==0) {
-        ogs_free(*result);
-        ogs_error("No Data");
-		return OGS_ERROR;
-	}
-
-	return j;
-}
-
-#define MEMSUB(x,y) ((ssize_t)((ptrdiff_t)x-(ptrdiff_t)y))
-#define ENDSTR "-----"
 int ogs_fbase64_decode(const char *header,
         const uint8_t *data, size_t data_size, ogs_datum_t *result)
 {
-    static const char top[] = "-----BEGIN ";
-    static const char bottom[] = "-----END ";
-    uint8_t *rdata, *kdata;
-    int rdata_size, decoded_size;
-#define MAX_PEM_HEADER_LEN 128
-    char pem_header[MAX_PEM_HEADER_LEN];
-
-    uint8_t *bufcoded;
-    int bufcoded_len;
-    char *p, *last;
+    static const char begin[] = "-----BEGIN ";
+    static const char end[] = "-----END ";
+    static const char dashes[] = "-----";
+    const size_t begin_len = sizeof(begin) - 1;
+    const size_t end_len = sizeof(end) - 1;
+    const size_t dashes_len = sizeof(dashes) - 1;
+    const uint8_t *cursor, *limit, *body = NULL, *body_end = NULL;
+    size_t header_len, body_len;
+    char *encoded, *out;
+    uint8_t *decoded;
+    int decoded_size, size, rv = OGS_ERROR;
 
     ogs_assert(header);
     ogs_assert(data);
@@ -326,98 +273,104 @@ int ogs_fbase64_decode(const char *header,
     ogs_assert(result);
 
     memset(result, 0, sizeof(*result));
-
-    p = pem_header;
-    last = pem_header + MAX_PEM_HEADER_LEN;
-
-    p = ogs_slprintf(p, last, "%s", top);
-    if (header != NULL)
-        p = ogs_slprintf(p, last, "%s", header);
-
-    rdata = memmem(data, data_size, pem_header, strlen(pem_header));
-    if (rdata == NULL) {
-        ogs_error("Cound not find [%s]", pem_header);
-        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+    if (data_size > INT_MAX) {
+        ogs_error("PEM input is too large");
         return OGS_ERROR;
     }
 
-    data_size -= MEMSUB(rdata, data);
+    header_len = strlen(header);
+    cursor = data;
+    limit = data + data_size;
+    while (cursor < limit) {
+        const uint8_t *line = cursor, *line_end;
+        size_t line_len;
 
-    if (data_size < 4 + strlen(bottom)) {
-        ogs_error("Not enough data (%d < 4 + %d)",
-                (int)data_size, (int)strlen(bottom));
-        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+        while (cursor < limit && *cursor != '\r' && *cursor != '\n')
+            cursor++;
+        line_end = cursor;
+        while (cursor < limit && (*cursor == '\r' || *cursor == '\n'))
+            cursor++;
+
+        while (line < line_end && (*line == ' ' || *line == '\t'))
+            line++;
+
+        if (body) {
+            /* Accept an END label that differs from the BEGIN label. */
+            if ((size_t)(line_end - line) >= end_len &&
+                    memcmp(line, end, end_len) == 0) {
+                body_end = line;
+                break;
+            }
+            continue;
+        }
+
+        while (line_end > line && (line_end[-1] == ' ' || line_end[-1] == '\t'))
+            line_end--;
+        line_len = line_end - line;
+        if (line_len >= begin_len + dashes_len &&
+                line_len - begin_len - dashes_len == header_len &&
+                memcmp(line, begin, begin_len) == 0 &&
+                memcmp(line + begin_len, header, header_len) == 0 &&
+                memcmp(line_end - dashes_len, dashes, dashes_len) == 0)
+            body = cursor;
+    }
+
+    if (!body) {
+        ogs_error("Could not find PEM BEGIN line for [%s]", header);
         return OGS_ERROR;
     }
 
-    kdata =
-        memmem(rdata + 1, data_size - 1, ENDSTR, sizeof(ENDSTR) - 1);
-    /* allow CR as well.
-     */
-    if (kdata == NULL) {
-        ogs_error("Cound not find [%s]", ENDSTR);
-        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
-        return OGS_ERROR;
-    }
-    data_size -= strlen(ENDSTR);
-    data_size -= MEMSUB(kdata, rdata);
-
-    rdata = kdata + strlen(ENDSTR);
-
-    /* position is now after the ---BEGIN--- headers */
-
-    kdata = memmem(rdata, data_size, bottom, strlen(bottom));
-    if (kdata == NULL) {
-        ogs_error("Cound not find [%s]", bottom);
-        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+    if (!body_end) {
+        ogs_error("Could not find PEM END line for [%s]", header);
         return OGS_ERROR;
     }
 
-    /* position of kdata is before the ----END--- footer
-     */
-    rdata_size = MEMSUB(kdata, rdata);
-
-    if (rdata_size < 4) {
-        ogs_error("Not enough data [%d]", rdata_size);
-        ogs_log_hexdump(OGS_LOG_ERROR, data, data_size);
+    body_len = body_end - body;
+    if (memchr(body, '\0', body_len)) {
+        ogs_error("NUL byte in PEM body for [%s]", header);
         return OGS_ERROR;
     }
 
-    if (cpydata(rdata, rdata_size, &bufcoded, &bufcoded_len) == OGS_ERROR) {
-        ogs_error("cpydata() failed");
-        ogs_log_hexdump(OGS_LOG_ERROR, rdata, rdata_size);
+    encoded = ogs_malloc(body_len + 1);
+    if (!encoded) {
+        ogs_error("Could not allocate PEM body for [%s]", header);
         return OGS_ERROR;
     }
 
-    decoded_size = ogs_base64_decoded_size((const char *)bufcoded);
+    out = encoded;
+    for (; body < body_end; body++) {
+        if (*body == ' ' || *body == '\t' || *body == '\r' || *body == '\n')
+            continue;
+        *out++ = *body;
+    }
+    *out = '\0';
+
+    decoded_size = ogs_base64_decoded_size(encoded);
     if (decoded_size <= 0) {
-        ogs_error("ogs_base64_decoded_size() failed");
-        ogs_log_hexdump(OGS_LOG_ERROR, bufcoded, bufcoded_len);
-        ogs_free(bufcoded);
-        return OGS_ERROR;
+        ogs_error("Invalid Base64 data in PEM block [%s]", header);
+        goto cleanup;
     }
 
-    result->data = ogs_calloc(1, decoded_size);
-    if (result->data == NULL) {
-        ogs_error("ogs_calloc() failed [%d]", decoded_size);
-        ogs_free(bufcoded);
-        return OGS_ERROR;
+    decoded = ogs_malloc(decoded_size);
+    if (!decoded) {
+        ogs_error("Could not allocate decoded PEM data for [%s]", header);
+        goto cleanup;
     }
 
-    result->size = ogs_base64_decode_to_buffer(
-            result->data, decoded_size, (const char *)bufcoded);
-    if (result->size <= 0) {
-        ogs_error("ogs_base64_decode_to_buffer() failed");
-        ogs_log_hexdump(OGS_LOG_ERROR, bufcoded, bufcoded_len);
-        ogs_free(result->data);
-        result->data = NULL;
-        ogs_free(bufcoded);
-        return OGS_ERROR;
+    size = ogs_base64_decode_to_buffer(decoded, decoded_size, encoded);
+    if (size != decoded_size) {
+        ogs_error("Could not decode PEM block [%s]", header);
+        ogs_free(decoded);
+        goto cleanup;
     }
 
-    ogs_free(bufcoded);
+    result->data = decoded;
+    result->size = size;
+    rv = OGS_OK;
 
-    return OGS_OK;
+cleanup:
+    ogs_free(encoded);
+    return rv;
 }
 
 int ogs_pem_decode_curve25519_key(const char *filename, uint8_t *key)

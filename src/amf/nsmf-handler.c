@@ -527,11 +527,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ogs_pkbuf_copy(n2smbuf));
 
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
-                    r = ngap_send_path_switch_ack(sess);
+                    r = ngap_send_path_switch_result(amf_ue);
                     ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-
-                    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_ack);
                 }
                 break;
 
@@ -1097,6 +1094,54 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         }
 
         SmContextUpdateError = recvmsg->SmContextUpdateError;
+        ProblemDetails = SmContextUpdateError ? SmContextUpdateError->error : NULL;
+        if (state == AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST) {
+            /*
+             * TS 29.502 5.2.2.3.3: preserve the failure cause from the SMF.
+             * An error without N2 SM information (e.g. an unknown SM context)
+             * still needs an Unsuccessful Transfer for the released list.
+             */
+            OpenAPI_ref_to_binary_data_t *n2SmInfo =
+                SmContextUpdateError ? SmContextUpdateError->n2_sm_info : NULL;
+            ogs_pkbuf_t *n2smbuf = NULL;
+
+            ogs_error("[%s:%d] Path switch failed [%d:%s]",
+                    amf_ue->supi, sess->psi, recvmsg->res_status,
+                    ProblemDetails && ProblemDetails->cause ?
+                        ProblemDetails->cause : "Unknown");
+
+            if (SmContextUpdateError && SmContextUpdateError->n2_sm_info_type ==
+                    OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_FAIL &&
+                n2SmInfo && n2SmInfo->content_id)
+                n2smbuf = ogs_sbi_find_part_by_content_id(
+                        recvmsg, n2SmInfo->content_id);
+            if (n2smbuf) {
+                /* The SBI message may be freed before the last SMF reply. */
+                n2smbuf = ogs_pkbuf_copy(n2smbuf);
+            } else {
+                ogs_warn("[%s:%d] No Path Switch Request Unsuccessful "
+                        "Transfer", amf_ue->supi, sess->psi);
+                n2smbuf =
+                    ngap_build_path_switch_request_unsuccessful_transfer(
+                        NGAP_Cause_PR_misc, NGAP_CauseMisc_unspecified);
+            }
+            if (n2smbuf) {
+                AMF_SESS_STORE_N2_TRANSFER(
+                        sess, path_switch_request_unsuccessful, n2smbuf);
+            } else {
+                ogs_error("[%s:%d] No Path Switch Request Unsuccessful "
+                        "Transfer built - left out of the answer",
+                        amf_ue->supi, sess->psi);
+            }
+
+            if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
+                r = ngap_send_path_switch_result(amf_ue);
+                ogs_expect(r == OGS_OK);
+            }
+
+            return OGS_ERROR;
+        }
+
         if (!SmContextUpdateError) {
             ogs_error("[%d:%d] No SmContextUpdateError [%d]",
                     sess->psi, sess->pti, recvmsg->res_status);
@@ -1108,7 +1153,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             return OGS_ERROR;
         }
 
-        ProblemDetails = SmContextUpdateError->error;
         if (!ProblemDetails) {
             ogs_error("[%d:%d] No ProblemDetails [%d]",
                     sess->psi, sess->pti, recvmsg->res_status);
