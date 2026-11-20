@@ -49,13 +49,21 @@ ogs_sbi_request_t *udm_nudr_dr_build_authentication_subscription(
         message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
 
     } else {
+        uint64_t current_sqn = ogs_buffer_to_uint64(sqn, OGS_SQN_LEN);
+        uint8_t next_sqn[OGS_SQN_LEN];
+
         message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
         message.http.content_type = (char *)OGS_SBI_CONTENT_PATCH_TYPE;
 
         PatchItemList = OpenAPI_list_create();
         ogs_assert(PatchItemList);
 
-        ogs_hex_to_ascii(sqn, OGS_SQN_LEN, sqn_string, sizeof(sqn_string));
+        /* TS 33.102 Annex C.1.1.2: advance SEQ by one, keeping the five
+         * IND bits. The vector still uses the caller's original SQN. */
+        ogs_uint64_to_buffer((current_sqn + 32) & OGS_MAX_SQN,
+                sizeof(next_sqn), next_sqn);
+        ogs_hex_to_ascii(next_sqn, sizeof(next_sqn),
+                sqn_string, sizeof(sqn_string));
 
         memset(&item, 0, sizeof(item));
         item.op = OpenAPI_patch_operation_replace;
