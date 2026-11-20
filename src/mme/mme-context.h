@@ -362,6 +362,9 @@ struct enb_ue_s {
         long cause;
     } relcause;
 
+    /* InitialContextSetupRequest sent, its response or failure not yet */
+    bool            initial_context_setup_request_pending;
+
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
 #define S1AP_UE_CTX_REL_INVALID_ACTION                      0

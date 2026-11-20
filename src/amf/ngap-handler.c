@@ -1511,6 +1511,20 @@ void ngap_handle_initial_context_setup_failure(
             Cause->present, (int)Cause->choice.radioNetwork);
 
     /*
+     * TS 38.413 8.3.1.3 and 10.4: the failure answers an INITIAL CONTEXT
+     * SETUP REQUEST. Without one waiting for its answer, ignore it
+     * instead of releasing the UE.
+     */
+    if (ran_ue->initial_context_setup_request_sent == false ||
+        ran_ue->initial_context_setup_response_received == true) {
+        ogs_error("No InitialContextSetupRequest to answer "
+                "[RAN_UE_NGAP_ID:%lld AMF_UE_NGAP_ID:%lld]",
+                (long long)ran_ue->ran_ue_ngap_id,
+                (long long)ran_ue->amf_ue_ngap_id);
+        return;
+    }
+
+    /*
      * 19.2.2.3 in Spec 36.300
      *
      * In case of failure, RAN and AMF behaviours are not mandated.

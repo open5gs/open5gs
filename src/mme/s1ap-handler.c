@@ -1330,6 +1330,8 @@ void s1ap_handle_initial_context_setup_response(
         return;
     }
 
+    enb_ue->initial_context_setup_request_pending = false;
+
     if (E_RABSetupListCtxtSURes) {
         int uli_presence = 0;
 
@@ -1510,6 +1512,19 @@ void s1ap_handle_initial_context_setup_failure(
 
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
+
+    /*
+     * TS 36.413 8.3.1.3 and 10.4: the failure answers an INITIAL CONTEXT
+     * SETUP REQUEST. Without one waiting for its answer, ignore it
+     * instead of releasing the UE.
+     */
+    if (enb_ue->initial_context_setup_request_pending == false) {
+        ogs_error("No InitialContextSetupRequest to answer "
+                "[ENB_UE_S1AP_ID:%d MME_UE_S1AP_ID:%d]",
+                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+        return;
+    }
+    enb_ue->initial_context_setup_request_pending = false;
 
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
