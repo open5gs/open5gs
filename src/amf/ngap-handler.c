@@ -1882,9 +1882,17 @@ void ngap_handle_ue_context_release_request(
     }
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
-    if (!amf_ue) {
-        ogs_error("Cannot find AMF-UE Context [%lld]",
-                (long long)amf_ue_ngap_id);
+    /*
+     * TS 38.413 8.3.2: release the requested logical NG connection.
+     * A prepared handover target can reference a UE still on the source.
+     */
+    if (!amf_ue || amf_ue->ran_ue_id != ran_ue->id) {
+        if (!amf_ue)
+            ogs_error("Cannot find AMF-UE Context [%lld]",
+                    (long long)amf_ue_ngap_id);
+        else
+            ogs_debug("Releasing non-serving NG connection [%lld]",
+                    (long long)amf_ue_ngap_id);
         r = ngap_send_ran_ue_context_release_command(ran_ue,
                 Cause->present, (int)Cause->choice.radioNetwork,
                 NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
@@ -2086,21 +2094,16 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
     if (amf_ue) {
         ogs_info("    SUCI[%s]", amf_ue->suci ? amf_ue->suci : "Unknown");
 
-        /*
-         * An assert occurs when a NAS message retransmission occurs.
-         *
-         * Because there is no `ran_ue` context.
-         *
-         * Therefore, before removing `ran_ue`, all Timers must be stopped
-         * to prevent retransmission of NAS messages.
-         */
-        CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+        /* Keep NAS timers on the serving connection when a target is removed. */
+        if (amf_ue->ran_ue_id == ran_ue->id)
+            CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
     }
 
     switch (ran_ue->ue_ctx_rel_action) {
     case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:
         ogs_debug("    Action: NG context remove");
         amf_sbi_send_deactivate_stale_user_plane(ran_ue);
+        source_ue_deassociate_target_ue(ran_ue);
         ran_ue_remove(ran_ue);
         break;
     case NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK:
