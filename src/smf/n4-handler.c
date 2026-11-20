@@ -993,8 +993,30 @@ void smf_5gc_n4_handle_session_modification_response(
             }
 
         } else {
-            ogs_fatal("Unknown flags [0x%llx]", (long long)flags);
-            ogs_assert_if_reached();
+            smf_bearer_t *next = NULL;
+
+            /*
+             * QoS flows the NG-RAN node failed to add.
+             *
+             * The UE has not received the QoS rules and the NG-RAN node
+             * has no resources for these QoS flows, so they are removed
+             * without N1/N2 signalling.
+             */
+            ogs_assert(stream);
+
+            ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
+                    next, qos_flow, to_modify_node) {
+                smf_sess_t *sess = smf_sess_find_by_id(qos_flow->sess_id);
+                ogs_assert(sess);
+                smf_metrics_inst_by_5qi_add(
+                        &sess->serving_plmn_id,
+                        &sess->s_nssai,
+                        sess->session.qos.index,
+                        SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
+                smf_bearer_remove(qos_flow);
+            }
+
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
         }
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
         if (flags & OGS_PFCP_MODIFY_INDIRECT) {

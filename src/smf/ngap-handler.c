@@ -462,6 +462,7 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
     NGAP_PDUSessionResourceModifyResponseTransfer_t message;
 
     NGAP_QosFlowAddOrModifyResponseList_t *qosFlowAddOrModifyResponseList;
+    NGAP_QosFlowListWithCause_t *qosFlowFailedToAddOrModifyList = NULL;
 
     ogs_assert(pkbuf);
     ogs_assert(stream);
@@ -502,6 +503,87 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
     }
 
     qosFlowAddOrModifyResponseList = message.qosFlowAddOrModifyResponseList;
+    qosFlowFailedToAddOrModifyList = message.qosFlowFailedToAddOrModifyList;
+
+    if (qosFlowFailedToAddOrModifyList) {
+    /*
+     * TS38.413
+     * 8.2.3.2 Successful Operation
+     *
+     * If the NAS-PDU IE is received for the PDU session, the NG-RAN node
+     * shall pass it to the UE only if at least one of the requests
+     * included in the PDU Session Resource Modify Request Transfer IE
+     * is successful
+     *
+     * For a PDU session or a QoS flow which failed to be modified,
+     * the NG-RAN node shall fall back to the configuration of
+     * the PDU session or the QoS flow as it was configured prior to
+     * the reception of the PDU SESSION RESOURCE MODIFY REQUEST message.
+     *
+     * When no QoS flow was added or modified, none of the requests is
+     * successful and the UE has not received the QoS rules. The QoS flows
+     * the NG-RAN node never established are then removed from the SMF
+     * and the UPF without N1/N2 signalling, and are not requested again.
+     * A QoS flow which failed to be modified is kept as it is.
+     */
+        if (!qosFlowAddOrModifyResponseList)
+            ogs_list_init(&sess->qos_flow_to_modify_list);
+
+        for (i = 0; i < OGS_ASN_LIST_COUNT(qosFlowFailedToAddOrModifyList);
+                i++) {
+            NGAP_QosFlowWithCauseItem_t *qosFlowWithCauseItem = NULL;
+            qosFlowWithCauseItem =
+                OGS_ASN_LIST_GET(qosFlowFailedToAddOrModifyList, i);
+            if (!qosFlowWithCauseItem)
+                continue;
+
+            if (qosFlowWithCauseItem->cause)
+                ogs_warn("[%s:%d] QoS flow failed to add or modify [QFI:%d] "
+                        "Cause[Group:%d Cause:%d]",
+                        smf_ue->supi, sess->psi,
+                        (int)qosFlowWithCauseItem->qosFlowIdentifier,
+                        qosFlowWithCauseItem->cause->present,
+                        (int)qosFlowWithCauseItem->cause->choice.radioNetwork);
+            else
+                ogs_warn("[%s:%d] QoS flow failed to add or modify [QFI:%d]",
+                        smf_ue->supi, sess->psi,
+                        (int)qosFlowWithCauseItem->qosFlowIdentifier);
+
+            if (qosFlowAddOrModifyResponseList)
+                continue;
+
+            qos_flow = smf_qos_flow_find_by_qfi(
+                    sess, qosFlowWithCauseItem->qosFlowIdentifier);
+            if (!qos_flow || qos_flow == smf_default_bearer_in_sess(sess))
+                continue;
+
+            dl_far = qos_flow->dl_far;
+            ogs_assert(dl_far);
+            if (dl_far->apply_action & OGS_PFCP_APPLY_ACTION_FORW)
+                continue;
+
+            if (ogs_list_exists(&sess->qos_flow_to_modify_list,
+                        &qos_flow->to_modify_node))
+                continue;
+
+            ogs_list_add(&sess->qos_flow_to_modify_list,
+                            &qos_flow->to_modify_node);
+        }
+
+        if (!qosFlowAddOrModifyResponseList) {
+            rv = OGS_OK;
+
+            if (ogs_list_count(&sess->qos_flow_to_modify_list) == 0)
+                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            else
+                ogs_assert(OGS_OK ==
+                        smf_5gc_pfcp_send_qos_flow_list_modification_request(
+                            sess, stream, OGS_PFCP_MODIFY_REMOVE, 0));
+
+            goto cleanup;
+        }
+    }
+
     if (!qosFlowAddOrModifyResponseList) {
         /* QosFlow Release */
         rv = OGS_OK;
