@@ -30,8 +30,44 @@
 #include "namf-handler.h"
 #include "nsmf-handler.h"
 #include "npcf-handler.h"
+#include "nchf-handler.h"
 #include "nsmf-handler.h"
 #include "binding.h"
+
+/*
+ * A Create for a PDU session ID the SMF still holds makes
+ * smf_sess_add_by_sm_context() and smf_sess_add_by_pdu_session() remove the
+ * old session on the spot ("OLD Session Will Release"), bypassing the
+ * teardown whose wait_pfcp_deletion entry sends the CHF Release.  A UE does
+ * this whenever the SMF releases a session with REACTIVATION_REQUESTED, as
+ * it does to every session on a UPF it lost: on the rig the UE asked again
+ * 0.2 s later, and both CHF sessions stayed open, each holding a slot in the
+ * CHF's session pool until the CHF restarts.
+ *
+ * Close the old CHF session first, fire-and-forget, with the usage reported
+ * so far, as the PFCP timeouts and the exception state do.  The HTTP client
+ * copies the request, so it is still sent after smf_sess_remove() drops the
+ * transaction.  Nothing is sent for a session without a CHF association.
+ *
+ * The checks are the ones both functions make before they remove the old
+ * session, so the Release goes out exactly when the removal will follow.
+ */
+static void release_replaced_chf_session(char *supi, int psi)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_sess_t *sess = NULL;
+
+    if (!supi || !strlen(supi) || ogs_pdu_session_id_is_valid(psi) == false)
+        return;
+
+    smf_ue = smf_ue_find_by_supi(supi);
+    if (!smf_ue)
+        return;
+
+    sess = smf_sess_find_by_psi(smf_ue, psi);
+    if (sess && !sess->epc)
+        smf_nchf_send_release(sess);
+}
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
@@ -576,6 +612,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         break;
 
                     DEFAULT
+                        if (sbi_message.SmContextCreateData &&
+                            sbi_message.SmContextCreateData->
+                                is_pdu_session_id)
+                            release_replaced_chf_session(
+                                sbi_message.SmContextCreateData->supi,
+                                sbi_message.SmContextCreateData->
+                                    pdu_session_id);
                         sess = smf_sess_add_by_sm_context(&sbi_message);
                         if (!sess) {
                             ogs_error("smf_sess_add_by_sbi_message() failed");
@@ -645,6 +688,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         break;
 
                     DEFAULT
+                        if (sbi_message.PduSessionCreateData &&
+                            sbi_message.PduSessionCreateData->
+                                is_pdu_session_id)
+                            release_replaced_chf_session(
+                                sbi_message.PduSessionCreateData->supi,
+                                sbi_message.PduSessionCreateData->
+                                    pdu_session_id);
                         sess = smf_sess_add_by_pdu_session(&sbi_message);
                         if (!sess) {
                             ogs_error("smf_sess_add_by_sbi_message() failed");
@@ -748,6 +798,38 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 smf_namf_comm_handle_n1_n2_message_transfer_failure_notify(
                         stream, &sbi_message);
                 break;
+            CASE(OGS_SBI_RESOURCE_NAME_CHARGING_NOTIFY)
+                /* TS 32.291 §6.3.4 — the CHF reaching a live session, at
+                 * the notifyUri the SMF gave it in the ChargingDataRequest
+                 * (see smf_nchf_convergedcharging_build_create()). */
+                if (!sbi_message.h.resource.component[1]) {
+                    ogs_error("No smContextRef in ChargingNotify");
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                            "No smContextRef", NULL, NULL));
+                    break;
+                }
+
+                sess = smf_sess_find_by_sm_context_ref(
+                        sbi_message.h.resource.component[1]);
+                if (!sess) {
+                    /* The session ended between the CHF's read and its
+                     * POST; its Release settles the account. */
+                    ogs_warn("ChargingNotify for a session that is gone [%s]",
+                            sbi_message.h.uri);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_NOT_FOUND, &sbi_message,
+                            "Not found",
+                            sbi_message.h.resource.component[1], NULL));
+                    break;
+                }
+
+                smf_nchf_convergedcharging_handle_charging_notify(
+                        sess, stream, &sbi_message);
+                break;
+
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
                 if (!sbi_message.h.resource.component[1]) {
                     ogs_error("No smContextRef [%s]",
@@ -841,6 +923,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OpenAPI_service_name_nudm_sdm:
             api_version = OGS_SBI_API_V2;
             break;
+        case OpenAPI_service_name_nchf_convergedcharging:
+            api_version = "v3";
+            break;
         default:
             api_version = OGS_SBI_API_V1;
         }
@@ -924,12 +1009,25 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OpenAPI_service_name_npcf_smpolicycontrol:
         case OpenAPI_service_name_namf_comm:
         case OpenAPI_service_name_nsmf_pdusession:
+        case OpenAPI_service_name_nchf_convergedcharging:
             sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
                     sbi_xact_id <= OGS_MAX_POOL_ID);
 
             sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
+                /* A CHF Release is not awaited once its session is gone:
+                 * smf_sess_remove() drops the transaction, and the 204
+                 * lands here.  Not an error. */
+                if (service_name_id ==
+                        OpenAPI_service_name_nchf_convergedcharging &&
+                    sbi_message.h.resource.component[2] &&
+                    !strcmp(sbi_message.h.resource.component[2],
+                        OGS_SBI_RESOURCE_NAME_RELEASE)) {
+                    ogs_debug("CHF Release response after session removal "
+                              "[%d]", sbi_xact_id);
+                    break;
+                }
                 /* CLIENT_WAIT timer could remove SBI transaction
                  * before receiving SBI message */
                 ogs_error("SBI transaction has already been removed [%d]",
@@ -975,6 +1073,44 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
             ogs_assert(smf_ue);
             ogs_assert(OGS_FSM_STATE(&sess->sm));
+
+            /*
+             * Route Nchf responses that must not reach the session FSM.
+             *
+             * Only two states handle CHF responses: wait_5gc_nchf_create
+             * (Create) and operational (Update).  During release the session
+             * passes through states with no CHF arm - wait_5gc_n1_n2_release
+             * in particular ends its SBI-client switch in
+             * ogs_assert_if_reached() - and a CHF response is slow enough
+             * (the CHF writes a CDR and does two MongoDB operations first)
+             * to land in them.  Dispatching it there aborted the SMF.
+             */
+            if (service_name_id == OpenAPI_service_name_nchf_convergedcharging) {
+                const char *op = sbi_message.h.resource.component[2];
+
+                if (op && !strcmp(op, OGS_SBI_RESOURCE_NAME_RELEASE)) {
+                    /* The final Release needs no state machine: record the
+                     * outcome and clear the association, in whatever state
+                     * the session has reached. */
+                    smf_nchf_convergedcharging_handle_release(
+                            sess, &sbi_message);
+                    break;
+                }
+
+                if (op && !strcmp(op, OGS_SBI_RESOURCE_NAME_UPDATE) &&
+                        !OGS_FSM_CHECK(&sess->sm, smf_gsm_state_operational)) {
+                    /* The session started releasing while this Update was
+                     * out.  A refreshed grant is moot for a session being
+                     * torn down; the usage it carried is already on the
+                     * CHF.  Drop it instead of reaching a state that
+                     * cannot handle it. */
+                    ogs_warn("[%s:%d] CHF Update response after the session "
+                             "left operational — ignored",
+                             smf_ue->supi, sess->psi);
+                    sess->sm_data.nchf_update_in_flight = false;
+                    break;
+                }
+            }
 
             e->sess_id = sess->id;
             e->h.sbi.message = &sbi_message;
@@ -1355,6 +1491,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
+            /* Gap 4 fix: the service name, saved before the xact is freed,
+             * also lets a timed-out CHF request be dealt with below.  Update
+             * releases nchf_update_in_flight, and Create ends the wait in
+             * wait_5gc_nchf_create.  Release is fire-and-forget on a session
+             * that is already being torn down. */
             service_name_id = sbi_xact->service_name;
 
             ogs_sbi_xact_remove(sbi_xact);
@@ -1369,11 +1510,37 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             ogs_error("[%s:%d] Cannot receive SBI message",
                     smf_ue->supi, sess->psi);
+
+            /*
+             * The session FSM decides what a lost CHF Create means, and
+             * whether anything is owed on the stream, since a well-known DNN
+             * goes on without the CHF.
+             */
+            if (service_name_id ==
+                    OpenAPI_service_name_nchf_convergedcharging &&
+                    OGS_FSM_CHECK(&sess->sm,
+                        smf_gsm_state_wait_5gc_nchf_create)) {
+                e->sess_id = sess->id;
+                e->h.sbi.data = OGS_UINT_TO_POINTER(stream ?
+                        ogs_sbi_id_from_stream(stream) : OGS_INVALID_POOL_ID);
+                ogs_fsm_dispatch(&sess->sm, e);
+                break;
+            }
+
             if (stream) {
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                         "Cannot receive SBI message", smf_ue->supi, NULL));
+            }
+
+            if (service_name_id ==
+                    OpenAPI_service_name_nchf_convergedcharging &&
+                    sess->sm_data.nchf_update_in_flight) {
+                ogs_warn("[%s:%d] CHF Update timed out — "
+                         "clearing nchf_update_in_flight",
+                         smf_ue->supi, sess->psi);
+                sess->sm_data.nchf_update_in_flight = false;
             }
 
             /*
