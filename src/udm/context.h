@@ -75,6 +75,11 @@ struct udm_ue_s {
 
     ogs_list_t sess_list;
     ogs_list_t sdm_subscription_list;
+
+    /* An in-memory context is a cache of what UDR holds; it is created on the
+     * first request that mentions this SUPI and nothing ever releases it. See
+     * udm_ue_idle_timer_start(). */
+    ogs_timer_t *t_idle;
 };
 
 struct udm_sess_s {
@@ -120,6 +125,8 @@ void udm_sess_remove_all(udm_ue_t *udm_ue);
 udm_sess_t *udm_sess_find_by_psi(udm_ue_t *udm_ue, uint8_t psi);
 
 udm_ue_t *udm_ue_find_by_id(ogs_pool_id_t id);
+
+void udm_ue_idle_timer_start(udm_ue_t *udm_ue);
 udm_sess_t *udm_sess_find_by_id(ogs_pool_id_t id);
 
 udm_sdm_subscription_t *udm_sdm_subscription_add(udm_ue_t *udm_ue);
