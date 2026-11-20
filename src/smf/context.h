@@ -694,6 +694,8 @@ typedef struct smf_sess_s {
 
     ogs_gtp_node_t  *gnode;
     ogs_pfcp_node_t *pfcp_node;
+    /* pfcp_node->num_of_associations when released after its failure */
+    uint32_t released_after_upf_failure;
 
     ogs_pool_id_t smf_ue_id;
 
@@ -763,6 +765,7 @@ smf_sess_t *smf_sess_add_by_pdu_session(ogs_sbi_message_t *message);
 smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi);
 
 void smf_sess_select_upf(smf_sess_t *sess);
+bool smf_sess_other_upf_available(smf_sess_t *sess, ogs_pfcp_node_t *node);
 uint8_t smf_sess_set_ue_ip(smf_sess_t *sess);
 void smf_sess_set_paging_n1n2message_location(
         smf_sess_t *sess, char *n1n2message_location);

@@ -54,6 +54,15 @@ $ sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
 $ sudo ip link set ogstun up
 ```
 
+The test pfcp-peer-failure runs a second UPF, which uses the TUN device `ogstun2`.
+
+```bash
+$ sudo ip tuntap add name ogstun2 mode tun
+$ sudo ip addr add 10.46.0.1/16 dev ogstun2
+$ sudo ip addr add 2001:db8:babe::1/48 dev ogstun2
+$ sudo ip link set ogstun2 up
+```
+
 **Tip:** The script provided in [$GIT_REPO/misc/netconf.sh](https://github.com/{{ site.github_username }}/open5gs/blob/main/misc/netconf.sh) makes it easy to configure the TUN device as follows:
 `$ sudo ./misc/netconf.sh`
 {: .notice--info}

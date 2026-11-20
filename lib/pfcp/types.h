@@ -1677,6 +1677,23 @@ ED3(uint8_t     spare:6;,
     };
 } __attribute__ ((packed)) ogs_pfcp_sereq_flags_t;
 
+/*
+ * 8.2.134 PFCPASRsp-Flags
+ *
+ * Bit 1 - PSREI (PFCP Session Retained Indication)
+ * Bit 2 - UUPSI (UPF configured for IPUPS Indication)
+ */
+typedef struct ogs_pfcp_asrsp_flags_s {
+    union {
+        struct {
+ED3(uint8_t     spare:6;,
+    uint8_t     uupsi:1;,
+    uint8_t     psrei:1;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) ogs_pfcp_asrsp_flags_t;
+
 #ifdef __cplusplus
 }
 #endif

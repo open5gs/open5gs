@@ -40,6 +40,7 @@ void test_app_run(int argc, const char *const argv[],
 void test_child_terminate(void);
 void test_child_terminate_with_name(char *name, int index);
 ogs_thread_t *test_child_create(const char *name, int index, const char *const argv[]);
+void test_child_signal_with_name(const char *name, int index, int signum);
 
 #ifdef __cplusplus
 }

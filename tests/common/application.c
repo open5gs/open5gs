@@ -20,6 +20,10 @@
 #include "test-config-private.h"
 #include "test-common.h"
 
+#if !defined(_WIN32)
+#include <signal.h>
+#endif
+
 static void run(int argc, const char *const argv[],
         const char *name, void (*init)(const char * const argv[]))
 {
@@ -165,6 +169,10 @@ void test_child_terminate(void)
         current = &process[i];
 
         if (current->stdin_file != 0 &&  current->child != 0) {
+#if !defined(_WIN32)
+            /* A stopped child does not act on SIGTERM */
+            kill(current->child, SIGCONT);
+#endif
             ogs_proc_terminate(current);
         }
     }
@@ -185,4 +193,31 @@ void test_child_terminate_with_name(char *name, int index)
                 break;
         }
     }
+}
+
+/*
+ * Send a signal to a running NF, e.g. SIGSTOP/SIGCONT to make it
+ * unreachable for a while without restarting it.
+ */
+void test_child_signal_with_name(const char *name, int index, int signum)
+{
+#if !defined(_WIN32)
+    int i;
+    ogs_proc_t *current = NULL;
+    for (i = 0; i < process_num; i++) {
+        current = &process[i];
+
+        if (!strcmp(current->nf_name, name) &&
+                current->index == index &&
+                current->child != 0) {
+            ogs_assert(kill(current->child, signum) == 0);
+            return;
+        }
+    }
+    ogs_fatal("No child process [%s:%d]", name, index);
+    ogs_assert_if_reached();
+#else
+    ogs_fatal("Not supported");
+    ogs_assert_if_reached();
+#endif
 }

@@ -3,9 +3,11 @@
 SYSTEM=`uname`;
 
 if [ "$SYSTEM" = "Linux" ]; then
-    if ! grep "ogstun" /proc/net/dev > /dev/null; then
-        ip tuntap add name ogstun mode tun
-    fi
+    for dev in ogstun ogstun2 ogstun3; do
+        if ! grep "$dev:" /proc/net/dev > /dev/null; then
+            ip tuntap add name $dev mode tun
+        fi
+    done
     if test "x`sysctl -n net.ipv6.conf.ogstun.disable_ipv6`" = x1; then
         echo "net.ipv6.conf.ogstun.disable_ipv6=0" > /etc/sysctl.d/30-open5gs.conf
         sysctl -p /etc/sysctl.d/30-open5gs.conf
@@ -23,6 +25,8 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr del 2001:db8:face::1/48 dev ogstun3 2> /dev/null
     ip addr add 2001:db8:face::1/48 dev ogstun3
     ip link set ogstun up
+    ip link set ogstun2 up
+    ip link set ogstun3 up
 else
     sysctl -w net.inet.ip.forwarding=1
     sysctl -w net.inet6.ip6.forwarding=1

@@ -46,8 +46,14 @@ void ogs_nnrf_nfm_handle_nf_register(
     }
 
     /* TIME : Update heartbeat from NRF */
-    if (NFProfile->is_heart_beat_timer == true)
-        nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
+    if (NFProfile->is_heart_beat_timer == true) {
+        if (NFProfile->heart_beat_timer > 0)
+            nf_instance->time.heartbeat_interval =
+                NFProfile->heart_beat_timer;
+        else
+            ogs_error("Invalid NFProfile.heartBeatTimer [%d]",
+                    NFProfile->heart_beat_timer);
+    }
 
     if (NFProfile->plmn_list) {
         ogs_local_conf()->num_of_serving_plmn_id = 0;
@@ -1573,8 +1579,13 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     ogs_assert(SearchResult);
-    ogs_assert(SearchResult->validity_period);
     ogs_assert(SearchResult->nf_instances);
+
+    if (SearchResult->validity_period <= 0) {
+        ogs_error("Invalid SearchResult.validityPeriod [%d]",
+                SearchResult->validity_period);
+        return;
+    }
 
     OpenAPI_list_for_each(SearchResult->nf_instances, node) {
         OpenAPI_nf_profile_t *NFProfile = NULL;

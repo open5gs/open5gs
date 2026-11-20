@@ -180,6 +180,7 @@ int sgwu_sess_remove(sgwu_sess_t *sess)
     ogs_assert(sess);
 
     ogs_list_remove(&self.sess_list, sess);
+    OGS_CLEAR_PFCP_NODE(sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
 
     ogs_hash_set(self.sgwu_sxa_seid_hash, &sess->sgwu_sxa_seid,
