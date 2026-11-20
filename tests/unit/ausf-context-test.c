@@ -85,6 +85,10 @@ static void test_supi_reregistration(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, a);
     udm_answer(tc, a, TEST_SUPI);
 
+    /* a was confirmed, so the new authentication keeps it (see below). */
+    AUTH_EVENT_STORE(a, "http://udm/auth-events/1");
+    a->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
+
     b = ausf_ue_add((char *)"suci-0-001-01-0000-1-1-bbbb");
     ABTS_PTR_NOTNULL(tc, b);
     b_id = b->id;
@@ -102,6 +106,52 @@ static void test_supi_reregistration(abts_case *tc, void *data)
 
     ausf_ue_remove(b);
     ABTS_PTR_EQUAL(tc, NULL, ausf_ue_find_by_supi((char *)TEST_SUPI));
+}
+
+/*
+ * A new authentication for a SUPI removes an older context that was never
+ * successfully confirmed (e.g. the UE failed 5G-AKA and the AMF sent
+ * Authentication Reject), so failed attempts don't fill the pool (#5056).
+ */
+static void test_stale_context_removed(abts_case *tc, void *data)
+{
+    ausf_ue_t *a, *b, *c;
+    ogs_pool_id_t a_id, b_id, c_id;
+
+    /* a: never confirmed */
+    a = ausf_ue_add((char *)"suci-0-001-01-0000-1-1-aaaa");
+    ABTS_PTR_NOTNULL(tc, a);
+    a_id = a->id;
+    udm_answer(tc, a, TEST_SUPI);
+
+    /* b supersedes a */
+    b = ausf_ue_add((char *)"suci-0-001-01-0000-1-1-bbbb");
+    ABTS_PTR_NOTNULL(tc, b);
+    b_id = b->id;
+    udm_answer(tc, b, TEST_SUPI);
+
+    ABTS_PTR_EQUAL(tc, NULL, ausf_ue_find_by_id(a_id));
+    ABTS_PTR_EQUAL(tc, NULL,
+            ausf_ue_find_by_suci((char *)"suci-0-001-01-0000-1-1-aaaa"));
+    ABTS_PTR_EQUAL(tc, b, ausf_ue_find_by_supi((char *)TEST_SUPI));
+    ABTS_INT_EQUAL(tc, 1, ogs_list_count(&ausf_self()->ausf_ue_list));
+
+    /* b confirmed with FAILURE: the AMF won't DELETE it, so c removes it */
+    AUTH_EVENT_STORE(b, "http://udm/auth-events/2");
+    b->auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE;
+
+    c = ausf_ue_add((char *)"suci-0-001-01-0000-1-1-cccc");
+    ABTS_PTR_NOTNULL(tc, c);
+    c_id = c->id;
+    udm_answer(tc, c, TEST_SUPI);
+
+    ABTS_PTR_EQUAL(tc, NULL, ausf_ue_find_by_id(b_id));
+    c = ausf_ue_find_by_id(c_id);
+    ABTS_PTR_EQUAL(tc, c, ausf_ue_find_by_supi((char *)TEST_SUPI));
+    ABTS_INT_EQUAL(tc, 1, ogs_list_count(&ausf_self()->ausf_ue_list));
+
+    ausf_ue_remove(c);
+    ABTS_INT_EQUAL(tc, 0, ogs_list_count(&ausf_self()->ausf_ue_list));
 }
 
 /*
@@ -142,6 +192,7 @@ abts_suite *test_ausf_context(abts_suite *suite)
     ausf_context_init();
 
     abts_run_test(suite, test_supi_reregistration, NULL);
+    abts_run_test(suite, test_stale_context_removed, NULL);
     abts_run_test(suite, test_same_identity_contexts, NULL);
 
     ausf_context_final();
