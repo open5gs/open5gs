@@ -216,8 +216,20 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 3, ogs_pool_index(&testpool, node[2]));
     ABTS_INT_EQUAL(tc, 4, ogs_pool_index(&testpool, node[3]));
     ABTS_INT_EQUAL(tc, 5, ogs_pool_index(&testpool, node[4]));
-    ABTS_INT_EQUAL(tc, 4, ogs_pool_index(&testpool, node[5]));
-    ABTS_INT_EQUAL(tc, 3, ogs_pool_index(&testpool, node[6]));
+
+    /*
+     * node[3] (index 4) and node[2] (index 3) were freed in that order, then
+     * two allocations were made. ogs_pool_free() now returns the slot that was
+     * released last, i.e. node[2] (index 3) is handed out first and node[3]
+     * (index 4) second.
+     *
+     * The previous expectations were 4 then 3, which asserted FIFO order. A
+     * pool only needs to reuse memory, not to preserve release order, and FIFO
+     * made the free list sweep the whole pre-allocated array - see the comment
+     * on ogs_pool_free() for why that mattered.
+     */
+    ABTS_INT_EQUAL(tc, 3, ogs_pool_index(&testpool, node[5]));
+    ABTS_INT_EQUAL(tc, 4, ogs_pool_index(&testpool, node[6]));
 
     ogs_pool_free(&testpool, node[0]);
     ogs_pool_free(&testpool, node[1]);
