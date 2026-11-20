@@ -296,11 +296,19 @@ int ogs_nas_parse_nssai(
     while (pos < nas_nssai->length &&
             num_of_nas_s_nssai_ie < OGS_MAX_NUM_OF_SLICE) {
 
+        if (pos + 1 + nas_nssai->buffer[pos] > nas_nssai->length) {
+            ogs_error("Truncated S-NSSAI [pos:%d len:%d length:%d]",
+                    pos, nas_nssai->buffer[pos], nas_nssai->length);
+            ogs_log_hexdump(OGS_ERROR, nas_nssai->buffer, nas_nssai->length);
+            break;
+        }
+
         len = ogs_nas_parse_s_nssai(nas_s_nssai_ie + num_of_nas_s_nssai_ie,
                 (ogs_nas_s_nssai_t *)(nas_nssai->buffer + pos));
         if (len == 0) {
             ogs_error("Cannot parse NSSAI [%d]", nas_nssai->length);
             ogs_log_hexdump(OGS_ERROR, nas_nssai->buffer, nas_nssai->length);
+            break;
         }
 
         pos += len;

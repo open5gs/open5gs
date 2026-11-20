@@ -20,51 +20,6 @@
 #include "ogs-crypt.h"
 #include "core/abts.h"
 
-static void sha1_test1(abts_case *tc, void *data)
-{
-    uint8_t msg1[] = "abc";
-    uint8_t msg2[] = "abcdbcdecdefdefgefghfghighij"
-                       "hijkijkljklmklmnlmnomnopnopq";
-
-    uint8_t digest1[] = {
-        0xa9,0x99,0x3e,0x36,0x47,0x06,0x81,0x6a,
-        0xba,0x3e,0x25,0x71,0x78,0x50,0xc2,0x6c,
-        0x9c,0xd0,0xd8,0x9d
-    };
-    uint8_t digest2[] = {
-        0x84,0x98,0x3e,0x44,0x1c,0x3b,0xd2,0x6e,
-        0xba,0xae,0x4a,0xa1,0xf9,0x51,0x29,0xe5,
-        0xe5,0x46,0x70,0xf1
-    };
-    uint8_t digest3[] = {
-        0x34,0xaa,0x97,0x3c,0xd4,0xc4,0xda,0xa4,
-        0xf6,0x1e,0xeb,0x2b,0xdb,0xad,0x27,0x31,
-        0x65,0x34,0x01,0x6f,
-    };
-
-    uint8_t digest[20];
-    int i;
-
-    ogs_sha1_ctx ctx;
-
-    ogs_sha1_init(&ctx);
-    ogs_sha1_update(&ctx, msg1, sizeof(msg1) - 1);
-    ogs_sha1_final(&ctx, digest);
-    ABTS_INT_EQUAL(tc, 0, memcmp(digest1, digest, 20));
-
-    ogs_sha1_init(&ctx);
-    ogs_sha1_update(&ctx, msg2, sizeof(msg2) - 1);
-    ogs_sha1_final(&ctx, digest);
-    ABTS_INT_EQUAL(tc, 0, memcmp(digest2, digest, 20));
-
-    ogs_sha1_init(&ctx);
-    for (i = 0; i < 1000000; i++)
-        ogs_sha1_update(&ctx, (uint8_t*)"a", 1);
-    ogs_sha1_final(&ctx, digest);
-    ABTS_INT_EQUAL(tc, 0, memcmp(digest3, digest, 20));
-
-}
-
 static void sha2_test1(abts_case *tc, void *data)
 {
     const char *vectors[4][3] =
@@ -174,7 +129,6 @@ abts_suite *test_sha(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, sha1_test1, NULL);
     abts_run_test(suite, sha2_test1, NULL);
 
     return suite;

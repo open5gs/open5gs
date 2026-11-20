@@ -84,6 +84,14 @@ executable(
 )
 
 executable(
+    'pfcp_session_fuzz',
+    sources : files('pfcp-session-fuzz.c'),
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libpfcp_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
+
+executable(
     'pfcp_packet_match_fuzz',
     sources : pfcp_packet_match_source,
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
@@ -140,9 +148,9 @@ executable(
 )
 
 executable(
-    'pfcp_session_fuzz',
-    sources : files('pfcp-session-fuzz.c'),
+    'crypt_kdf_fuzz',
+    sources : files('crypt-kdf-fuzz.c'),
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
-    dependencies : [libpfcp_dep, libcore_dep],
+    dependencies : [libcrypt_dep],
     link_args: lib_fuzzing_engine
 )

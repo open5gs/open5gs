@@ -254,11 +254,20 @@ static void supi_validation(abts_case *tc, void *data)
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     char unchanged[sizeof(imsi_bcd)];
     bool imsi_supi;
+    int id = ogs_log_get_domain_id("core");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
 
     ABTS_TRUE(tc, !ogs_supi_is_valid(NULL));
     memset(unchanged, 0x5a, sizeof(unchanged));
 
     for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        /* Keep expected errors quiet unless debug/trace logging is requested. */
+        bool quiet = cases[i].result == OGS_ERROR &&
+            level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG;
+
+        if (quiet)
+            ogs_log_set_domain_level(id, OGS_LOG_FATAL);
+
         ABTS_TRUE(tc, ogs_supi_is_valid(cases[i].supi) ==
                 (cases[i].result == OGS_OK));
 
@@ -266,6 +275,10 @@ static void supi_validation(abts_case *tc, void *data)
         imsi_supi = true;
         ABTS_INT_EQUAL(tc, cases[i].result,
                 ogs_supi_to_imsi_bcd(cases[i].supi, imsi_bcd, &imsi_supi));
+
+        if (quiet)
+            ogs_log_set_domain_level(id, level);
+
         ABTS_TRUE(tc, imsi_supi == (cases[i].imsi != NULL));
         if (cases[i].imsi)
             ABTS_STR_EQUAL(tc, cases[i].imsi, imsi_bcd);

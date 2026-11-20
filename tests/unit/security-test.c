@@ -186,20 +186,12 @@ static void security_test5(abts_case *tc, void *data)
     uint8_t tmp[SECURITY_TEST5_LEN];
     ogs_pkbuf_t *pkbuf = NULL;
 
-#if 0 /* Issue #2581 : snow_3g_f8 have memory problem */
-    snow_3g_f8(
-        ogs_hex_from_string(_ck, ck, sizeof(ck)),
-        0x72a4f20f, 0x0c, 1,
-        ogs_hex_from_string(_plain, plain, sizeof(plain)),
-        SECURITY_TEST5_BIT_LEN);
-#else
     SNOW_CTX ctx;
 
     ogs_hex_from_string(_plain, plain, sizeof(plain));
     SNOW_init(0x72a4f20f, 0x0c, 1,
         ogs_hex_from_string(_ck, ck, sizeof(ck)), &ctx);
     SNOW(SECURITY_TEST5_LEN, plain, plain, &ctx);
-#endif
     ABTS_TRUE(tc, memcmp(plain, 
         ogs_hex_from_string(_cipher, tmp, sizeof(tmp)),
         SECURITY_TEST5_LEN) == 0);
@@ -358,6 +350,14 @@ static void security_test8(abts_case *tc, void *data)
             ik, 0xa94059da, 0xa, 1, pkbuf, mac);
     ABTS_TRUE(tc, memcmp(mac, mact, 4) == 0);
     ogs_pkbuf_free(pkbuf);
+
+    /* TS 35.223, 128-EIA3 test set 3. Only the high bit of byte 73 counts. */
+    zuc_eia3(ik, 0xa94059da, 0xa, 1, 577, message, &mac32);
+    ABTS_TRUE(tc, mac32 == 0xfae8ff0b);
+
+    message[sizeof(message) - 1] ^= 0x7f;
+    zuc_eia3(ik, 0xa94059da, 0xa, 1, 577, message, &mac32);
+    ABTS_TRUE(tc, mac32 == 0xfae8ff0b);
 }
 
 static void security_test9(abts_case *tc, void *data)
@@ -405,6 +405,15 @@ static void security_test9(abts_case *tc, void *data)
         memcmp(pkbuf->data, ogs_hex_from_string(_cipher, tmp, sizeof(tmp)),
             SECURITY_TEST9_LEN) == 0);
     ogs_pkbuf_free(pkbuf);
+
+    /* TS 35.223, 128-EEA3 test set 1. Clear unused bits of the ciphertext. */
+    ogs_hex_from_string(_plain, plain, sizeof(plain));
+    plain[sizeof(plain) - 1] ^= 0x7f;
+    tmp[sizeof(tmp) - 1] = 0;
+    zuc_eea3(ck, 0x66035492, 0xf, 0, 193, plain, cipher);
+    ABTS_TRUE(tc, memcmp(cipher, tmp, sizeof(cipher)) == 0);
+    zuc_eea3(ck, 0x66035492, 0xf, 0, 193, plain, plain);
+    ABTS_TRUE(tc, memcmp(plain, tmp, sizeof(plain)) == 0);
 }
 
 static void security_test10(abts_case *tc, void *data)
@@ -420,12 +429,6 @@ static void security_test10(abts_case *tc, void *data)
         const char *digest_plus_one_key_mac;
         const char *block_size_key_mac;
     } test_vector[] = {
-        {
-            ogs_hmac_sha1, OGS_SHA1_DIGEST_SIZE, OGS_SHA1_BLOCK_SIZE,
-            "56a8d203b357db47b98ca74a5b21466832467c72",
-            "123505d2066bc7c33c3b329b9659fa614ba06a47",
-            "3fc920f32d2f747af7f9c0ad886cdd01aebc53e7",
-        },
         {
             ogs_hmac_sha224, OGS_SHA224_DIGEST_SIZE, OGS_SHA224_BLOCK_SIZE,
             "c4c4d3cfadfee804dba5ef6839f22ae7779d9f99f81e73fdb3272d56",
@@ -492,6 +495,135 @@ static void security_test10(abts_case *tc, void *data)
     }
 }
 
+static void security_test11(abts_case *tc, void *data)
+{
+    /* TS 35.217 UIA2 sets 1-5 and TS 33.401 Annex C.4 EIA1 sets 2-6. */
+    static const struct {
+        const char *name;
+        uint32_t count;
+        uint32_t fresh;
+        uint32_t direction;
+        uint32_t bit_len;
+        const char *ik;
+        const char *message;
+        const char *mac;
+    } vectors[] = {
+        {
+            "UIA2 test set 1",
+            0x38a6f056, 0x05d2ec49, 0, 189,
+            "2bd6459f82c5b300952c49104881ff48",
+            "6b227737296f393c8079353edc87e2e805d2ec49a4f2d8e0",
+            "2bce1820",
+        },
+        {
+            "UIA2 test set 2",
+            0x3edc87e2, 0xa4f2d8e2, 1, 254,
+            "d42f682428201cafcd9f97945e6de7b7",
+            "b5924384328a4ae00b737109f8b6c8dd2b4db63dd533981ceb19aad52a5b2bc0",
+            "fc7b18bd",
+        },
+        {
+            "UIA2 test set 3",
+            0x36af6144, 0x9838f03a, 1, 319,
+            "fdb9cfdf28936cc483a31869d81b8fab",
+            "5932bc0ace2b0aba33d8ac188ac54f346fad10bf9dee2920b43bd0c53a915cb7"
+            "df6caa72053abff2",
+            "02f1faaf",
+        },
+        {
+            "UIA2 test set 4",
+            0x14793e41, 0x0397e8fd, 1, 384,
+            "c736c6aab22bfff91e2698d2e22ad57e",
+            "d0a7d463df9fb2b278833fa02e235aa172bd970c1473e12907fb648b6599aaa0"
+            "b24a038665422b20a499276a50427009",
+            "38b554c0",
+        },
+        {
+            "UIA2 test set 5",
+            0x296f393c, 0x6b227737, 1, 1000,
+            "f4ebec69e73eaf2eb2cf6af4b3120ffd",
+            "10bfff839e0c71658dbb2d1707e145724f41c16f48bf403c3b18e38fd5d1663b"
+            "6f6d900193e3cea8bb4f1b4f5be822032232a78d7d75238d5e6daecd3b4322cf"
+            "59bc7ea84ab18811b5bfb7bc553f4fe44478ce287a14879990d18d12ca79d2c8"
+            "55149021cd5ce8ca0371ca04fcce143e3d7cfee94585b5885cac46068b",
+            "061745ae",
+        },
+        {
+            "128-EIA1 test set 2",
+            0x36af6144, 0xc0000000, 1, 254,
+            "7e5e94431e11d73828d739cc6ced4573",
+            "b3d3c9170a4e1632f60f861013d22d84b726b6a278d802d1eeaf1321ba5929dc",
+            "e3259f6f",
+        },
+        {
+            "128-EIA1 test set 3",
+            0xc7590ea9, 0xb8000000, 0, 511,
+            "d3419be821087acd02123a9248033359",
+            "bbb057038809496bcff86d6fbc8ce5b135a06b166054f2d565be8ace75dc851e"
+            "0bcdd8f07141c495872fb5d8c0c66a8b6da556663e4e461205d84580bee5bc7e",
+            "9a16c77d",
+        },
+        {
+            "128-EIA1 test set 4",
+            0x36af6144, 0x78000000, 1, 768,
+            "83fd23a244a74cf358da3019f1722635",
+            "35c68716633c66fb750c266865d53c11ea05b1e9fa49c8398d48e1efa5909d39"
+            "47902837f5ae96d5a05bc8d61ca8dbef1b13a4b4abfe4fb1006045b674bb5472"
+            "9304c382be53a5af05556176f6eaa2ef1d05e4b083181ee674cda5a485f74d7a",
+            "bba74492",
+        },
+        {
+            "128-EIA1 test set 5",
+            0x36af6144, 0xc0000000, 0, 383,
+            "6832a65cff4473621ebdd4ba26a921fe",
+            "d3c53839626820717765667620323837636240981ba6824c1bfb1ab485472029"
+            "b71d808ce33e2cc3c0b5fc1f3de8a6dc",
+            "4145e4b0",
+        },
+        {
+            "128-EIA1 test set 6",
+            0x7827fab2, 0x28000000, 1, 2558,
+            "5d0a80d8134ae19677824b671e838af4",
+            "70dedf2dc42c5cbd3a96f8a0b11418b3608d5733604a2cd36aabc70ce3193bb5"
+            "153be2d3c06dfdb2d16e9c357158be6a41d6b861e491db3fbfeb518efcf048d7"
+            "d58953730ff30c9ec470ffcd663dc34201c36addc0111c35b38afee7cfdb582e"
+            "3731f8b4baa8d1a89c06e81199a9716227be344efcb436ddd0f096c064c3b5e2"
+            "c399993fc77394f9e09720a811850ef23b2ee05d9e6173609d86e1c0c18ea51a"
+            "012a00bb413b9cb8188a703cd6bae31cc67b34b1b00019e6a2b2a690f02671fe"
+            "7c9ef8dec0094e533763478d58d2c5f5b827a0148c5948a96931acf84f465a64"
+            "e62ce74007e991e37ea823fa0fb21923b79905b733b631e6c7d6860a3831ac35"
+            "1a9c730c52ff72d9d308eedbab21fde143a0ea17e23edc1f74cbb3638a2033aa"
+            "a15464eaa733385dbbeb6fd73509b857e6a419dca1d8907af977fbac4dfa35ec",
+            "0fa2b1ee",
+        },
+    };
+    uint8_t ik[16], message[320], mac[4], expected[4];
+    size_t i;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(vectors); i++) {
+        size_t bytes = (vectors[i].bit_len + 7) / 8;
+        unsigned int tail_bits = vectors[i].bit_len % 8;
+
+        ogs_hex_from_string(vectors[i].ik, ik, sizeof(ik));
+        ogs_hex_from_string(vectors[i].message, message, bytes);
+        ogs_hex_from_string(vectors[i].mac, expected, sizeof(expected));
+
+        snow_3g_f9(ik, vectors[i].count, vectors[i].fresh,
+                vectors[i].direction, message, vectors[i].bit_len, mac);
+        ABTS_ASSERT(tc, vectors[i].name,
+                memcmp(mac, expected, sizeof(mac)) == 0);
+
+        if (tail_bits) {
+            /* Unused low bits of the last byte must not affect the MAC. */
+            message[bytes - 1] ^= (1u << (8 - tail_bits)) - 1;
+            snow_3g_f9(ik, vectors[i].count, vectors[i].fresh,
+                    vectors[i].direction, message, vectors[i].bit_len, mac);
+            ABTS_ASSERT(tc, vectors[i].name,
+                    memcmp(mac, expected, sizeof(mac)) == 0);
+        }
+    }
+}
+
 abts_suite *test_security(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -506,6 +638,7 @@ abts_suite *test_security(abts_suite *suite)
     abts_run_test(suite, security_test8, NULL);
     abts_run_test(suite, security_test9, NULL);
     abts_run_test(suite, security_test10, NULL);
+    abts_run_test(suite, security_test11, NULL);
 
     return suite;
 }

@@ -1,8 +1,21 @@
-/*------------------------------------------------------------------------
- * ZUC.h
- * Code taken from the ZUC specification
- * available on the GSMA website
- *------------------------------------------------------------------------*/
+/*
+ * Copyright (C) 2026 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #if !defined(OGS_CRYPT_INSIDE) && !defined(OGS_CRYPT_COMPILATION)
 #error "This header cannot be included directly."
@@ -17,43 +30,13 @@
 extern "C" {
 #endif
 
-/* type definition from */
-typedef uint8_t u8;
-typedef uint32_t u32;
+/* Length is in bits. The input and output may be the same buffer. */
+void zuc_eea3(uint8_t *key, uint32_t count, uint32_t bearer, uint32_t direction,
+        uint32_t length, uint8_t *input, uint8_t *output);
 
-/*
- * ZUC keystream generator
- * k: secret key (input, 16 bytes)
- * iv: initialization vector (input, 16 bytes)
- * Keystream: produced keystream (output, variable length)
- * KeystreamLen: length in bits requested for the keystream (input)
-*/
-void zuc_initialize(u8* k, u8* iv);
-void zuc_generate_key_stream(u32* pKeystream, u32 KeystreamLen);
-
-/*
- * CK: ciphering key
- * COUNT: frame counter
- * BEARER: radio bearer
- * DIRECTION
- * LENGTH: length of the frame in bits
- * M: original message (input)
- * C: processed message (output)
-*/
-void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION, 
-		           u32 LENGTH, u8* M, u8* C);
-
-/*
- * IK: integrity key
- * COUNT: frame counter
- * BEARER: radio bearer
- * DIRECTION
- * LENGTH: length of the frame in bits
- * M: original message (input)
- * C: processed message (output)
-*/
-void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
-		           u32 LENGTH, u8* M, u32* MAC);
+/* Length is in bits. The MAC is returned as a host-order integer. */
+void zuc_eia3(uint8_t *key, uint32_t count, uint32_t bearer, uint32_t direction,
+        uint32_t length, uint8_t *message, uint32_t *mac);
 
 #ifdef __cplusplus
 }

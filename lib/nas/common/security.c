@@ -37,7 +37,7 @@ void ogs_nas_mac_calculate(uint8_t algorithm_identity,
 
     switch (algorithm_identity) {
     case OGS_NAS_SECURITY_ALGORITHMS_128_EIA1:
-        snow_3g_f9(knas_int, count, (bearer << 27), direction, 
+        snow_3g_f9(knas_int, count, (uint32_t)bearer << 27, direction,
                 pkbuf->data, (pkbuf->len << 3), mac);
         break;
     case OGS_NAS_SECURITY_ALGORITHMS_128_EIA2:
@@ -87,13 +87,8 @@ void ogs_nas_encrypt(uint8_t algorithm_identity,
 
     switch (algorithm_identity) {
     case OGS_NAS_SECURITY_ALGORITHMS_128_EEA1:
-#if 0 /* Issue #2581 : snow_3g_f8 have memory problem */
-        snow_3g_f8(knas_enc, count, bearer, direction, 
-                pkbuf->data, (pkbuf->len << 3));
-#else
         SNOW_init(count, bearer, direction, (const char *)knas_enc, &ctx);
         SNOW(pkbuf->len, pkbuf->data, pkbuf->data, &ctx);
-#endif
         break;
     case OGS_NAS_SECURITY_ALGORITHMS_128_EEA2:
         count = htonl(count);

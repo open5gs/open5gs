@@ -20,27 +20,21 @@ libcrypt_sources = files('''
 
     ogs-aes.h
     ogs-aes-cmac.h
-    ogs-sha1.h
-    ogs-sha1-hmac.h
     ogs-sha2.h
     ogs-sha2-hmac.h
     milenage.h
     snow-3g.h
     zuc.h
-    kasumi.h
     ogs-kdf.h
     ecc.h
 
     ogs-aes.c
     ogs-aes-cmac.c
-    ogs-sha1.c
-    ogs-sha1-hmac.c
     ogs-sha2.c
     ogs-sha2-hmac.c
     milenage.c
     snow-3g.c
     zuc.c
-    kasumi.c
 
     ogs-kdf.c
     ogs-base64.c

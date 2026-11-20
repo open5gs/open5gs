@@ -251,24 +251,8 @@ char *ogs_uint64_to_0string(uint64_t x)
 
 char *ogs_uint64_to_string(uint64_t x)
 {
-    char *str, *p, *dup;
-
-    str = ogs_uint64_to_0string(x);
-    if (!str) {
-        ogs_error("ogs_uint64_to_0string[%lld] failed", (long long)x);
-        return NULL;
-    }
-
-    p = ogs_left_trimcharacter(str, '0');
-    if (!p) {
-        ogs_error("ogs_left_trimcharacter[%s] failld", str);
-        return NULL;
-    }
-
-    dup = ogs_strdup(p);
-    ogs_free(str);
-
-    return dup;
+    /* A zero value is represented by an empty string. */
+    return ogs_msprintf("%.0llx", (unsigned long long)x);
 }
 
 ogs_uint24_t ogs_uint24_from_string(char *str, int base)

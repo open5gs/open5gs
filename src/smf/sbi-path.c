@@ -735,7 +735,23 @@ void smf_sbi_send_sm_context_updated_data(
     OpenAPI_ref_to_binary_data_t n2SmInfo;
 
     ogs_assert(sess);
-    ogs_assert(stream);
+
+    /*
+     * Called from the PFCP response handler, the AMF stream
+     * may have been closed while waiting for the UPF.
+     */
+    if (!stream) {
+        smf_ue_t *smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+        ogs_assert(smf_ue);
+
+        ogs_error("[%s:%d] STREAM has already been removed",
+                smf_ue->supi, sess->psi);
+        if (n1smbuf)
+            ogs_pkbuf_free(n1smbuf);
+        if (n2smbuf)
+            ogs_pkbuf_free(n2smbuf);
+        return;
+    }
 
     ogs_assert(up_cnx_state != OpenAPI_up_cnx_state_NULL ||
                 ho_state != OpenAPI_ho_state_NULL ||

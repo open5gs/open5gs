@@ -31,7 +31,11 @@ extern "C" {
 ogs_pkbuf_t *ogs_s1ap_build_error_indication(
     S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
     S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
-    S1AP_Cause_PR group, long cause);
+    S1AP_Cause_PR group, long cause,
+    S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics);
+S1AP_CriticalityDiagnostics_t *ogs_s1ap_build_criticality_diagnostics(
+    S1AP_InitiatingMessage_t *initiatingMessage,
+    S1AP_ProtocolIE_ID_t missing_ie_id);
 
 ogs_pkbuf_t *ogs_s1ap_build_s1_reset(
     S1AP_Cause_PR group, long cause,

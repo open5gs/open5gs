@@ -61,6 +61,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     int rc;
 
     ogs_nas_5gs_message_t nas_message;
+    ogs_nas_security_header_type_t h;
     ran_ue_t *ran_ue = NULL;
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
@@ -953,9 +954,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
          *     -> dispatched to A's context, not to B's
          *
          * The identity in the message is never looked at, so
-         * amf_ue_set_suci() re-labels A's context as B and
-         * amf_ue_release_old_context() moves B's sessions into it. If A
-         * still owns sessions, that hits
+         * amf_ue_set_suci() re-labels A's context as B, and once the
+         * request is authenticated amf_ue_release_old_context() moves B's
+         * sessions into it. If A still owns sessions, that hits
          *
          *     ogs_assert(ogs_list_empty(&amf_ue->sess_list));
          *
@@ -1060,7 +1061,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         if (!amf_ue) {
             bool pending_guti;
-            ogs_nas_security_header_type_t h;
 
             h.type = e->nas.type;
             amf_ue = amf_ue_find_by_message(&nas_message, &pending_guti);
@@ -1196,6 +1196,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         e->amf_ue_id = amf_ue->id;
         e->nas.message = &nas_message;
+
+        /* A discarded message leaves the secure exchange established */
+        h.type = e->nas.type;
+        if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue))
+            amf_ue->integrity_verified = true;
+        else if (e->ngap.code == NGAP_ProcedureCode_id_InitialUEMessage)
+            amf_ue->integrity_verified = false;
 
         ogs_fsm_dispatch(&amf_ue->sm, e);
 
