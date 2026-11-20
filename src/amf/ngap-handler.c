@@ -3494,6 +3494,11 @@ void ngap_handle_path_switch_request(
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
         ogs_assert(param.n2smbuf);
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ;
+        /* 3GPP TS 23.502 Figure 4.9.1.2.2-1 step 2:
+         * Report the cell the UE has arrived on. amf_ue->nr_cgi was copied
+         * from the Path Switch Request's User Location Information above, so
+         * this is the target cell and not the one the UE has just left. */
+        param.ue_location = true;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
         r = amf_sess_sbi_discover_and_send(
@@ -4972,6 +4977,12 @@ void ngap_handle_handover_notification(
 
         memset(&param, 0, sizeof(param));
         param.hoState = OpenAPI_ho_state_COMPLETED;
+        /* 3GPP TS 23.502 Figure 4.9.1.3.3-1 step 5:
+         * Handover Notify: Handover is by this message considered as successful in T-RAN.
+         * amf_ue->nr_cgi has just been copied from target_ue->saved.nr_cgi,
+         * so the UE is reported on the cell it has moved to.
+         * Report the new location to the SMF when updating the SM context. */
+        param.ue_location = true;
 
         r = amf_sess_sbi_discover_and_send(
                 OpenAPI_service_name_nsmf_pdusession, NULL,
