@@ -31,15 +31,15 @@ components:
         trackingAreaIdList:
           $ref: 'TS28541_NrNrm.yaml#/components/schemas/TaiList'
         servingPLMN:
-          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/ChargingPlmnId'
     GeoLoc:
       type: object
       properties:
         geographicalCoordinates:
-          $ref: '#/components/schemas/GeographicalCoordinates'
+          $ref: '#/components/schemas/ChargingGeographicalCoordinates'
         civicLocation:
           type: string
-    GeographicalCoordinates:
+    ChargingGeographicalCoordinates:
       type: object
       properties:
         latitude:

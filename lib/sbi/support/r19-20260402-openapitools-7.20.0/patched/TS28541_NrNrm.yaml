@@ -127,7 +127,7 @@ components:
       type: array
       uniqueItems: true
       items:
-        $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tai'         
+        $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ChargingTai'         
     BackhaulAddress:
       type: object
       properties:
