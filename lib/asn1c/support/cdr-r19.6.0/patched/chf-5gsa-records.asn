@@ -1,0 +1,47 @@
+ChargingRecord 	::= SET
+{
+	recordType									[0] RecordType,
+	recordingNetworkFunctionID					[1] NetworkFunctionName,
+	subscriberIdentifier						[2] SubscriptionID OPTIONAL,
+	nFunctionConsumerInformation				[3] NetworkFunctionInformation,
+	listOfMultipleUnitUsage						[5] SEQUENCE OF MultipleUnitUsage OPTIONAL,
+	recordOpeningTime							[6] TimeStamp,
+	duration									[7] CallDuration,
+	causeForRecClosing							[9] CauseForRecClosing,
+	localRecordSequenceNumber					[11] LocalSequenceNumber OPTIONAL,
+	pDUSessionChargingInformation				[13] PDUSessionChargingInformation OPTIONAL,
+	chargingSessionIdentifier					[16] ChargingSessionIdentifier OPTIONAL
+}
+
+PDUSessionChargingInformation 	::= SET
+{
+	pDUSessionChargingID					[0] ChargingID,
+	userIdentifier							[1] InvolvedParty OPTIONAL,
+	pDUSessionId							[6] PDUSessionId,
+	networkSliceInstanceID					[7] SingleNSSAI OPTIONAL,
+	dataNetworkNameIdentifier				[13] DataNetworkNameIdentifier OPTIONAL,
+	pDUSessionstartTime						[17] TimeStamp OPTIONAL,
+	pDUSessionstopTime						[18] TimeStamp OPTIONAL
+}
+
+NetworkFunctionInformation	::= SEQUENCE
+{
+	networkFunctionality					[0] NetworkFunctionality,
+	networkFunctionName					[1] NetworkFunctionName OPTIONAL
+}
+
+MultipleUnitUsage 		::= SEQUENCE
+{
+	ratingGroup							[0] RatingGroupId,
+	usedUnitContainers					[1] SEQUENCE OF UsedUnitContainer OPTIONAL
+}
+
+UsedUnitContainer 		::= SEQUENCE
+{
+	serviceIdentifier					[0] ServiceIdentifier OPTIONAL,
+	time								[1] CallDuration OPTIONAL,
+	dataTotalVolume						[4] DataVolumeOctets OPTIONAL,
+	dataVolumeUplink					[5] DataVolumeOctets OPTIONAL,
+	dataVolumeDownlink					[6] DataVolumeOctets OPTIONAL,
+	localSequenceNumber					[9] LocalSequenceNumber OPTIONAL
+}

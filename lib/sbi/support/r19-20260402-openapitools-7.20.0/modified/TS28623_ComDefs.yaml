@@ -122,6 +122,14 @@ components:
           $ref: '#/components/schemas/Mcc'
         mnc:
           $ref: '#/components/schemas/Mnc'
+    ChargingPlmnId:
+      description: This datatype is used for writable attribute
+      type: object
+      properties:
+        mcc:
+          $ref: '#/components/schemas/Mcc'
+        mnc:
+          $ref: '#/components/schemas/Mnc'
     PlmnIdRo:
       description: This datatype is used for readOnly attribute
       type: object
