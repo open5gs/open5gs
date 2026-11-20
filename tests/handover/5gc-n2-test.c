@@ -19,6 +19,8 @@
 
 #include "test-common.h"
 
+#include <poll.h>
+
 static void failure_func(abts_case *tc, void *data)
 {
     int rv;
@@ -1070,6 +1072,8 @@ static void direct_complete_func(abts_case *tc, void *data)
 
 static void direct_cancel_func(abts_case *tc, void *data)
 {
+    const bool target_release = data != NULL;
+    uint64_t target_amf_id, target_ran_id, source_amf_id, source_ran_id;
     int rv;
     ogs_socknode_t *ngap1, *ngap2;
     ogs_socknode_t *gtpu1, *gtpu2;
@@ -1410,17 +1414,31 @@ static void direct_cancel_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    target_amf_id = test_ue->amf_ue_ngap_id;
+    target_ran_id = test_ue->ran_ue_ngap_id;
+
     /* Receive HandoverCommand */
     recvbuf = testgnb_ngap_read(ngap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
-    /* Send HandoverCancel */
-    sendbuf = testngap_build_handover_cancel(test_ue,
-            NGAP_Cause_PR_radioNetwork,
-            NGAP_CauseRadioNetwork_txnrelocoverall_expiry);
+    source_amf_id = test_ue->amf_ue_ngap_id;
+    source_ran_id = test_ue->ran_ue_ngap_id;
+
+    if (target_release) {
+        /* The UE never reaches the target after successful preparation. */
+        test_ue->amf_ue_ngap_id = target_amf_id;
+        test_ue->ran_ue_ngap_id = target_ran_id;
+        sendbuf = testngap_build_ue_context_release_request(test_ue,
+                NGAP_Cause_PR_radioNetwork,
+                NGAP_CauseRadioNetwork_radio_connection_with_ue_lost, false);
+    } else {
+        sendbuf = testngap_build_handover_cancel(test_ue,
+                NGAP_Cause_PR_radioNetwork,
+                NGAP_CauseRadioNetwork_txnrelocoverall_expiry);
+    }
     ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap1, sendbuf);
+    rv = testgnb_ngap_send(target_release ? ngap2 : ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive UEContextReleaseCommand */
@@ -1428,16 +1446,55 @@ static void direct_cancel_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
+    ABTS_INT_EQUAL(tc, NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+    ABTS_ASSERT(tc, "release refers to the target AMF UE NGAP ID",
+            test_ue->amf_ue_ngap_id == target_amf_id);
+    ABTS_ASSERT(tc, "release refers to the target RAN UE NGAP ID",
+            test_ue->ran_ue_ngap_id == target_ran_id);
+
     /* Send UEContextReleaseComplete */
     sendbuf = testngap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Recv HandoverCancelAcknowledge */
-    recvbuf = testgnb_ngap_read(ngap1);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
+    if (target_release) {
+        struct pollfd fd = { .fd = gtpu1->sock->fd, .events = POLLIN };
+
+        test_ue->amf_ue_ngap_id = source_amf_id;
+        test_ue->ran_ue_ngap_id = source_ran_id;
+
+        /* Send traffic on the original source tunnel and PDU session. */
+        rv = test_gtpu_send_ping(gtpu1, qos_flow, TEST_PING_IPV4);
+        ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+        do {
+            rv = poll(&fd, 1, 1500);
+        } while (rv < 0 && errno == EINTR);
+        if (rv > 0 && (fd.revents & POLLIN)) {
+            ogs_gtp2_header_desc_t header;
+            int header_len;
+
+            recvbuf = testgnb_gtpu_read(gtpu1);
+            header_len = ogs_gtpu_parse_header(&header, recvbuf);
+            ABTS_ASSERT(tc, "original PDU session carries an ICMP reply",
+                    header_len >= OGS_GTPV1U_HEADER_LEN &&
+                    recvbuf->len >= header_len + 28 &&
+                    header.type == OGS_GTPU_MSGTYPE_GPDU &&
+                    header.teid == qos_flow->sess->gnb_n3_teid &&
+                    recvbuf->data[header_len + 9] == IPPROTO_ICMP &&
+                    recvbuf->data[header_len + 20] == 0);
+            ogs_pkbuf_free(recvbuf);
+        } else {
+            ABTS_FAIL(tc, "No reply on the serving PDU session");
+        }
+    } else {
+        /* Receive HandoverCancelAcknowledge */
+        recvbuf = testgnb_ngap_read(ngap1);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        testngap_recv(test_ue, recvbuf);
+    }
 
     /* Send UEContextReleaseRequest */
     sendbuf = testngap_build_ue_context_release_request(test_ue,
@@ -3081,11 +3138,14 @@ static void partial_handover_func(abts_case *tc, void *data)
 
 abts_suite *test_5gc_n2(abts_suite *suite)
 {
+    bool target_release = true;
+
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, failure_func, NULL);
     abts_run_test(suite, direct_complete_func, NULL);
     abts_run_test(suite, direct_cancel_func, NULL);
+    abts_run_test(suite, direct_cancel_func, &target_release);
     abts_run_test(suite, indirect_complete_func, NULL);
     abts_run_test(suite, indirect_cancel_func, NULL);
     abts_run_test(suite, partial_handover_func, NULL);
