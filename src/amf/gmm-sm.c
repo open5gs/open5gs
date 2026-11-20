@@ -2203,6 +2203,13 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_AUTHENTICATION_RESPONSE:
+            /* The AUSF response may still be pending (Issue #5028) */
+            if (!CHECK_5G_AKA_CONFIRMATION(amf_ue)) {
+                ogs_error("[%s] Authentication response "
+                        "without 5G AKA confirmation URI", amf_ue->suci);
+                break;
+            }
+
             rv = gmm_handle_authentication_response(
                     amf_ue, &nas_message->gmm.authentication_response);
 
