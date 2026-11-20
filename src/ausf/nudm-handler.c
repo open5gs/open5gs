@@ -365,13 +365,22 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
         ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE;
 
     ConfirmationDataResponse.auth_result = ausf_ue->auth_result;
-    ConfirmationDataResponse.supi = ausf_ue->supi;
 
-    ogs_kdf_kseaf(ausf_ue->serving_network_name,
-            ausf_ue->kausf, ausf_ue->kseaf);
-    ogs_hex_to_ascii(ausf_ue->kseaf, sizeof(ausf_ue->kseaf),
-            kseaf_string, sizeof(kseaf_string));
-    ConfirmationDataResponse.kseaf = kseaf_string;
+    /*
+     * TS 33.501 6.1.3.2.0 / TS 29.509 ConfirmationDataResponse:
+     * the SUPI and Kseaf are only given to the SEAF once RES* has
+     * matched XRES*. Otherwise a serving network could learn the SUPI
+     * behind a SUCI and obtain the anchor key without the UE.
+     */
+    if (ausf_ue->auth_result == OpenAPI_auth_result_AUTHENTICATION_SUCCESS) {
+        ConfirmationDataResponse.supi = ausf_ue->supi;
+
+        ogs_kdf_kseaf(ausf_ue->serving_network_name,
+                ausf_ue->kausf, ausf_ue->kseaf);
+        ogs_hex_to_ascii(ausf_ue->kseaf, sizeof(ausf_ue->kseaf),
+                kseaf_string, sizeof(kseaf_string));
+        ConfirmationDataResponse.kseaf = kseaf_string;
+    }
 
     memset(&sendmsg, 0, sizeof(sendmsg));
 
