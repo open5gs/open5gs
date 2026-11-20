@@ -50,6 +50,12 @@ smf:
 #    - ::1
 #  ctf:
 #    enabled: auto   # auto(default)|yes|no
+#    # auto: 5GC sessions are charged if a CHF is available, and run uncharged
+#    # if not.  yes: charging is required, so with no CHF they are refused.
+#    # ims, sos, mcptt and mcx are set up either way.
+#    # true: ims, sos, mcptt and mcx sessions skip the CHF altogether, whatever
+#    # the slice or roaming state, so they get no CDR either.
+#    bypass_well_known_dnn: false
   freeDiameter: @sysconfdir@/freeDiameter/smf.conf
 
 ################################################################################

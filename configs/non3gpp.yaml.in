@@ -21,6 +21,7 @@ global:
 #    no_pcf: true
 #    no_nssf: true
 #    no_bsf: true
+#    no_chf: true
 #    no_udr: true
 #    no_mme: true
 #    no_sgwc: true
@@ -299,6 +300,18 @@ bsf:
     client:
       nrf:
         - uri: http://127.0.0.10:7777
+
+chf:
+  sbi:
+    server:
+      - address: 127.0.0.30
+        port: 7777
+    client:
+      nrf:
+        - uri: http://127.0.0.10:7777
+  charging:
+    cdr:
+      enable: false
 
 udr:
   sbi:

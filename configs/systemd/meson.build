@@ -34,6 +34,7 @@ systemd_conf_in = '''
     open5gs-bsfd.service
     open5gs-udrd.service
     open5gs-eird.service
+    open5gs-chfd.service
 '''.split()
 
 foreach file : systemd_conf_in

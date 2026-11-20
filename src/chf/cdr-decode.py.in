@@ -1,0 +1,348 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2026 by Rami Mohamed <ramrode@gmail.com>
+#
+# This file is part of Open5GS.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Decode Open5GS CHF charging records (3GPP TS 32.298, BER).
+
+Reads one or more .ber files, each holding one record or many
+concatenated, and prints them as JSON - the same JSON the CHF writes when
+charging.cdr.format includes `json`, so the two can be compared directly.
+
+The schema below is generated at build time from the same ASN.1 module
+that asn1c generates the CHF's encoder from, so this decoder cannot drift
+from what the CHF writes. Regenerate both with
+lib/asn1c/support/cdr-r19.6.0/generator.sh.
+
+Nothing outside the Python standard library is needed, so this file can
+be copied to a billing host on its own.
+
+Usage:
+    open5gs-chf-cdr-decode [options] FILE...
+
+    -p, --pretty      indent the JSON
+    -c, --count       print only how many records each file holds
+    -s, --strict      exit non-zero if any file has trailing garbage
+    -h, --help
+
+Exit status is 0 when every record decoded, 1 otherwise.
+"""
+import argparse
+import json
+import sys
+
+# ---------------------------------------------------------------------
+# Generated from the ASN.1 module - do not edit by hand.
+# ---------------------------------------------------------------------
+@@SCHEMA@@
+
+# The root of a CHF CDR (TS 32.298 clause 5.2.5).
+ROOT_TYPE = "CHFRecord"
+
+# Types whose octets mean something more specific than "a string".  Keyed
+# by ASN.1 type name so the special case is explicit, and matching the
+# renderings in src/chf/cdr-json.c.
+TIMESTAMP_TYPE = "TimeStamp"
+SLICE_DIFFERENTIATOR_TYPE = "SliceDifferentiator"
+
+STRING_KINDS = ("OCTET STRING", "IA5String", "UTF8String", "GraphicString",
+                "PrintableString", "VisibleString", "NumericString")
+
+# ASN.1 built-in types a member can name directly, which the module does
+# not define and so the schema does not carry.
+BUILTIN = {
+    "OCTET STRING": {"kind": "OCTET STRING"},
+    "IA5String": {"kind": "IA5String"},
+    "UTF8String": {"kind": "UTF8String"},
+    "GraphicString": {"kind": "GraphicString"},
+    "PrintableString": {"kind": "PrintableString"},
+    "VisibleString": {"kind": "VisibleString"},
+    "NumericString": {"kind": "NumericString"},
+    "INTEGER": {"kind": "INTEGER"},
+    "BOOLEAN": {"kind": "BOOLEAN"},
+    "NULL": {"kind": "NULL"},
+}
+
+
+def typedef(type_name):
+    """The schema entry for a type, falling back to the ASN.1 built-ins."""
+    return SCHEMA.get(type_name) or BUILTIN.get(type_name)
+
+
+class BerError(Exception):
+    pass
+
+
+# ---------------------------------------------------------------------
+# BER structure
+# ---------------------------------------------------------------------
+
+def read_tag(buf, i):
+    """Return (tag_number, constructed, next_index)."""
+    if i >= len(buf):
+        raise BerError("truncated tag")
+    first = buf[i]
+    constructed = bool(first & 0x20)
+    num = first & 0x1F
+    i += 1
+    if num == 0x1F:
+        # Multi-byte tag: 7 bits per octet, high bit means "more".
+        num = 0
+        while True:
+            if i >= len(buf):
+                raise BerError("truncated multi-byte tag")
+            b = buf[i]
+            i += 1
+            num = (num << 7) | (b & 0x7F)
+            if not (b & 0x80):
+                break
+    return num, constructed, i
+
+
+def read_len(buf, i):
+    """Return (length, next_index). Indefinite length is rejected."""
+    if i >= len(buf):
+        raise BerError("truncated length")
+    b = buf[i]
+    i += 1
+    if b < 0x80:
+        return b, i
+    n = b & 0x7F
+    if n == 0:
+        raise BerError("indefinite length is not supported; the CHF's "
+                       "encoder emits DER, which never uses it")
+    if i + n > len(buf):
+        raise BerError("truncated long-form length")
+    length = int.from_bytes(buf[i:i + n], "big")
+    return length, i + n
+
+
+def tlvs(buf):
+    """Walk a buffer of TLVs, yielding (tag, constructed, content)."""
+    i = 0
+    while i < len(buf):
+        tag, constructed, i = read_tag(buf, i)
+        length, i = read_len(buf, i)
+        if i + length > len(buf):
+            raise BerError("element of %d bytes runs past the end" % length)
+        yield tag, constructed, buf[i:i + length]
+        i += length
+
+
+# ---------------------------------------------------------------------
+# Leaf values
+# ---------------------------------------------------------------------
+
+def decode_integer(content):
+    if not content:
+        return 0
+    return int.from_bytes(content, "big", signed=True)
+
+
+def unbcd(b):
+    return ((b >> 4) & 0x0F) * 10 + (b & 0x0F)
+
+
+def decode_timestamp(content):
+    """
+    TS 32.298 TimeStamp: BCD YYMMDDhhmmss, ASCII sign, BCD hhmm offset.
+    Rendered as ISO-8601, reading the two-digit year as 20YY.
+    """
+    if len(content) < 9:
+        return content.hex()
+    v = content
+    off = unbcd(v[7]) * 60 + unbcd(v[8])
+    base = "20%02d-%02d-%02dT%02d:%02d:%02d" % (
+        unbcd(v[0]), unbcd(v[1]), unbcd(v[2]),
+        unbcd(v[3]), unbcd(v[4]), unbcd(v[5]))
+    if off == 0:
+        return base + "Z"
+    sign = "-" if v[6:7] == b"-" else "+"
+    return "%s%s%02d:%02d" % (base, sign, unbcd(v[7]), unbcd(v[8]))
+
+
+def decode_string(content):
+    try:
+        return content.decode("utf-8")
+    except UnicodeDecodeError:
+        # Not text after all; show it rather than failing the record.
+        return content.hex()
+
+
+def decode_leaf(type_name, content):
+    t = typedef(type_name)
+    kind = t["kind"] if t else None
+
+    if type_name == TIMESTAMP_TYPE:
+        return decode_timestamp(content)
+
+    if type_name == SLICE_DIFFERENTIATOR_TYPE:
+        return content.hex()
+
+    if kind in ("INTEGER", "ENUMERATED"):
+        n = decode_integer(content)
+        names = t.get("values") if t else None
+        if names and n in names:
+            return names[n]
+        return n
+
+    if kind in STRING_KINDS:
+        return decode_string(content)
+
+    if kind == "BOOLEAN":
+        return bool(content and content[-1])
+
+    if kind == "NULL":
+        return None
+
+    # A type the schema does not model: give the octets, flagged, rather
+    # than pretend to have understood them.
+    return {"_unknownType": type_name, "_hex": content.hex()}
+
+
+# ---------------------------------------------------------------------
+# Constructed values
+# ---------------------------------------------------------------------
+
+def decode_value(type_name, constructed, content):
+    t = typedef(type_name)
+
+    if t and "members" in t:
+        if not constructed:
+            raise BerError("%s is %s but arrived primitive"
+                           % (type_name, t["kind"]))
+        return decode_constructed(t, content)
+
+    return decode_leaf(type_name, content)
+
+
+def decode_constructed(t, content):
+    by_tag = {m[0]: m for m in t["members"]}
+    out = {}
+
+    for tag, constructed, inner in tlvs(content):
+        m = by_tag.get(tag)
+        if m is None:
+            # A field this build does not know: a record written by a
+            # newer CHF, or a non-5G-SA field. Keep it, named by tag, so
+            # nothing is silently dropped.
+            out["_unknownTag%d" % tag] = inner.hex()
+            continue
+
+        _, field, member_type, is_seq_of = m
+
+        if is_seq_of:
+            if not constructed:
+                raise BerError("%s is SEQUENCE OF but arrived primitive"
+                               % field)
+            items = []
+            for _, el_constructed, el in tlvs(inner):
+                items.append(decode_value(member_type, el_constructed, el))
+            out[field] = items
+        else:
+            out[field] = decode_value(member_type, constructed, inner)
+
+    return out
+
+
+def decode_record(tag, constructed, content):
+    """
+    Decode one top-level record.  CHFRecord is a CHOICE, so the tag names
+    the alternative and the result keeps that name - which is what the
+    CHF's JSON does too.
+    """
+    root = typedef(ROOT_TYPE)
+    if not root or "members" not in root:
+        raise BerError("schema has no %s" % ROOT_TYPE)
+
+    for m_tag, field, member_type, is_seq_of in root["members"]:
+        if m_tag != tag:
+            continue
+        if is_seq_of:
+            raise BerError("%s as SEQUENCE OF is not a record" % field)
+        return {field: decode_value(member_type, constructed, content)}
+
+    raise BerError("tag [%d] is not an alternative of %s" % (tag, ROOT_TYPE))
+
+
+def decode_file(path):
+    """Return (records, error_or_None)."""
+    with open(path, "rb") as f:
+        buf = f.read()
+
+    records = []
+    i = 0
+    while i < len(buf):
+        try:
+            tag, constructed, j = read_tag(buf, i)
+            length, j = read_len(buf, j)
+            if j + length > len(buf):
+                return records, ("record %d of %d bytes runs past the end "
+                                 "of the file" % (len(records) + 1, length))
+            records.append(decode_record(tag, constructed,
+                                         buf[j:j + length]))
+            i = j + length
+        except BerError as e:
+            return records, "record %d: %s" % (len(records) + 1, e)
+
+    return records, None
+
+
+def main():
+    ap = argparse.ArgumentParser(
+        prog="open5gs-chf-cdr-decode",
+        description="Decode Open5GS CHF charging records "
+                    "(3GPP TS 32.298, BER) to JSON.")
+    ap.add_argument("files", metavar="FILE", nargs="+")
+    ap.add_argument("-p", "--pretty", action="store_true",
+                    help="indent the JSON")
+    ap.add_argument("-c", "--count", action="store_true",
+                    help="print only the number of records per file")
+    ap.add_argument("-s", "--strict", action="store_true",
+                    help="fail if a file has trailing undecodable bytes")
+    args = ap.parse_args()
+
+    failed = False
+
+    for path in args.files:
+        try:
+            records, err = decode_file(path)
+        except OSError as e:
+            sys.stderr.write("%s: %s\n" % (path, e))
+            failed = True
+            continue
+
+        if err:
+            sys.stderr.write("%s: %s\n" % (path, err))
+            if args.strict or not records:
+                failed = True
+
+        if args.count:
+            print("%s: %d" % (path, len(records)))
+            continue
+
+        for rec in records:
+            if args.pretty:
+                print(json.dumps(rec, indent=2))
+            else:
+                print(json.dumps(rec, separators=(",", ":")))
+
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

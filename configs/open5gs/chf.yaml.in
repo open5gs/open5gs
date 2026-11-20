@@ -1,0 +1,267 @@
+db_uri: mongodb://localhost/open5gs
+logger:
+  file:
+    path: @localstatedir@/log/open5gs/chf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+chf:
+  sbi:
+    server:
+      - address: 127.0.0.30
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
+  metrics:
+    server:
+      - address: 127.0.0.30
+        port: 9090
+  # How many charging sessions this CHF can hold at once, per UE: the pool
+  # holds global.max.ue x this, allocated at start-up, about 2.4 KB a
+  # session (10 MB for 1,024 UEs at 4).  4 matches the PDU sessions every
+  # other NF allows a UE.  Raise it to give the CHF more room without
+  # raising global.max.ue for every NF.  When the pool is full, a new
+  # session is refused with 500 INSUFFICIENT_RESOURCES, except ims, sos,
+  # mcptt and mcx, which run uncharged.  1 to 64.
+  session_pool_multiplier: 4
+  charging:
+    # Charging Data Records (TS 32.298).  One record per closing session,
+    # built once and written in whichever encodings `format` names, so the
+    # files always agree:
+    #
+    #   json   the TS 32.298 ChargingRecord as JSON, with the 3GPP field
+    #          names — readable without tooling
+    #   asn1   the same record BER-encoded, which is what TS 32.298
+    #          clause 6.1 requires on the Bx interface
+    #   both   one of each
+    #   none   build nothing (`enable: false` does the same)
+    #
+    # Decode a .ber file with the decoder shipped alongside the CHF:
+    #   open5gs-chf-cdr-decode /var/log/open5gs/cdr/2026/10/01/cdr-*.ber
+    #
+    # `aggregation` decides how an encoding is filed.  Off, each session
+    # writes its own file named after its ChargingDataRef.  On, records
+    # are appended to a shared file until one of the thresholds would be
+    # crossed, then the next record starts a new one; 0 disables that
+    # threshold.  Either way a file never spans a day.
+    #
+    # The `json:` and `asn1:` blocks override `aggregation` for one
+    # encoding, which is the usual arrangement: a mediation system wants
+    # one aggregated BER stream, while an operator reading JSON by hand
+    # wants a file per session.
+    cdr:
+      enable: true
+      path: @localstatedir@/log/open5gs/cdr
+      format: json
+      aggregation:
+        enable: false
+        max_records: 1000
+        max_size_mb: 16
+#      json:
+#        aggregation:
+#          enable: false
+#      asn1:
+#        aggregation:
+#          enable: true
+#          max_records: 5000
+#          max_size_mb: 64
+    default_quota:
+      volume_mb: 10240        # 10 GB
+      validity_seconds: 86400 # 24 hours
+      final_unit_action: TERMINATE
+    # What a SUPI with no CHF Quota entry gets: `default` (default_quota
+    # above, logged as a WARNING) or `reject` (the PDU session is refused).
+    unprovisioned: default
+    # ims, sos, mcptt and mcx (Mission Critical Services) are never
+    # quota-managed, whatever the slice or roaming state: no balance or
+    # `unprovisioned` setting can refuse them, and their traffic uses up
+    # nothing.  `cdr` says whether they still get CDRs.
+    well_known_dnn:
+      cdr: true
+    # Each grant is at most this much, so sessions report back regularly and
+    # pick up plan changes; 0 disables a cap.  A grant is reported at 90%
+    # so the next one arrives in time, except grants of min_report_mb or
+    # less, which are reported only when used up.
+    # quota_holding_seconds makes an idle session hand its unused grant
+    # back to the cycle after that long with no traffic, instead of
+    # holding it until max_validity_seconds; 0 turns idle reporting off.
+    grant:
+      max_volume_mb: 50
+      max_validity_seconds: 300
+      min_report_mb: 5
+      quota_holding_seconds: 60
+    # ChargingNotify (TS 32.291): the CHF reaches a live session when the
+    # billing side queues something in chf.notifications — a top-up, a bar
+    # — instead of waiting for that session's next report.  poll_seconds
+    # is how long that wait can be; 0 turns it off, as does enable: false.
+    # Every CHF on the same database reads each row once, and rows are
+    # deleted five minutes after the first read, or three polls if that is
+    # longer, so give every CHF the same poll_seconds.
+    notify:
+      enable: true
+      poll_seconds: 5
+    # Pools: a bucket that several SIMs share (TMF654 Bucket with several
+    # logicalResource entries).  A SIM is in one pool at most.  max_members
+    # is how many SIMs one pool may have, 1 to 1000: the CHF charges only
+    # that many of a pool's members, in list order, and publishes the number
+    # in chf.settings so the WebUI refuses to add more.  Keep it the same on
+    # every CHF.
+    pool:
+      max_members: 10
+    # Which slices this CHF instance serves, registered in the NRF as
+    # NFProfile.allowedNssais.  An SMF asks for a CHF on the session's
+    # S-NSSAI, so an instance that lists slices is only discovered for
+    # those; left empty — the default — it serves every slice, which is
+    # what a single-CHF deployment wants.
+    #
+    # Matching is exact on both SST and SD.  `sst: 1` with no `sd` means
+    # the S-NSSAI "SST 1, no SD", and will NOT match SST 1 / SD 000001.
+    # That is unlike a quota bucket's scope in the WebUI, where an
+    # omitted dimension is left open and matches anything: this key is
+    # 3GPP NF discovery, the bucket scope is the billing model.
+    #
+    # This is deliberately separate from supi_ranges below, because
+    # TS 29.510's ChfInfo has no S-NSSAI member at all.  The two filters
+    # AND together, so a CHF that should serve a SUPI range regardless of
+    # slice must leave this empty.
+    #
+#    slices:
+#      - sst: 1
+#        sd: 000001
+#      - sst: 1
+#        sd: 000002
+
+################################################################################
+# CHF — Charging Function (TS 32.291 Nchf_ConvergedCharging)
+################################################################################
+#
+# The CHF implements the Nchf_ConvergedCharging service defined in
+# 3GPP TS 32.291. It handles online charging (OCS) for 5G sessions.
+#
+# Running more than one CHF
+# -------------------------
+# Two independent ways to split traffic across CHF instances, which AND
+# together when both are set:
+#
+#   charging.supi_ranges  registered as chfInfo.supiRangeList
+#                         (TS 29.510 §6.1.6.2.9).  The SMF asks for a CHF
+#                         serving the subscriber's SUPI.
+#   charging.slices       registered as NFProfile.allowedNssais
+#                         (TS 33.518 §4.2.2.2.1).  The SMF asks for a CHF
+#                         serving the session's S-NSSAI.
+#
+# A session stays on the CHF that admitted it: Update and Release follow
+# the Location URI returned by Create, so selection happens once.
+#
+# For "CHF-A dedicated to a slice, CHF-B for an IMSI range regardless of
+# slice", give CHF-A `slices` and CHF-B `supi_ranges` only — leaving
+# CHF-B's `slices` empty is what keeps it eligible for every slice.  Keep
+# the SUPI ranges disjoint, or which instance answers depends on
+# discovery order rather than on intent.
+#
+# Example SUPI range configuration (nested under chf.charging):
+#
+#  chf:
+#    charging:
+#      supi_ranges:
+#        - start: "imsi-001010000000000"
+#          end:   "imsi-001010000049999"
+#
+################################################################################
+# SBI Server
+################################################################################
+#  o Bind to the address on the eth0 and advertise as open5gs-chf.svc.local
+#  sbi:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-chf.svc.local
+#
+#  o Specify a custom port number 7777 while binding to the given address
+#  sbi:
+#    server:
+#      - address: chf.localdomain
+#        port: 7777
+#
+################################################################################
+# SBI Client
+################################################################################
+#  o Direct Communication with NRF
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#
+#  o Indirect Communication by Delegating to SCP
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#
+################################################################################
+# HTTPS scheme with TLS
+################################################################################
+#  o Set as default if not individually set
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/chf.key
+#        cert: @sysconfdir@/open5gs/tls/chf.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: chf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
+
+################################################################################
+# HTTPS scheme with TLS
+################################################################################
+#  o Set as default if not individually set
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/chf.key
+#        cert: @sysconfdir@/open5gs/tls/chf.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: chf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
+#  o Add client TLS verification
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/chf.key
+#        cert: @sysconfdir@/open5gs/tls/chf.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/chf.key
+#        client_cert: @sysconfdir@/open5gs/tls/chf.crt
+#  sbi:
+#    server:
+#      - address: chf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain

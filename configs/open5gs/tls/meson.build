@@ -24,6 +24,7 @@ tls_security = '''
     amf.key
     ausf.key
     bsf.key
+    chf.key
     eir.key
     hss.key
     mme.key
@@ -38,6 +39,7 @@ tls_security = '''
     amf.crt
     ausf.crt
     bsf.crt
+    chf.crt
     eir.crt
     hss.crt
     mme.crt
