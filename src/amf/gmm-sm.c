@@ -3199,6 +3199,19 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             END
             break;
 
+        case OpenAPI_service_name_npcf_am_policy_control:
+            if (!strcmp(sbi_message->h.resource.component[0],
+                        OGS_SBI_RESOURCE_NAME_POLICIES) &&
+                !strcmp(sbi_message->h.method, OGS_SBI_HTTP_METHOD_DELETE)) {
+                /* The new registration has overtaken deregistration. */
+                ogs_warn("[%s] Ignoring stale AM policy DELETE "
+                        "response [%d]", amf_ue->supi, sbi_message->res_status);
+                break;
+            }
+            ogs_error("Unexpected AM policy response [%s]", sbi_message->h.method);
+            ogs_assert_if_reached();
+            break;
+
         default:
             ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
             ogs_assert_if_reached();
@@ -3532,6 +3545,14 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
                     if (!amf_ue->next.m_tmsi)
                         OGS_FSM_TRAN(s, &gmm_state_registered);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    /* A previous deregistration may finish in this state.
+                     * Preserve the current UE's policy association. */
+                    ogs_warn("[%s] Ignoring stale AM policy DELETE "
+                            "response [%d]", amf_ue->supi,
+                            sbi_message->res_status);
                     break;
 
                 DEFAULT
@@ -4281,6 +4302,14 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                                 amf_ue->supi, sbi_message->res_status);
                     }
                     ogs_error("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    /* A previous deregistration may finish in this state.
+                     * Preserve the current UE's policy association. */
+                    ogs_warn("[%s] Ignoring stale AM policy DELETE "
+                            "response [%d]", amf_ue->supi,
+                            sbi_message->res_status);
                     break;
 
                 DEFAULT
