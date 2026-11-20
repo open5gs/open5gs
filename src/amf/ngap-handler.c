@@ -1082,6 +1082,7 @@ void ngap_handle_uplink_nas_transport(
     memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
+    amf_ue->ue_location_timestamp = ogs_time_now();
 
     ogs_expect(OGS_OK == ngap_send_to_nas(
                 ran_ue, NGAP_ProcedureCode_id_UplinkNASTransport, NAS_PDU));
@@ -3411,6 +3412,7 @@ void ngap_handle_path_switch_request(
     memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
+    amf_ue->ue_location_timestamp = ogs_time_now();
 
     ogs_info("    [NEW] TAC[%d] CellID[0x%llx]",
         amf_ue->nr_tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
@@ -4956,6 +4958,7 @@ void ngap_handle_handover_notification(
     memcpy(&amf_ue->nr_tai, &target_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &target_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->nr_cgi_gnb_id_length = target_ue->saved.nr_cgi_gnb_id_length;
+    amf_ue->ue_location_timestamp = ogs_time_now();
 
     r = ngap_send_ran_ue_context_release_command(source_ue,
             NGAP_Cause_PR_radioNetwork,
