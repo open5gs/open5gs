@@ -1574,6 +1574,12 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                             ogs_assert(r != OGS_ERROR);
                         }
 
+                    } else if (state == AMF_UE_INITIATED_DE_REGISTERED) {
+                        /* Re-registration completed before the old PCF DELETE
+                         * response arrived. Preserve the current association. */
+                        ogs_warn("[%s] Ignoring stale AM policy DELETE "
+                                "response [%d]", amf_ue->supi,
+                                sbi_message->res_status);
                     } else {
                         ogs_fatal("Invalid state [%d]", state);
                         ogs_assert_if_reached();
