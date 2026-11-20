@@ -1468,6 +1468,24 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                                     }
                                 }
                             }
+                        } else if (state == AMF_UE_INITIATED_DE_REGISTERED) {
+/*
+ * Issues: #5029
+ *
+ * gmm_state_registered()
+ *
+ * Ignore UECM registration PATCH response.
+ *
+ * The PATCH was sent by a UE-initiated De-registration in
+ * gmm_state_de_registered(). If a new Registration Request for the same
+ * UE completes before the response arrives, the response is no longer
+ * relevant to the current registration.
+ */
+                            ogs_warn("[%s] Ignoring UECM REGISTRATIONS PATCH "
+                                    "response [%d] in (%s:%s)",
+                                    amf_ue->supi, sbi_message->res_status,
+                                    sbi_message->h.method,
+                                    sbi_message->h.resource.component[1]);
                         } else {
                             ogs_fatal("Invalid state [%d]", state);
                             ogs_assert_if_reached();
