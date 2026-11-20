@@ -26,6 +26,15 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "fd-path.h"
+#include "nchf-build.h"
+
+/* CHF accounting, defined below next to the Gy handlers they sit beside. */
+static void chf_accumulate_deletion_usage(
+        smf_sess_t *sess, ogs_pfcp_session_deletion_response_t *rsp);
+static void chf_accumulate_report_usage(
+        smf_sess_t *sess, ogs_pfcp_session_report_request_t *pfcp_req);
+static bool chf_handle_usage_report(
+        smf_sess_t *sess, ogs_pfcp_session_report_request_t *pfcp_req);
 
 uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause, uint8_t gtp_version)
 {
@@ -1162,6 +1171,13 @@ int smf_5gc_n4_handle_session_deletion_response(
         return status;
     }
 
+    /*
+     * Bank the UPF's final usage before anyone charges from it.  This used
+     * to be skipped for 5GC, so the last interval of every session -
+     * everything since the previous periodic report - never reached the CHF.
+     */
+    chf_accumulate_deletion_usage(sess, rsp);
+
     return status;
 }
 
@@ -1572,6 +1588,17 @@ void smf_epc_n4_handle_session_modification_response(
     }
 }
 
+/*
+ * Fold the UPF's final Usage Report(s) from a PFCP Session Deletion
+ * Response into the session's usage counters.
+ *
+ * The deletion response is the last usage the UPF will ever report for the
+ * session: everything since the previous periodic report arrives here and
+ * nowhere else.  Both the EPC path (Gy CCR-T) and the 5GC path (Nchf
+ * Release) charge from these counters, and both must send their final
+ * charging request only AFTER this has run.
+ */
+/* ------------------------------------------------------------------ */
 uint8_t smf_epc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_deletion_response_t *rsp)
@@ -1631,6 +1658,222 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
     }
 
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+}
+
+/* ------------------------------------------------------------------ */
+/* CHF accounting                                                       */
+/*                                                                      */
+/* The CHF keeps its own counters (smf_sess_t.chf), separate from the    */
+/* Gy ones: Gy is the EPC's Diameter interface and is upstream's.  These */
+/* helpers read the same PFCP usage reports and add them to the CHF's    */
+/* side, and note why the UPF reported so the next Update can say so     */
+/* (TS 32.291 Trigger).                                                  */
+/* ------------------------------------------------------------------ */
+
+/* PFCP Usage Report Trigger (TS 29.244 §8.2.35) -> the CHF's terms. */
+static uint8_t chf_trigger_from_pfcp(
+        const ogs_pfcp_usage_report_trigger_t *rep_trig)
+{
+    ogs_assert(rep_trig);
+
+    /* Exhaustion first: when a report carries both, the grant is gone. */
+    if (rep_trig->volume_quota || rep_trig->time_quota)
+        return SMF_CHF_TRIGGER_QUOTA_EXHAUSTED;
+    if (rep_trig->volume_threshold || rep_trig->time_threshold)
+        return SMF_CHF_TRIGGER_QUOTA_THRESHOLD;
+    if (rep_trig->quota_validity_time)
+        return SMF_CHF_TRIGGER_VALIDITY_TIME;
+    if (rep_trig->termination_report)
+        return SMF_CHF_TRIGGER_FINAL;
+    /* Idle: the UPF saw no traffic for the quota holding time, so what is
+     * left of the grant can go back to the cycle. */
+    if (rep_trig->quota_holding_time)
+        return SMF_CHF_TRIGGER_QUOTA_HOLDING;
+
+    return SMF_CHF_TRIGGER_NONE;
+}
+
+static void chf_accumulate_deletion_usage(
+        smf_sess_t *sess, ogs_pfcp_session_deletion_response_t *rsp)
+{
+    smf_bearer_t *bearer = NULL;
+    unsigned int i;
+
+    ogs_assert(sess);
+    ogs_assert(rsp);
+
+    bearer = smf_default_bearer_in_sess(sess);
+    for (i = 0; i < OGS_ARRAY_SIZE(rsp->usage_report); i++) {
+        ogs_pfcp_tlv_usage_report_session_deletion_response_t *use_rep =
+            &rsp->usage_report[i];
+        uint32_t urr_id;
+        int16_t decoded;
+        ogs_pfcp_volume_measurement_t volume;
+
+        if (use_rep->presence == 0)
+            break;
+        if (use_rep->urr_id.presence == 0)
+            continue;
+        urr_id = use_rep->urr_id.u32;
+        if (!bearer || !bearer->urr || bearer->urr->id != urr_id)
+            continue;
+        decoded = ogs_pfcp_parse_volume_measurement(
+                &volume, &use_rep->volume_measurement);
+        if (use_rep->volume_measurement.len != decoded) {
+            ogs_error("Invalid Volume Measurement");
+            continue;
+        }
+
+        if (volume.ulvol)
+            sess->chf.ul_octets += volume.uplink_volume;
+        if (volume.dlvol)
+            sess->chf.dl_octets += volume.downlink_volume;
+        sess->chf.duration += use_rep->duration_measurement.u32;
+    }
+
+    /* The session is ending, whatever the UPF gave as the trigger. */
+    sess->chf.trigger = SMF_CHF_TRIGGER_FINAL;
+}
+
+static void chf_accumulate_report_usage(
+        smf_sess_t *sess, ogs_pfcp_session_report_request_t *pfcp_req)
+{
+    smf_bearer_t *bearer = NULL;
+    unsigned int i;
+
+    ogs_assert(sess);
+    ogs_assert(pfcp_req);
+
+    bearer = smf_default_bearer_in_sess(sess);
+    for (i = 0; i < OGS_ARRAY_SIZE(pfcp_req->usage_report); i++) {
+        ogs_pfcp_tlv_usage_report_session_report_request_t *use_rep =
+            &pfcp_req->usage_report[i];
+        uint32_t urr_id;
+        int16_t decoded;
+        ogs_pfcp_volume_measurement_t volume;
+        ogs_pfcp_usage_report_trigger_t rep_trig;
+        uint8_t trigger;
+
+        if (use_rep->presence == 0)
+            break;
+        if (use_rep->urr_id.presence == 0)
+            continue;
+        urr_id = use_rep->urr_id.u32;
+        if (!bearer || !bearer->urr || bearer->urr->id != urr_id)
+            continue;
+        decoded = ogs_pfcp_parse_volume_measurement(
+                &volume, &use_rep->volume_measurement);
+        if (use_rep->volume_measurement.len != decoded) {
+            ogs_error("Invalid Volume Measurement");
+            continue;
+        }
+
+        if (volume.ulvol)
+            sess->chf.ul_octets += volume.uplink_volume;
+        if (volume.dlvol)
+            sess->chf.dl_octets += volume.downlink_volume;
+        sess->chf.duration += use_rep->duration_measurement.u32;
+
+        ogs_pfcp_parse_usage_report_trigger(
+                &rep_trig, &use_rep->usage_report_trigger);
+        trigger = chf_trigger_from_pfcp(&rep_trig);
+        /* Several reports can arrive together; the strongest reason wins,
+         * and the order of SMF_CHF_TRIGGER_* is that of severity. */
+        if (trigger > sess->chf.trigger)
+            sess->chf.trigger = trigger;
+    }
+}
+
+/*
+ * A usage report on a session the CHF charges.
+ *
+ * Returns true when the session has to go: the CHF has already said this
+ * grant was the last one, so there is nothing left to ask for.
+ */
+static bool chf_handle_usage_report(
+        smf_sess_t *sess, ogs_pfcp_session_report_request_t *pfcp_req)
+{
+    smf_ue_t *smf_ue = NULL;
+    int r;
+
+    ogs_assert(sess);
+    ogs_assert(pfcp_req);
+
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    chf_accumulate_report_usage(sess, pfcp_req);
+
+    if (sess->chf.final_unit) {
+        ogs_debug("[%s:%s] PFCP report after CHF Final Unit Indication",
+                  smf_ue->imsi_bcd, sess->session.name);
+        return true;
+    }
+
+    /*
+     * Keep at most one CHF Update outstanding per session.  TS 32.291
+     * §6.3.2.2 assumes sequential delivery - there is a single
+     * localSequenceNumber per charging session - so overlapping Updates
+     * could reach the CHF out of order.
+     *
+     * Skipping is safe for accounting: build_usage_report() advances
+     * chf.last_report when the request is built, so the octets reported
+     * here stay in the baseline and are billed by the next Update rather
+     * than lost or double-counted.
+     */
+    if (sess->sm_data.nchf_update_in_flight) {
+        ogs_debug("[%s:%s] CHF Update already in-flight — "
+                  "usage deferred to the next Update",
+                  smf_ue->imsi_bcd, sess->session.name);
+        return false;
+    }
+
+    sess->sm_data.nchf_update_in_flight = true;
+    r = smf_sbi_discover_and_send(
+            OpenAPI_service_name_nchf_convergedcharging, NULL,
+            smf_nchf_convergedcharging_build_update,
+            sess, NULL, 0, NULL);
+    ogs_expect(r == OGS_OK);
+
+    return false;
+}
+
+/*
+ * A Session Report Request that arrives while the session is being deleted.
+ *
+ * The UPF can send one at any point before it processes the deletion: a
+ * volume threshold or quota crossed by the last packets, a validity timer,
+ * or - on a CHF Final-Unit teardown - the report provoked by the URR update
+ * that preceded it.  TS 29.244 requires a response, and the usage it carries
+ * must still be billed.
+ *
+ * Only the usage is taken.  Nothing else a report can ask for applies to a
+ * session that is going away: no CHF Update or Gy CCR (the final Release or
+ * CCR-T is sent after the deletion response and will include this usage),
+ * no paging for downlink data, no re-routing for an Error Indication.
+ */
+void smf_n4_handle_session_report_request_in_deletion(
+        smf_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
+        ogs_pfcp_session_report_request_t *pfcp_req)
+{
+    ogs_assert(sess);
+    ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_req);
+
+    if (pfcp_req->report_type.presence == 0) {
+        ogs_error("No Report Type");
+        ogs_pfcp_send_error_message(pfcp_xact, 0,
+                OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
+                OGS_PFCP_CAUSE_MANDATORY_IE_MISSING,
+                OGS_PFCP_REPORT_TYPE_TYPE);
+        return;
+    }
+
+    chf_accumulate_report_usage(sess, pfcp_req);
+
+    ogs_assert(OGS_OK ==
+        smf_pfcp_send_session_report_response(
+            pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
 }
 
 /*
@@ -1847,6 +2090,18 @@ bool smf_n4_handle_session_report_request(
             sess->gy.reporting_reason =
                 smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(&rep_trig);
         }
+        /*
+         * TS 29.513 §5.2.2 — which online charging interface this session
+         * uses.  A 5GC session charged by the CHF is handled here and
+         * returns; Gy's own block below is upstream's, and is left exactly
+         * as upstream wrote it.
+         */
+        if (smf_select_online_charging(sess) == SMF_OC_IFACE_CHF) {
+            /* No association means this session came up without the CHF,
+             * and it stays uncharged: it has nothing to report against. */
+            if (CHF_ASSOCIATED(sess))
+                release_session = chf_handle_usage_report(sess, pfcp_req);
+        } else if (!smf_sess_well_known_dnn(sess))
         switch (smf_use_gy_iface()) {
         case 1:
             if (!sess->gy.final_unit) {
