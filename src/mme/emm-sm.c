@@ -1139,6 +1139,20 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
+            /*
+             * Another context with this IMSI, which mme_ue_set_imsi() left
+             * alone, is released into this one now that the UE is
+             * authenticated.
+             */
+            if (mme_ue_find_by_imsi(mme_ue->imsi, mme_ue->imsi_len) !=
+                    mme_ue) {
+                char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+
+                ogs_cpystrn(imsi_bcd, mme_ue->imsi_bcd, sizeof(imsi_bcd));
+                mme_ue_set_imsi(mme_ue, imsi_bcd,
+                        MME_UE_IMSI_FROM_AUTHENTICATION_RESPONSE);
+            }
+
             OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
             break;
         case OGS_NAS_EPS_AUTHENTICATION_FAILURE:
@@ -1378,6 +1392,13 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
+                break;
+            }
+
+            /* TS 24.301 4.4.5: discard an unciphered message that shall
+             * have been ciphered, as this one is (5.4.3.3), with EEA0 too. */
+            if (h.ciphered == 0) {
+                ogs_error("[%s] Not Ciphered", mme_ue->imsi_bcd);
                 break;
             }
 

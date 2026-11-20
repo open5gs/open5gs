@@ -2263,6 +2263,11 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
             ngap_state = sess->ngap_state.pdu_session_resource_release;
 
+            /*
+             * TS 38.413 8.2.2.2 and 10.4: the response answers a PDU
+             * SESSION RESOURCE RELEASE COMMAND. Without one, reject it
+             * and keep the session.
+             */
             if (ngap_state == SMF_NGAP_STATE_NONE) {
                 strerror = ogs_msprintf(
                         "[%s:%d] No PDUSessionResourceReleaseRequest",
@@ -2275,8 +2280,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror,
                         NULL, NULL));
                 ogs_free(strerror);
-
-                OGS_FSM_TRAN(s, smf_gsm_state_exception);
 
             } else if (ngap_state ==
                     SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN) {

@@ -20,6 +20,32 @@
 #include "sbi-path.h"
 #include "n32c-handler.h"
 
+/*
+ * Enable establishment towards the peer if the FSM was initialized
+ * server-side only, i.e. without the establish timer.
+ *
+ * In will_establish, terminated and exception, the state entry that
+ * starts the timer has already run, so start it here. On expiry,
+ * will_establish sends the request, and terminated/exception move to
+ * will_establish. In established, the timer is started later when
+ * entering terminated or exception.
+ */
+void sepp_handshake_fsm_try_to_establish(sepp_node_t *sepp_node)
+{
+    if (!sepp_node->t_establish_interval) {
+        sepp_node->t_establish_interval = ogs_timer_add(ogs_app()->timer_mgr,
+                sepp_timer_peer_establish, sepp_node);
+        ogs_assert(sepp_node->t_establish_interval);
+    }
+    if (!OGS_FSM_CHECK(&sepp_node->sm, &sepp_handshake_state_will_establish) &&
+        !OGS_FSM_CHECK(&sepp_node->sm, &sepp_handshake_state_terminated) &&
+        !OGS_FSM_CHECK(&sepp_node->sm, &sepp_handshake_state_exception))
+        return;
+    if (!sepp_node->t_establish_interval->running)
+        ogs_timer_start(sepp_node->t_establish_interval, 1);
+    //TODO: ^ set duration to 0 after https://github.com/open5gs/open5gs/pull/4964 is merged.
+}
+
 void sepp_handshake_fsm_init(sepp_node_t *sepp_node, bool try_to_establish)
 {
     sepp_event_t e;

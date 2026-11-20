@@ -68,6 +68,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     int rc, r;
 
     ogs_nas_eps_message_t nas_message;
+    ogs_nas_security_header_type_t h;
     enb_ue_t *enb_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -290,8 +291,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          *     -> dispatched to A's context, not to B's
          *
          * The identity in the message is never looked at, so
-         * mme_ue_set_imsi() re-labels A's context as B and moves B's
-         * sessions into it. If A still owns sessions, Phase-2 hits
+         * mme_ue_set_imsi() re-labels A's context as B, and once the
+         * Attach is authenticated moves B's sessions into it. If A still
+         * owns sessions, Phase-2 hits
          *
          *     ogs_assert(ogs_list_empty(&mme_ue->sess_list));
          *
@@ -347,7 +349,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         if (!mme_ue) {
             bool pending_guti;
-            ogs_nas_security_header_type_t h;
 
             h.type = e->nas_type;
             mme_ue = mme_ue_find_by_message(&nas_message, &pending_guti);
@@ -466,6 +467,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         e->mme_ue_id = mme_ue->id;
         e->nas_message = &nas_message;
+
+        /* A discarded message leaves the secure exchange established */
+        h.type = e->nas_type;
+        if ((h.integrity_protected || h.service_request) &&
+            SECURITY_CONTEXT_IS_VALID(mme_ue))
+            mme_ue->integrity_verified = true;
+        else if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage)
+            mme_ue->integrity_verified = false;
 
         ogs_fsm_dispatch(&mme_ue->sm, e);
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {

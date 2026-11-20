@@ -1400,13 +1400,14 @@ static int hss_ogs_diam_cx_sar_cb(struct msg **msg, struct avp *avp,
                 goto out;
             }
 
-            if (hdr->avp_value->i32 ==
+            /* Restore MSISDN identities even if the S-CSCF has the profile. */
+            hss_cx_associate_msisdn(
+                    user_name, visited_network_identifier, &ims_data);
+
+            if (hdr->avp_value->i32 !=
                     OGS_DIAM_CX_USER_DATA_ALREADY_AVAILABLE) {
-                /* Nothing to do */
-            } else {
                 /* Set the User-Data AVP */
-                user_data = hss_cx_download_user_data(
-                        user_name, visited_network_identifier, &ims_data);
+                user_data = hss_cx_download_user_data(user_name, &ims_data);
                 if (!user_data) {
                     ogs_error("Failed to download user data");
                     result_code = OGS_DIAM_CX_ERROR_USER_UNKNOWN;

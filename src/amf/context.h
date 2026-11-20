@@ -477,6 +477,8 @@ struct amf_ue_s {
     } while(0)
     int             security_context_available;
     int             mac_failed;
+    /* The secure exchange of NAS messages is established on the connection */
+    bool            integrity_verified;
 
     /* Authentication synch failure counter */
     uint8_t auth_synch_fail_count;
@@ -842,6 +844,9 @@ typedef struct amf_sess_s {
     bool pdu_session_release_complete_received;
     bool pdu_session_resource_release_response_received;
 
+    /* PDUSessionResourceSetupRequest sent, its response not yet */
+    bool pdu_session_resource_setup_request_pending;
+
     /* SMF sends the REQUEST
      * of [POST] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages */
     ogs_pkbuf_t *pdu_session_establishment_accept;
@@ -891,6 +896,7 @@ typedef struct amf_sess_s {
         ogs_pkbuf_t *pdu_session_resource_setup_request;
         ogs_pkbuf_t *pdu_session_resource_modification_command;
         ogs_pkbuf_t *path_switch_request_ack;
+        ogs_pkbuf_t *path_switch_request_unsuccessful;
         ogs_pkbuf_t *handover_request;
         ogs_pkbuf_t *handover_command;
     } transfer;

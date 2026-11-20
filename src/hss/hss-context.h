@@ -101,10 +101,12 @@ char *hss_cx_get_server_name(char *public_identity);
 void hss_cx_set_server_name(
         char *public_identity, char *server_name, bool overwrite);
 
-/* Returns caller-owned XML; caller must ogs_free() it. */
-char *hss_cx_download_user_data(
+void hss_cx_associate_msisdn(
         char *user_name, char *visited_network_identifier,
         ogs_ims_data_t *ims_data);
+
+/* Returns caller-owned XML; caller must ogs_free() it. */
+char *hss_cx_download_user_data(char *user_name, ogs_ims_data_t *ims_data);
 
 int hss_db_poll_change_stream(void);
 int hss_handle_change_event(const bson_t *document);

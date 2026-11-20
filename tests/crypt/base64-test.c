@@ -65,90 +65,85 @@ static void base64_test1(abts_case *tc, void *data)
     }
 }
 
-struct decode_tests_st {
-    const char *name;
-    const char *raw;
-    unsigned raw_size;
-    const char *pem;
-    unsigned pem_size;
-    int res;
-};
-
-struct decode_tests_st decode_tests[] = {
-    {
-        .name = "dec-rnd1",
-        .pem = "-----BEGIN dec-rnd1-----\n"
-            "9ppGioRpeiiD2lLNYC85eA==\n"
-            "-----END rnd1-----\n",
-        .raw = "\xf6\x9a\x46\x8a\x84\x69\x7a\x28\x83\xda\x52\xcd\x60\x2f\x39\x78",
-        .raw_size = 16,
-        .res = OGS_OK
-    },
-    {
-        .name = "dec-rnd2",
-        .pem = "-----BEGIN dec-rnd2-----\n"
-            "LJ/7hUZ3TtPIz2dlc5+YvELe+Q==\n"
-            "-----END rnd2-----\n",
-        .raw = "\x2c\x9f\xfb\x85\x46\x77\x4e\xd3\xc8\xcf\x67\x65\x73\x9f\x98\xbc\x42\xde\xf9",
-        .raw_size = 19,
-        .res = OGS_OK
-    },
-    {
-        .name = "dec-extra-chars",
-        .pem = "-----BEGIN dec-extra-chars-----   \n\n"
-            "\n\n  LJ/7hUZ3TtPIz2dlc5+YvELe+Q==  \n"
-            "   -----END rnd2-----  \n  ",
-        .raw = "\x2c\x9f\xfb\x85\x46\x77\x4e\xd3\xc8\xcf\x67\x65\x73\x9f\x98\xbc\x42\xde\xf9",
-        .raw_size = 19,
-        .res = OGS_OK
-    },
-#if 0
-    {
-        .name = "dec-invalid-header",
-        .pem = "-----BEGIN dec-xxx-----\n"
-            "LJ/7hUZ3TtPIz2dlc5+YvELe+Q==\n"
-            "-----END rnd2-----\n",
-        .raw = "\x2c\x9f\xfb\x85\x46\x77\x4e\xd3\xc8\xcf\x67\x65\x73\x9f\x98\xbc\x42\xde\xf9",
-        .raw_size = 19,
-        .res = OGS_ERROR
-    },
-    {
-        .name = "leak1",
-        .pem = "-----BEGIN leak1-----E-\x00\x00-----END ",
-        .pem_size = 34,
-        .raw = "",
-        .raw_size = 0,
-        .res = OGS_ERROR
-    },
-#endif
-};
+#define PEM_CASE(description, input, output) \
+    { description, input, sizeof(input) - 1, output, sizeof(output) - 1 }
+#define PEM_ERROR_CASE(description, input) \
+    { description, input, sizeof(input) - 1, NULL, 0 }
 
 static void base64_test2(abts_case *tc, void *data)
 {
-    int i, rv;
-    ogs_datum_t result;
+    static const char label[] = "TEST KEY";
+    static const char expected[] = "Hello";
+    static const struct {
+        const char *description;
+        const char *input;
+        size_t size;
+        const char *output;
+        size_t output_size;
+    } cases[] = {
+        PEM_CASE("matching labels",
+            "-----BEGIN TEST KEY-----\nSGVsbG8=\n-----END TEST KEY-----\n",
+            expected),
+        PEM_CASE("binary payload with two padding characters",
+            "-----BEGIN TEST KEY-----\n"
+            "AAECAwQFBgcICQoLDA0ODw==\n-----END TEST KEY-----\n",
+            "\x00\x01\x02\x03\x04\x05\x06\x07"
+            "\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"),
+        PEM_CASE("different END label, whitespace and CRLF",
+            "-----BEGIN TEST KEY----- \t\r\n"
+            "\r\n SGVs\t bG8= \r\n \t-----END OTHER KEY-----", expected),
+        PEM_CASE("skip a block whose label has the same prefix",
+            "-----BEGIN TEST KEY EXTRA-----\nAA==\n"
+            "-----END TEST KEY EXTRA-----\n"
+            "-----BEGIN TEST KEY-----\nSGVsbG8=\n-----END TEST KEY-----\n",
+            expected),
+        PEM_ERROR_CASE("missing requested BEGIN label",
+            "-----BEGIN TEST KEY EXTRA-----\nSGVsbG8=\n"
+            "-----END TEST KEY EXTRA-----\n"),
+        PEM_ERROR_CASE("missing END line",
+            "-----BEGIN TEST KEY-----\nSGVsbG8=\n"),
+        PEM_ERROR_CASE("END marker on the body line",
+            "-----BEGIN TEST KEY-----\nSGVsbG8=-----END TEST KEY-----\n"),
+        PEM_ERROR_CASE("embedded NUL after a valid Base64 prefix",
+            "-----BEGIN TEST KEY-----\nSGVs\0bG8=\n-----END TEST KEY-----\n"),
+        PEM_ERROR_CASE("invalid Base64 character",
+            "-----BEGIN TEST KEY-----\nSGVsbG8-\n-----END TEST KEY-----\n"),
+    };
+    size_t i;
 
-    for (i = 0; i < sizeof(decode_tests)/sizeof(decode_tests[0]); i++) {
-        if (!decode_tests[i].pem_size)
-            decode_tests[i].pem_size = strlen(decode_tests[i].pem);
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+        ogs_datum_t result = { 0 };
+        ogs_log_level_e saved_level = ogs_log_get_domain_level(OGS_LOG_DOMAIN);
+        int rv, expected_rv = cases[i].output ? OGS_OK : OGS_ERROR;
 
-        rv = ogs_fbase64_decode(
-                decode_tests[i].name,
-                (const uint8_t *)decode_tests[i].pem, decode_tests[i].pem_size,
-                &result);
+        if (expected_rv == OGS_ERROR)
+            ogs_log_set_domain_level(OGS_LOG_DOMAIN, OGS_LOG_FATAL);
 
-        ABTS_INT_EQUAL(tc, decode_tests[i].res, rv);
+        rv = ogs_fbase64_decode(label, (const uint8_t *)cases[i].input,
+                cases[i].size, &result);
 
-        if (result.size) {
-            ABTS_INT_EQUAL(tc, decode_tests[i].raw_size, result.size);
-            ABTS_TRUE(tc,
-                memcmp(decode_tests[i].raw, result.data, result.size) == 0);
+        if (expected_rv == OGS_ERROR)
+            ogs_log_set_domain_level(OGS_LOG_DOMAIN, saved_level);
+
+        ABTS_ASSERT(tc, cases[i].description, rv == expected_rv);
+        if (expected_rv == OGS_OK) {
+            ABTS_INT_EQUAL(tc, cases[i].output_size, result.size);
+            ABTS_PTR_NOTNULL(tc, result.data);
+            if (result.data && result.size == cases[i].output_size)
+                ABTS_TRUE(tc,
+                    memcmp(result.data, cases[i].output, result.size) == 0);
+        } else {
+            ABTS_INT_EQUAL(tc, 0, result.size);
+            ABTS_PTR_EQUAL(tc, NULL, result.data);
         }
 
         if (result.data)
             ogs_free(result.data);
     }
 }
+
+#undef PEM_CASE
+#undef PEM_ERROR_CASE
 
 abts_suite *test_base64(abts_suite *suite)
 {

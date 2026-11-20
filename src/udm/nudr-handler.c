@@ -29,6 +29,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
     ogs_sbi_message_t sendmsg;
     ogs_sbi_header_t header;
     ogs_sbi_response_t *response = NULL;
+    int r;
 
 #if 0
 #if 0
@@ -156,12 +157,14 @@ bool udm_nudr_dr_handle_subscription_authentication(
                     recvmsg, "No SequenceNumber", udm_ue->suci, NULL));
                 return false;
             }
-            if (!AuthenticationSubscription->sequence_number->sqn) {
-                ogs_error("[%s] No SequenceNumber.sqn", udm_ue->suci);
+            if (ogs_hex_from_string_checked(
+                        AuthenticationSubscription->sequence_number->sqn,
+                        udm_ue->sqn, sizeof(udm_ue->sqn)) != OGS_OK) {
+                ogs_error("[%s] Invalid SequenceNumber.sqn", udm_ue->suci);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                    recvmsg, "No SequenceNumber.sqn", udm_ue->suci, NULL));
+                    recvmsg, "Invalid SequenceNumber.sqn", udm_ue->suci, NULL));
                 return false;
             }
 
@@ -180,14 +183,23 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 AuthenticationSubscription->enc_permanent_key,
                 strlen(AuthenticationSubscription->enc_permanent_key),
                 udm_ue->k, sizeof(udm_ue->k));
-            ogs_ascii_to_hex(
-                AuthenticationSubscription->sequence_number->sqn,
-                strlen(AuthenticationSubscription->sequence_number->sqn),
-                udm_ue->sqn, sizeof(udm_ue->sqn));
+
+            /* Keep this SQN for the vector. Wait for the UDR to store
+             * the next SQN before returning this vector to the AUSF. */
+            r = udm_ue_sbi_discover_and_send(OpenAPI_service_name_nudr_dr, NULL,
+                    udm_nudr_dr_build_authentication_subscription,
+                    udm_ue, stream, UDM_SBI_NO_STATE, udm_ue->sqn);
+            /* The send helper already replies to the AUSF on failure. */
+            ogs_expect(r == OGS_OK);
+            break;
 
         CASE(OGS_SBI_HTTP_METHOD_PATCH)
-            if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK &&
-                recvmsg->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+            /* TS 29.505 table 5.2.2.3.2-3: 204 confirms the SQN update. */
+            if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                int status = recvmsg->res_status;
+
+                if (status < 400)
+                    status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
                 strerror = ogs_msprintf("[%s] HTTP response error [%d]",
                         udm_ue->suci, recvmsg->res_status);
                 ogs_assert(strerror);
@@ -195,7 +207,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 ogs_error("%s", strerror);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
-                        stream, recvmsg->res_status, recvmsg, strerror, NULL,
+                        stream, status, recvmsg, strerror, NULL,
                         (recvmsg->ProblemDetails) ?
                                 recvmsg->ProblemDetails->cause : NULL));
                 ogs_free(strerror);

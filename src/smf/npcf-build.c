@@ -221,19 +221,16 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         SmPolicyContextData.ipv6_frame_route_list = FrameRouteList;
     }
 
-    if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
-                OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION)) {
-        if (sess->session.ambr.uplink) {
-            SubsSessAmbr.uplink = ogs_sbi_bitrate_to_string(
-                sess->session.ambr.uplink, OGS_SBI_BITRATE_KBPS);
-        }
-        if (sess->session.ambr.downlink) {
-            SubsSessAmbr.downlink = ogs_sbi_bitrate_to_string(
-                sess->session.ambr.downlink, OGS_SBI_BITRATE_KBPS);
-        }
-        if (SubsSessAmbr.downlink || SubsSessAmbr.uplink) {
-            SmPolicyContextData.subs_sess_ambr = &SubsSessAmbr;
-        }
+    if (sess->session.ambr.uplink) {
+        SubsSessAmbr.uplink = ogs_sbi_bitrate_to_string(
+            sess->session.ambr.uplink, OGS_SBI_BITRATE_KBPS);
+    }
+    if (sess->session.ambr.downlink) {
+        SubsSessAmbr.downlink = ogs_sbi_bitrate_to_string(
+            sess->session.ambr.downlink, OGS_SBI_BITRATE_KBPS);
+    }
+    if (SubsSessAmbr.downlink || SubsSessAmbr.uplink) {
+        SmPolicyContextData.subs_sess_ambr = &SubsSessAmbr;
     }
 
     memset(&Arp, 0, sizeof(Arp));

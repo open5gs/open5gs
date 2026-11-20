@@ -132,6 +132,14 @@ executable(
 )
 
 executable(
+    'nnrf_handler_fuzz',
+    sources : files('nnrf-handler-fuzz.c'),
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libsbi_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
+
+executable(
     'ipfw_rule_fuzz',
     sources : ipfw_rule_source,
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
@@ -140,9 +148,9 @@ executable(
 )
 
 executable(
-    'nnrf_handler_fuzz',
-    sources : files('nnrf-handler-fuzz.c'),
+    'crypt_kdf_fuzz',
+    sources : files('crypt-kdf-fuzz.c'),
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
-    dependencies : [libsbi_dep, libcore_dep],
+    dependencies : [libcrypt_dep],
     link_args: lib_fuzzing_engine
 )
