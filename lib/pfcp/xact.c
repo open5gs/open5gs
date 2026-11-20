@@ -763,6 +763,24 @@ int ogs_pfcp_xact_receive(
         }
     }
 
+    /*
+     * 3GPP TS 29.244 7.6.5: an unexpected response shall be discarded.
+     * A response of another message type, or with the SEID of another
+     * session, does not answer the outstanding request.
+     */
+    if (new && stage == PFCP_XACT_FINAL_STAGE &&
+        ((type != new->seq[0].type + 1 &&
+          type != OGS_PFCP_VERSION_NOT_SUPPORTED_RESPONSE_TYPE) ||
+         (new->local_seid && h->seid_presence && h->seid &&
+          h->seid != new->local_seid))) {
+        ogs_error("[%d] Discard type %u SEID 0x%lx for Request type %u "
+                "SEID 0x%lx from PFCP peer %s", xid, type,
+                h->seid_presence ? (long)h->seid : 0,
+                new->seq[0].type, (long)new->local_seid,
+                ogs_sockaddr_to_string_static(node->addr_list));
+        return OGS_RETRY;
+    }
+
     if (!new) {
         ogs_debug("[%d] Cannot find new type %u from PFCP peer %s",
                 xid, type, ogs_sockaddr_to_string_static(node->addr_list));

@@ -41,6 +41,8 @@ void sepp_handshake_state_exception(ogs_fsm_t *s, sepp_event_t *e);
 void sepp_handshake_fsm_init(sepp_node_t *sepp_node, bool try_to_establish);
 void sepp_handshake_fsm_fini(sepp_node_t *sepp_node);
 
+void sepp_handshake_fsm_try_to_establish(sepp_node_t *sepp_node);
+
 #define sepp_sm_debug(__pe) \
     ogs_debug("%s(): %s", __func__, sepp_event_get_name(__pe))
 

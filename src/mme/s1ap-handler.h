@@ -70,6 +70,8 @@ void s1ap_handle_handover_request_ack(
         mme_enb_t *enb, ogs_s1ap_message_t *message);
 void s1ap_handle_handover_failure(
         mme_enb_t *enb, ogs_s1ap_message_t *message);
+void s1ap_handle_error_indication(
+        mme_enb_t *enb, ogs_s1ap_message_t *message);
 void s1ap_handle_handover_cancel(
         mme_enb_t *enb, ogs_s1ap_message_t *message);
 

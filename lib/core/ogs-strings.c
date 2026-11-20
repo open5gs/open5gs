@@ -1,36 +1,10 @@
-/**
- *
- * Orcania library
- *
- * Different functions for different purposes but that can be shared between
- * other projects
- *
- * orcania.c: main functions definitions
- *
- * Copyright 2015-2020 Nicolas Mora <mail@babelouest.org>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation;
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU GENERAL PUBLIC LICENSE for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
@@ -45,16 +19,16 @@
 
 #include "core-config-private.h"
 
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
 #if HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
 
 #if HAVE_STDARG_H
 #include <stdarg.h>
-#endif
-
-#if HAVE_CTYPE_H
-#include <ctype.h>
 #endif
 
 #include "ogs-core.h"
@@ -284,141 +258,108 @@ void *ogs_memdup_debug(
 }
 
 /*
- * char *ogs_msprintf(const char *message, ...)
- * char *mstrcatf(char *source, const char *message, ...)
+ * ogs_vasprintf_debug() is adapted from musl v1.2.5 src/stdio/vasprintf.c.
+ * https://git.musl-libc.org/cgit/musl/tree/src/stdio/vasprintf.c?id=0784374d561435f7c787a555aeab8ede699ed298
  *
- * Orcania library
- * Copyright 2015-2018 Nicolas Mora <mail@babelouest.org>
- * License: LGPL-2.1
+ * License: MIT (musl-derived code)
+ * Copyright © 2005-2020 Rich Felker, et al.
  *
- * https://github.com/babelouest/orcania.git
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+static char *ogs_vasprintf_debug(
+        const char *file_line, const char *format, va_list args)
+    OGS_GNUC_PRINTF(2, 0);
+
+static char *ogs_vasprintf_debug(
+        const char *file_line, const char *format, va_list args)
+{
+    va_list copy;
+    int len;
+    size_t size;
+    char *out;
+
+    if (!format)
+        return NULL;
+
+    va_copy(copy, args);
+    len = vsnprintf(NULL, 0, format, copy);
+    va_end(copy);
+
+    if (len < 0)
+        return NULL;
+
+    size = (size_t)len + 1;
+    out = ogs_malloc_debug(size, file_line);
+    if (!out)
+        return NULL;
+
+    if (vsnprintf(out, size, format, args) != len) {
+        ogs_free_debug(out);
+        return NULL;
+    }
+
+    return out;
+}
+
 char *ogs_msprintf_debug(
         const char *file_line, const char *message, ...)
 {
-    va_list argp, argp_cpy;
-    size_t out_len = 0;
-    char *out = NULL;
-    if (message != NULL) {
-        va_start(argp, message);
-        va_copy(argp_cpy, argp); /* We make a copy because
-                                    in some architectures,
-                                    vsnprintf can modify argp */
-        out_len = vsnprintf(NULL, 0, message, argp);
-        out = ogs_malloc_debug(out_len + sizeof(char), file_line);
-        if (out == NULL) {
-            va_end(argp);
-            va_end(argp_cpy);
-            return NULL;
-        }
-        vsnprintf(out, (out_len + sizeof(char)), message, argp_cpy);
-        va_end(argp);
-        va_end(argp_cpy);
-    }
+    va_list args;
+    char *out;
+
+    va_start(args, message);
+    out = ogs_vasprintf_debug(file_line, message, args);
+    va_end(args);
+
     return out;
 }
 
 char *ogs_mstrcatf_debug(
         char *source, const char *file_line, const char *message, ...)
 {
-    va_list argp, argp_cpy;
-    char *out = NULL, *message_formatted = NULL;
-    size_t message_formatted_len = 0, out_len = 0;
+    va_list args;
+    char *suffix, *out = NULL;
+    size_t source_len, suffix_len;
 
-    if (message != NULL) {
-        if (source != NULL) {
-            va_start(argp, message);
-            va_copy(argp_cpy, argp); /* We make a copy because
-                                        in some architectures,
-                                        vsnprintf can modify argp */
-            message_formatted_len = vsnprintf(NULL, 0, message, argp);
-            message_formatted = ogs_malloc(message_formatted_len+sizeof(char));
-            if (message_formatted != NULL) {
-                vsnprintf(message_formatted,
-                    (message_formatted_len+sizeof(char)), message, argp_cpy);
-                out = ogs_msprintf_debug(
-                        file_line, "%s%s", source, message_formatted);
-                ogs_free(message_formatted);
-                ogs_free(source);
-            }
-            va_end(argp);
-            va_end(argp_cpy);
-        } else {
-            va_start(argp, message);
-            va_copy(argp_cpy, argp); /* We make a copy because
-                                        in some architectures,
-                                        vsnprintf can modify argp */
-            out_len = vsnprintf(NULL, 0, message, argp);
-            out = ogs_malloc_debug(out_len+sizeof(char), file_line);
-            if (out != NULL) {
-                vsnprintf(out, (out_len+sizeof(char)), message, argp_cpy);
-            }
-            va_end(argp);
-            va_end(argp_cpy);
+    va_start(args, message);
+    suffix = ogs_vasprintf_debug(file_line, message, args);
+    va_end(args);
+
+    if (!source || !suffix)
+        return suffix;
+
+    source_len = strlen(source);
+    suffix_len = strlen(suffix);
+    if (source_len <= INT_MAX && suffix_len <= INT_MAX - source_len) {
+        out = ogs_malloc_debug(source_len + suffix_len + 1, file_line);
+        if (out) {
+            memcpy(out, source, source_len);
+            memcpy(out + source_len, suffix, suffix_len + 1);
         }
     }
+
+    ogs_free_debug(suffix);
+    /* Once the suffix is formatted, consume source even on allocation failure. */
+    ogs_free(source);
+
     return out;
-}
-
-char *ogs_trimwhitespace(char *str)
-{
-    char *end;
-
-    if (str == NULL) {
-        return NULL;
-    } else if (*str == 0) {
-        return str;
-    }
-
-    while (isspace((unsigned char)*str)) str++;
-
-    end = str + strlen(str) - 1;
-    while(end > str && isspace((unsigned char)*end)) {
-        end--;
-    }
-
-    *(end+1) = 0;
-
-    return str;
-}
-
-char *ogs_left_trimcharacter(char *str, char to_remove)
-{
-    if (str == NULL) {
-        return NULL;
-    } else if (*str == 0) {
-        return str;
-    }
-
-    while(*str == to_remove) str++;
-
-    return str;
-}
-
-char *ogs_right_trimcharacter(char *str, char to_remove)
-{
-    char *end;
-
-    if (str == NULL) {
-        return NULL;
-    } else if (*str == 0) {
-        return str;
-    }
-
-    end = str + strlen(str) - 1;
-    while(end > str && (*end == to_remove)) {
-        end--;
-    }
-
-    *(end+1) = 0;
-
-    return str;
-}
-
-char *ogs_trimcharacter(char *str, char to_remove)
-{
-    return ogs_right_trimcharacter(
-            ogs_left_trimcharacter(str, to_remove), to_remove);
 }
 
 char *ogs_strrstr(const char *haystack, const char *needle)

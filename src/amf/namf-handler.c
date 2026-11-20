@@ -1410,10 +1410,9 @@ static char *amf_namf_comm_base64_encode_ue_security_capability(
     char *enc = NULL;
     int enc_len = 0;
 
-    char num_of_octets =
+    int num_of_octets =
             ue_security_capability.length +
-            sizeof(ue_security_capability.length) +
-            sizeof((uint8_t)OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_TYPE);
+            sizeof(ue_security_capability.length);
     /*
      * size [sizeof(ue_security_capability) + 1] is a sum of lengths:
      *        ue_security_capability (9 octets) +
@@ -1421,10 +1420,9 @@ static char *amf_namf_comm_base64_encode_ue_security_capability(
      */
     char security_octets_string[sizeof(ue_security_capability) + 1];
 
-    /* Security guarantee */
-    num_of_octets = ogs_min(
-            num_of_octets, sizeof(ue_security_capability) + 1);
-    enc_len = ogs_base64_encoded_size(num_of_octets);
+    /* Security guarantee: the IE is copied after the type octet */
+    num_of_octets = ogs_min(num_of_octets, (int)sizeof(ue_security_capability));
+    enc_len = ogs_base64_encoded_size(num_of_octets + 1);
 
     enc = ogs_calloc(1, enc_len);
     ogs_assert(enc);
@@ -1433,7 +1431,7 @@ static char *amf_namf_comm_base64_encode_ue_security_capability(
         OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_TYPE;
     memcpy(security_octets_string + 1, &ue_security_capability, num_of_octets);
     ogs_assert(ogs_base64_encode_from_buffer(enc, enc_len,
-            (const uint8_t *)security_octets_string, num_of_octets) > 0);
+            (const uint8_t *)security_octets_string, num_of_octets + 1) > 0);
 
     return enc;
 }

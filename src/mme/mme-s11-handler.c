@@ -1053,6 +1053,11 @@ void mme_s11_handle_create_bearer_request(
     if (req->bearer_contexts.tft.presence == 0) {
         ogs_error("No TFT");
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    } else if (req->bearer_contexts.tft.len == 0 ||
+            req->bearer_contexts.tft.len > OGS_NAS_MAX_TRAFFIC_FLOW_TEMPLATE) {
+        /* The TFT is sent to the UE in a NAS LV with a one-octet length */
+        ogs_error("Invalid TFT length [%u]", req->bearer_contexts.tft.len);
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
@@ -1237,6 +1242,14 @@ void mme_s11_handle_update_bearer_request(
         if (req->bearer_contexts.eps_bearer_id.presence == 0) {
             ogs_error("No EPS Bearer ID");
             cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        }
+        if (req->bearer_contexts.tft.presence == 1 &&
+            (req->bearer_contexts.tft.len == 0 ||
+             req->bearer_contexts.tft.len >
+                OGS_NAS_MAX_TRAFFIC_FLOW_TEMPLATE)) {
+            /* The TFT is sent to the UE in a NAS LV with a one-octet length */
+            ogs_error("Invalid TFT length [%u]", req->bearer_contexts.tft.len);
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
         }
 
         if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {

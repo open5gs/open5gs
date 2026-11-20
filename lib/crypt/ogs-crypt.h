@@ -24,8 +24,6 @@
 
 #define OGS_CRYPT_INSIDE
 
-#include "crypt/ogs-sha1.h"
-#include "crypt/ogs-sha1-hmac.h"
 #include "crypt/ogs-sha2.h"
 #include "crypt/ogs-sha2-hmac.h"
 #include "crypt/ogs-aes.h"
@@ -34,7 +32,6 @@
 #include "crypt/milenage.h"
 #include "crypt/snow-3g.h"
 #include "crypt/zuc.h"
-#include "crypt/kasumi.h"
 #include "crypt/ecc.h"
 
 #include "crypt/ogs-kdf.h"

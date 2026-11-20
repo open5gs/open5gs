@@ -28,7 +28,8 @@ extern "C" {
 
 ogs_pkbuf_t *ngap_build_ng_setup_response(void);
 ogs_pkbuf_t *ngap_build_ng_setup_failure(
-    NGAP_Cause_PR group, long cause, long time_to_wait);
+    NGAP_Cause_PR group, long cause, long time_to_wait,
+    NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics);
 
 ogs_pkbuf_t *ngap_build_amf_configuration_update(void);
 
@@ -65,6 +66,9 @@ ogs_pkbuf_t *ngap_build_downlink_ran_configuration_transfer(
     NGAP_SONConfigurationTransfer_t *transfer);
 
 ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue);
+ogs_pkbuf_t *ngap_build_path_switch_request_unsuccessful_transfer(
+        NGAP_Cause_PR group, long cause);
+ogs_pkbuf_t *ngap_build_path_switch_failure_by_sess(amf_ue_t *amf_ue);
 ogs_pkbuf_t *ngap_build_path_switch_failure(
         uint64_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id,
         NGAP_PDUSessionResourceToBeSwitchedDLList_t

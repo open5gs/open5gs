@@ -1468,6 +1468,24 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                                     }
                                 }
                             }
+                        } else if (state == AMF_UE_INITIATED_DE_REGISTERED) {
+/*
+ * Issues: #5029
+ *
+ * gmm_state_registered()
+ *
+ * Ignore UECM registration PATCH response.
+ *
+ * The PATCH was sent by a UE-initiated De-registration in
+ * gmm_state_de_registered(). If a new Registration Request for the same
+ * UE completes before the response arrives, the response is no longer
+ * relevant to the current registration.
+ */
+                            ogs_warn("[%s] Ignoring UECM REGISTRATIONS PATCH "
+                                    "response [%d] in (%s:%s)",
+                                    amf_ue->supi, sbi_message->res_status,
+                                    sbi_message->h.method,
+                                    sbi_message->h.resource.component[1]);
                         } else {
                             ogs_fatal("Invalid state [%d]", state);
                             ogs_assert_if_reached();
@@ -1556,6 +1574,12 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                             ogs_assert(r != OGS_ERROR);
                         }
 
+                    } else if (state == AMF_UE_INITIATED_DE_REGISTERED) {
+                        /* Re-registration completed before the old PCF DELETE
+                         * response arrived. Preserve the current association. */
+                        ogs_warn("[%s] Ignoring stale AM policy DELETE "
+                                "response [%d]", amf_ue->supi,
+                                sbi_message->res_status);
                     } else {
                         ogs_fatal("Invalid state [%d]", state);
                         ogs_assert_if_reached();
@@ -2025,6 +2049,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 ogs_assert(r != OGS_ERROR);
             }
 
+            /*
+             * Another context with this SUCI moves its sessions here once
+             * the SUPI is confirmed (amf_ue_set_supi()); release them after
+             * the authentication.
+             */
+            amf_ue->registration_session_release_after_authentication = true;
+
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
 
@@ -2196,6 +2227,13 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_AUTHENTICATION_RESPONSE:
+            /* The AUSF response may still be pending (Issue #5028) */
+            if (!CHECK_5G_AKA_CONFIRMATION(amf_ue)) {
+                ogs_error("[%s] Authentication response "
+                        "without 5G AKA confirmation URI", amf_ue->suci);
+                break;
+            }
+
             rv = gmm_handle_authentication_response(
                     amf_ue, &nas_message->gmm.authentication_response);
 
@@ -2871,6 +2909,13 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
+            /* TS 24.501 4.4.5: discard an unciphered message that shall
+             * have been ciphered, as this one is (5.4.2.3), with 5G-EA0 too. */
+            if (h.ciphered == 0) {
+                ogs_error("[%s] Security-mode : Not Ciphered", amf_ue->supi);
+                break;
+            }
+
             if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_error("[%s] No Security Context", amf_ue->supi);
                 break;
@@ -3131,6 +3176,42 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             END
             break;
 
+        case OpenAPI_service_name_nudm_uecm:
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    /* Purge from a deregistration that the new
+                     * registration has overtaken */
+                    ogs_error("[%s] Ignore SBI message", amf_ue->supi);
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        case OpenAPI_service_name_npcf_am_policy_control:
+            if (!strcmp(sbi_message->h.resource.component[0],
+                        OGS_SBI_RESOURCE_NAME_POLICIES) &&
+                !strcmp(sbi_message->h.method, OGS_SBI_HTTP_METHOD_DELETE)) {
+                /* The new registration has overtaken deregistration. */
+                ogs_warn("[%s] Ignoring stale AM policy DELETE "
+                        "response [%d]", amf_ue->supi, sbi_message->res_status);
+                break;
+            }
+            ogs_error("Unexpected AM policy response [%s]", sbi_message->h.method);
+            ogs_assert_if_reached();
+            break;
+
         default:
             ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
             ogs_assert_if_reached();
@@ -3280,28 +3361,36 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
-                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
-                    ogs_error("[%s] HTTP response error [%d]",
-                            amf_ue->supi, sbi_message->res_status);
-                    r = nas_5gs_send_gmm_reject(
-                            ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
-                            OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
-                    break;
-                }
-
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
+                    if (sbi_message->res_status !=
+                            OGS_SBI_HTTP_STATUS_CREATED &&
+                        sbi_message->res_status !=
+                            OGS_SBI_HTTP_STATUS_NO_CONTENT &&
+                        sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->supi, sbi_message->res_status);
+                        r = nas_5gs_send_gmm_reject(
+                                ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
+                                OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                        break;
+                    }
+
                     r = amf_ue_sbi_discover_and_send(
                             OpenAPI_service_name_nudm_sdm, NULL,
                             amf_nudm_sdm_build_get_datasets,
                             amf_ue, state, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    /* Purge from a deregistration that the new
+                     * registration has overtaken */
+                    ogs_error("[%s] Ignore SBI message", amf_ue->supi);
                     break;
 
                 DEFAULT
@@ -3456,6 +3545,14 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
                     if (!amf_ue->next.m_tmsi)
                         OGS_FSM_TRAN(s, &gmm_state_registered);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    /* A previous deregistration may finish in this state.
+                     * Preserve the current UE's policy association. */
+                    ogs_warn("[%s] Ignoring stale AM policy DELETE "
+                            "response [%d]", amf_ue->supi,
+                            sbi_message->res_status);
                     break;
 
                 DEFAULT
@@ -4086,6 +4183,24 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
                     ogs_error("[%s] Ignore SBI message", amf_ue->suci);
                     break;
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+/*
+ * Issues: #5030
+ *
+ * gmm_state_exception()
+ *
+ * Ignore UECM registration PATCH response.
+ *
+ * The PATCH was sent by a De-registration in gmm_state_de_registered().
+ * If a new Registration Request for the same UE is rejected before
+ * the response arrives, the response is no longer relevant.
+ */
+                    ogs_warn("[%s] Ignoring UECM REGISTRATIONS PATCH "
+                            "response [%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
+                    break;
                 DEFAULT
                     ogs_error("[%s] Invalid HTTP method [%s]",
                             amf_ue->suci, sbi_message->h.method);
@@ -4187,6 +4302,14 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                                 amf_ue->supi, sbi_message->res_status);
                     }
                     ogs_error("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    /* A previous deregistration may finish in this state.
+                     * Preserve the current UE's policy association. */
+                    ogs_warn("[%s] Ignoring stale AM policy DELETE "
+                            "response [%d]", amf_ue->supi,
+                            sbi_message->res_status);
                     break;
 
                 DEFAULT

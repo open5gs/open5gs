@@ -194,6 +194,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
                     sqn_ms, sizeof(sqn_ms));
             sqn = ogs_buffer_to_uint64(sqn_ms, OGS_SQN_LEN);
 
+            /* The UDM supplied the next SQN in the replace operation. */
             rv = ogs_dbi_update_sqn(supi, sqn);
             if (rv != OGS_OK) {
                 ogs_fatal("[%s] Cannot update SQN", supi);
@@ -201,16 +202,6 @@ bool udr_nudr_dr_handle_subscription_authentication(
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                         recvmsg, "Cannot update SQN", supi, NULL));
-                return false;
-            }
-
-            rv = ogs_dbi_increment_sqn(supi);
-            if (rv != OGS_OK) {
-                ogs_fatal("[%s] Cannot increment SQN", supi);
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                        recvmsg, "Cannot increment SQN", supi, NULL));
                 return false;
             }
 
@@ -250,16 +241,9 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 return false;
             }
 
+            /* The SQN was advanced at vector issuance. Recording or
+             * removing the authentication result must not advance it again. */
             memset(&sendmsg, 0, sizeof(sendmsg));
-            rv = ogs_dbi_increment_sqn(supi);
-            if (rv != OGS_OK) {
-                ogs_fatal("[%s] Cannot increment SQN", supi);
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                        recvmsg, "Cannot increment SQN", supi, NULL));
-                return false;
-            }
 
             response = ogs_sbi_build_response(
                     &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);

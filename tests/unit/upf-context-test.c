@@ -95,17 +95,20 @@ static void test_ue_ip_takeover(abts_case *tc, void *data)
 
 abts_suite *test_upf_context(abts_suite *suite)
 {
-    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
+    ogs_log_level_e pfcp_level = ogs_log_get_domain_level(__ogs_pfcp_domain);
+    ogs_log_level_e upf_level = ogs_log_get_domain_level(__upf_log_domain);
 
     ogs_app_context_init();
     ogs_app()->pool.nf = 8;
     ogs_app()->pool.sess = 8;
     ogs_app()->timer_mgr = ogs_timer_mgr_create(16);
     ogs_pfcp_context_init();
+    ogs_log_set_domain_level(__ogs_pfcp_domain, pfcp_level);
     upf_context_init();
-    ogs_assert(ogs_pfcp_subnet_add("10.45.0.1", "16", NULL, NULL, "ogstun"));
+    ogs_log_set_domain_level(__upf_log_domain, upf_level);
+    ogs_assert(ogs_pfcp_subnet_add(
+                "10.45.0.0", "16", "10.45.0.1", NULL, "ogstun"));
     ogs_assert(OGS_OK == ogs_pfcp_ue_pool_generate());
-    ogs_log_set_domain_level(__ogs_pfcp_domain, level);
 
     suite = ADD_SUITE(suite)
 

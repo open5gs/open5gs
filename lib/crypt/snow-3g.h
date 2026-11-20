@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2026 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #if !defined(OGS_CRYPT_INSIDE) && !defined(OGS_CRYPT_COMPILATION)
 #error "This header cannot be included directly."
 #endif
@@ -11,59 +30,9 @@
 extern "C" {
 #endif
 
-typedef uint8_t u8;
-typedef uint32_t u32;
-typedef uint64_t u64;
-
-/* Initialization.
-* Input k[4]: Four 32-bit words making up 128-bit key.
-* Input IV[4]: Four 32-bit words making 128-bit initialization variable.
-* Output: All the LFSRs and FSM are initialized for key generation.
-* See Section 4.1.
-*/
-
-void snow_3g_initialize(u32 k[4], u32 IV[4]);
-
-/* Generation of Keystream.
-* input n: number of 32-bit words of keystream.
-* input z: space for the generated keystream, assumes
-* memory is allocated already.
-* output: generated keystream which is filled in z
-* See section 4.2.
-*/
-
-void snow_3g_generate_key_stream(u32 n, u32 *z);
-
-/* f8.
-* Input key: 128 bit Confidentiality Key.
-* Input count:32-bit Count, Frame dependent input.
-* Input bearer: 5-bit Bearer identity (in the LSB side).
-* Input dir:1 bit, direction of transmission.
-* Input data: length number of bits, input bit stream.
-* Input length: 32 bit Length, i.e., the number of bits to be encrypted or
-* decrypted.
-* Output data: Output bit stream. Assumes data is suitably memory
-* allocated.
-* Encrypts/decrypts blocks of data between 1 and 2^32 bits in length as
-* defined in Section 3.
-*/
-
-void snow_3g_f8( u8 *key, u32 count, u32 bearer, u32 dir,
-                  u8 *data, u32 length );
-
-/* f9.
-* Input key: 128 bit Integrity Key.
-* Input count:32-bit Count, Frame dependent input.
-* Input fresh: 32-bit Random number.
-* Input dir:1 bit, direction of transmission (in the LSB).
-* Input data: length number of bits, input bit stream.
-* Input length: 64 bit Length, i.e., the number of bits to be MAC'd.
-* Output : 32 bit block used as MAC
-* Generates 32-bit MAC using UIA2 algorithm as defined in Section 4.
-*/
-
-void snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir,
-                 u8 *data, u64 length, u8 *out);
+/* Compute a 4-byte UIA2 MAC over length bits of data. */
+void snow_3g_f9(uint8_t *key, uint32_t count, uint32_t fresh, uint32_t dir,
+        uint8_t *data, uint64_t length, uint8_t *out);
 
 #ifdef __cplusplus
 }
