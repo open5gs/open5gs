@@ -9,6 +9,9 @@
 @localstatedir@/log/open5gs/ausf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-ausfd/pid`
 @localstatedir@/log/open5gs/udm.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-udmd/pid`
 @localstatedir@/log/open5gs/udr.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-udrd/pid`
+@localstatedir@/log/open5gs/pcf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-pcfd/pid`
+@localstatedir@/log/open5gs/nssf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-nssfd/pid`
+@localstatedir@/log/open5gs/bsf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-bsfd/pid`
 @localstatedir@/log/open5gs/upf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-upfd/pid`
 @localstatedir@/log/open5gs/sgwc.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-sgwcd/pid`
 @localstatedir@/log/open5gs/sgwu.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-sgwud/pid`
