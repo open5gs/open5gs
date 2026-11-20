@@ -26,6 +26,7 @@
 #include "ogs-metrics.h"
 #include "metrics/prometheus/json_pager.h"
 #include "pdu-info.h"
+#include "dhcpv6.h"
 
 static ogs_thread_t *thread;
 static void smf_main(void *data);
@@ -47,6 +48,8 @@ int smf_initialize(void)
     ogs_sbi_context_init(OpenAPI_nf_type_SMF);
 
     smf_context_init();
+
+    smf_dhcpv6_init();
 
     rv = ogs_gtp_xact_init();
     if (rv != OGS_OK) return rv;

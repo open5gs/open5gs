@@ -48,6 +48,9 @@ int smf_gtp2_send_delete_session_response(
 int smf_gtp2_send_delete_bearer_request(
         smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value);
 
+/* Send a CP-function packet (RA, DHCPv6) towards the UE. Takes over pkbuf. */
+void smf_gtp_send_cp_packet_to_ue(smf_sess_t *sess, ogs_pkbuf_t *pkbuf);
+
 #ifdef __cplusplus
 }
 #endif

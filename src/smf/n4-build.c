@@ -677,3 +677,61 @@ ogs_pkbuf_t *smf_n4_build_session_deletion_request(
 
     return pkbuf;
 }
+
+/*
+ * Session Modification Request carrying the DHCPv6-PD delegated
+ * prefix route :
+ *
+ * - add == true  : Create PDR x2 (DL+UL) with the delegated prefix
+ *                  as a Framed-IPv6-Route in the PDI
+ * - add == false : Remove PDR x2 (by the IDs stored in the lease)
+ */
+ogs_pkbuf_t *smf_n4_build_pd_lease_modification_request(
+        uint8_t type, smf_sess_t *sess, bool add)
+{
+    ogs_pfcp_message_t *pfcp_message = NULL;
+    ogs_pfcp_session_modification_request_t *req = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_debug("PD Lease Modification Request [%s]", add ? "ADD" : "REMOVE");
+    ogs_assert(sess);
+
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    req = &pfcp_message->pfcp_session_modification_request;
+
+    ogs_pfcp_pdrbuf_init();
+
+    if (add) {
+        pdr = ogs_pfcp_pdr_find(&sess->pfcp, sess->pd_lease.dl_pdr_id);
+        ogs_assert(pdr);
+        ogs_pfcp_build_create_pdr(&req->create_pdr[0], 0, pdr);
+
+        pdr = ogs_pfcp_pdr_find(&sess->pfcp, sess->pd_lease.ul_pdr_id);
+        ogs_assert(pdr);
+        ogs_pfcp_build_create_pdr(&req->create_pdr[1], 1, pdr);
+    } else {
+        req->remove_pdr[0].presence = 1;
+        req->remove_pdr[0].pdr_id.presence = 1;
+        req->remove_pdr[0].pdr_id.u16 = sess->pd_lease.dl_pdr_id;
+
+        req->remove_pdr[1].presence = 1;
+        req->remove_pdr[1].pdr_id.presence = 1;
+        req->remove_pdr[1].pdr_id.u16 = sess->pd_lease.ul_pdr_id;
+    }
+
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
+
+    ogs_pfcp_pdrbuf_clear();
+    ogs_free(pfcp_message);
+
+    return pkbuf;
+}

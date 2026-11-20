@@ -288,6 +288,16 @@ typedef struct smf_bearer_s {
 } smf_bearer_t;
 
 #define SMF_SESS(pfcp_sess) ogs_container_of(pfcp_sess, smf_sess_t, pfcp)
+
+/* DHCPv6 Prefix Delegation (IA_PD) lease state */
+typedef enum {
+    SMF_PD_LEASE_NONE = 0,
+    SMF_PD_LEASE_OFFERED,    /* advertised; prefix reserved; no PFCP yet */
+    SMF_PD_LEASE_PENDING,    /* PFCP add outstanding */
+    SMF_PD_LEASE_ACTIVE,     /* UPF accepted; assigned to the UE */
+    SMF_PD_LEASE_RELEASING,  /* PFCP remove outstanding */
+} smf_pd_lease_state_e;
+
 typedef struct smf_sess_s {
     ogs_sbi_object_t sbi;
     ogs_pool_id_t id;
@@ -576,6 +586,46 @@ typedef struct smf_sess_s {
     ogs_pfcp_ue_ip_t *ipv4;
     ogs_pfcp_ue_ip_t *ipv6;
 
+    /* DHCPv6 Prefix Delegation (IA_PD) lease
+     *
+     * NONE      : no prefix reserved
+     * OFFERED   : advertised to the UE; prefix reserved; no PFCP yet
+     * PENDING   : PFCP Session Modification (Create PDR) outstanding
+     * ACTIVE    : UPF accepted; prefix assigned to the UE
+     * RELEASING : PFCP Session Modification (Remove PDR) outstanding
+     *
+     * At most one PD PFCP modification may be outstanding per session.
+     * A committing DHCPv6 Reply is sent only after PENDING → ACTIVE. */
+    struct {
+        smf_pd_lease_state_e state;
+        ogs_pfcp_subnet_t *subnet;      /* Pool the prefix came from */
+        uint8_t         prefix[OGS_IPV6_LEN];
+        uint8_t         plen;
+        uint32_t        iaid;
+        uint8_t         *duid;          /* Client Identifier (DUID) */
+        uint16_t        duid_len;
+        uint32_t        valid_lifetime;
+        uint32_t        preferred_lifetime;
+        ogs_timer_t     *timer;         /* valid-lifetime expiry */
+        ogs_pfcp_pdr_id_t dl_pdr_id;    /* Installed route PDRs */
+        ogs_pfcp_pdr_id_t ul_pdr_id;
+        char            route[64];      /* "2001:db8:8001::/56" */
+        char            sdf[128];       /* SDF filter for the route PDRs */
+        bool            release_when_done; /* expire/abort after PFCP add */
+
+        /* Deferred committing DHCPv6 Reply (and queued replacement) */
+        struct {
+            bool            present;
+            uint8_t         msg_type;
+            uint8_t         xid[3];
+            uint8_t         client_addr[OGS_IPV6_LEN];
+            bool            rapid_commit;
+            uint32_t        iaid;
+            uint8_t         duid[130];  /* RFC 8415 §11 : 128 + type */
+            uint16_t        duid_len;
+        } dhcp;
+    } pd_lease;
+
     /* AN Type */
     OpenAPI_access_type_e an_type;
 
@@ -788,6 +838,20 @@ bool smf_sess_have_indirect_data_forwarding(smf_sess_t *sess);
 void smf_sess_delete_indirect_data_forwarding(smf_sess_t *sess);
 
 void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess);
+
+/* DHCPv6 Prefix Delegation (IA_PD) */
+int smf_sess_pd_lease_grant(smf_sess_t *sess,
+        uint32_t iaid, const uint8_t *duid, uint16_t duid_len);
+int smf_sess_pd_lease_commit(smf_sess_t *sess);
+void smf_sess_pd_lease_activate(smf_sess_t *sess);
+void smf_sess_pd_lease_refresh(smf_sess_t *sess);
+bool smf_sess_pd_lease_matches(smf_sess_t *sess,
+        uint32_t iaid, const uint8_t *duid, uint16_t duid_len);
+bool smf_sess_pd_lease_pfcp_pending(smf_sess_t *sess);
+int smf_sess_pd_lease_release(smf_sess_t *sess);
+void smf_sess_pd_lease_abort(smf_sess_t *sess);
+void smf_sess_pd_lease_expire(smf_sess_t *sess);
+void smf_sess_pd_lease_clear(smf_sess_t *sess);
 void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess);
 
 ogs_pcc_rule_t *smf_pcc_rule_find_by_id(smf_sess_t *sess, char *pcc_rule_id);

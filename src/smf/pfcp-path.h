@@ -62,6 +62,9 @@ int smf_epc_pfcp_send_session_deletion_request(
 
 int smf_epc_pfcp_send_deactivation(smf_sess_t *sess, uint8_t gtp_cause);
 
+/* Install (add=true) or remove the DHCPv6-PD delegated prefix route */
+int smf_pfcp_send_pd_lease_modification(smf_sess_t *sess, bool add);
+
 int smf_pfcp_send_session_report_response(
         ogs_pfcp_xact_t *xact, smf_sess_t *sess, uint8_t cause);
 

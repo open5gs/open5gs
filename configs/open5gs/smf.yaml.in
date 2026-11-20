@@ -39,6 +39,15 @@ smf:
       gateway: 10.45.0.1
     - subnet: 2001:db8:cafe::/48
       gateway: 2001:db8:cafe::1
+#    - subnet: 2001:db8:cafe::/48
+#      gateway: 2001:db8:cafe::1
+#      delegated_prefix:           # DHCPv6 Prefix Delegation (IA_PD)
+#        range: 2001:db8:8000::/48 #   pool to delegate from (must not
+#                                  #   overlap the session subnet)
+#        length: 56                #   delegated prefix length
+#                                  #   (range < length <= 64)
+#        valid_lifetime: 86400     #   seconds (default 86400)
+#        preferred_lifetime: 43200 #   seconds (default 43200)
   dns:
     - 8.8.8.8
     - 8.8.4.4
