@@ -12,6 +12,8 @@ import * as Subscriber from 'containers/Subscriber';
 import * as Profile from 'containers/Profile';
 import * as Account from 'containers/Account';
 import * as Eir from 'containers/Eir';
+import * as ChfSubscriber from 'containers/ChfSubscriber';
+import * as ChfSession from 'containers/ChfSession';
 
 class App extends Component {
   static propTypes = {
@@ -56,6 +58,15 @@ class App extends Component {
         </Layout.Container>
         <Layout.Container visible={view === "account"}>
           <Account.Collection session={session}/>
+        </Layout.Container>
+        <Layout.Container visible={view === "chfsubscriber"}>
+          <ChfSubscriber.Collection/>
+        </Layout.Container>
+        <Layout.Container visible={view === "chfpool"}>
+          <ChfSubscriber.Collection pools/>
+        </Layout.Container>
+        <Layout.Container visible={view === "chfsession"}>
+          <ChfSession.Collection/>
         </Layout.Container>
         <Notification/>
       </Layout>

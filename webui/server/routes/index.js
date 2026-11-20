@@ -29,4 +29,9 @@ passport.use(
 router.use('/auth', auth);
 router.use('/db', passport.authenticate('jwt', { session: false }), db);
 
+/* TM Forum Open APIs (TMF632 / TMF666 / TMF654), same bearer auth as /db. */
+const tmf = require('../tmf');
+router.use('/tmf-api', passport.authenticate('jwt', { session: false }),
+    tmf.createTmfRouter(tmf.mongooseRepos()));
+
 module.exports = router;
