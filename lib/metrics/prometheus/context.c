@@ -250,7 +250,6 @@ static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
     }
 
     MHD_add_response_header(rsp, "Content-Type", "application/json");
-    MHD_add_response_header(rsp, "Access-Control-Allow-Origin", "*");
     int ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
     MHD_destroy_response(rsp);
 #if MHD_VERSION < 0x00096100
