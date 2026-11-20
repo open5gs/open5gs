@@ -254,6 +254,12 @@ static int mme_context_validation(void)
         return OGS_RETRY;
     }
 
+    if (self.dns.guard_timeout <= 0) {
+        ogs_error("Invalid mme.dns.guard_timeout [%d]",
+                self.dns.guard_timeout);
+        return OGS_ERROR;
+    }
+
     if (ogs_list_first(&ogs_gtp_self()->gtpc_list) == NULL &&
         ogs_list_first(&ogs_gtp_self()->gtpc_list6) == NULL) {
         ogs_error("No mme.gtpc.address in '%s'", ogs_app()->file);

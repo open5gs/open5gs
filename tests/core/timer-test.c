@@ -208,6 +208,60 @@ static void test3_func(abts_case *tc, void *data)
     ogs_timer_mgr_destroy(timer);
 }
 
+static ogs_timer_t *test4_timer[2];
+
+static void test4_expire_func(void *data)
+{
+    int index = (uintptr_t)data;
+
+    expire_check[index]++;
+
+    /* Started with 0 from a callback: expires on the next
+     * ogs_timer_mgr_expire(), not in the current one */
+    if (index == 0)
+        ogs_timer_start(test4_timer[1], 0);
+}
+
+/* duration 0: expires on the next ogs_timer_mgr_expire() */
+static void test4_func(abts_case *tc, void *data)
+{
+    ogs_timer_mgr_t *timer = NULL;
+
+    memset(expire_check, 0, TEST_DURATION/TEST_TIMER_PRECISION);
+
+    timer = ogs_timer_mgr_create(512);
+    ogs_assert(timer);
+
+    test4_timer[0] = ogs_timer_add(
+            timer, test4_expire_func, (void*)(uintptr_t)0);
+    ogs_assert(test4_timer[0]);
+    test4_timer[1] = ogs_timer_add(
+            timer, test4_expire_func, (void*)(uintptr_t)1);
+    ogs_assert(test4_timer[1]);
+
+    ogs_timer_start(test4_timer[0], 0);
+    ABTS_TRUE(tc, test4_timer[0]->running == true);
+    ABTS_TRUE(tc, ogs_timer_mgr_next(timer) == OGS_NO_WAIT_TIME);
+
+    ogs_timer_mgr_expire(timer);
+    ABTS_INT_EQUAL(tc, 1, expire_check[0]);
+    ABTS_INT_EQUAL(tc, 0, expire_check[1]);
+    ABTS_TRUE(tc, test4_timer[0]->running == false);
+    ABTS_TRUE(tc, test4_timer[1]->running == true);
+    ABTS_TRUE(tc, ogs_timer_mgr_next(timer) == OGS_NO_WAIT_TIME);
+
+    ogs_timer_mgr_expire(timer);
+    ABTS_INT_EQUAL(tc, 1, expire_check[0]);
+    ABTS_INT_EQUAL(tc, 1, expire_check[1]);
+    ABTS_TRUE(tc, test4_timer[1]->running == false);
+    ABTS_TRUE(tc, ogs_timer_mgr_next(timer) == OGS_INFINITE_TIME);
+
+    ogs_timer_delete(test4_timer[0]);
+    ogs_timer_delete(test4_timer[1]);
+
+    ogs_timer_mgr_destroy(timer);
+}
+
 abts_suite *test_timer(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -215,6 +269,7 @@ abts_suite *test_timer(abts_suite *suite)
     abts_run_test(suite, test1_func, NULL);
     abts_run_test(suite, test2_func, NULL);
     abts_run_test(suite, test3_func, NULL);
+    abts_run_test(suite, test4_func, NULL);
 
     return suite;
 }

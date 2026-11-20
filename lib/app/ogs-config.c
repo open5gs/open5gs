@@ -495,6 +495,33 @@ static int local_conf_validation(void)
         return OGS_ERROR;
     }
 
+    /* Passed, directly or derived, to ogs_timer_start() */
+    if (local_conf.time.nf_instance.validity_duration < 0) {
+        ogs_error("Invalid time.nf_instance.validity [%d]",
+                local_conf.time.nf_instance.validity_duration);
+        return OGS_ERROR;
+    }
+    if (local_conf.time.nf_instance.heartbeat_interval < 0) {
+        ogs_error("Invalid time.nf_instance.heartbeat [%d]",
+                local_conf.time.nf_instance.heartbeat_interval);
+        return OGS_ERROR;
+    }
+    if (local_conf.time.subscription.validity_duration < 0) {
+        ogs_error("Invalid time.subscription.validity [%d]",
+                local_conf.time.subscription.validity_duration);
+        return OGS_ERROR;
+    }
+    if (local_conf.time.message.duration < 0) {
+        ogs_error("Invalid time.message.duration [%lld]",
+                (long long)(local_conf.time.message.duration / 1000));
+        return OGS_ERROR;
+    }
+    if (local_conf.time.handover.duration < 0) {
+        ogs_error("Invalid time.handover.duration [%lld]",
+                (long long)(local_conf.time.handover.duration / 1000));
+        return OGS_ERROR;
+    }
+
     return OGS_OK;
 }
 

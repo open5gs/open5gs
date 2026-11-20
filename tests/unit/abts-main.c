@@ -48,6 +48,7 @@ abts_suite *test_security(abts_suite *suite);
 abts_suite *test_nrf_discovery(abts_suite *suite);
 abts_suite *test_nrf_timer(abts_suite *suite);
 abts_suite *test_nnrf_subscription(abts_suite *suite);
+abts_suite *test_nnrf_timer_value(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
 abts_suite *test_mme_dns_select(abts_suite *suite);
 abts_suite *test_mme_s13(abts_suite *suite);
@@ -77,6 +78,7 @@ const struct testlist {
     {test_nrf_discovery},
     {test_nrf_timer},
     {test_nnrf_subscription},
+    {test_nnrf_timer_value},
     {test_crash},
     {test_mme_dns_select},
     {test_mme_s13},
