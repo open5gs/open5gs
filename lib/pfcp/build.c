@@ -766,7 +766,8 @@ void ogs_pfcp_build_update_urr(
              OGS_PFCP_MODIFY_URR_VOLUME_QUOTA|
              OGS_PFCP_MODIFY_URR_TIME_THRESH|
              OGS_PFCP_MODIFY_URR_TIME_QUOTA|
-             OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME));
+             OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME|
+             OGS_PFCP_MODIFY_URR_QUOTA_HOLDING_TIME));
 
     /* Change request: Send only changed IEs */
     message->presence = 1;
@@ -821,6 +822,13 @@ void ogs_pfcp_build_update_urr(
         if (urr->quota_validity_time) {
             message->quota_validity_time.presence = 1;
             message->quota_validity_time.u32 = urr->quota_validity_time;
+        }
+    }
+
+    if (modify_flags & OGS_PFCP_MODIFY_URR_QUOTA_HOLDING_TIME) {
+        if (urr->quota_holding_time) {
+            message->quota_holding_time.presence = 1;
+            message->quota_holding_time.u32 = urr->quota_holding_time;
         }
     }
 }

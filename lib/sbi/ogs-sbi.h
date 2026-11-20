@@ -77,6 +77,10 @@
 #include "model/policy_association.h"
 #include "model/am_policy_data.h"
 #include "model/sm_policy_context_data.h"
+/* TS 32.291 Nchf_ConvergedCharging */
+#include "model/charging_data_request.h"
+#include "model/charging_data_response.h"
+#include "model/charging_notify_request.h"
 #include "model/sm_policy_decision.h"
 #include "model/sm_policy_data.h"
 #include "model/sm_policy_delete_data.h"
