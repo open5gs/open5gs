@@ -252,19 +252,6 @@ static int client_notify_cb(
     return OGS_OK;
 }
 
-static int client_delete_notify_cb(
-        int status, ogs_sbi_response_t *response, void *data)
-{
-    pcf_app_t *app_session = data;
-
-    ogs_assert(app_session);
-    client_notify_cb(status, response, data);
-
-    pcf_app_remove(app_session);
-
-    return OGS_OK;
-}
-
 bool pcf_sbi_send_am_policy_control_notify(pcf_ue_am_t *pcf_ue_am)
 {
     bool rc;
@@ -644,37 +631,6 @@ bool pcf_sbi_send_smpolicycontrol_update_notify(
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);
     ogs_expect(rc == true);
-
-    ogs_sbi_request_free(request);
-
-    return rc;
-}
-
-bool pcf_sbi_send_smpolicycontrol_delete_notify(
-        pcf_sess_t *sess, pcf_app_t *app_session,
-        OpenAPI_sm_policy_decision_t *SmPolicyDecision)
-{
-    bool rc;
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(sess);
-    client = sess->nsmf.client;
-    ogs_assert(client);
-
-    request = pcf_nsmf_callback_build_smpolicycontrol_update(
-                sess, SmPolicyDecision);
-    if (!request) {
-        ogs_error("pcf_nsmf_callback_build_smpolicycontrol_update() failed");
-        return false;
-    }
-
-    rc = ogs_sbi_send_request_to_client(
-            client, client_delete_notify_cb, request, app_session);
-    if (rc == false) {
-        ogs_error("ogs_sbi_send_request_to_client() failed");
-        pcf_app_remove(app_session);
-    }
 
     ogs_sbi_request_free(request);
 
