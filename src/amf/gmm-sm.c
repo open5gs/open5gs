@@ -4156,6 +4156,24 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
                     ogs_error("[%s] Ignore SBI message", amf_ue->suci);
                     break;
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+/*
+ * Issues: #5030
+ *
+ * gmm_state_exception()
+ *
+ * Ignore UECM registration PATCH response.
+ *
+ * The PATCH was sent by a De-registration in gmm_state_de_registered().
+ * If a new Registration Request for the same UE is rejected before
+ * the response arrives, the response is no longer relevant.
+ */
+                    ogs_warn("[%s] Ignoring UECM REGISTRATIONS PATCH "
+                            "response [%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
+                    break;
                 DEFAULT
                     ogs_error("[%s] Invalid HTTP method [%s]",
                             amf_ue->suci, sbi_message->h.method);
