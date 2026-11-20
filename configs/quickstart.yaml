@@ -1,0 +1,17 @@
+# quickstart.yaml – contributed by chl15819762247-dev (Nov 2025)
+# One-command 5G core for absolute beginners
+
+amf:
+  ngap:
+    - addr: 0.0.0.0
+  guami:
+    plmn_id:
+      mcc: 999
+      mnc: 99
+    amf_id:
+      region: 2
+      set: 1
+
+upf:
+  gtpu:
+    - addr: 0.0.0.0
