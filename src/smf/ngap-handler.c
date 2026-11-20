@@ -938,10 +938,13 @@ int ngap_handle_handover_request_ack(
                 "Invalid GTP Tunnel IP (IPv4/IPv6 all zero)", smf_ue->supi);
         goto cleanup;
     }
-    memcpy(&sess->handover.remote_dl_ip, &remote_dl_ip,
-            sizeof(sess->handover.remote_dl_ip));
+    /* The tunnel the target serves the UE on once the handover completes.
+     * It is kept apart from the indirect forwarding tunnel below, which is
+     * optional and would otherwise overwrite it. */
+    memcpy(&sess->handover.gnb_n3_ip, &remote_dl_ip,
+            sizeof(sess->handover.gnb_n3_ip));
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
-            &sess->handover.remote_dl_teid);
+            &sess->handover.gnb_n3_teid);
 
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
         ogs_list_for_each(&sess->bearer_list, qos_flow) {

@@ -993,15 +993,17 @@ bool smf_nsmf_handle_update_sm_context(
             smf_bearer_t *qos_flow = NULL;
 
             if (sess->handover.prepared == true) {
-                /* Need to Update? */
-                if (memcmp(&sess->remote_dl_ip, &sess->handover.remote_dl_ip,
+                /* Complete onto the target data tunnel, not the indirect
+                 * forwarding tunnel, which has done its work by this point
+                 * and is about to be removed. */
+                if (memcmp(&sess->remote_dl_ip, &sess->handover.gnb_n3_ip,
                             sizeof(sess->remote_dl_ip)) != 0 ||
-                    sess->remote_dl_teid != sess->handover.remote_dl_teid)
+                    sess->remote_dl_teid != sess->handover.gnb_n3_teid)
                     far_update = true;
 
                 memcpy(&sess->remote_dl_ip,
-                        &sess->handover.remote_dl_ip, sizeof(sess->remote_dl_ip));
-                sess->remote_dl_teid = sess->handover.remote_dl_teid;
+                        &sess->handover.gnb_n3_ip, sizeof(sess->remote_dl_ip));
+                sess->remote_dl_teid = sess->handover.gnb_n3_teid;
             }
             sess->handover.prepared = false;
 
