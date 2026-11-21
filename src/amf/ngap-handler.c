@@ -1082,6 +1082,7 @@ void ngap_handle_uplink_nas_transport(
     memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
+    amf_ue->ue_location_timestamp = ogs_time_now();
 
     ogs_expect(OGS_OK == ngap_send_to_nas(
                 ran_ue, NGAP_ProcedureCode_id_UplinkNASTransport, NAS_PDU));
@@ -3411,6 +3412,7 @@ void ngap_handle_path_switch_request(
     memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
+    amf_ue->ue_location_timestamp = ogs_time_now();
 
     ogs_info("    [NEW] TAC[%d] CellID[0x%llx]",
         amf_ue->nr_tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
@@ -3494,6 +3496,11 @@ void ngap_handle_path_switch_request(
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
         ogs_assert(param.n2smbuf);
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ;
+        /* 3GPP TS 23.502 Figure 4.9.1.2.2-1 step 2:
+         * Report the cell the UE has arrived on. amf_ue->nr_cgi was copied
+         * from the Path Switch Request's User Location Information above, so
+         * this is the target cell and not the one the UE has just left. */
+        param.ue_location = true;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
         r = amf_sess_sbi_discover_and_send(
@@ -4951,6 +4958,7 @@ void ngap_handle_handover_notification(
     memcpy(&amf_ue->nr_tai, &target_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &target_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->nr_cgi_gnb_id_length = target_ue->saved.nr_cgi_gnb_id_length;
+    amf_ue->ue_location_timestamp = ogs_time_now();
 
     r = ngap_send_ran_ue_context_release_command(source_ue,
             NGAP_Cause_PR_radioNetwork,
@@ -4972,6 +4980,12 @@ void ngap_handle_handover_notification(
 
         memset(&param, 0, sizeof(param));
         param.hoState = OpenAPI_ho_state_COMPLETED;
+        /* 3GPP TS 23.502 Figure 4.9.1.3.3-1 step 5:
+         * Handover Notify: Handover is by this message considered as successful in T-RAN.
+         * amf_ue->nr_cgi has just been copied from target_ue->saved.nr_cgi,
+         * so the UE is reported on the cell it has moved to.
+         * Report the new location to the SMF when updating the SM context. */
+        param.ue_location = true;
 
         r = amf_sess_sbi_discover_and_send(
                 OpenAPI_service_name_nsmf_pdusession, NULL,
