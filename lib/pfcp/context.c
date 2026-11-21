@@ -2060,6 +2060,12 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_by_gtpu_error_indication(ogs_pkbuf_t *pkbuf)
     p = pkbuf->data;
     ogs_assert(p);
 
+    /* TEID Data I (5 octets) + GTP-U Peer Address Type and Length (3 octets) */
+    if (pkbuf->len < 8) {
+        ogs_error("Error Indication too short [%d]", pkbuf->len);
+        return NULL;
+    }
+
     /*
      * 8.3 Tunnel Endpoint Identifier Data I
      *
@@ -2097,6 +2103,11 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_by_gtpu_error_indication(ogs_pkbuf_t *pkbuf)
     } else if (len == OGS_IPV6_LEN) {
     } else {
         ogs_error("Invalid Length [%d]", len);
+        return NULL;
+    }
+
+    if (pkbuf->len < 8 + len) {
+        ogs_error("Truncated GTP-U Peer Address [%d:%d]", pkbuf->len, len);
         return NULL;
     }
 
