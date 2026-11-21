@@ -238,25 +238,23 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
 {
     sgwu_sess_t *sess = NULL;
 
-    ogs_pfcp_f_seid_t *f_seid = NULL;
+    ogs_pfcp_f_seid_t f_seid;
 
     ogs_pfcp_session_establishment_request_t *req =
         &message->pfcp_session_establishment_request;;
 
-    f_seid = req->cp_f_seid.data;
-    if (req->cp_f_seid.presence == 0 || f_seid == NULL) {
+    if (req->cp_f_seid.presence == 0) {
         ogs_error("No CP F-SEID");
         return NULL;
     }
-    if (f_seid->ipv4 == 0 && f_seid->ipv6 == 0) {
-        ogs_error("No IPv4 or IPv6");
+    if (ogs_pfcp_parse_f_seid(&f_seid, &req->cp_f_seid) == 0) {
+        ogs_error("Invalid CP F-SEID");
         return NULL;
     }
-    f_seid->seid = be64toh(f_seid->seid);
 
-    sess = sgwu_sess_find_by_sgwc_sxa_f_seid(f_seid);
+    sess = sgwu_sess_find_by_sgwc_sxa_f_seid(&f_seid);
     if (!sess) {
-        sess = sgwu_sess_add(f_seid);
+        sess = sgwu_sess_add(&f_seid);
         if (!sess) {
             ogs_error("No Session Context");
             return NULL;

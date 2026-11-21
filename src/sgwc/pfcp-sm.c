@@ -289,19 +289,22 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
             if ((xact->create_flags &
                         OGS_PFCP_CREATE_RESTORATION_INDICATION)) {
                 ogs_pfcp_session_establishment_response_t *rsp = NULL;
-                ogs_pfcp_f_seid_t *up_f_seid = NULL;
+                ogs_pfcp_f_seid_t up_f_seid;
 
                 rsp = &message->pfcp_session_establishment_response;
                 if (rsp->up_f_seid.presence == 0) {
                     ogs_error("No UP F-SEID");
                     break;
                 }
-                up_f_seid = rsp->up_f_seid.data;
-                ogs_assert(up_f_seid);
+                if (ogs_pfcp_parse_f_seid(
+                            &up_f_seid, &rsp->up_f_seid) == 0) {
+                    ogs_error("Invalid UP F-SEID");
+                    break;
+                }
                 /* Clang scan-build SA: NULL pointer dereference: sess=NULL if both message->h.seid=0 and
                  * xact->local_seid=0. */
                 ogs_assert(sess);
-                sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
+                sess->sgwu_sxa_seid = up_f_seid.seid;
             } else {
                 sgwc_sxa_handle_session_establishment_response(
                     sess, xact, e->gtp_message,

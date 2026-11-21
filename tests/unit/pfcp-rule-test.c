@@ -680,6 +680,87 @@ static void test_find_by_packet_address_family(abts_case *tc, void *data)
     ogs_pfcp_pool_final(&sess);
 }
 
+/*
+ * TS 29.244 8.2.37: the F-SEID IE carries the flags octet, the 8-octet
+ * SEID and the addresses its own V4/V6 flags announce. A shorter IE must
+ * be refused rather than read past its value, and the SEID must be
+ * byte-swapped in the decoded copy, not in the message buffer.
+ */
+static void test_parse_f_seid(abts_case *tc, void *data)
+{
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
+    static const int short_len[] = { 0, 1, 8, 9, 12, 24, 28 };
+    static const uint8_t tail[8] = {
+        0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef };
+    ogs_pfcp_f_seid_t wire, f_seid;
+    ogs_tlv_octet_t octet;
+    uint8_t buf[sizeof(wire) + sizeof(tail)];
+    size_t i;
+
+    memset(&wire, 0, sizeof(wire));
+    wire.ipv4 = 1;
+    wire.ipv6 = 1;
+    wire.seid = htobe64(0x0102030405060708ULL);
+    wire.both.addr = htobe32(0x0a2d0001);
+    wire.both.addr6[15] = 1;
+
+    memset(&octet, 0, sizeof(octet));
+    octet.presence = 1;
+    octet.data = buf;
+
+    /*
+     * Each IE is followed by the octets of the IE that comes after it in
+     * the same message buffer, which must come back unchanged.
+     */
+    for (i = 0; i < OGS_ARRAY_SIZE(short_len); i++) {
+        memset(buf, 0, sizeof(buf));
+        memcpy(buf, &wire, short_len[i]);
+        memcpy(buf + short_len[i], tail, sizeof(tail));
+        octet.len = short_len[i];
+
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__ogs_pfcp_domain, OGS_LOG_FATAL);
+        ABTS_INT_EQUAL(tc, 0, ogs_pfcp_parse_f_seid(&f_seid, &octet));
+        ogs_log_set_domain_level(__ogs_pfcp_domain, level);
+        ABTS_INT_EQUAL(tc, 0,
+                memcmp(buf + short_len[i], tail, sizeof(tail)));
+    }
+
+    /* IPv4 only */
+    memset(&wire, 0, sizeof(wire));
+    wire.ipv4 = 1;
+    wire.seid = htobe64(0x0102030405060708ULL);
+    wire.addr = htobe32(0x0a2d0001);
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, &wire, 13);
+    memcpy(buf + 13, tail, sizeof(tail));
+    octet.len = 13;
+    ABTS_INT_EQUAL(tc, 13, ogs_pfcp_parse_f_seid(&f_seid, &octet));
+    ABTS_TRUE(tc, f_seid.seid == 0x0102030405060708ULL);
+    ABTS_INT_EQUAL(tc, 1, f_seid.ipv4);
+    ABTS_INT_EQUAL(tc, 0, f_seid.ipv6);
+    ABTS_TRUE(tc, f_seid.addr == htobe32(0x0a2d0001));
+    ABTS_INT_EQUAL(tc, 0, memcmp(buf, &wire, 13));
+    ABTS_INT_EQUAL(tc, 0, memcmp(buf + 13, tail, sizeof(tail)));
+
+    /* IPv4 and IPv6 */
+    memset(&wire, 0, sizeof(wire));
+    wire.ipv4 = 1;
+    wire.ipv6 = 1;
+    wire.seid = htobe64(0x1122334455667788ULL);
+    wire.both.addr = htobe32(0x0a2d0002);
+    wire.both.addr6[15] = 1;
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, &wire, 29);
+    memcpy(buf + 29, tail, sizeof(buf) - 29);
+    octet.len = 29;
+    ABTS_INT_EQUAL(tc, 29, ogs_pfcp_parse_f_seid(&f_seid, &octet));
+    ABTS_TRUE(tc, f_seid.seid == 0x1122334455667788ULL);
+    ABTS_TRUE(tc, f_seid.both.addr == htobe32(0x0a2d0002));
+    ABTS_INT_EQUAL(tc, 1, f_seid.both.addr6[15]);
+    ABTS_INT_EQUAL(tc, 0, memcmp(buf, &wire, 29));
+}
+
 abts_suite *test_pfcp_rule(abts_suite *suite)
 {
     ogs_log_level_e level = ogs_log_get_domain_level(__ogs_pfcp_domain);
@@ -706,6 +787,7 @@ abts_suite *test_pfcp_rule(abts_suite *suite)
     abts_run_test(suite, test_far_rekey_collision, NULL);
     abts_run_test(suite, test_remove_referenced_rules, NULL);
     abts_run_test(suite, test_find_by_packet_address_family, NULL);
+    abts_run_test(suite, test_parse_f_seid, NULL);
 
     ogs_pfcp_context_final();
     ogs_app_context_final();

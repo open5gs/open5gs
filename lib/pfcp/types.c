@@ -338,6 +338,57 @@ int16_t ogs_pfcp_parse_bitrate(
     return size;
 }
 
+/*
+ * 8.2.37 F-SEID in TS 29.244
+ *
+ * The flags octet and the 8-octet SEID are followed by the IPv4 address
+ * if V4 is set and by the IPv6 address if V6 is set, so a well-formed IE
+ * is 13, 25 or 29 octets. The IE is carried as a variable-length octet
+ * string, so decode it into a zeroed structure and refuse an IE that is
+ * shorter than the fields its own flags announce. Callers must not alias
+ * the IE: the SEID is byte-swapped in the decoded copy, not in place.
+ */
+int16_t ogs_pfcp_parse_f_seid(
+        ogs_pfcp_f_seid_t *f_seid, ogs_tlv_octet_t *octet)
+{
+    uint32_t size = 1 + sizeof(f_seid->seid);
+
+    ogs_assert(f_seid);
+    ogs_assert(octet);
+
+    memset(f_seid, 0, sizeof(*f_seid));
+
+    if (!octet->data || octet->len < size) {
+        ogs_error("Invalid F-SEID [data:%p,len:%d]",
+                octet->data, octet->len);
+        return 0;
+    }
+
+    memcpy(f_seid, octet->data, ogs_min(octet->len, sizeof(*f_seid)));
+
+    if (f_seid->ipv4 == 0 && f_seid->ipv6 == 0) {
+        ogs_error("No IPv4 or IPv6 in F-SEID");
+        memset(f_seid, 0, sizeof(*f_seid));
+        return 0;
+    }
+
+    if (f_seid->ipv4)
+        size += OGS_IPV4_LEN;
+    if (f_seid->ipv6)
+        size += OGS_IPV6_LEN;
+
+    if (octet->len < size) {
+        ogs_error("Truncated F-SEID [len:%d,required:%d]",
+                octet->len, size);
+        memset(f_seid, 0, sizeof(*f_seid));
+        return 0;
+    }
+
+    f_seid->seid = be64toh(f_seid->seid);
+
+    return size;
+}
+
 int16_t ogs_pfcp_build_volume(ogs_tlv_octet_t *octet,
         ogs_pfcp_volume_threshold_t *volume, void *data, int data_len)
 {
