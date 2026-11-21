@@ -151,7 +151,7 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
     uint8_t cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
     uint8_t offending_ie_value = 0;
 
-    ogs_pfcp_f_seid_t *up_f_seid = NULL;
+    ogs_pfcp_f_seid_t up_f_seid;
 
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -246,9 +246,11 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
     }
 
     /* UP F-SEID */
-    up_f_seid = rsp->up_f_seid.data;
-    ogs_assert(up_f_seid);
-    sess->upf_n4_seid = be64toh(up_f_seid->seid);
+    if (ogs_pfcp_parse_f_seid(&up_f_seid, &rsp->up_f_seid) == 0) {
+        ogs_error("Invalid UP F-SEID");
+        return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+    }
+    sess->upf_n4_seid = up_f_seid.seid;
 
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
@@ -1175,7 +1177,7 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
 
     smf_bearer_t *bearer = NULL;
 
-    ogs_pfcp_f_seid_t *up_f_seid = NULL;
+    ogs_pfcp_f_seid_t up_f_seid;
 
     ogs_assert(sess);
     ogs_assert(xact);
@@ -1263,9 +1265,11 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
     }
 
     /* UP F-SEID */
-    up_f_seid = rsp->up_f_seid.data;
-    ogs_assert(up_f_seid);
-    sess->upf_n4_seid = be64toh(up_f_seid->seid);
+    if (ogs_pfcp_parse_f_seid(&up_f_seid, &rsp->up_f_seid) == 0) {
+        ogs_error("Invalid UP F-SEID");
+        return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+    }
+    sess->upf_n4_seid = up_f_seid.seid;
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 

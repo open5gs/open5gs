@@ -586,6 +586,9 @@ ED3(uint8_t     spare:6;,
     };
 } __attribute__ ((packed)) ogs_pfcp_f_seid_t;
 
+int16_t ogs_pfcp_parse_f_seid(
+        ogs_pfcp_f_seid_t *f_seid, ogs_tlv_octet_t *octet);
+
 /*
  * 8.2.3 F-TEID
  *

@@ -147,7 +147,7 @@ void sgwc_sxa_handle_session_establishment_response(
     int rv;
     uint8_t cause_value = 0;
 
-    ogs_pfcp_f_seid_t *up_f_seid = NULL;
+    ogs_pfcp_f_seid_t up_f_seid;
 
     int sgw_s5c_len;
     ogs_gtp2_f_teid_t sgw_s5c_teid;
@@ -196,9 +196,14 @@ void sgwc_sxa_handle_session_establishment_response(
         cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
     }
 
+    memset(&up_f_seid, 0, sizeof(up_f_seid));
     if (pfcp_rsp->up_f_seid.presence == 0) {
         ogs_error("No UP F-SEID");
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    } else if (ogs_pfcp_parse_f_seid(
+                &up_f_seid, &pfcp_rsp->up_f_seid) == 0) {
+        ogs_error("Invalid UP F-SEID");
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
 
     if (pfcp_rsp->cause.presence) {
@@ -322,9 +327,7 @@ void sgwc_sxa_handle_session_establishment_response(
     ogs_assert(rv == OGS_OK);
 
     /* UP F-SEID */
-    up_f_seid = pfcp_rsp->up_f_seid.data;
-    ogs_assert(up_f_seid);
-    sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
+    sess->sgwu_sxa_seid = up_f_seid.seid;
 
     /* Receive Control Plane(UL) : PGW-S5C */
     pgw_s5c_teid = create_session_request->
