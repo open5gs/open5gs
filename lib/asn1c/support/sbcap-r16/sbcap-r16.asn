@@ -1,0 +1,1462 @@
+-- $Id: eef6670c133120a3e12a289db45995bf69116fab $
+
+-- 3GPP TS 29.168 V16.0.0  (2020-07)
+
+-- **************************************************************
+--
+-- Elementary Procedure definitions
+--
+-- **************************************************************
+
+SBC-AP-PDU-Descriptions {
+itu-t (0) identified-organization (4) etsi (0) mobileDomain (0) 
+eps-Access (21) modules (3) sbc-AP (3) version1 (1) sbc-AP-PDU-Descriptions (0)}
+
+DEFINITIONS AUTOMATIC TAGS ::= 
+
+BEGIN
+
+-- **************************************************************
+--
+-- IE parameter types from other modules.
+--
+-- **************************************************************
+
+IMPORTS
+	Criticality,
+	ProcedureCode
+FROM SBC-AP-CommonDataTypes
+
+	Write-Replace-Warning-Request,
+	Write-Replace-Warning-Response,
+	Stop-Warning-Request,
+	Stop-Warning-Response,
+	Error-Indication,
+	Write-Replace-Warning-Indication,
+	Stop-Warning-Indication,
+	PWS-Restart-Indication,
+	PWS-Failure-Indication
+FROM SBC-AP-PDU-Contents
+
+	id-Write-Replace-Warning, 
+	id-Stop-Warning,
+	id-Error-Indication,
+	id-Write-Replace-Warning-Indication,
+	id-Stop-Warning-Indication,
+	id-PWS-Restart-Indication,
+	id-PWS-Failure-Indication
+FROM SBC-AP-Constants;
+
+-- **************************************************************
+--
+-- Interface Elementary Procedure Class
+--
+-- **************************************************************
+
+SBC-AP-ELEMENTARY-PROCEDURE ::= CLASS {
+	&InitiatingMessage	,
+	&SuccessfulOutcome	OPTIONAL,
+	&UnsuccessfulOutcome	OPTIONAL,
+	&procedureCode	ProcedureCode 	UNIQUE,
+	&criticality	Criticality 	DEFAULT ignore
+}
+WITH SYNTAX {
+	INITIATING MESSAGE	&InitiatingMessage
+	[SUCCESSFUL OUTCOME	&SuccessfulOutcome]
+	[UNSUCCESSFUL OUTCOME	&UnsuccessfulOutcome]
+	PROCEDURE CODE	&procedureCode
+	[CRITICALITY	&criticality]
+}
+
+-- **************************************************************
+--
+-- Interface PDU Definition
+--
+-- **************************************************************
+
+SBC-AP-PDU ::= CHOICE {
+	initiatingMessage	InitiatingMessage,
+	successfulOutcome	SuccessfulOutcome,
+	unsuccessfulOutcome	UnsuccessfulOutcome,
+	...
+}
+
+InitiatingMessage ::= SEQUENCE {
+	procedureCode	SBC-AP-ELEMENTARY-PROCEDURE.&procedureCode	({SBC-AP-ELEMENTARY-PROCEDURES}),
+	criticality	SBC-AP-ELEMENTARY-PROCEDURE.&criticality	({SBC-AP-ELEMENTARY-PROCEDURES}{@procedureCode}),
+	value	SBC-AP-ELEMENTARY-PROCEDURE.&InitiatingMessage	({SBC-AP-ELEMENTARY-PROCEDURES}{@procedureCode})
+}
+
+SuccessfulOutcome ::= SEQUENCE {
+	procedureCode	SBC-AP-ELEMENTARY-PROCEDURE.&procedureCode	({SBC-AP-ELEMENTARY-PROCEDURES}),
+	criticality	SBC-AP-ELEMENTARY-PROCEDURE.&criticality	({SBC-AP-ELEMENTARY-PROCEDURES}{@procedureCode}),
+	value	SBC-AP-ELEMENTARY-PROCEDURE.&SuccessfulOutcome	({SBC-AP-ELEMENTARY-PROCEDURES}{@procedureCode})
+}
+
+UnsuccessfulOutcome ::= SEQUENCE {
+	procedureCode	SBC-AP-ELEMENTARY-PROCEDURE.&procedureCode	({SBC-AP-ELEMENTARY-PROCEDURES}),
+	criticality	SBC-AP-ELEMENTARY-PROCEDURE.&criticality	({SBC-AP-ELEMENTARY-PROCEDURES}{@procedureCode}),
+	value	SBC-AP-ELEMENTARY-PROCEDURE.&UnsuccessfulOutcome	({SBC-AP-ELEMENTARY-PROCEDURES}{@procedureCode})
+}
+
+-- **************************************************************
+--
+-- Interface Elementary Procedure List
+--
+-- **************************************************************
+
+SBC-AP-ELEMENTARY-PROCEDURES SBC-AP-ELEMENTARY-PROCEDURE ::= {
+	SBC-AP-ELEMENTARY-PROCEDURES-CLASS-1	|
+	SBC-AP-ELEMENTARY-PROCEDURES-CLASS-2	,
+	...
+}
+
+SBC-AP-ELEMENTARY-PROCEDURES-CLASS-1 SBC-AP-ELEMENTARY-PROCEDURE ::= {
+	write-Replace-Warning 	|
+	stop-Warning	,
+	...
+}
+
+SBC-AP-ELEMENTARY-PROCEDURES-CLASS-2 SBC-AP-ELEMENTARY-PROCEDURE ::= {
+	error-Indication	|
+	write-Replace-Warning-Indication	|
+	stop-Warning-Indication	|
+	pws-Restart-Indication |
+	pws-Failure-Indication,
+	...
+	}
+
+write-Replace-Warning SBC-AP-ELEMENTARY-PROCEDURE ::= {
+	INITIATING MESSAGE	Write-Replace-Warning-Request
+	SUCCESSFUL OUTCOME	Write-Replace-Warning-Response
+	
+	PROCEDURE CODE	id-Write-Replace-Warning
+	CRITICALITY	reject
+}
+
+stop-Warning SBC-AP-ELEMENTARY-PROCEDURE ::= {
+	INITIATING MESSAGE	Stop-Warning-Request
+	SUCCESSFUL OUTCOME	Stop-Warning-Response
+	
+	PROCEDURE CODE	id-Stop-Warning
+	CRITICALITY	reject
+}
+
+error-Indication SBC-AP-ELEMENTARY-PROCEDURE ::= {
+	INITIATING MESSAGE	Error-Indication
+	PROCEDURE CODE	id-Error-Indication
+	CRITICALITY	ignore
+}
+
+write-Replace-Warning-Indication SBC-AP-ELEMENTARY-PROCEDURE	::= {
+	INITIATING MESSAGE	Write-Replace-Warning-Indication
+	PROCEDURE CODE	id-Write-Replace-Warning-Indication
+	CRITICALITY	ignore
+}
+
+stop-Warning-Indication SBC-AP-ELEMENTARY-PROCEDURE	::= {
+	INITIATING MESSAGE	Stop-Warning-Indication
+	PROCEDURE CODE	id-Stop-Warning-Indication
+	CRITICALITY	ignore
+}
+
+pws-Restart-Indication SBC-AP-ELEMENTARY-PROCEDURE ::= {
+	INITIATING MESSAGE	PWS-Restart-Indication
+	PROCEDURE CODE	id-PWS-Restart-Indication
+	CRITICALITY	ignore
+}
+
+pws-Failure-Indication SBC-AP-ELEMENTARY-PROCEDURE ::= {
+	INITIATING MESSAGE	PWS-Failure-Indication
+	PROCEDURE CODE	id-PWS-Failure-Indication
+	CRITICALITY	ignore
+}
+
+END
+
+
+
+-- **************************************************************
+--
+-- PDU definitions for SBC-AP.
+--
+-- **************************************************************
+
+SBC-AP-PDU-Contents {
+itu-t (0) identified-organization (4) etsi (0) mobileDomain (0) 
+eps-Access (21) modules (3) sbc-AP (3) version1 (1) sbc-AP-PDU-Contents (1)}
+
+DEFINITIONS AUTOMATIC TAGS ::= 
+
+BEGIN
+
+-- **************************************************************
+--
+-- IE parameter types from other modules.
+--
+-- **************************************************************
+
+IMPORTS
+	
+	Cause,
+	Concurrent-Warning-Message-Indicator,
+	Criticality-Diagnostics,
+	Data-Coding-Scheme,
+	Message-Identifier,
+	Serial-Number,
+	List-of-TAIs,
+	Warning-Area-List, 
+	Omc-Id,
+	Repetition-Period, 
+	Extended-Repetition-Period,
+	Number-of-Broadcasts-Requested,
+	Warning-Type,
+	Warning-Security-Information,
+	Warning-Message-Content,
+	Warning-Area-Coordinates,
+	Send-Write-Replace-Warning-Indication,
+	Broadcast-Scheduled-Area-List,
+	Unknown-Tracking-Area-List,
+	Send-Stop-Warning-Indication,
+	Broadcast-Cancelled-Area-List,
+	Stop-All-Indicator,
+	Broadcast-Empty-Area-List,
+	Restarted-Cell-List,
+	Global-ENB-ID,
+	List-of-TAIs-Restart,
+	List-of-EAIs-Restart,
+	Failed-Cell-List,
+	List-of-5GS-TAIs,
+	Warning-Area-List-5GS,
+	Global-RAN-Node-ID,
+	Global-GNB-ID,
+	RAT-Selector-5GS,
+	Unknown-5GS-Tracking-Area-List,
+	Broadcast-Scheduled-Area-List-5GS,
+	Broadcast-Cancelled-Area-List-5GS,
+	Broadcast-Empty-Area-List-5GS,
+	Restarted-Cell-List-NR,
+	Failed-Cell-List-NR,
+	List-of-5GS-TAI-for-Restart
+
+FROM SBC-AP-IEs
+
+	ProtocolExtensionContainer{},
+	ProtocolIE-Container{},
+	SBC-AP-PROTOCOL-EXTENSION,
+	SBC-AP-PROTOCOL-IES
+FROM SBC-AP-Containers
+
+	id-Concurrent-Warning-Message-Indicator,
+	id-Criticality-Diagnostics,
+	id-Cause,
+	id-Data-Coding-Scheme,
+	id-List-of-TAIs,
+	id-Message-Identifier,
+	id-Serial-Number,
+	id-Number-of-Broadcasts-Requested, 
+	id-Omc-Id,
+	id-Radio-Resource-Loading-List,
+	id-Recovery-Indication,
+	id-Repetition-Period, 
+	id-Extended-Repetition-Period,
+	id-Warning-Area-List,
+	id-Warning-Message-Content, 
+	id-Warning-Area-Coordinates,
+	id-Warning-Security-Information,
+	id-Warning-Type, 
+	id-Send-Write-Replace-Warning-Indication,
+	id-Broadcast-Scheduled-Area-List,
+	id-Unknown-Tracking-Area-List,
+	id-Send-Stop-Warning-Indication,
+	id-Broadcast-Cancelled-Area-List,
+	id-Stop-All-Indicator,
+	id-Broadcast-Empty-Area-List,
+	id-Global-ENB-ID,
+	id-Restarted-Cell-List,
+	id-List-of-TAIs-Restart,
+	id-List-of-EAIs-Restart,
+	id-Failed-Cell-List,
+	id-List-of-5GS-TAIs,
+	id-Warning-Area-List-5GS,
+	id-Global-RAN-Node-ID,
+	id-Global-GNB-ID,
+	id-RAT-Selector-5GS,
+	id-Unknown-5GS-Tracking-Area-List,
+	id-Broadcast-Scheduled-Area-List-5GS,
+	id-Broadcast-Cancelled-Area-List-5GS,
+	id-Broadcast-Empty-Area-List-5GS,
+	id-Restarted-Cell-List-NR,
+	id-Failed-Cell-List-NR,
+	id-List-of-5GS-TAI-for-Restart
+
+FROM SBC-AP-Constants;
+
+-- **************************************************************
+--
+-- Write-Replace-Warning-Request
+--
+-- **************************************************************
+
+Write-Replace-Warning-Request ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container      { {Write-Replace-Warning-Request-IEs} },
+	protocolExtensions	ProtocolExtensionContainer { {Write-Replace-Warning-Request-Extensions} } OPTIONAL,
+	...
+}
+
+Write-Replace-Warning-Request-IEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Message-Identifier	CRITICALITY reject	TYPE Message-Identifier	PRESENCE mandatory } |
+	{ ID id-Serial-Number	CRITICALITY reject	TYPE Serial-Number	PRESENCE mandatory } |
+	{ ID id-List-of-TAIs	CRITICALITY reject	TYPE List-of-TAIs	PRESENCE optional } |
+	{ ID id-Warning-Area-List	CRITICALITY ignore	TYPE Warning-Area-List	PRESENCE optional } |
+	{ ID id-Repetition-Period	CRITICALITY reject	TYPE Repetition-Period	PRESENCE mandatory  } |
+	{ ID id-Extended-Repetition-Period	CRITICALITY reject	TYPE Extended-Repetition-Period	PRESENCE optional  } |
+
+	{ ID id-Number-of-Broadcasts-Requested
+	CRITICALITY reject	TYPE Number-of-Broadcasts-Requested	PRESENCE mandatory } |
+	{ ID id-Warning-Type	CRITICALITY ignore	TYPE Warning-Type	PRESENCE optional } |
+	{ ID id-Warning-Security-Information	CRITICALITY ignore	TYPE Warning-Security-Information	PRESENCE optional } |
+	{ ID id-Data-Coding-Scheme	CRITICALITY ignore	TYPE Data-Coding-Scheme	PRESENCE optional } |
+	{ ID id-Warning-Message-Content
+	CRITICALITY ignore	TYPE Warning-Message-Content	PRESENCE optional } |
+	{ ID id-Omc-Id  CRITICALITY ignore TYPE Omc-Id PRESENCE optional } |
+	{ ID id-Concurrent-Warning-Message-Indicator  CRITICALITY reject TYPE Concurrent-Warning-Message-Indicator PRESENCE optional }	|
+	{ ID id-Send-Write-Replace-Warning-Indication	CRITICALITY ignore	TYPE Send-Write-Replace-Warning-Indication	PRESENCE optional }	|
+	{ ID id-Global-ENB-ID	CRITICALITY ignore	TYPE Global-ENB-ID	PRESENCE optional },
+	... ,
+	{ID id-Warning-Area-Coordinates	CRITICALITY ignore TYPE Warning-Area-Coordinates PRESENCE optional}
+}
+
+Write-Replace-Warning-Request-Extensions SBC-AP-PROTOCOL-EXTENSION ::= {
+	{ ID id-List-of-5GS-TAIs	CRITICALITY ignore	EXTENSION List-of-5GS-TAIs	PRESENCE optional }|
+	{ ID id-Warning-Area-List-5GS	CRITICALITY ignore	EXTENSION Warning-Area-List-5GS	PRESENCE optional }|
+	{ ID id-Global-RAN-Node-ID	CRITICALITY ignore	EXTENSION Global-RAN-Node-ID	PRESENCE optional }|
+	{ ID id-RAT-Selector-5GS	CRITICALITY ignore	EXTENSION RAT-Selector-5GS	PRESENCE optional },
+	...
+}
+
+-- **************************************************************
+--
+-- Write-Replace-Warning-Response
+--
+-- **************************************************************
+
+Write-Replace-Warning-Response ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container       { {Write-Replace-Warning-Response-IEs} },
+	protocolExtensions	ProtocolExtensionContainer { {Write-Replace-Warning-Response-Extensions} } OPTIONAL,
+	...
+}
+
+Write-Replace-Warning-Response-IEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Message-Identifier	CRITICALITY reject	TYPE Message-Identifier	PRESENCE mandatory } |
+	{ ID id-Serial-Number	CRITICALITY reject	TYPE Serial-Number	PRESENCE mandatory } |
+	{ ID id-Cause	CRITICALITY reject	TYPE Cause	PRESENCE mandatory }	|
+	{ ID id-Criticality-Diagnostics	CRITICALITY ignore	TYPE Criticality-Diagnostics	PRESENCE optional } |
+	{ ID id-Unknown-Tracking-Area-List CRITICALITY ignore	TYPE List-of-TAIs	PRESENCE optional },
+	...
+}
+
+Write-Replace-Warning-Response-Extensions SBC-AP-PROTOCOL-EXTENSION ::= {
+	{ ID id-Unknown-5GS-Tracking-Area-List	CRITICALITY ignore	EXTENSION Unknown-5GS-Tracking-Area-List	PRESENCE optional },
+	...
+}
+
+-- **************************************************************
+--
+-- Stop-Warning-Request
+--
+-- **************************************************************
+
+Stop-Warning-Request ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container      { {Stop-Warning-Request-IEs} },
+	protocolExtensions	ProtocolExtensionContainer { {Stop-Warning-Request-Extensions} } OPTIONAL,
+	...
+}
+
+Stop-Warning-Request-IEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Message-Identifier	CRITICALITY reject	TYPE Message-Identifier	PRESENCE mandatory } |
+	{ ID id-Serial-Number	CRITICALITY reject	TYPE Serial-Number	PRESENCE mandatory } |
+	{ ID id-List-of-TAIs	CRITICALITY reject	TYPE List-of-TAIs	PRESENCE optional } |
+	{ ID id-Warning-Area-List	CRITICALITY ignore	TYPE Warning-Area-List	PRESENCE optional }|
+	{ ID id-Omc-Id  CRITICALITY ignore TYPE Omc-Id PRESENCE optional } |
+	{ ID id-Send-Stop-Warning-Indication	CRITICALITY ignore	TYPE Send-Stop-Warning-Indication	PRESENCE optional } |
+	{ ID id-Stop-All-Indicator	CRITICALITY reject 	TYPE Stop-All-Indicator	PRESENCE optional},
+	...	
+}
+
+Stop-Warning-Request-Extensions SBC-AP-PROTOCOL-EXTENSION ::= {
+	{ ID id-List-of-5GS-TAIs	CRITICALITY ignore	EXTENSION List-of-5GS-TAIs	PRESENCE optional }|
+	{ ID id-Warning-Area-List-5GS	CRITICALITY ignore	EXTENSION Warning-Area-List-5GS	PRESENCE optional } |	{ ID id-RAT-Selector-5GS	CRITICALITY ignore	EXTENSION RAT-Selector-5GS	PRESENCE optional },
+	...
+}
+
+-- **************************************************************
+--
+-- Stop-Warning-Response
+--
+-- **************************************************************
+
+Stop-Warning-Response ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container       { {Stop-Warning-Response-IEs} },
+	protocolExtensions	ProtocolExtensionContainer { {Stop-Warning-Response-Extensions} } OPTIONAL,
+	...
+}
+
+Stop-Warning-Response-IEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Message-Identifier	CRITICALITY reject	TYPE Message-Identifier	PRESENCE mandatory } |
+	{ ID id-Serial-Number	CRITICALITY reject	TYPE Serial-Number	PRESENCE mandatory } |
+	{ ID id-Cause	CRITICALITY reject	TYPE Cause	PRESENCE mandatory }	|
+	{ ID id-Criticality-Diagnostics	CRITICALITY ignore	TYPE Criticality-Diagnostics	PRESENCE optional } |
+	{ ID id-Unknown-Tracking-Area-List CRITICALITY ignore	TYPE List-of-TAIs	PRESENCE optional },
+	...
+}
+
+Stop-Warning-Response-Extensions SBC-AP-PROTOCOL-EXTENSION ::= {
+	{ ID id-Unknown-5GS-Tracking-Area-List	CRITICALITY ignore	EXTENSION Unknown-5GS-Tracking-Area-List	PRESENCE optional },
+	...
+}
+
+-- **************************************************************
+--
+-- Write-Replace-Warning-Indication
+--
+-- **************************************************************
+
+Write-Replace-Warning-Indication ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container       { {Write-Replace-Warning-Indication-IEs} },
+	protocolExtensions	ProtocolExtensionContainer { {Write-Replace-Warning-Indication-Extensions} } OPTIONAL,
+	...
+}
+
+Write-Replace-Warning-Indication-IEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Message-Identifier	CRITICALITY reject	TYPE Message-Identifier	PRESENCE mandatory } |
+	{ ID id-Serial-Number	CRITICALITY reject	TYPE Serial-Number	PRESENCE mandatory } |
+	{ ID id-Broadcast-Scheduled-Area-List	CRITICALITY reject	TYPE Broadcast-Scheduled-Area-List	PRESENCE optional },
+	...
+}
+
+Write-Replace-Warning-Indication-Extensions SBC-AP-PROTOCOL-EXTENSION ::= {
+	{ ID id-Broadcast-Scheduled-Area-List-5GS	CRITICALITY ignore	EXTENSION Broadcast-Scheduled-Area-List-5GS	PRESENCE optional },
+
+	...
+}
+
+-- **************************************************************
+--
+-- Stop-Warning-Indication
+--
+-- **************************************************************
+
+Stop-Warning-Indication ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container       { {Stop-Warning-Indication-IEs} },
+	protocolExtensions	ProtocolExtensionContainer { {Stop-Warning-Indication-Extensions} } OPTIONAL,
+	...
+}
+
+Stop-Warning-Indication-IEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Message-Identifier	CRITICALITY reject	TYPE Message-Identifier	PRESENCE mandatory } |
+	{ ID id-Serial-Number	CRITICALITY reject	TYPE Serial-Number	PRESENCE mandatory } |
+	{ ID id-Broadcast-Cancelled-Area-List	CRITICALITY reject	TYPE Broadcast-Cancelled-Area-List	PRESENCE optional }|
+	{ ID id-Broadcast-Empty-Area-List	CRITICALITY ignore	TYPE Broadcast-Empty-Area-List	PRESENCE optional },
+	...
+}
+
+Stop-Warning-Indication-Extensions SBC-AP-PROTOCOL-EXTENSION ::= {
+	{ ID id-Broadcast-Cancelled-Area-List-5GS	CRITICALITY ignore	EXTENSION Broadcast-Cancelled-Area-List-5GS	PRESENCE optional }|
+	{ ID id-Broadcast-Empty-Area-List-5GS	CRITICALITY ignore	EXTENSION Broadcast-Empty-Area-List-5GS	PRESENCE optional },
+	...
+}
+
+-- **************************************************************
+--
+-- PWS-Restart-Indication
+--
+-- **************************************************************
+
+PWS-Restart-Indication ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container       { {PWS-Restart-Indication-IEs} },
+	protocolExtensions	ProtocolExtensionContainer { {PWS-Restart-Indication-Extensions} } OPTIONAL,
+	...
+}
+
+PWS-Restart-Indication-IEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Restarted-Cell-List	CRITICALITY reject	TYPE Restarted-Cell-List	PRESENCE mandatory }|
+	{ ID id-Global-ENB-ID	CRITICALITY reject	TYPE Global-ENB-ID	PRESENCE mandatory } |
+	{ ID id-List-of-TAIs-Restart	CRITICALITY reject	TYPE List-of-TAIs-Restart	PRESENCE mandatory } |
+	{ ID id-List-of-EAIs-Restart	CRITICALITY reject	TYPE List-of-EAIs-Restart	PRESENCE optional },
+	...
+}
+
+PWS-Restart-Indication-Extensions SBC-AP-PROTOCOL-EXTENSION ::= {
+	{ ID id-Restarted-Cell-List-NR	CRITICALITY ignore	EXTENSION Restarted-Cell-List-NR	PRESENCE optional }|
+	{ ID id-List-of-5GS-TAI-for-Restart	CRITICALITY ignore	EXTENSION List-of-5GS-TAI-for-Restart	PRESENCE optional }|
+{ ID id-Global-GNB-ID	CRITICALITY ignore	EXTENSION Global-GNB-ID	PRESENCE optional },
+	...
+}
+
+-- **************************************************************
+--
+-- PWS-Failure-Indication
+--
+-- **************************************************************
+
+PWS-Failure-Indication ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container       { {PWS-Failure-Indication-IEs} },
+	protocolExtensions	ProtocolExtensionContainer { {PWS-Failure-Indication-Extensions} } OPTIONAL,
+	...
+}
+
+PWS-Failure-Indication-IEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Failed-Cell-List	CRITICALITY reject	TYPE Failed-Cell-List	PRESENCE mandatory }|
+	{ ID id-Global-ENB-ID	CRITICALITY reject	TYPE Global-ENB-ID	PRESENCE mandatory },
+	...
+}
+
+PWS-Failure-Indication-Extensions SBC-AP-PROTOCOL-EXTENSION ::= {
+	{ ID id-Failed-Cell-List-NR	CRITICALITY ignore	EXTENSION Failed-Cell-List-NR	PRESENCE optional }|
+	{ ID id-Global-GNB-ID	CRITICALITY ignore	EXTENSION Global-GNB-ID	PRESENCE optional },
+	...
+}
+
+-- **************************************************************
+--
+-- ERROR INDICATION ELEMENTARY PROCEDURE
+--
+-- **************************************************************
+
+-- **************************************************************
+--
+-- Error Indication
+--
+-- **************************************************************
+
+Error-Indication ::= SEQUENCE {
+	protocolIEs	ProtocolIE-Container       {{ErrorIndicationIEs}},
+	...
+}
+
+ErrorIndicationIEs SBC-AP-PROTOCOL-IES ::= {
+	{ ID id-Cause	CRITICALITY ignore	TYPE Cause	PRESENCE optional	} |
+	{ ID id-Criticality-Diagnostics	CRITICALITY ignore	TYPE Criticality-Diagnostics	PRESENCE optional	} ,
+	...
+}
+
+END
+
+
+
+
+-- **************************************************************
+--
+-- Information Element Definitions
+--
+-- **************************************************************
+
+
+SBC-AP-IEs {
+itu-t (0) identified-organization (4) etsi (0) mobileDomain (0) 
+eps-Access (21) modules (3) sbc-AP (3) version1 (1) sbc-AP-IEs (2)}
+
+DEFINITIONS AUTOMATIC TAGS ::= 
+
+BEGIN
+
+IMPORTS
+	maxNrOfErrors,
+	maxNrOfTAIs,
+	maxnoofTAIforWarning,
+	maxnoofCellID,
+	maxnoofEmergencyAreaID,
+
+	id-TypeOfError,
+ 	maxnoofCellinEAI,
+	maxnoofCellinTAI,
+	maxnoofeNBIds,
+	maxnoofRestartTAIs,
+	maxnoofRestartEAIs,
+	maxnoofRestartedCells,
+	maxnoofFailedCells,
+	maxnoof5GSTAIs,
+	maxnoofCellsingNB,
+	maxnoofCellsin5GS,
+	maxnoofCellsforRestartNR,
+	maxnoofRANNodes,
+	maxnoofRestart5GSTAIs,
+	maxnoofCellsin5GSTAI
+
+FROM SBC-AP-Constants
+
+	Criticality,
+	ProcedureCode,
+	TriggeringMessage,
+	ProtocolIE-ID
+FROM SBC-AP-CommonDataTypes
+
+	ProtocolExtensionContainer{},
+
+	SBC-AP-PROTOCOL-EXTENSION
+FROM SBC-AP-Containers;
+
+
+-- A
+
+-- B
+
+Broadcast-Scheduled-Area-List ::= SEQUENCE {
+	cellId-Broadcast-List           CellId-Broadcast-List           OPTIONAL,
+    tAI-Broadcast-List              TAI-Broadcast-List              OPTIONAL,
+    emergencyAreaID-Broadcast-List  EmergencyAreaID-Broadcast-List  OPTIONAL,
+	iE-Extensions	   ProtocolExtensionContainer {{Broadcast-Scheduled-Area-List-ExtIEs}} OPTIONAL,
+    ...
+}
+
+Broadcast-Scheduled-Area-List-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+Broadcast-Scheduled-Area-List-5GS ::= SEQUENCE {
+	cellId-Broadcast-List-5GS       CellId-Broadcast-List-5GS       OPTIONAL,
+    tAI-Broadcast-List-5GS          TAI-Broadcast-List-5GS          OPTIONAL,
+    emergencyAreaID-Broadcast-List  EmergencyAreaID-Broadcast-List  OPTIONAL,
+	iE-Extensions	   ProtocolExtensionContainer {{Broadcast-Scheduled-Area-List-5GS-ExtIEs}} OPTIONAL,
+    ...
+}
+
+Broadcast-Scheduled-Area-List-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+Broadcast-Cancelled-Area-List ::= SEQUENCE {
+	cellID-Cancelled-List	CellID-Cancelled-List	OPTIONAL,
+	tAI-Cancelled-List	TAI-Cancelled-List	OPTIONAL,
+	emergencyAreaID-Cancelled-List	EmergencyAreaID-Cancelled-List	OPTIONAL,
+	iE-Extensions	ProtocolExtensionContainer {{Broadcast-Cancelled-Area-List-ExtIEs}} OPTIONAL,
+	...
+}
+
+Broadcast-Cancelled-Area-List-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+Broadcast-Cancelled-Area-List-5GS ::= SEQUENCE {
+	cellID-Cancelled-List-5GS	CellID-Cancelled-List-5GS	OPTIONAL,
+	tAI-Cancelled-List-5GS	TAI-Cancelled-List-5GS	OPTIONAL,
+	emergencyAreaID-Cancelled-List	EmergencyAreaID-Cancelled-List	OPTIONAL,
+	iE-Extensions	ProtocolExtensionContainer {{Broadcast-Cancelled-Area-List-5GS-ExtIEs}} OPTIONAL,
+	...
+}
+
+Broadcast-Cancelled-Area-List-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+
+Broadcast-Empty-Area-List	::= SEQUENCE (SIZE (1.. maxnoofeNBIds)) OF Global-ENB-ID
+
+Broadcast-Empty-Area-List-5GS	::= SEQUENCE (SIZE (1.. maxnoofRANNodes)) OF Global-RAN-Node-ID
+
+
+-- C
+
+CancelledCellinEAI ::= SEQUENCE (SIZE(1..maxnoofCellinEAI)) OF CancelledCellinEAI-Item
+
+CancelledCellinEAI-Item ::= SEQUENCE {
+	eCGI	EUTRAN-CGI,
+	numberOfBroadcasts	NumberOfBroadcasts,
+	iE-Extensions	ProtocolExtensionContainer { {CancelledCellinEAI-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+CancelledCellinEAI-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+CancelledCellinTAI ::= SEQUENCE (SIZE(1..maxnoofCellinTAI)) OF CancelledCellinTAI-Item
+
+CancelledCellinTAI-Item ::= SEQUENCE{
+	eCGI	EUTRAN-CGI,
+	numberOfBroadcasts	NumberOfBroadcasts,
+	iE-Extensions	ProtocolExtensionContainer { {CancelledCellinTAI-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+CancelledCellinTAI-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+CancelledCellinTAI-5GS ::= SEQUENCE (SIZE(1..maxnoofCellsin5GSTAI)) OF
+	SEQUENCE{
+	nR-CGI	NR-CGI,
+	numberOfBroadcasts	NumberOfBroadcasts,
+	iE-Extensions	ProtocolExtensionContainer { {CancelledCellinTAI-5GS-ExtIEs} } OPTIONAL,
+	...
+}
+
+CancelledCellinTAI-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+Cause 	::= INTEGER {
+	message-accepted		(0),
+	parameter-not-recognised	(1),
+	parameter-value-invalid	(2),
+	valid-message-not-identified 	(3),
+	tracking-area-not-valid	 	(4),
+	unrecognised-message 	(5),
+	missing-mandatory-element 	(6),
+	mME-capacity-exceeded 	(7),
+	mME-memory-exceeded 	(8),
+	warning-broadcast-not-supported	 	(9),
+	warning-broadcast-not-operational 	(10),
+	message-reference-already-used 	(11),
+	unspecifed-error 		(12),
+	transfer-syntax-error	(13),
+	semantic-error		(14),
+	message-not-compatible-with-receiver-state	(15),
+	abstract-syntax-error-reject	(16),
+	abstract-syntax-error-ignore-and-notify	(17),
+	abstract-syntax-error-falsely-constructed-message	(18)
+} (0..255)
+
+CellId-Broadcast-List ::= SEQUENCE (SIZE(1..maxnoofCellID)) OF CellId-Broadcast-List-Item
+
+CellId-Broadcast-List-Item ::= SEQUENCE {
+	eCGI	EUTRAN-CGI,
+	iE-Extensions	ProtocolExtensionContainer { {CellId-Broadcast-List-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+CellId-Broadcast-List-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+CellId-Broadcast-List-5GS ::= SEQUENCE (SIZE(1..maxnoofCellsin5GS)) OF 
+	SEQUENCE {
+	nR-CGI	NR-CGI,
+	iE-Extensions	ProtocolExtensionContainer { {CellId-Broadcast-List-5GS-ExtIEs} } OPTIONAL,
+	...
+}
+
+CellId-Broadcast-List-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+CellID-Cancelled-List ::= SEQUENCE (SIZE(1..maxnoofCellID)) OF CellID-Cancelled-Item
+
+CellID-Cancelled-Item ::= SEQUENCE {
+	eCGI	EUTRAN-CGI,
+	numberOfBroadcasts	NumberOfBroadcasts,
+	iE-Extensions	ProtocolExtensionContainer { {CellID-Cancelled-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+CellID-Cancelled-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+CellID-Cancelled-List-5GS ::= SEQUENCE (SIZE(1..maxnoofCellsin5GS)) OF 
+	SEQUENCE {
+	nR-CGI	NR-CGI,
+	numberOfBroadcasts	NumberOfBroadcasts,
+	iE-Extensions	ProtocolExtensionContainer { {CellID-Cancelled-5GS-ExtIEs} } OPTIONAL,
+	...
+}
+
+CellID-Cancelled-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+
+
+CellIdentity	::= BIT STRING (SIZE (28))
+
+Concurrent-Warning-Message-Indicator ::= ENUMERATED {true}
+
+Criticality-Diagnostics	::= SEQUENCE {
+	procedureCode	ProcedureCode	OPTIONAL,
+	triggeringMessage	TriggeringMessage	OPTIONAL,
+	procedureCriticality	Criticality	OPTIONAL,
+	iE-CriticalityDiagnostics	CriticalityDiagnostics-IE-List 	OPTIONAL,
+	iE-Extensions	ProtocolExtensionContainer { {CriticalityDiagnostics-ExtIEs} } OPTIONAL,
+	...
+}
+
+CriticalityDiagnostics-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+CriticalityDiagnostics-IE-List ::= SEQUENCE (SIZE (1..maxNrOfErrors)) OF
+	SEQUENCE {
+	iECriticality	Criticality,
+	iE-ID	ProtocolIE-ID,
+	typeOfError 	TypeOfError,
+	iE-Extensions	ProtocolExtensionContainer {{CriticalityDiagnostics-IE-Item-ExtIEs}} OPTIONAL,
+	...
+}
+
+CriticalityDiagnostics-IE-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+
+
+-- D
+
+Data-Coding-Scheme	::= BIT STRING (SIZE (8))
+
+-- E
+
+ECGIList	::= SEQUENCE (SIZE(1..maxnoofCellID)) OF EUTRAN-CGI
+
+Emergency-Area-ID-List	::=	SEQUENCE (SIZE(1..maxnoofEmergencyAreaID)) OF Emergency-Area-ID
+
+Emergency-Area-ID	::=	OCTET STRING (SIZE (3)) 
+
+EmergencyAreaID-Broadcast-List ::= SEQUENCE (SIZE(1..maxnoofEmergencyAreaID)) OF EmergencyAreaID-Broadcast-List-Item
+
+EmergencyAreaID-Broadcast-List-Item ::= SEQUENCE {
+	emergencyAreaID	Emergency-Area-ID,
+	scheduledCellinEAI	ScheduledCellinEAI,
+	iE-Extensions	ProtocolExtensionContainer { {EmergencyAreaID-Broadcast-List-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+EmergencyAreaID-Broadcast-List-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+EmergencyAreaID-Cancelled-List ::= SEQUENCE (SIZE(1..maxnoofEmergencyAreaID)) OF EmergencyAreaID-Cancelled-Item
+
+EmergencyAreaID-Cancelled-Item ::= SEQUENCE {
+	emergencyAreaID	Emergency-Area-ID,
+	cancelledCellinEAI	CancelledCellinEAI,
+	iE-Extensions	ProtocolExtensionContainer { {EmergencyAreaID-Cancelled-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+EmergencyAreaID-Cancelled-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+EUTRAN-CGI ::= SEQUENCE {
+	pLMNidentity	PLMNidentity,
+	cell-ID	CellIdentity,
+	iE-Extensions	ProtocolExtensionContainer { {EUTRAN-CGI-ExtIEs} } OPTIONAL,
+	...
+}
+
+EUTRAN-CGI-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+Extended-Repetition-Period ::= INTEGER (4096..131071)
+
+ENB-ID ::= CHOICE {
+	macroENB-ID	BIT STRING (SIZE(20)),
+	homeENB-ID	BIT STRING (SIZE(28)),
+	...,
+	short-macroENB-ID 	BIT STRING (SIZE(18)),
+	long-macroENB-ID	BIT STRING (SIZE(21))
+}
+
+
+-- F
+
+Failed-Cell-List	::= SEQUENCE (SIZE(1..maxnoofFailedCells)) OF EUTRAN-CGI
+
+Failed-Cell-List-NR	::= SEQUENCE (SIZE(1..maxnoofCellsingNB)) OF NR-CGI  
+
+-- G
+
+Global-ENB-ID ::= SEQUENCE {
+	pLMNidentity	PLMNidentity,
+	eNB-ID	ENB-ID,
+	iE-Extensions	ProtocolExtensionContainer { {GlobalENB-ID-ExtIEs} }	OPTIONAL,
+	...
+}
+
+GlobalENB-ID-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+Global-RAN-Node-ID 	::= CHOICE {
+	global-GNB-ID	Global-GNB-ID,
+	global-NgENB-ID	Global-NgENB-ID,
+	...
+}
+
+Global-GNB-ID 	::= SEQUENCE {
+	pLMNidentity	PLMNidentity,
+	gNB-ID	GNB-ID,
+	iE-Extensions	ProtocolExtensionContainer { {Global-GNB-ID-ExtIEs} } OPTIONAL,
+	...
+}
+
+Global-GNB-ID-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+GNB-ID 	::= CHOICE {
+	gNB-ID	BIT STRING (SIZE(22..32)),
+	...
+}
+Global-NgENB-ID	::= SEQUENCE {
+	pLMNidentity	PLMNidentity,
+	ngENB-ID	ENB-ID,
+	iE-Extensions	ProtocolExtensionContainer { {Global-NgENB-ID-ExtIEs} } OPTIONAL,
+	...
+}
+
+Global-NgENB-ID-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+
+
+-- H
+
+-- I
+
+-- J
+
+-- K
+
+-- L
+
+List-of-TAIs	::= SEQUENCE (SIZE (1..maxNrOfTAIs)) OF
+	SEQUENCE {
+	tai	TAI
+}
+
+List-of-TAIs-Restart	::= SEQUENCE (SIZE (1..maxnoofRestartTAIs)) OF
+	SEQUENCE {
+	tai	TAI
+}
+
+
+List-of-EAIs-Restart	::= SEQUENCE (SIZE(1..maxnoofRestartEAIs)) OF Emergency-Area-ID
+
+List-of-5GS-TAIs	::= SEQUENCE (SIZE (1..maxnoof5GSTAIs)) OF TAI-5GS
+
+List-of-5GS-Cells-for-Failure ::= SEQUENCE ( SIZE(1..maxnoofCellsingNB)) OF NR-CGI
+
+List-of-5GS-TAI-for-Restart ::= SEQUENCE (SIZE (1..maxnoofRestart5GSTAIs)) OF TAI-5GS
+
+
+-- M
+
+Message-Identifier ::= BIT STRING (SIZE (16))
+
+-- N
+
+Number-of-Broadcasts-Requested	::= INTEGER (0..65535)
+
+-- For Number-of-Broadcasts-Requested = 0 and Repetition-Period = 0, then eNB action is no broadcast
+--  for ETWS Secondary and CMAS.
+--
+-- For Number-of-Broadcasts-Requested = 1 and Repetition-Period = 0, then eNB action is broadcast
+-- only once for ETWS and CMAS.
+--
+-- For Number-of-Broadcasts-Requested = 0 and Repetition-Period > 0, then eNB action is no broadcast
+-- for the ETWS Secondary, and broadcast until further notice for the CMAS.
+--
+-- For Number-of-Broadcasts-Requested > 0 and Repetition-Period > 0, then eNB action is normal
+-- broadcast.
+-- All other combinations of Number-of-Broadcasts-Requested and Repetition-Period are considered
+-- invalid. 
+
+NumberOfBroadcasts ::= INTEGER (0..65535)
+
+NR-CGIList ::= SEQUENCE (SIZE(1..maxnoofCellsingNB)) OF NR-CGI
+
+NR-CGI ::= SEQUENCE {
+	pLMNidentity	PLMNidentity,
+	nRCellIdentity	NRCellIdentity,
+	iE-Extensions	ProtocolExtensionContainer { {NR-CGI-ExtIEs} } OPTIONAL,
+	...
+}
+
+NR-CGI-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+NRCellIdentity 	::= BIT STRING (SIZE(36))
+
+NgENB-ID 	::= CHOICE {
+	macroNgENB-ID	BIT STRING (SIZE(20)),
+	shortMacroNgENB-ID 	BIT STRING (SIZE(18)),
+	longMacroNgENB-ID	BIT STRING (SIZE(21)),
+	...
+}
+
+-- O 
+Omc-Id	::=	OCTET STRING (SIZE (1..20))
+
+
+-- P
+PLMNidentity 	::= TBCD-STRING 
+
+-- Q
+
+-- R
+
+Repetition-Period	::= INTEGER (0..4096)
+-- 1 to 4096: Each unit represents a repetition of one second to a maximum of
+-- once per 4096 seconds (~1 hour). 
+-- 0: no repetition
+-- A CBC compliant to this version or later of this specification shall not send a repetition period 
+-- greater than 4095.
+-- For backwards compatibility with a CBC compliant to an earlier version of this specification the 
+-- maximum value of the repetition period defined in ASN.1 remains at 4096.
+-- If the value of the Repetition Period IE received in the WRITE-REPLACE WARNING REQUEST message is 
+-- set to 4096, the MME shall set the Repetition Period IE to the maximum value 4095 supported on   
+-- the S1-MME interface as defined in [7] before forwarding to the selected eNBs. 
+
+Restarted-Cell-List	::= SEQUENCE (SIZE(1.. maxnoofRestartedCells)) OF EUTRAN-CGI
+
+RAT-Selector-5GS ::= ENUMERATED {true}
+
+Restarted-Cell-List-NR ::= SEQUENCE (SIZE(1.. maxnoofCellsforRestartNR)) OF NR-CGI
+
+  
+ 
+-- S
+
+ScheduledCellinEAI ::= SEQUENCE (SIZE(1..maxnoofCellinEAI)) OF ScheduledCellinEAI-Item
+
+ScheduledCellinEAI-Item ::= SEQUENCE {
+	eCGI	EUTRAN-CGI,
+	iE-Extensions	ProtocolExtensionContainer { {ScheduledCellinEAI-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+ScheduledCellinEAI-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+ScheduledCellinTAI ::= SEQUENCE (SIZE(1..maxnoofCellinTAI)) OF ScheduledCellinTAI-Item
+
+ScheduledCellinTAI-Item ::= SEQUENCE{
+	eCGI	EUTRAN-CGI,
+	iE-Extensions	ProtocolExtensionContainer { {ScheduledCellinTAI-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+ScheduledCellinTAI-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+ScheduledCellinTAI-5GS ::= SEQUENCE (SIZE(1..maxnoofCellsin5GSTAI)) OF 
+	SEQUENCE{
+	nR-CGI	NR-CGI,
+	iE-Extensions	ProtocolExtensionContainer { {ScheduledCellinTAI-5GS-ExtIEs} } OPTIONAL,
+	...
+}
+
+ScheduledCellinTAI-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+Send-Write-Replace-Warning-Indication ::= ENUMERATED {true}
+
+Send-Stop-Warning-Indication ::= ENUMERATED {true}
+
+Serial-Number	::= BIT STRING (SIZE (16))
+
+Stop-All-Indicator ::= ENUMERATED {true}
+
+-- T
+
+TAC ::= OCTET STRING (SIZE (2)) 
+
+TAC-5GS ::= OCTET STRING (SIZE (3)) 
+
+TAI-Broadcast-List ::= SEQUENCE (SIZE(1..maxnoofTAIforWarning)) OF TAI-Broadcast-List-Item
+
+TAI-Broadcast-List-Item ::= SEQUENCE {
+	tAI	TAI,
+	scheduledCellinTAI	ScheduledCellinTAI,
+	iE-Extensions	ProtocolExtensionContainer { {TAI-Broadcast-List-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+TAI-Broadcast-List-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+TAI-Broadcast-List-5GS ::= SEQUENCE (SIZE(1..maxnoof5GSTAIs)) OF 
+	SEQUENCE {
+	tAI-5GS	TAI-5GS,
+	scheduledCellinTAI-5GS	ScheduledCellinTAI-5GS,
+	iE-Extensions	ProtocolExtensionContainer { {TAI-Broadcast-List-5GS-ExtIEs} } OPTIONAL,
+	...
+}
+
+TAI-Broadcast-List-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+
+TAI-Cancelled-List ::= SEQUENCE (SIZE(1..maxnoofTAIforWarning)) OF TAI-Cancelled-List-Item
+
+TAI-Cancelled-List-Item ::= SEQUENCE {
+	tAI	TAI,
+	cancelledCellinTAI	CancelledCellinTAI,
+	iE-Extensions	ProtocolExtensionContainer { {TAI-Cancelled-List-Item-ExtIEs} } OPTIONAL,
+	...
+}
+
+TAI-Cancelled-List-Item-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+TAI-Cancelled-List-5GS ::= SEQUENCE (SIZE(1..maxnoof5GSTAIs)) OF 
+	SEQUENCE {
+	tAI-5GS	TAI-5GS,
+	cancelledCellinTAI-5GS	CancelledCellinTAI-5GS,
+	iE-Extensions	ProtocolExtensionContainer { {TAI-Cancelled-List-5GS-ExtIEs} } OPTIONAL,
+	...
+}
+
+TAI-Cancelled-List-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+TAI-List-for-Warning	::= SEQUENCE (SIZE(1.. maxnoofTAIforWarning)) OF TAI
+
+TAI ::= SEQUENCE {
+	pLMNidentity	PLMNidentity,
+	tAC	TAC,
+	iE-Extensions	ProtocolExtensionContainer { {TAI-ExtIEs} } OPTIONAL
+}
+
+TAI-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+TBCD-STRING ::= OCTET STRING (SIZE (3))
+
+TypeOfError ::= ENUMERATED {
+	not-understood,
+	missing,
+	...
+}
+TAI-5GS ::= SEQUENCE {
+	pLMNidentity	PLMNidentity,
+	tAC-5GS	TAC-5GS,
+	iE-Extensions	ProtocolExtensionContainer { {TAI-5GS-ExtIEs} } OPTIONAL
+}
+
+TAI-5GS-ExtIEs SBC-AP-PROTOCOL-EXTENSION ::= {
+	...
+}
+
+
+-- U
+
+Unknown-Tracking-Area-List	::= SEQUENCE (SIZE(1.. maxNrOfTAIs)) OF TAI
+
+Unknown-5GS-Tracking-Area-List	::= SEQUENCE (SIZE(1.. maxnoof5GSTAIs)) OF TAI-5GS
+
+
+-- V
+
+-- W
+
+Warning-Area-List	::= CHOICE {
+	cell-ID-List	ECGIList,
+	tracking-Area-List-for-Warning	TAI-List-for-Warning,
+	emergency-Area-ID-List	Emergency-Area-ID-List,
+	...
+}
+
+Warning-Message-Content	::= OCTET STRING (SIZE (1..9600)) 
+Warning-Area-Coordinates	::= OCTET STRING (SIZE (1..1024))
+Warning-Security-Information	::= OCTET STRING (SIZE (50)) 
+Warning-Type	::=  OCTET STRING (SIZE (2))
+
+Warning-Area-List-5GS	::= CHOICE {
+	cell-ID-List	ECGIList,
+	nR-CGIList	NR-CGIList,
+	tAIList-5GS	TAI-5GS,
+	emergencyAreaIDList	Emergency-Area-ID-List,
+	...
+}
+
+
+
+-- X
+
+-- Y
+
+END
+
+
+
+-- **************************************************************
+--
+-- Common definitions
+--
+-- **************************************************************
+
+SBC-AP-CommonDataTypes {
+itu-t (0) identified-organization (4) etsi (0) mobileDomain (0) 
+eps-Access (21) modules (3) sbc-AP (3) version1 (1) sbc-AP-CommonDataTypes (3)}
+
+DEFINITIONS AUTOMATIC TAGS ::= 
+
+BEGIN
+
+Criticality	::= ENUMERATED { reject, ignore, notify }
+
+Presence	::= ENUMERATED { optional, conditional, mandatory }
+
+ProcedureCode	::= INTEGER (0..255)
+
+ProtocolExtensionID	::= INTEGER (0..65535)
+
+ProtocolIE-ID	::= INTEGER (0..65535)
+
+TriggeringMessage	::= ENUMERATED {initiating-message, successful-outcome, unsuccessful-outcome, outcome}
+
+END
+
+
+
+
+-- **************************************************************
+--
+-- Constant definitions
+--
+-- **************************************************************
+
+SBC-AP-Constants {
+itu-t (0) identified-organization (4) etsi (0) mobileDomain (0) 
+eps-Access (21) modules (3) sbc-AP (3) version1 (1) sbc-AP-Constants (4)}
+
+DEFINITIONS AUTOMATIC TAGS ::= 
+
+BEGIN
+
+-- **************************************************************
+--
+-- Elementary Procedures
+--
+-- **************************************************************
+
+id-Write-Replace-Warning 	INTEGER ::= 0 
+id-Stop-Warning 	INTEGER ::= 1 
+id-Error-Indication 	INTEGER ::= 2
+id-Write-Replace-Warning-Indication	INTEGER ::= 3
+id-Stop-Warning-Indication	INTEGER ::= 4
+id-PWS-Restart-Indication	INTEGER ::= 5 
+id-PWS-Failure-Indication	INTEGER ::= 6
+
+-- **************************************************************
+--
+-- IEs
+--
+-- **************************************************************
+
+id-Broadcast-Message-Content	INTEGER ::= 0
+id-Cause 	INTEGER ::= 1
+id-Criticality-Diagnostics	INTEGER ::=2
+id-Data-Coding-Scheme 	INTEGER ::= 3
+id-Failure-List 	INTEGER ::= 4
+id-Message-Identifier 	INTEGER ::= 5
+id-Number-of-Broadcasts-Completed-List 	INTEGER ::= 6
+id-Number-of-Broadcasts-Requested 	INTEGER ::= 7
+id-Radio-Resource-Loading-List 	INTEGER ::= 8
+id-Recovery-Indication 	INTEGER ::= 9
+id-Repetition-Period 	INTEGER ::= 10
+id-Serial-Number 	INTEGER ::= 11
+id-Service-Areas-List 	INTEGER ::= 12
+id-TypeOfError	INTEGER ::= 13
+id-List-of-TAIs	INTEGER ::= 14
+id-Warning-Area-List 	INTEGER ::= 15
+id-Warning-Message-Content	INTEGER ::= 16
+id-Warning-Security-Information	INTEGER ::= 17
+id-Warning-Type	INTEGER ::= 18 
+id-Omc-Id 	INTEGER ::= 19 
+id-Concurrent-Warning-Message-Indicator INTEGER ::= 20 
+id-Extended-Repetition-Period	INTEGER ::= 21
+id-Unknown-Tracking-Area-List	INTEGER ::= 22 
+id-Broadcast-Scheduled-Area-List	INTEGER ::= 23
+id-Send-Write-Replace-Warning-Indication INTEGER ::= 24
+id-Broadcast-Cancelled-Area-List	INTEGER ::= 25
+id-Send-Stop-Warning-Indication	INTEGER ::= 26
+id-Stop-All-Indicator	INTEGER ::= 27 
+id-Global-ENB-ID	INTEGER ::= 28
+id-Broadcast-Empty-Area-List	INTEGER ::= 29
+id-Restarted-Cell-List	INTEGER ::= 30
+id-List-of-TAIs-Restart	INTEGER ::= 31
+id-List-of-EAIs-Restart	INTEGER ::= 32 
+id-Failed-Cell-List	INTEGER ::= 33
+id-List-of-5GS-TAIs	INTEGER ::= 34
+id-Warning-Area-List-5GS	INTEGER ::= 35
+id-Global-RAN-Node-ID	INTEGER ::= 36
+id-Global-GNB-ID	INTEGER ::= 37
+id-RAT-Selector-5GS	INTEGER ::= 38
+id-Unknown-5GS-Tracking-Area-List	INTEGER ::= 39
+id-Broadcast-Scheduled-Area-List-5GS	INTEGER ::= 40
+id-Broadcast-Cancelled-Area-List-5GS	INTEGER ::= 41
+id-Broadcast-Empty-Area-List-5GS	INTEGER ::= 42
+id-Restarted-Cell-List-NR	INTEGER ::= 43
+id-Failed-Cell-List-NR	INTEGER ::= 44
+id-List-of-5GS-TAI-for-Restart	INTEGER ::= 45
+id-Warning-Area-Coordinates	INTEGER ::= 46
+
+
+
+-- **************************************************************
+--
+-- Extension constants
+--
+-- **************************************************************
+
+-- **************************************************************
+--
+-- Lists
+--
+-- **************************************************************
+
+maxNrOfErrors	INTEGER ::= 256 
+maxnoofCellID	INTEGER	::= 65535 
+maxnoofCellinEAI	INTEGER ::= 65535
+maxnoofCellinTAI	INTEGER ::= 65535
+maxNrOfTAIs	INTEGER ::= 65535
+maxnoofEmergencyAreaID	INTEGER	::= 65535
+maxnoofTAIforWarning	INTEGER ::= 65535
+
+maxProtocolExtensions 	INTEGER ::= 65535
+maxProtocolIEs	INTEGER ::= 65535 
+maxnoofeNBIds	INTEGER ::= 256
+maxnoofRestartedCells	INTEGER ::= 256
+maxnoofRestartTAIs	INTEGER ::= 2048
+maxnoofRestartEAIs	INTEGER ::= 256 
+maxnoofFailedCells	INTEGER ::= 256
+maxnoof5GSTAIs	INTEGER ::= 2048
+maxnoofCellsingNB	INTEGER ::= 16384
+maxnoofCellsin5GS	INTEGER ::= 16776960
+maxnoofCellsin5GSTAI	INTEGER ::= 65535
+maxnoofRANNodes	INTEGER ::= 65535
+maxnoofRestart5GSTAIs	INTEGER ::= 2048maxnoofCellsforRestartNR 	INTEGER ::= 16384
+
+
+END
+
+
+
+
+-- **************************************************************
+--
+-- Container definitions
+--
+-- **************************************************************
+
+SBC-AP-Containers {
+itu-t (0) identified-organization (4) etsi (0) mobileDomain (0) 
+eps-Access (21) modules (3) sbc-AP (3) version1 (1) sbc-AP-Containers (5)}
+
+DEFINITIONS AUTOMATIC TAGS ::= 
+
+BEGIN
+
+-- **************************************************************
+--
+-- IE parameter types from other modules.
+--
+-- **************************************************************
+
+IMPORTS
+	Criticality,
+	Presence,
+	ProtocolExtensionID,
+	ProtocolIE-ID
+FROM SBC-AP-CommonDataTypes
+
+	maxProtocolExtensions,
+	maxProtocolIEs
+FROM SBC-AP-Constants;
+
+-- **************************************************************
+--
+-- Class Definition for Protocol IEs
+--
+-- **************************************************************
+
+SBC-AP-PROTOCOL-IES ::= CLASS {
+	&id	ProtocolIE-ID 	UNIQUE,
+	&criticality	Criticality	DEFAULT ignore,
+	&Value,
+	&presence	Presence
+}
+WITH SYNTAX {
+	ID	&id
+	CRITICALITY	&criticality
+	TYPE	&Value
+	PRESENCE	&presence
+}
+
+-- **************************************************************
+--
+-- Class Definition for Protocol Extensions
+--
+-- **************************************************************
+
+SBC-AP-PROTOCOL-EXTENSION ::= CLASS {
+	&id	ProtocolExtensionID 	UNIQUE,
+	&criticality	Criticality	DEFAULT ignore,
+	&Extension,
+	&presence	Presence
+}
+WITH SYNTAX {
+	ID	&id
+	CRITICALITY	&criticality
+	EXTENSION	&Extension
+	PRESENCE	&presence
+}
+
+-- **************************************************************
+--
+-- Container for Protocol IEs
+--
+-- **************************************************************
+
+ProtocolIE-Container {SBC-AP-PROTOCOL-IES : IEsSetParam} ::= 
+	SEQUENCE (SIZE (0..maxProtocolIEs)) OF
+	ProtocolIE-Field {{IEsSetParam}}
+
+ProtocolIE-Field {SBC-AP-PROTOCOL-IES : IEsSetParam} ::= SEQUENCE {
+	id	SBC-AP-PROTOCOL-IES.&id	({IEsSetParam}),
+	criticality	SBC-AP-PROTOCOL-IES.&criticality	({IEsSetParam}{@id}),
+	value	SBC-AP-PROTOCOL-IES.&Value	        	({IEsSetParam}{@id})
+}
+
+-- **************************************************************
+--
+-- Container Lists for Protocol IE Containers
+--
+-- **************************************************************
+
+ProtocolIE-ContainerList {INTEGER : lowerBound, INTEGER : upperBound, SBC-AP-PROTOCOL-IES : IEsSetParam} ::=
+	SEQUENCE (SIZE (lowerBound..upperBound)) OF
+	ProtocolIE-Container {{IEsSetParam}}
+
+-- **************************************************************
+--
+-- Container for Protocol Extensions
+--
+-- **************************************************************
+
+ProtocolExtensionContainer {SBC-AP-PROTOCOL-EXTENSION : ExtensionSetParam} ::= 
+	SEQUENCE (SIZE (1..maxProtocolExtensions)) OF
+	ProtocolExtensionField {{ExtensionSetParam}}
+
+ProtocolExtensionField {SBC-AP-PROTOCOL-EXTENSION : ExtensionSetParam} ::= SEQUENCE {
+	id	SBC-AP-PROTOCOL-EXTENSION.&id	({ExtensionSetParam}),
+	criticality	SBC-AP-PROTOCOL-EXTENSION.&criticality	({ExtensionSetParam}{@id}),
+	extensionValue	SBC-AP-PROTOCOL-EXTENSION.&Extension	({ExtensionSetParam}{@id})
+}
+
+
+END
