@@ -1110,6 +1110,7 @@ static void attach_during_authentication_func(
 
     memset(&sess2->pdn_connectivity_param,
             0, sizeof(sess2->pdn_connectivity_param));
+    sess2->pdn_connectivity_param.eit = 1;
     sess2->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
     esmbuf = testesm_build_pdn_connectivity_request(
@@ -1167,6 +1168,10 @@ static void attach_during_authentication_func(
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue2, recvbuf);
+    ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_downlinkNASTransport,
+            test_ue2->s1ap_procedure_code);
+    ABTS_INT_EQUAL(tc, OGS_NAS_EPS_ESM_INFORMATION_REQUEST,
+            test_ue2->esm_message_type);
 
     /* Send ESM Information Response */
     sess2->esm_information_param.epco = 1;

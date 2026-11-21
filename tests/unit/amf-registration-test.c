@@ -504,6 +504,11 @@ static void failures_preserve_sessions(abts_case *tc, void *data)
         memset(f->ue.knas_int, 0x55, sizeof(f->ue.knas_int));
         f->ue.ul_count.i32 = f->ue.dl_count = 0;
         f->ue.ul_count_accepted = false;
+        /* An invalid response tests context restoration after the AUSF
+         * has supplied the confirmation URI for the challenge. */
+        if (failures[i] == OGS_NAS_5GS_AUTHENTICATION_RESPONSE)
+            STORE_5G_AKA_CONFIRMATION(&f->ue,
+                    "http://127.0.0.1/ue-authentications/test/5g-aka-confirmation");
         if (i >= 2) {
             OGS_FSM_TRAN(&f->ue.sm, gmm_state_security_mode);
             f->ue.security_context_available = 1;
