@@ -125,6 +125,9 @@ uint8_t smf_s5c_handle_create_session_request(
     if (req->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No TEID");
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    } else if (ogs_gtp2_f_teid_check(
+                &req->sender_f_teid_for_control_plane) != OGS_OK) {
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
     if (req->bearer_contexts_to_be_created[0].presence == 0) {
         ogs_error("No Bearer");
@@ -166,6 +169,9 @@ uint8_t smf_s5c_handle_create_session_request(
                 s5_s8_u_sgw_f_teid.presence == 0) {
             ogs_error("No S5/S8 SGW GTP-U TEID");
             cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        } else if (ogs_gtp2_f_teid_check(&req->bearer_contexts_to_be_created[0].
+                    s5_s8_u_sgw_f_teid) != OGS_OK) {
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
         }
         if (req->user_location_information.presence == 0) {
             ogs_error("No UE Location Information");
@@ -181,6 +187,9 @@ uint8_t smf_s5c_handle_create_session_request(
                 s2b_u_epdg_f_teid_5.presence == 0) {
             ogs_error("No S2b ePDG GTP-U TEID");
             cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+        } else if (ogs_gtp2_f_teid_check(&req->bearer_contexts_to_be_created[0].
+                    s2b_u_epdg_f_teid_5) != OGS_OK) {
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
         }
         break;
     default:
@@ -620,6 +629,19 @@ void smf_s5c_handle_modify_bearer_request(
      ************************/
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
+    if (req->sender_f_teid_for_control_plane.presence == 1 &&
+        ogs_gtp2_f_teid_check(&req->sender_f_teid_for_control_plane) !=
+            OGS_OK)
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+    for (i = 0; i < OGS_BEARER_PER_UE &&
+            req->bearer_contexts_to_be_modified[i].presence; i++) {
+        if (req->bearer_contexts_to_be_modified[i].
+                s4_u_sgsn_f_teid.presence &&
+            ogs_gtp2_f_teid_check(&req->bearer_contexts_to_be_modified[i].
+                s4_u_sgsn_f_teid) != OGS_OK)
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+    }
+
     if (!sess) {
         ogs_error("No Context");
         cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
@@ -853,6 +875,11 @@ void smf_s5c_handle_create_bearer_response(
 
     if (rsp->bearer_contexts.s5_s8_u_pgw_f_teid.presence &&
         rsp->bearer_contexts.s5_s8_u_sgw_f_teid.presence) {
+        if (ogs_gtp2_f_teid_check(
+                &rsp->bearer_contexts.s5_s8_u_pgw_f_teid) != OGS_OK ||
+            ogs_gtp2_f_teid_check(
+                &rsp->bearer_contexts.s5_s8_u_sgw_f_teid) != OGS_OK)
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
         if (rsp->bearer_contexts.s5_s8_u_pgw_f_teid.presence)
             pgw_s5u_teid = rsp->bearer_contexts.s5_s8_u_pgw_f_teid.data;
         if (rsp->bearer_contexts.s5_s8_u_sgw_f_teid.presence)
@@ -861,6 +888,11 @@ void smf_s5c_handle_create_bearer_response(
 
     if (rsp->bearer_contexts.s2b_u_pgw_f_teid.presence &&
         rsp->bearer_contexts.s2b_u_epdg_f_teid_8.presence) {
+        if (ogs_gtp2_f_teid_check(
+                &rsp->bearer_contexts.s2b_u_pgw_f_teid) != OGS_OK ||
+            ogs_gtp2_f_teid_check(
+                &rsp->bearer_contexts.s2b_u_epdg_f_teid_8) != OGS_OK)
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
         if (rsp->bearer_contexts.s2b_u_pgw_f_teid.presence)
             pgw_s5u_teid = rsp->bearer_contexts.s2b_u_pgw_f_teid.data;
         if (rsp->bearer_contexts.s2b_u_epdg_f_teid_8.presence)

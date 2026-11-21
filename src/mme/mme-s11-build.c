@@ -630,7 +630,7 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
         }
         rsp->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
         rsp->bearer_contexts.s4_u_sgsn_f_teid.data = &sgw_s1u_teid;
-        rsp->bearer_contexts.s4_u_sgsn_f_teid.len = OGS_GTP2_F_TEID_IPV4_LEN;
+        rsp->bearer_contexts.s4_u_sgsn_f_teid.len = len;
 
         /* Bearer Context : Cause */
         rsp->bearer_contexts.cause.presence = 1;

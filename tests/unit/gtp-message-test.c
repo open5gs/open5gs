@@ -456,6 +456,61 @@ static void gtp2_tft_ipv6_prefix_length_test(abts_case *tc, void *data)
             tft.pf[0].content.component[0].ipv6.prefixlen);
 }
 
+static void gtp2_f_teid_length_test(abts_case *tc, void *data)
+{
+    ogs_gtp2_f_teid_t f_teid;
+    ogs_tlv_octet_t octet;
+    ogs_ip_t ip;
+    int i, len = 0;
+    int id = ogs_log_get_domain_id("gtp");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
+
+    for (i = 0; i < 3; i++) {
+        memset(&ip, 0, sizeof(ip));
+        ip.ipv4 = (i != 1);
+        ip.ipv6 = (i != 0);
+        ip.addr = htobe32(0x0a000001);
+        ip.addr6[0] = 0x20;
+
+        memset(&f_teid, 0, sizeof(f_teid));
+        f_teid.interface_type = OGS_GTP2_F_TEID_S5_S8_SGW_GTP_C;
+        f_teid.teid = htobe32(0x11223344);
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp2_ip_to_f_teid(&ip, &f_teid, &len));
+
+        memset(&octet, 0, sizeof(octet));
+        octet.presence = 1;
+        octet.data = &f_teid;
+
+        /* Flags, TEID and every announced address are present */
+        octet.len = len;
+        ABTS_INT_EQUAL(tc, OGS_OK, ogs_gtp2_f_teid_check(&octet));
+
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(id, OGS_LOG_FATAL);
+
+        /* The IE ends inside the last address, the TEID or the flags */
+        octet.len = len - 1;
+        ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_gtp2_f_teid_check(&octet));
+        octet.len = OGS_GTP2_F_TEID_HDR_LEN;
+        ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_gtp2_f_teid_check(&octet));
+        octet.len = 1;
+        ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_gtp2_f_teid_check(&octet));
+        octet.len = 0;
+        ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_gtp2_f_teid_check(&octet));
+
+        ogs_log_set_domain_level(id, level);
+    }
+
+    /* Neither the V4 nor the V6 flag is set */
+    f_teid.ipv4 = 0;
+    f_teid.ipv6 = 0;
+    octet.len = OGS_GTP2_F_TEID_IPV4V6_LEN;
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, ogs_gtp2_f_teid_check(&octet));
+    ogs_log_set_domain_level(id, level);
+}
+
 abts_suite *test_gtp_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -463,6 +518,7 @@ abts_suite *test_gtp_message(abts_suite *suite)
     abts_run_test(suite, gtp_message_test1, NULL);
     abts_run_test(suite, gtp1_mm_context_test, NULL);
     abts_run_test(suite, gtp2_tft_ipv6_prefix_length_test, NULL);
+    abts_run_test(suite, gtp2_f_teid_length_test, NULL);
 
     return suite;
 }

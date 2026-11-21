@@ -28,6 +28,7 @@
 extern "C" {
 #endif
 
+int ogs_gtp2_f_teid_check(ogs_gtp2_tlv_f_teid_t *octet);
 int ogs_gtp2_f_teid_to_sockaddr(
     ogs_gtp2_f_teid_t *f_teid, uint16_t port, ogs_sockaddr_t **list);
 int ogs_gtp2_sockaddr_to_f_teid(ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,

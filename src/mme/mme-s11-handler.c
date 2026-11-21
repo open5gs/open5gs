@@ -338,6 +338,12 @@ void mme_s11_handle_create_session_response(
         fail_reason = "Conditional IE missing";
         goto fail;
     }
+    if (ogs_gtp2_f_teid_check(&rsp->sender_f_teid_for_control_plane) !=
+            OGS_OK) {
+        fail_cause = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+        fail_reason = "Invalid S11 TEID";
+        goto fail;
+    }
 
     switch (create_action) {
     case OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST:
@@ -458,6 +464,13 @@ void mme_s11_handle_create_session_response(
         }
 
         /* Data Plane(UL) : SGW-S1U */
+        if (ogs_gtp2_f_teid_check(
+                &rsp->bearer_contexts_created[i].s1_u_enodeb_f_teid) !=
+                OGS_OK) {
+            fail_cause = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            fail_reason = "Invalid SGW-S1U TEID";
+            goto fail;
+        }
         sgw_s1u_teid = rsp->bearer_contexts_created[i].s1_u_enodeb_f_teid.data;
         ogs_assert(sgw_s1u_teid);
         bearer->sgw_s1u_teid = be32toh(sgw_s1u_teid->teid);
@@ -469,6 +482,13 @@ void mme_s11_handle_create_session_response(
         }
 
         /* Data Plane(UL) : PGW-S5U */
+        if (ogs_gtp2_f_teid_check(
+                &rsp->bearer_contexts_created[i].s5_s8_u_sgw_f_teid) !=
+                OGS_OK) {
+            fail_cause = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            fail_reason = "Invalid PGW-S5U TEID";
+            goto fail;
+        }
         pgw_s5u_teid = rsp->bearer_contexts_created[i].s5_s8_u_sgw_f_teid.data;
         ogs_assert(pgw_s5u_teid);
         bearer->pgw_s5u_teid = be32toh(pgw_s5u_teid->teid);
@@ -516,6 +536,11 @@ void mme_s11_handle_create_session_response(
 
     /* Control Plane(UL) : PGW-S5C */
     if (rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence) {
+        if (ogs_gtp2_f_teid_check(&rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface) != OGS_OK) {
+            fail_cause = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            fail_reason = "Invalid S5C TEID";
+            goto fail;
+        }
         pgw_s5c_teid = rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
         ogs_assert(pgw_s5c_teid);
         sess->pgw_s5c_teid = be32toh(pgw_s5c_teid->teid);
@@ -1041,10 +1066,16 @@ void mme_s11_handle_create_bearer_request(
     if (req->bearer_contexts.s1_u_enodeb_f_teid.presence == 0) {
         ogs_error("No SGW-S1U TEID");
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    } else if (ogs_gtp2_f_teid_check(
+                &req->bearer_contexts.s1_u_enodeb_f_teid) != OGS_OK) {
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
     if (req->bearer_contexts.s4_u_sgsn_f_teid.presence == 0) {
         ogs_error("No PGW-S5U TEID");
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    } else if (ogs_gtp2_f_teid_check(
+                &req->bearer_contexts.s4_u_sgsn_f_teid) != OGS_OK) {
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
     if (req->bearer_contexts.bearer_level_qos.presence == 0) {
         ogs_error("No QoS");
@@ -2002,6 +2033,9 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         }
 
         if (rsp->bearer_contexts[i].s4_u_sgsn_f_teid.presence) {
+            if (ogs_gtp2_f_teid_check(
+                    &rsp->bearer_contexts[i].s4_u_sgsn_f_teid) != OGS_OK)
+                return;
             teid = rsp->bearer_contexts[i].s4_u_sgsn_f_teid.data;
             ogs_assert(teid);
 
@@ -2010,6 +2044,9 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             ogs_assert(rv == OGS_OK);
         }
         if (rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.presence) {
+            if (ogs_gtp2_f_teid_check(
+                    &rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5) != OGS_OK)
+                return;
             teid = rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.data;
             ogs_assert(teid);
 
