@@ -199,18 +199,19 @@ int amf_nausf_auth_handle_authenticate_confirmation(
         return OGS_ERROR;
     }
 
-    if (ogs_supi_is_valid(ConfirmationDataResponse->supi) == false) {
-        ogs_error("[%s] Invalid SUPI", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
-    if (!ConfirmationDataResponse->kseaf) {
-        ogs_error("[%s] No Kseaf", amf_ue->suci);
-        return OGS_ERROR;
-    }
-
+    /* SUPI and Kseaf are only present when the AUSF confirms success */
     if (ConfirmationDataResponse->auth_result ==
             OpenAPI_auth_result_AUTHENTICATION_SUCCESS) {
+        if (ogs_supi_is_valid(ConfirmationDataResponse->supi) == false) {
+            ogs_error("[%s] Invalid SUPI", amf_ue->suci);
+            return OGS_ERROR;
+        }
+
+        if (!ConfirmationDataResponse->kseaf) {
+            ogs_error("[%s] No Kseaf", amf_ue->suci);
+            return OGS_ERROR;
+        }
+
         if (ogs_hex_from_string_checked(ConfirmationDataResponse->kseaf,
                     kseaf, sizeof(kseaf)) != OGS_OK) {
             ogs_error("[%s] Invalid Kseaf", amf_ue->suci);
