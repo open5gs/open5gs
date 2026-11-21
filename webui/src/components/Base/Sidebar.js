@@ -8,6 +8,9 @@ import SubscriberIcon from 'react-icons/lib/md/person-add';
 import ProfileIcon from 'react-icons/lib/md/content-copy';
 import AccountIcon from 'react-icons/lib/md/vpn-key';
 import EirIcon from 'react-icons/lib/md/phonelink-lock';
+import ChfQuotaIcon from 'react-icons/lib/md/data-usage';
+import ChfPoolIcon from 'react-icons/lib/md/group';
+import ChfSessionIcon from 'react-icons/lib/md/wifi-tethering';
 
 const Menu = styled.div`
   display: block;
@@ -59,6 +62,9 @@ const Icon = styled.div`
 const Title = styled.div`
   padding-left: 2rem;
   font-size: 1.2rem;
+  /* One line: "CHF Shared Pools" is a little wider than the space after the
+   * icon, and the item's right padding has room for it. */
+  white-space: nowrap;
 `;
 
 const Item = ({ children, selected, name, onSelect }) => (
@@ -97,6 +103,18 @@ const Sidebar = ({ isOpen, width, selectedView, onSelectView }) => (
     <Item name="account" selected={selectedView} onSelect={onSelectView}>
       <Icon><AccountIcon/></Icon>
       <Title>Account</Title>
+    </Item>
+    <Item name="chfsubscriber" selected={selectedView} onSelect={onSelectView}>
+      <Icon><ChfQuotaIcon/></Icon>
+      <Title>CHF Quota</Title>
+    </Item>
+    <Item name="chfpool" selected={selectedView} onSelect={onSelectView}>
+      <Icon><ChfPoolIcon/></Icon>
+      <Title>CHF Shared Pools</Title>
+    </Item>
+    <Item name="chfsession" selected={selectedView} onSelect={onSelectView}>
+      <Icon><ChfSessionIcon/></Icon>
+      <Title>CHF Sessions</Title>
     </Item>
   </Menu>
 )

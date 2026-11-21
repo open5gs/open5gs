@@ -194,6 +194,12 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_am_policy_data_free(message->AmPolicyData);
     if (message->SmPolicyContextData)
         OpenAPI_sm_policy_context_data_free(message->SmPolicyContextData);
+    if (message->ChargingDataRequest)
+        OpenAPI_charging_data_request_free(message->ChargingDataRequest);
+    if (message->ChargingDataResponse)
+        OpenAPI_charging_data_response_free(message->ChargingDataResponse);
+    if (message->ChargingNotifyRequest)
+        OpenAPI_charging_notify_request_free(message->ChargingNotifyRequest);
     if (message->SmPolicyDecision)
         OpenAPI_sm_policy_decision_free(message->SmPolicyDecision);
     if (message->SmPolicyData)
@@ -576,6 +582,10 @@ ogs_sbi_request_t *ogs_sbi_build_request(const ogs_sbi_message_t *message)
         if (discovery_option->hnrf_uri) {
             ogs_sbi_header_set(request->http.params,
                     OGS_SBI_PARAM_HNRF_URI, discovery_option->hnrf_uri);
+        }
+        if (discovery_option->supi) {
+            ogs_sbi_header_set(request->http.params,
+                    OGS_SBI_PARAM_SUPI, discovery_option->supi);
         }
         if (discovery_option->requester_features) {
             char *v = ogs_uint64_to_string(
@@ -1269,6 +1279,19 @@ int ogs_sbi_parse_request(
             message->param.pei = ogs_hash_this_val(hi);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_SUPI)) {
             message->param.supi = ogs_hash_this_val(hi);
+            /*
+             * The same "supi" query parameter serves two readers: N5g-eir
+             * reads message->param.supi directly, while nnrf-disc needs it
+             * on the discovery option so the NRF can apply a CHF's
+             * supiRangeList (TS 29.510 §6.2.6.2.10).  Populate both from
+             * this one arm — a second "supi" arm elsewhere in this chain
+             * would be unreachable and silently starve one of them.
+             */
+            if (message->param.supi) {
+                ogs_sbi_discovery_option_set_supi(
+                        discovery_option, message->param.supi);
+                discovery_option_presence = true;
+            }
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_HOME_PLMN_ID)) {
             char *v = NULL;
             cJSON *item = NULL;
@@ -1728,6 +1751,18 @@ static char *build_json(const ogs_sbi_message_t *message)
     } else if (message->SmPolicyContextData) {
         item = OpenAPI_sm_policy_context_data_convertToJSON(
                 message->SmPolicyContextData);
+        ogs_assert(item);
+    } else if (message->ChargingDataRequest) {
+        item = OpenAPI_charging_data_request_convertToJSON(
+                message->ChargingDataRequest);
+        ogs_assert(item);
+    } else if (message->ChargingDataResponse) {
+        item = OpenAPI_charging_data_response_convertToJSON(
+                message->ChargingDataResponse);
+        ogs_assert(item);
+    } else if (message->ChargingNotifyRequest) {
+        item = OpenAPI_charging_notify_request_convertToJSON(
+                message->ChargingNotifyRequest);
         ogs_assert(item);
     } else if (message->SmPolicyDecision) {
         item = OpenAPI_sm_policy_decision_convertToJSON(
@@ -3134,6 +3169,32 @@ static int parse_json(ogs_sbi_message_t *message,
             END
             break;
 
+        case OpenAPI_service_name_nchf_convergedcharging:
+            /*
+             * TS 32.291 §6.3.  A request carries a ChargingDataRequest; a
+             * 2xx to Create or Update carries a ChargingDataResponse.
+             * Release answers 204 with no body, and an error carries
+             * ProblemDetails, which is handled above.
+             */
+            if (message->res_status == 0) {
+                message->ChargingDataRequest =
+                    OpenAPI_charging_data_request_parseFromJSON(item);
+                if (!message->ChargingDataRequest) {
+                    rv = OGS_ERROR;
+                    ogs_error("JSON parse error");
+                }
+            } else if (message->res_status < 300) {
+                message->ChargingDataResponse =
+                    OpenAPI_charging_data_response_parseFromJSON(item);
+                if (!message->ChargingDataResponse) {
+                    rv = OGS_ERROR;
+                    ogs_error("JSON parse error");
+                }
+            } else {
+                ogs_error("HTTP ERROR Status : %d", message->res_status);
+            }
+            break;
+
         case OGS_SBI_SERVICE_NAME_ID_NSMF_CALLBACK:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY)
@@ -3147,6 +3208,15 @@ static int parse_json(ogs_sbi_message_t *message,
                     }
                 } else {
                     ogs_error("HTTP ERROR Status : %d", message->res_status);
+                }
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_CHARGING_NOTIFY)
+                message->ChargingNotifyRequest =
+                    OpenAPI_charging_notify_request_parseFromJSON(item);
+                if (!message->ChargingNotifyRequest) {
+                    rv = OGS_ERROR;
+                    ogs_error("JSON parse error");
                 }
                 break;
 
@@ -3786,6 +3856,9 @@ void ogs_sbi_discovery_option_free(
     if (discovery_option->hnrf_uri)
         ogs_free(discovery_option->hnrf_uri);
 
+    if (discovery_option->supi)
+        ogs_free(discovery_option->supi);
+
     ogs_free(discovery_option);
 }
 
@@ -4403,4 +4476,16 @@ void ogs_sbi_discovery_option_clear_hnrf_uri(
     ogs_assert(discovery_option);
     ogs_free(discovery_option->hnrf_uri);
     discovery_option->hnrf_uri = NULL;
+}
+
+void ogs_sbi_discovery_option_set_supi(
+        ogs_sbi_discovery_option_t *discovery_option, const char *supi)
+{
+    ogs_assert(discovery_option);
+    ogs_assert(supi);
+
+    if (discovery_option->supi)
+        ogs_free(discovery_option->supi);
+    discovery_option->supi = ogs_strdup(supi);
+    ogs_assert(discovery_option->supi);
 }

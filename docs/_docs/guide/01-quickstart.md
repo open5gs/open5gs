@@ -56,6 +56,7 @@ The Open5GS 5G SA Core contains the following functions:
 * PCF - Policy and Charging Function
 * NSSF - Network Slice Selection Function
 * BSF - Binding Support Function
+* CHF - Charging Function (optional: see the [CHF guide](04-chf))
 
 The 5G SA core works in a different way to the 4G core - it uses a **Service Based Architecture** (SBA). **Control plane** functions are configured to register with the NRF, and the NRF then helps them discover the other core functions. Running through the other functions: The AMF handles connection and mobility management; a subset of what the 4G MME is tasked with. gNBs (5G basestations) connect to the AMF. The UDM, AUSF and UDR carry out similar operations as the 4G HSS, generating SIM authentication vectors and holding the subscriber profile. Session management is all handled by the SMF (previously the responsibility of the 4G MME/ SGWC/ PGWC). The NSSF provides a way to select the network slice, and PCF is used for charging and enforcing subscriber policies, and SEPP is part of the roaming security architecture. Finally there is the SCP that enable indirect communication.
 
@@ -269,6 +270,7 @@ PCF-sbi   = 127.0.0.13:7777 for 5G SBI
 NSSF-sbi  = 127.0.0.14:7777 for 5G SBI
 BSF-sbi   = 127.0.0.15:7777 for 5G SBI
 UDR-sbi   = 127.0.0.20:7777 for 5G SBI
+CHF-sbi   = 127.0.0.30:7777 for 5G SBI
 ```
 
 #### Setup a 4G/ 5G NSA Core

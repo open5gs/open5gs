@@ -1,0 +1,52 @@
+-- Defects in the published 3GPP ASN.1, corrected so the module compiles.
+-- Each definition below is copied verbatim from standard/ apart from the
+-- change noted above it.  Re-check every one of these when moving to a
+-- newer release: when 3GPP fixes it upstream, the entry here should go.
+--
+-- TS32298_CHFChargingDataTypes.asn, NetworkFunctionality
+--   Rel-19 (v19.6.0, Forge 3e24b9aa) omits the comma after aIOTF (23), so
+--   the ENUMERATED does not parse.  Comma added after (23).
+
+NetworkFunctionality	::= ENUMERATED
+{
+	cHF				(0),
+	-- CHF is applicable in two scenarios: inter-CHF communication andfailure cases
+	sMF				(1),
+-- SMF is applicable in two scenarios: as NF consumer of CHF services, and as API Target NF 
+-- in NEF charging
+	aMF				(2),
+-- AMF is applicable in two scenario: as NF consumer of CHF services, and as API Target NF
+-- in NEF charging
+	sMSF			(3),
+	sGW				(4),
+	-- SGW is only applicable for interworking with EPC scenario
+	-- when UE is connected to P-GW+SMF via EPC
+	iSMF			(5),
+	ePDG			(6),
+	-- ePDG is only applicable for interworking with EPC scenario
+	-- when UE is connected to P-GW+SMF via EPC/ePDG
+	cEF				(7),
+	nEF			(8),
+	pGWCSMF			(9),
+	mnS-Producer 	(10),
+	sGSN			(11),
+	-- SGSN is only applicable when UE is connected to SMF+PGW-C via GERAN/UTRAN
+	fiveGDDNMF		(12),
+	vSMF			(13),
+	-- vSMF may be used instead of sMF in roaming scenarios}
+	iMS-Node		(14),
+	eES				(15),
+	mMS-Node		(16),
+	pCF				(17),
+	-- PCF is applicable only as API Target NF in NEF charging
+	uDM				(18),
+	-- UDM is applicable only as API Target NF in NEF charging
+	uPF				(19),
+	-- UPF is applicable only as API Target NF in NEF charging
+	tSN-AF			(20),
+	tSNTSF			(21),
+	mB-SMF			(22),
+	aIOTF			(23),
+	-- AIOTF is applicable only as API Target NF in NEF charging
+	nWDAF			(24)
+}

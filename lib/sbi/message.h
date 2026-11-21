@@ -125,6 +125,11 @@ extern "C" {
 
 #define OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY      "sm-policy-notify"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY  "n1-n2-failure-notify"
+/* Where the SMF serves TS 32.291 ChargingNotify, under its own
+ * nsmf-callback service.  It is the SMF that names this resource - the CHF
+ * only ever uses the notifyUri it was handed - but the name is shared, so
+ * it lives here rather than in src/smf. */
+#define OGS_SBI_RESOURCE_NAME_CHARGING_NOTIFY       "charging-notify"
 
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
@@ -144,6 +149,9 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_NOTIFY                "notify"
 #define OGS_SBI_RESOURCE_NAME_UPDATE                "update"
 #define OGS_SBI_RESOURCE_NAME_TERMINATE             "terminate"
+
+/* TS 32.291 §6.1 — Nchf_ConvergedCharging resource path component */
+#define OGS_SBI_RESOURCE_NAME_CHARGINGDATA          "chargingdata"
 
 #define OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION \
                                                     "network-slice-information"
@@ -481,6 +489,8 @@ typedef struct ogs_sbi_discovery_option_s {
     char *hnrf_uri;
 
     uint64_t requester_features;
+
+    char *supi;     /* TS 29.510 §6.2.6.2.10 — supi query param for CHF discovery */
 } ogs_sbi_discovery_option_t;
 
 typedef struct ogs_sbi_message_s {
@@ -599,6 +609,13 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_policy_update_t *PolicyUpdate;
     OpenAPI_am_policy_data_t *AmPolicyData;
     OpenAPI_sm_policy_context_data_t *SmPolicyContextData;
+
+    /* TS 32.291 Nchf_ConvergedCharging.  Generated from
+     * TS32291_Nchf_ConvergedCharging.yaml like every other service - see
+     * lib/sbi/support/.../generator.sh. */
+    OpenAPI_charging_data_request_t *ChargingDataRequest;
+    OpenAPI_charging_data_response_t *ChargingDataResponse;
+    OpenAPI_charging_notify_request_t *ChargingNotifyRequest;
     OpenAPI_sm_policy_decision_t *SmPolicyDecision;
     OpenAPI_sm_policy_data_t *SmPolicyData;
     OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData;
@@ -750,6 +767,9 @@ void ogs_sbi_discovery_option_set_hnrf_uri(
         ogs_sbi_discovery_option_t *discovery_option, const char *hnrf_uri);
 void ogs_sbi_discovery_option_clear_hnrf_uri(
         ogs_sbi_discovery_option_t *discovery_option);
+
+void ogs_sbi_discovery_option_set_supi(
+        ogs_sbi_discovery_option_t *discovery_option, const char *supi);
 
 #ifdef __cplusplus
 }

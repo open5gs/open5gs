@@ -335,6 +335,33 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_reject(
 
     pdu_session_establishment_reject->gsm_cause = gsm_cause;
 
+    /*
+     * Back-off timer (T3396, TS 24.501 §6.4.1.4).  A caller that knows the
+     * session will keep being refused - an exhausted quota, for instance -
+     * asks for one, so the UE waits instead of retrying at once.  Without
+     * it a UE that re-establishes on its own can spend a request per second
+     * on a session the network will not give it.
+     */
+    if (sess->sm_data.establishment_reject_backoff) {
+        ogs_nas_gprs_timer_t gprs_timer;
+
+        if (ogs_nas_gprs_timer_3_from_sec(&gprs_timer,
+                    sess->sm_data.establishment_reject_backoff) == OGS_OK) {
+            pdu_session_establishment_reject->presencemask |=
+                OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_BACK_OFF_TIMER_VALUE_PRESENT;
+            pdu_session_establishment_reject->back_off_timer_value.length = 1;
+            pdu_session_establishment_reject->back_off_timer_value.t =
+                gprs_timer;
+
+            ogs_info("[%d] PDU session refused [cause:%d] with a %u s "
+                     "back-off timer", sess->psi, gsm_cause,
+                     sess->sm_data.establishment_reject_backoff);
+        } else {
+            ogs_warn("[%d] Cannot encode a %u s back-off timer",
+                    sess->psi, sess->sm_data.establishment_reject_backoff);
+        }
+    }
+
     return ogs_nas_5gs_plain_encode(&message);
 }
 

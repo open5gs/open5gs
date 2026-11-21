@@ -45,6 +45,7 @@ static void stats_remove_smf_session(smf_sess_t *sess);
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config)
 {
     ctf_config->enabled = SMF_CTF_ENABLED_AUTO;
+    ctf_config->bypass_well_known_dnn = false;
     return OGS_OK;
 }
 
@@ -63,6 +64,87 @@ int smf_use_gy_iface(void)
     default:
         return -1;
     }
+}
+
+/* smf_use_chf_iface() — 5GC counterpart to smf_use_gy_iface().
+ *
+ * Returns:
+ *   1  — CHF service is available (NRF subscription active for
+ *         nchf-convergedcharging).
+ *   0  — No CHF available; caller should skip online charging.
+ *  -1  — CHF explicitly enabled in config but not reachable (error).
+ *
+ * TS 29.513 §4.2.2 — SMF selects Nchf_ConvergedCharging for 5GC PDU
+ * sessions when online charging is configured.
+ * TS 23.503 §6.3   — CHF selection procedure.
+ */
+int smf_use_chf_iface(void)
+{
+    switch (smf_self()->ctf_config.enabled) {
+    case SMF_CTF_ENABLED_AUTO:
+        /* Probe the cached NF instance list: CHF is available when at least
+         * one CHF instance advertising nchf-convergedcharging has been
+         * discovered via the NRF subscription set up in smf_sbi_open(). */
+        return ogs_sbi_nf_instance_find_by_service(
+                OpenAPI_service_name_nchf_convergedcharging,
+                OpenAPI_nf_type_SMF) ? 1 : 0;
+    case SMF_CTF_ENABLED_YES:
+        return ogs_sbi_nf_instance_find_by_service(
+                OpenAPI_service_name_nchf_convergedcharging,
+                OpenAPI_nf_type_SMF) ? 1 : -1;
+    case SMF_CTF_ENABLED_NO:
+        return 0;
+    default:
+        return -1;
+    }
+}
+
+/* smf_select_online_charging() — choose the online charging interface for a
+ * PDU session (EPC or 5GC).
+ *
+ * Decision logic (TS 29.513 §4.2.2):
+ *   1. EPC sessions use the Gy/Ro interface → SMF_OC_IFACE_GY.
+ *      Gy peer availability is verified inside the SMF_OC_IFACE_GY
+ *      switch-case by smf_use_gy_iface().
+ *   2. For 5GC sessions, prefer Nchf_ConvergedCharging (CHF) when available.
+ *   3. Fall back to NONE if no online charging NF is reachable.
+ *
+ * Returns SMF_OC_IFACE_GY  for EPC sessions (Gy/Ro).
+ * Returns SMF_OC_IFACE_CHF when smf_use_chf_iface() is positive (5GC).
+ * Returns SMF_OC_IFACE_NONE when no charging interface is reachable.
+ */
+smf_online_charging_iface_e smf_select_online_charging(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    /* EPC sessions always route to the Gy/Ro interface.
+     * Gy peer availability is checked inside SMF_OC_IFACE_GY case. */
+    if (sess->epc)
+        return SMF_OC_IFACE_GY;
+
+    if (smf_sess_chf_bypassed(sess))
+        return SMF_OC_IFACE_NONE;
+
+    /* 5GC sessions prefer Nchf_ConvergedCharging. */
+    if (smf_use_chf_iface() > 0)
+        return SMF_OC_IFACE_CHF;
+
+    return SMF_OC_IFACE_NONE;
+}
+
+/* A 5GC session on ims, sos, mcptt or mcx. */
+bool smf_sess_well_known_dnn(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    return !sess->epc && ogs_sbi_dnn_is_well_known(sess->session.name);
+}
+
+/* A well-known DNN session, with ctf.bypass_well_known_dnn on. */
+bool smf_sess_chf_bypassed(smf_sess_t *sess)
+{
+    return smf_self()->ctf_config.bypass_well_known_dnn &&
+        smf_sess_well_known_dnn(sess);
 }
 
 void smf_context_init(void)
@@ -500,6 +582,9 @@ int smf_context_parse_config(void)
                             else
                                 ogs_warn("unknown 'enabled' value `%s`",
                                         enabled);
+                        } else if (!strcmp(ctf_key, "bypass_well_known_dnn")) {
+                            self.ctf_config.bypass_well_known_dnn =
+                                ogs_yaml_iter_bool(&ctf_iter);
                         } else
                             ogs_warn("unknown key `%s`", ctf_key);
                     }
@@ -2144,6 +2229,51 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->s6b_sid)
         ogs_free(sess->s6b_sid);
 
+    /*
+     * Cancel any Nchf transaction still outstanding on this session.
+     *
+     * The CHF Release issued at the wait_pfcp_deletion ENTRY action is
+     * deliberately fire-and-forget, so it runs alongside the teardown chain
+     * rather than inside it.  That chain is strictly sequential (PCF delete →
+     * UDM SDM delete → UDM UECM deregister → session_will_release), and the
+     * CHF answers only after writing a CDR file and two MongoDB operations,
+     * so the Release is routinely still in flight when the chain ends here.
+     *
+     * The transaction points back at sess->sbi.  Leaving it attached makes
+     * ogs_sbi_object_free() below log "SBI running [N]" and dump the request,
+     * and — once the response or the CLIENT_WAIT timeout finally arrives —
+     * ogs_sbi_xact_remove() unlinks it from an sbi_object that no longer
+     * exists.
+     *
+     * Dropping the transaction here discards only our interest in the 204:
+     * the request has already gone to the CHF, which writes the CDR and
+     * clears its own session either way.  A later response finds no
+     * transaction and is discarded by smf-sm.c.
+     *
+     * An outstanding Release is the normal case and is not worth a
+     * warning; anything else still in flight here is.
+     */
+    if (!sess->epc) {
+        ogs_sbi_xact_t *xact = NULL, *next_xact = NULL;
+
+        ogs_list_for_each_safe(&sess->sbi.xact_list, next_xact, xact) {
+            if (xact->service_name ==
+                    OpenAPI_service_name_nchf_convergedcharging) {
+                if (sess->sm_data.nchf_release_in_flight)
+                    ogs_debug("[%d] CHF Release response not awaited "
+                              "[xact:%d]", sess->psi, xact->id);
+                else
+                    ogs_warn("[%d] Cancelling in-flight CHF transaction at "
+                             "session removal", sess->psi);
+                ogs_sbi_xact_remove(xact);
+            }
+        }
+    }
+
+    CHF_CLEAR(sess);
+    if (sess->chf_association.client)
+        ogs_sbi_client_remove(sess->chf_association.client);
+
     if (sess->session.name)
         ogs_free(sess->session.name);
     if (sess->full_dnn)
@@ -2361,6 +2491,7 @@ ogs_pcc_rule_t *smf_pcc_rule_find_by_id(smf_sess_t *sess, char *pcc_rule_id)
 
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 {
+    smf_bearer_t *default_flow = NULL;
     smf_bearer_t *qos_flow = NULL;
 
     ogs_pfcp_pdr_t *dl_pdr = NULL;
@@ -2453,17 +2584,34 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
-    /* URR */
-    urr = ogs_pfcp_urr_add(&sess->pfcp);
-    ogs_assert(urr);
-    qos_flow->urr = urr;
+    /*
+     * URR.  The CHF sees one usage figure per session, so a dedicated flow on
+     * a session it charges has no URR of its own: its PDRs count against the
+     * default flow's, which is the one the grant is programmed on and the
+     * reports are read from.  With qos_flow->urr left NULL there is nothing
+     * to create, update, remove or free for this flow, and the URR outlives
+     * it.  A session the CHF does not charge keeps one URR per flow.
+     */
+    default_flow = smf_default_bearer_in_sess(sess);
+    if (default_flow && default_flow->urr &&
+        (CHF_ASSOCIATED(sess) ||
+         smf_select_online_charging(sess) == SMF_OC_IFACE_CHF)) {
+        ogs_pfcp_pdr_associate_urr(dl_pdr, default_flow->urr);
+        ogs_pfcp_pdr_associate_urr(ul_pdr, default_flow->urr);
+    } else {
+        urr = ogs_pfcp_urr_add(&sess->pfcp);
+        ogs_assert(urr);
+        qos_flow->urr = urr;
 
-    urr->meas_method = OGS_PFCP_MEASUREMENT_METHOD_VOLUME;
-    urr->rep_triggers.volume_threshold = 1;
-    urr->vol_threshold.tovol = 1;
-    urr->vol_threshold.total_volume = 1024*1024*100;
+        urr->meas_method = OGS_PFCP_MEASUREMENT_METHOD_VOLUME;
+        urr->rep_triggers.volume_threshold = 1;
+        urr->vol_threshold.tovol = 1;
+        urr->vol_threshold.total_volume = 1024*1024*100;
 
-    ogs_pfcp_pdr_associate_urr(dl_pdr, urr);
+        ogs_pfcp_pdr_associate_urr(dl_pdr, urr);
+        /* GAP 4: count UL traffic too */
+        ogs_pfcp_pdr_associate_urr(ul_pdr, urr);
+    }
 
     /* QER */
     qer = ogs_pfcp_qer_add(&sess->pfcp);

@@ -30,6 +30,7 @@ extern "C" {
 
 #define OGS_MAX_NUM_OF_NF_INFO 8
 #define OGS_MAX_NUM_OF_SCP_DOMAIN 8
+#define OGS_MAX_NUM_OF_SUPI_RANGE 16    /* TS 29.510 §6.1.6.2.9 */
 
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_smf_info_s ogs_sbi_smf_info_t;
@@ -457,6 +458,23 @@ typedef struct ogs_sbi_amf_info_s {
     } nr_tai_range[OGS_MAX_NUM_OF_TAI];
 } ogs_sbi_amf_info_t;
 
+/* TS 29.510 §6.1.6.2.9 — ChfInfo */
+typedef struct ogs_sbi_chf_info_s {
+    int num_of_supi_range;
+    struct {
+        char *start;
+        char *end;
+        char *pattern;
+    } supi_range[OGS_MAX_NUM_OF_SUPI_RANGE];
+
+    int num_of_gpsi_range;
+    struct {
+        char *start;
+        char *end;
+        char *pattern;
+    } gpsi_range[OGS_MAX_NUM_OF_SUPI_RANGE];
+} ogs_sbi_chf_info_t;
+
 typedef struct ogs_sbi_nf_info_s {
     ogs_lnode_t lnode;
 
@@ -466,6 +484,7 @@ typedef struct ogs_sbi_nf_info_s {
         ogs_sbi_amf_info_t amf;
         ogs_sbi_scp_info_t scp;
         ogs_sbi_sepp_info_t sepp;
+        ogs_sbi_chf_info_t chf;   /* TS 29.510 §6.1.6.2.9 */
     };
 } ogs_sbi_nf_info_t;
 
@@ -538,6 +557,16 @@ bool ogs_sbi_check_smf_info_slice(
         ogs_sbi_smf_info_t *smf_info, ogs_s_nssai_t *s_nssai, char *dnn);
 bool ogs_sbi_check_smf_info_tai(
         ogs_sbi_smf_info_t *smf_info, ogs_5gs_tai_t *tai);
+bool ogs_sbi_check_chf_info_supi_range(
+        ogs_sbi_chf_info_t *chf, const char *supi);
+
+/*
+ * True for the DNNs that carry IMS, emergency and mission-critical traffic:
+ * ims, sos, mcptt, and mcx for Mission Critical Services as a whole (MCPTT,
+ * MCVideo, MCData).  They are excluded from online charging whatever the
+ * slice or roaming state, so the CHF and the SMF have to agree on the list.
+ */
+bool ogs_sbi_dnn_is_well_known(const char *dnn);
 
 void ogs_sbi_nf_instance_build_default(ogs_sbi_nf_instance_t *nf_instance);
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(

@@ -765,6 +765,9 @@ uint8_t upf_sess_set_ue_ipv6_framed_routes(upf_sess_t *sess,
     return cause_value;
 }
 
+static void upf_sess_urr_acc_quota_holding_time_setup(
+        upf_sess_t *sess, ogs_pfcp_urr_t *urr);
+
 void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bool is_uplink)
 {
     upf_sess_urr_acc_t *urr_acc = NULL;
@@ -794,6 +797,12 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
     urr_acc->time_of_last_packet = ogs_time_now();
     if (urr_acc->time_of_first_packet == 0)
         urr_acc->time_of_first_packet = urr_acc->time_of_last_packet;
+
+    /* Traffic has resumed after an idle report stopped the Quota Holding
+     * Time timer - start watching for the next idle period. */
+    if (urr->rep_triggers.quota_holding_time && urr->quota_holding_time > 0 &&
+            !urr_acc->quota_holding_armed)
+        upf_sess_urr_acc_quota_holding_time_setup(sess, urr);
 
     /* generate report if volume threshold/quota is reached */
     vol = urr_acc->total_octets - urr_acc->last_report.total_octets;
@@ -907,9 +916,22 @@ void upf_sess_urr_acc_snapshot(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
         urr_acc->last_report.mono_timestamp = ogs_get_monotonic_time();
 }
 
-static void upf_sess_urr_acc_timers_cb(void *data)
+/*
+ * The three grant-lifetime timers share this body and differ only in which
+ * trigger they report.
+ *
+ * `which` is why the report is being sent, and it is set from the timer that
+ * fired rather than left to fill_usage_report() to infer.  The inference
+ * there compares dur_measurement - the time since the LAST report - against
+ * the timer's period, which is the same number only while every report
+ * restarts every timer.  The quota holding time report deliberately does not
+ * restart these, so an idle session's next validity report would otherwise
+ * carry no trigger at all and the CHF would be told nothing about why it
+ * arrived.
+ */
+static void upf_sess_urr_acc_time_report(
+        ogs_pfcp_urr_t *urr, ogs_pfcp_usage_report_trigger_t which)
 {
-    ogs_pfcp_urr_t *urr = (ogs_pfcp_urr_t *)data;
     ogs_pfcp_user_plane_report_t report;
     ogs_pfcp_sess_t *pfcp_sess = urr->sess;
     upf_sess_t *sess = UPF_SESS(pfcp_sess);
@@ -922,6 +944,9 @@ static void upf_sess_urr_acc_timers_cb(void *data)
         memset(&report, 0, sizeof(report));
         upf_sess_urr_acc_fill_usage_report(sess, urr, &report, 0);
         report.num_of_usage_report = 1;
+        report.usage_report[0].rep_trigger.reptri_5 |= which.reptri_5;
+        report.usage_report[0].rep_trigger.reptri_6 |= which.reptri_6;
+        report.usage_report[0].rep_trigger.reptri_7 |= which.reptri_7;
         upf_sess_urr_acc_snapshot(sess, urr);
 
         if (upf_pfcp_send_session_report_request(
@@ -930,6 +955,117 @@ static void upf_sess_urr_acc_timers_cb(void *data)
     }
     /* Start new report period/iteration: */
     upf_sess_urr_acc_timers_setup(sess, urr);
+}
+
+static void upf_sess_urr_acc_validity_time_cb(void *data)
+{
+    ogs_pfcp_usage_report_trigger_t which;
+    memset(&which, 0, sizeof(which));
+    which.quota_validity_time = 1;
+    upf_sess_urr_acc_time_report((ogs_pfcp_urr_t *)data, which);
+}
+
+static void upf_sess_urr_acc_time_quota_cb(void *data)
+{
+    ogs_pfcp_usage_report_trigger_t which;
+    memset(&which, 0, sizeof(which));
+    which.time_quota = 1;
+    upf_sess_urr_acc_time_report((ogs_pfcp_urr_t *)data, which);
+}
+
+static void upf_sess_urr_acc_time_threshold_cb(void *data)
+{
+    ogs_pfcp_usage_report_trigger_t which;
+    memset(&which, 0, sizeof(which));
+    which.time_threshold = 1;
+    upf_sess_urr_acc_time_report((ogs_pfcp_urr_t *)data, which);
+}
+
+/*
+ * Quota Holding Time (TS 29.244 8.2.20 / TS 32.251 quota holding): report
+ * what the session used once it has been idle for QHT seconds, so the
+ * controller can take back the rest of the grant instead of waiting for
+ * the validity timer.
+ *
+ * Unlike the timers above this one does not run continuously.  It is armed
+ * while there is unreported traffic and fires QHT seconds later.  If a
+ * packet arrived in the meantime the session is not idle yet, so it re-arms
+ * for the rest of the window.  Once the idle report has gone out it stays
+ * stopped - a session with nothing to report has nothing to say again -
+ * and upf_sess_urr_acc_add() arms it once more when traffic resumes.
+ */
+static void upf_sess_urr_acc_quota_holding_time_cb(void *data)
+{
+    ogs_pfcp_urr_t *urr = (ogs_pfcp_urr_t *)data;
+    ogs_pfcp_sess_t *pfcp_sess = urr->sess;
+    upf_sess_t *sess = UPF_SESS(pfcp_sess);
+    upf_sess_urr_acc_t *urr_acc = NULL;
+    ogs_pfcp_user_plane_report_t report;
+    ogs_time_t now, idle, window;
+
+    ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
+    urr_acc = &sess->urr_acc[urr->id-1];
+
+    urr_acc->quota_holding_armed = false;
+
+    ogs_debug("URR Quota Holding Time timer expired: URR-ID[%u]", urr->id);
+
+    /* Nothing measured since the last report: this session is idle and has
+     * already said so.  Wait for traffic rather than re-arming. */
+    if (urr_acc->total_pkts == urr_acc->last_report.total_pkts)
+        return;
+
+    /* time_of_last_packet is wall-clock, like ogs_time_now() below.  A
+     * clock that went backwards leaves idle at 0, which re-arms for the
+     * full window - never reports a session that is not idle. */
+    window = ogs_time_from_sec(urr->quota_holding_time);
+    now = ogs_time_now();
+    idle = (urr_acc->time_of_last_packet &&
+            now > urr_acc->time_of_last_packet)
+         ? now - urr_acc->time_of_last_packet : 0;
+
+    if (idle < window) {
+        /* Traffic arrived while the timer was running. */
+        ogs_timer_start(urr_acc->t_quota_holding_time, window - idle);
+        urr_acc->quota_holding_armed = true;
+        return;
+    }
+
+    memset(&report, 0, sizeof(report));
+    upf_sess_urr_acc_fill_usage_report(sess, urr, &report, 0);
+    report.num_of_usage_report = 1;
+    /* fill_usage_report() derives its triggers from the measurement; this
+     * one is known only to the timer that found the session idle. */
+    report.usage_report[0].rep_trigger.quota_holding_time = 1;
+    upf_sess_urr_acc_snapshot(sess, urr);
+
+    if (upf_pfcp_send_session_report_request(sess, &report) != OGS_OK)
+        ogs_error("PFCP Session Report Request failed");
+
+    /* Open the next reporting period without touching the validity, time
+     * quota and time threshold timers: those measure the grant's lifetime
+     * and must keep counting across an idle report. */
+    urr_acc->time_start = ogs_time_ntp32_now();
+    urr_acc->mono_time_start = ogs_get_monotonic_time();
+}
+
+static void upf_sess_urr_acc_quota_holding_time_setup(
+        upf_sess_t *sess, ogs_pfcp_urr_t *urr)
+{
+    upf_sess_urr_acc_t *urr_acc = NULL;
+
+    ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
+    urr_acc = &sess->urr_acc[urr->id-1];
+
+    ogs_debug("Start URR Quota Holding Time timer [URR-ID:%u Seconds:%u]",
+            urr->id, urr->quota_holding_time);
+    urr_acc->reporting_enabled = true;
+    if (!urr_acc->t_quota_holding_time)
+        urr_acc->t_quota_holding_time = ogs_timer_add(ogs_app()->timer_mgr,
+                            upf_sess_urr_acc_quota_holding_time_cb, urr);
+    ogs_timer_start(urr_acc->t_quota_holding_time,
+            ogs_time_from_sec(urr->quota_holding_time));
+    urr_acc->quota_holding_armed = true;
 }
 
 static void upf_sess_urr_acc_validity_time_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
@@ -944,7 +1080,7 @@ static void upf_sess_urr_acc_validity_time_setup(upf_sess_t *sess, ogs_pfcp_urr_
     urr_acc->reporting_enabled = true;
     if (!urr_acc->t_validity_time)
         urr_acc->t_validity_time = ogs_timer_add(ogs_app()->timer_mgr,
-                                        upf_sess_urr_acc_timers_cb, urr);
+                                  upf_sess_urr_acc_validity_time_cb, urr);
     ogs_timer_start(urr_acc->t_validity_time,
             ogs_time_from_sec(urr->quota_validity_time));
 }
@@ -961,7 +1097,7 @@ static void upf_sess_urr_acc_time_quota_setup(upf_sess_t *sess, ogs_pfcp_urr_t *
     urr_acc->reporting_enabled = true;
     if (!urr_acc->t_time_quota)
         urr_acc->t_time_quota = ogs_timer_add(ogs_app()->timer_mgr,
-                                        upf_sess_urr_acc_timers_cb, urr);
+                                  upf_sess_urr_acc_time_quota_cb, urr);
     ogs_timer_start(urr_acc->t_time_quota, ogs_time_from_sec(urr->time_quota));
 }
 
@@ -977,7 +1113,7 @@ static void upf_sess_urr_acc_time_threshold_setup(upf_sess_t *sess, ogs_pfcp_urr
     urr_acc->reporting_enabled = true;
     if (!urr_acc->t_time_threshold)
         urr_acc->t_time_threshold = ogs_timer_add(ogs_app()->timer_mgr,
-                                        upf_sess_urr_acc_timers_cb, urr);
+                                  upf_sess_urr_acc_time_threshold_cb, urr);
     ogs_timer_start(urr_acc->t_time_threshold,
             ogs_time_from_sec(urr->time_threshold));
 }
@@ -998,6 +1134,8 @@ void upf_sess_urr_acc_timers_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
         upf_sess_urr_acc_time_quota_setup(sess, urr);
     if (urr->rep_triggers.time_threshold && urr->time_threshold > 0)
         upf_sess_urr_acc_time_threshold_setup(sess, urr);
+    if (urr->rep_triggers.quota_holding_time && urr->quota_holding_time > 0)
+        upf_sess_urr_acc_quota_holding_time_setup(sess, urr);
 }
 
 void upf_sess_urr_acc_remove(upf_sess_t *sess, ogs_pfcp_urr_id_t urr_id)
@@ -1012,6 +1150,8 @@ void upf_sess_urr_acc_remove(upf_sess_t *sess, ogs_pfcp_urr_id_t urr_id)
     urr_acc = &sess->urr_acc[urr_id-1];
 
     ogs_debug("Clear accounting and timers for URR-ID[%u]", urr_id);
+    if (urr_acc->t_quota_holding_time)
+        ogs_timer_delete(urr_acc->t_quota_holding_time);
     if (urr_acc->t_time_threshold)
         ogs_timer_delete(urr_acc->t_time_threshold);
     if (urr_acc->t_validity_time)

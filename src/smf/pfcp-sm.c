@@ -22,6 +22,7 @@
 #include "local-path.h"
 #include "gtp-path.h"
 #include "n4-handler.h"
+#include "nchf-handler.h"
 
 static void pfcp_restoration(ogs_pfcp_node_t *node);
 static void reselect_upf(ogs_pfcp_node_t *node);
@@ -121,6 +122,16 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
                 ogs_warn("Session has already been removed");
                 break;
             }
+            /*
+             * The UPF never answered the deletion, so its final Usage
+             * Report is lost - but the CHF session must still be closed,
+             * or it would stay open in the CHF (and in chf.sessions)
+             * indefinitely.  Release with the usage reported so far.  The
+             * HTTP client copies the request, so it is still transmitted
+             * after SMF_SESS_CLEAR() cancels the transaction below.
+             */
+            if (!sess->epc)
+                smf_nchf_send_release(sess);
             SMF_SESS_CLEAR(sess);
             break;
         default:
@@ -414,6 +425,16 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 ogs_warn("Session has already been removed");
                 break;
             }
+            /*
+             * The UPF never answered the deletion, so its final Usage
+             * Report is lost - but the CHF session must still be closed,
+             * or it would stay open in the CHF (and in chf.sessions)
+             * indefinitely.  Release with the usage reported so far.  The
+             * HTTP client copies the request, so it is still transmitted
+             * after SMF_SESS_CLEAR() cancels the transaction below.
+             */
+            if (!sess->epc)
+                smf_nchf_send_release(sess);
             SMF_SESS_CLEAR(sess);
             break;
         default:

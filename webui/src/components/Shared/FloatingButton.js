@@ -7,7 +7,7 @@ import AddIcon from 'react-icons/lib/md/add';
 
 const Wrapper = styled.div`
   position: fixed;
-  bottom: 2rem;
+  bottom: ${props => props.bottom || '2rem'};
   right: 2rem;
   width: 4rem;
   height: 4rem;
@@ -32,14 +32,22 @@ const Wrapper = styled.div`
   }
 `;
 
-const FloatingButton = ({onClick}) => (
-  <Wrapper onClick={onClick}>
-    <AddIcon/>
-  </Wrapper>
-);
+/* A second button on the same page sits above the first: pass `bottom`, an
+ * `icon` and a `title` for its tooltip. */
+const FloatingButton = ({onClick, icon, bottom, title}) => {
+  const Icon = icon || AddIcon;
+  return (
+    <Wrapper onClick={onClick} bottom={bottom} title={title}>
+      <Icon/>
+    </Wrapper>
+  );
+};
 
 FloatingButton.propTypes = {
-  onClick: PropTypes.func
+  onClick: PropTypes.func,
+  icon: PropTypes.func,
+  bottom: PropTypes.string,
+  title: PropTypes.string,
 }
 
 export default FloatingButton;

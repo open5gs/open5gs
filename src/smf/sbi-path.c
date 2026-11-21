@@ -73,6 +73,12 @@ int smf_sbi_open(void)
             OpenAPI_nf_type_NULL, OpenAPI_service_name_nudm_sdm);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_NULL, OpenAPI_service_name_nudm_uecm);
+    /* Subscribe to CHF NF status notifications so smf_use_chf_iface()
+     * can probe the cached NF instance list at session setup time.
+     * TS 29.510 §6.1.6 — NF status subscription; TS 32.291 §5 — CHF NF. */
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL,
+            OpenAPI_service_name_nchf_convergedcharging);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -348,8 +354,12 @@ void smf_namf_comm_send_n1_n2_pdu_establishment_reject(
 
     memset(&param, 0, sizeof(param));
     param.state = SMF_UE_OR_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
+    /* A caller that knows why the session is refused says so; anything
+     * else is still reported as a network failure. */
     param.n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
-        OGS_5GSM_CAUSE_NETWORK_FAILURE);
+        sess->sm_data.establishment_reject_cause ?
+            sess->sm_data.establishment_reject_cause :
+            OGS_5GSM_CAUSE_NETWORK_FAILURE);
     ogs_assert(param.n1smbuf);
 
     smf_namf_comm_send_n1_n2_message_transfer(sess, stream, &param);

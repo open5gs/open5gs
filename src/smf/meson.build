@@ -60,6 +60,8 @@ libsmf_sources = files('''
     namf-handler.h
     npcf-build.h
     npcf-handler.h
+    nchf-build.h
+    nchf-handler.h
     sbi-path.h
     gsmue-message.h
     gsm-build.h
@@ -103,6 +105,8 @@ libsmf_sources = files('''
     namf-handler.c
     npcf-build.c
     npcf-handler.c
+    nchf-build.c
+    nchf-handler.c
     sbi-path.c
     gsmue-message.c
     gsm-build.c

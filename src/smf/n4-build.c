@@ -325,7 +325,8 @@ ogs_pkbuf_t *smf_n4_build_pdr_to_modify_list(
              OGS_PFCP_MODIFY_URR_VOLUME_QUOTA|
              OGS_PFCP_MODIFY_URR_TIME_THRESH|
              OGS_PFCP_MODIFY_URR_TIME_QUOTA|
-             OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME)) {
+             OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME|
+             OGS_PFCP_MODIFY_URR_QUOTA_HOLDING_TIME)) {
         /* Update URR */
         ogs_list_for_each(&sess->pfcp.urr_list, urr) {
             ogs_pfcp_build_update_urr(
@@ -620,7 +621,8 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_to_modify_list(
                  OGS_PFCP_MODIFY_URR_VOLUME_QUOTA|
                  OGS_PFCP_MODIFY_URR_TIME_THRESH|
                  OGS_PFCP_MODIFY_URR_TIME_QUOTA|
-                 OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME)) {
+                 OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME|
+                 OGS_PFCP_MODIFY_URR_QUOTA_HOLDING_TIME)) {
             /* Update URR */
             if (qos_flow->urr) {
                 ogs_pfcp_build_update_urr(

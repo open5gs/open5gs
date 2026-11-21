@@ -21,6 +21,7 @@ global:
 #    no_pcf: true
 #    no_nssf: true
 #    no_bsf: true
+#    no_chf: true
 #    no_udr: true
 #    no_eir: true
 #    no_mme: true
@@ -340,6 +341,18 @@ bsf:
     client:
       scp:
         - uri: http://127.0.0.200:7777
+
+chf:
+  sbi:
+    server:
+      - address: 127.0.0.30
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+  charging:
+    cdr:
+      enable: false
 
 udr:
   sbi:

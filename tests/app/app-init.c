@@ -35,6 +35,7 @@ static ogs_thread_t *udm_thread = NULL;
 static ogs_thread_t *pcf_thread = NULL;
 static ogs_thread_t *nssf_thread = NULL;
 static ogs_thread_t *bsf_thread = NULL;
+static ogs_thread_t *chf_thread = NULL;
 static ogs_thread_t *udr_thread = NULL;
 static ogs_thread_t *eir_thread = NULL;
 
@@ -101,6 +102,10 @@ int app_initialize(const char *const argv[])
             ogs_global_conf()->parameter.eir_count > 0)
         eir_thread = test_child_create("eir", 0, argv_out);
 
+    if (ogs_global_conf()->parameter.no_chf == 0 &&
+            ogs_global_conf()->parameter.chf_count > 0)
+        chf_thread = test_child_create("chf", 0, argv_out);
+
     /*
      * Wait for all sockets listening
      *
@@ -122,6 +127,7 @@ void app_terminate(void)
     if (sgwu_thread) ogs_thread_destroy(sgwu_thread);
     if (upf_thread) ogs_thread_destroy(upf_thread);
 
+    if (chf_thread) ogs_thread_destroy(chf_thread);
     if (udr_thread) ogs_thread_destroy(udr_thread);
     if (eir_thread) ogs_thread_destroy(eir_thread);
     if (bsf_thread) ogs_thread_destroy(bsf_thread);

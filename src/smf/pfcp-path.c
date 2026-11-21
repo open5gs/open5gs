@@ -659,7 +659,15 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
     ogs_pfcp_pdr_t *pdr = NULL;
 
     ogs_assert(sess);
-    if ((flags & OGS_PFCP_MODIFY_ERROR_INDICATION) == 0)
+    /* An SBI stream is required for most modifications so the caller can
+     * receive the N1/N2 response.  Two exceptions:
+     *   - ERROR_INDICATION: locally generated, no upstream stream.
+     *   - URR-only update (quota refresh from CHF): triggered asynchronously
+     *     by a CHF Update response; there is no pending SBI request waiting
+     *     for this particular PFCP completion.
+     */
+    if ((flags & OGS_PFCP_MODIFY_ERROR_INDICATION) == 0 &&
+        (flags & OGS_PFCP_MODIFY_URR) == 0)
         ogs_assert(stream);
 
     xact = ogs_pfcp_xact_local_create(

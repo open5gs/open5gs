@@ -813,9 +813,20 @@ bool smf_npcf_smpolicycontrol_handle_create(
     cp2up_pdr->precedence = OGS_PFCP_CP2UP_PDR_PRECEDENCE;
     up2cp_pdr->precedence = OGS_PFCP_UP2CP_PDR_PRECEDENCE;
 
-    ogs_assert(OGS_OK ==
-            smf_5gc_pfcp_send_session_establishment_request(sess, stream, 0));
-
+    /*
+     * PFCP Session Establishment is intentionally NOT sent here.
+     *
+     * For 5GC sessions, the caller (gsm-sm.c) decides when to send it:
+     *   - If online charging via CHF is required, PFCP must wait until after
+     *     the CHF Create response (wait_5gc_nchf_create → wait_pfcp_establishment).
+     *   - If no CHF is required, the caller sends PFCP immediately before
+     *     transitioning to wait_pfcp_establishment.
+     *
+     * Sending PFCP here (before the CHF exchange) caused a race: the UPF
+     * responded before the CHF, the N4 response was dropped in
+     * wait_5gc_nchf_create (no handler), and the SMF got stuck in
+     * wait_pfcp_establishment forever.
+     */
     return true;
 }
 

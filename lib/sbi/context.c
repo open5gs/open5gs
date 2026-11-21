@@ -1761,6 +1761,34 @@ static void sepp_info_free(ogs_sbi_sepp_info_t *sepp_info)
 {
 }
 
+/* TS 29.510 §6.1.6.2.9 — release dynamically allocated supi/gpsi range strings */
+static void chf_info_free(ogs_sbi_chf_info_t *chf_info)
+{
+    int i;
+
+    ogs_assert(chf_info);
+
+    for (i = 0; i < chf_info->num_of_supi_range; i++) {
+        if (chf_info->supi_range[i].start)
+            ogs_free(chf_info->supi_range[i].start);
+        if (chf_info->supi_range[i].end)
+            ogs_free(chf_info->supi_range[i].end);
+        if (chf_info->supi_range[i].pattern)
+            ogs_free(chf_info->supi_range[i].pattern);
+    }
+    chf_info->num_of_supi_range = 0;
+
+    for (i = 0; i < chf_info->num_of_gpsi_range; i++) {
+        if (chf_info->gpsi_range[i].start)
+            ogs_free(chf_info->gpsi_range[i].start);
+        if (chf_info->gpsi_range[i].end)
+            ogs_free(chf_info->gpsi_range[i].end);
+        if (chf_info->gpsi_range[i].pattern)
+            ogs_free(chf_info->gpsi_range[i].pattern);
+    }
+    chf_info->num_of_gpsi_range = 0;
+}
+
 void ogs_sbi_nf_info_remove(ogs_list_t *list, ogs_sbi_nf_info_t *nf_info)
 {
     ogs_assert(list);
@@ -1780,6 +1808,9 @@ void ogs_sbi_nf_info_remove(ogs_list_t *list, ogs_sbi_nf_info_t *nf_info)
         break;
     case OpenAPI_nf_type_SEPP:
         sepp_info_free(&nf_info->sepp);
+        break;
+    case OpenAPI_nf_type_CHF:
+        chf_info_free(&nf_info->chf);
         break;
     default:
         ogs_fatal("Not implemented NF-type[%s]",
@@ -1886,6 +1917,61 @@ bool ogs_sbi_check_smf_info_tai(
                     return true;
                 }
             }
+        }
+    }
+
+    return false;
+}
+
+bool ogs_sbi_dnn_is_well_known(const char *dnn)
+{
+    static const char *const well_known[] = { "ims", "sos", "mcptt", "mcx" };
+    const char *dot;
+    size_t len;
+    unsigned int i;
+
+    if (!dnn)
+        return false;
+
+    /*
+     * TS 23.003 clause 9.1: a DNN is case-insensitive, and may carry an
+     * Operator Identifier after the Network Identifier, as a roaming
+     * session's can.  Only the Network Identifier says what the DNN is for.
+     */
+    dot = strchr(dnn, '.');
+    len = dot ? (size_t)(dot - dnn) : strlen(dnn);
+
+    for (i = 0; i < OGS_ARRAY_SIZE(well_known); i++) {
+        if (len == strlen(well_known[i]) &&
+            !ogs_strncasecmp(dnn, well_known[i], len))
+            return true;
+    }
+
+    return false;
+}
+
+bool ogs_sbi_check_chf_info_supi_range(
+        ogs_sbi_chf_info_t *chf, const char *supi)
+{
+    int i;
+
+    ogs_assert(chf);
+    ogs_assert(supi);
+
+    /* No restriction — match all SUPIs */
+    if (chf->num_of_supi_range == 0)
+        return true;
+
+    for (i = 0; i < chf->num_of_supi_range; i++) {
+        if (chf->supi_range[i].start && chf->supi_range[i].end) {
+            if (strcmp(supi, chf->supi_range[i].start) >= 0 &&
+                strcmp(supi, chf->supi_range[i].end) <= 0)
+                return true;
+        } else if (chf->supi_range[i].pattern) {
+            /* Prefix match — full regex deferred to future phase */
+            size_t plen = strlen(chf->supi_range[i].pattern);
+            if (strncmp(supi, chf->supi_range[i].pattern, plen) == 0)
+                return true;
         }
     }
 
@@ -2180,6 +2266,9 @@ bool ogs_sbi_discovery_option_is_matched(
     bool need_smf_slice = false;   /* requires both S-NSSAI and DNN */
     bool need_smf_tai = false;     /* TAI filter present */
     bool need_smf_any = false;     /* any SMF-specific filter */
+    bool chf_info_checked = false;
+    bool chf_match_found = false;
+    bool need_chf_supi = false;    /* SUPI filter present */
     int i;
 
     ogs_assert(nf_instance);
@@ -2248,6 +2337,10 @@ bool ogs_sbi_discovery_option_is_matched(
         need_smf_any = (need_smf_slice || need_smf_tai) ? true : false;
     }
 
+    /* Determine which CHF filters are requested */
+    if (nf_instance->nf_type == OpenAPI_nf_type_CHF)
+        need_chf_supi = discovery_option->supi ? true : false;
+
     /* --------------------------------------------------------------
      * Step 2. NF-type specific matching
      * -------------------------------------------------------------- */
@@ -2302,16 +2395,40 @@ bool ogs_sbi_discovery_option_is_matched(
             break; /* OR logic across smfInfo blocks */
         }
 
+        /* --- CHF: TS 29.510 §6.2.6.2.4 — SUPI-range filter --- */
+        else if (nf_info->nf_type == OpenAPI_nf_type_CHF) {
+            chf_info_checked = true;
+
+            if (need_chf_supi &&
+                ogs_sbi_check_chf_info_supi_range(
+                        &nf_info->chf, discovery_option->supi) == false)
+                continue; /* this chfInfo does not cover the SUPI */
+
+            chf_match_found = true;
+            break; /* OR logic across chfInfo blocks */
+        }
+
         /* Other NF types: no additional checks here */
     }
 
     /* --------------------------------------------------------------
-     * Step 3. Final validation for SMF
+     * Step 3. Final validation for SMF / CHF
+     *
+     * Both filters are OR across their info blocks: an instance matches
+     * when ANY registered smfInfo / chfInfo satisfies the request.  Reject
+     * only when the filter was requested, at least one block was present,
+     * and none of them matched.
      * -------------------------------------------------------------- */
     if (nf_instance->nf_type == OpenAPI_nf_type_SMF &&
         smf_info_checked &&
         need_smf_any &&
         smf_match_found == false)
+        return false;
+
+    if (nf_instance->nf_type == OpenAPI_nf_type_CHF &&
+        chf_info_checked &&
+        need_chf_supi &&
+        chf_match_found == false)
         return false;
 
     return true;

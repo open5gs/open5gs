@@ -1,0 +1,6 @@
+usr/bin/open5gs-chfd
+usr/bin/open5gs-chf-cdr-decode
+configs/open5gs/chf.yaml etc/open5gs
+configs/open5gs/tls/chf.key etc/open5gs/tls
+configs/open5gs/tls/chf.crt etc/open5gs/tls
+configs/systemd/open5gs-chfd.service lib/systemd/system
