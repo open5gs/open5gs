@@ -140,6 +140,14 @@ executable(
 )
 
 executable(
+    'gtp_xact_fuzz',
+    sources : files('gtp-xact-fuzz.c'),
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libgtp_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
+
+executable(
     'crypt_kdf_fuzz',
     sources : files('crypt-kdf-fuzz.c'),
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
