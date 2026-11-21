@@ -344,7 +344,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
 {
     ogs_pkbuf_t *pkbuf = NULL;
     smf_bearer_t *qos_flow = NULL;
-    int rv, i, len;
+    int rv, i;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_modification_command_t
@@ -387,24 +387,12 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
             qosFlowAddModRequestItem = node->data;
             if (qosFlowAddModRequestItem &&
                 qosFlowAddModRequestItem->qos_rules) {
-                ogs_nas_qos_rules_t qos_rules;
-
-                qos_rules.buffer = gsm_decode_base64(
-                        qosFlowAddModRequestItem->qos_rules, &len);
-                if (!qos_rules.buffer) {
+                if (num >= OGS_NAS_MAX_NUM_OF_QOS_RULE ||
+                    gsm_parse_qos_rule_ie(&qos_rule[num],
+                        qosFlowAddModRequestItem->qos_rules) != OGS_OK) {
                     ogs_error("Failed to decode qosRules in qosFlowsAddModRequestList");
                     goto cleanup;
                 }
-                qos_rules.length = len;
-
-                if (1 != ogs_nas_parse_qos_rules(&qos_rule[num],
-                            &qos_rules)) {
-                    ogs_error("ogs_nas_parse_qos_rules() failed");
-                    ogs_free(qos_rules.buffer);
-                    goto cleanup;
-                }
-
-                ogs_free(qos_rules.buffer);
 
                 num++;
             }
@@ -413,23 +401,12 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
         OpenAPI_list_for_each(sess->h_smf_qos_flows_rel_request_list, node) {
             qosFlowRelRequestItem = node->data;
             if (qosFlowRelRequestItem && qosFlowRelRequestItem->qos_rules) {
-                ogs_nas_qos_rules_t qos_rules;
-
-                qos_rules.buffer = gsm_decode_base64(
-                        qosFlowRelRequestItem->qos_rules, &len);
-                if (!qos_rules.buffer) {
+                if (num >= OGS_NAS_MAX_NUM_OF_QOS_RULE ||
+                    gsm_parse_qos_rule_ie(&qos_rule[num],
+                        qosFlowRelRequestItem->qos_rules) != OGS_OK) {
                     ogs_error("Failed to decode qosRules in qosFlowsRelRequestList");
                     goto cleanup;
                 }
-                qos_rules.length = len;
-
-                if (1 != ogs_nas_parse_qos_rules(&qos_rule[num], &qos_rules)) {
-                    ogs_error("ogs_nas_parse_qos_rules() failed");
-                    ogs_free(qos_rules.buffer);
-                    goto cleanup;
-                }
-
-                ogs_free(qos_rules.buffer);
 
                 num++;
             }

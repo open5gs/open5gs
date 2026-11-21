@@ -131,6 +131,36 @@ int gsm_parse_qos_flow_description_ie(
     return OGS_OK;
 }
 
+/*
+ * Each QoS flow item carries the qosRules for that one flow.
+ * ogs_nas_parse_qos_rules() may fill up to OGS_NAS_MAX_NUM_OF_QOS_RULE
+ * entries, so parse into a full-size array and return a single rule.
+ */
+int gsm_parse_qos_rule_ie(ogs_nas_qos_rule_t *rule, const char *src)
+{
+    ogs_nas_qos_rules_t rules;
+    ogs_nas_qos_rule_t parsed[OGS_NAS_MAX_NUM_OF_QOS_RULE];
+    int len, count;
+
+    rules.buffer = gsm_decode_base64(src, &len);
+    if (!rules.buffer)
+        return OGS_ERROR;
+
+    if (len > OGS_NAS_MAX_QOS_RULES_LEN) {
+        ogs_free(rules.buffer);
+        return OGS_ERROR;
+    }
+
+    rules.length = len;
+    count = ogs_nas_parse_qos_rules(parsed, &rules);
+    ogs_free(rules.buffer);
+    if (count != 1)
+        return OGS_ERROR;
+
+    *rule = parsed[0];
+    return OGS_OK;
+}
+
 int gsm_handle_pdu_session_establishment_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_nas_5gs_pdu_session_establishment_request_t *
