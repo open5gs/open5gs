@@ -19,6 +19,42 @@
 
 #include "ogs-gtp.h"
 
+/*
+ * F-TEID is decoded as OGS_TLV_VAR_STR, so the IE length is whatever the
+ * peer sent. Check that the value holds the TEID and every address
+ * announced by the V4/V6 flags before it is used as ogs_gtp2_f_teid_t.
+ */
+int ogs_gtp2_f_teid_check(ogs_gtp2_tlv_f_teid_t *octet)
+{
+    ogs_gtp2_f_teid_t *f_teid = NULL;
+    uint32_t len = OGS_GTP2_F_TEID_HDR_LEN;
+
+    ogs_assert(octet);
+
+    if (!octet->presence || !octet->data || !octet->len) {
+        ogs_error("No F-TEID");
+        return OGS_ERROR;
+    }
+
+    f_teid = octet->data;
+    if (!f_teid->ipv4 && !f_teid->ipv6) {
+        ogs_error("No IPv4 or IPv6 in F-TEID");
+        return OGS_ERROR;
+    }
+
+    if (f_teid->ipv4)
+        len += OGS_IPV4_LEN;
+    if (f_teid->ipv6)
+        len += OGS_IPV6_LEN;
+
+    if (octet->len < len) {
+        ogs_error("Invalid F-TEID length [%d < %d]", octet->len, len);
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
 int ogs_gtp2_f_teid_to_sockaddr(
     ogs_gtp2_f_teid_t *f_teid, uint16_t port, ogs_sockaddr_t **list)
 {

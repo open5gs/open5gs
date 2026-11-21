@@ -247,7 +247,9 @@ void ogs_gtp2_sender_f_teid(
         break;
     }
 
-    if (tlv_f_teid && tlv_f_teid->presence && (f_teid = tlv_f_teid->data)) {
+    if (tlv_f_teid && tlv_f_teid->presence &&
+        tlv_f_teid->len >= OGS_GTP2_F_TEID_HDR_LEN &&
+        (f_teid = tlv_f_teid->data)) {
         sender_f_teid->teid_presence = true;
         sender_f_teid->teid = be32toh(f_teid->teid);
     }

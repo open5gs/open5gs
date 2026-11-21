@@ -237,10 +237,16 @@ void sgwc_s11_handle_create_session_request(
     if (req->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No Sender F-TEID");
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    } else if (ogs_gtp2_f_teid_check(
+                &req->sender_f_teid_for_control_plane) != OGS_OK) {
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
     if (req->pgw_s5_s8_address_for_control_plane_or_pmip.presence == 0) {
         ogs_error("No PGW IP");
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    } else if (ogs_gtp2_f_teid_check(
+                &req->pgw_s5_s8_address_for_control_plane_or_pmip) != OGS_OK) {
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
@@ -341,6 +347,11 @@ void sgwc_s11_handle_create_session_request(
             ogs_assert(dl_tunnel);
 
             /* Data Plane(DL) : eNB-S1U */
+            if (ogs_gtp2_f_teid_check(&req->bearer_contexts_to_be_created[i].
+                        s1_u_enodeb_f_teid) != OGS_OK) {
+                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+                goto cleanup;
+            }
             enb_s1u_teid = req->bearer_contexts_to_be_created[i].
                             s1_u_enodeb_f_teid.data;
             dl_tunnel->remote_teid = be32toh(enb_s1u_teid->teid);
@@ -378,6 +389,11 @@ void sgwc_s11_handle_create_session_request(
             ogs_assert(ul_tunnel);
 
             /* Data Plane(UL) : PGW-S5U */
+            if (ogs_gtp2_f_teid_check(&req->bearer_contexts_to_be_created[i].
+                        s5_s8_u_sgw_f_teid) != OGS_OK) {
+                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+                goto cleanup;
+            }
             pgw_s5u_teid = req->bearer_contexts_to_be_created[i].
                             s5_s8_u_sgw_f_teid.data;
             ul_tunnel->remote_teid = be32toh(pgw_s5u_teid->teid);
@@ -510,6 +526,11 @@ void sgwc_s11_handle_modify_bearer_request(
         if (req->bearer_contexts_to_be_modified[i].s1_u_enodeb_f_teid.
             presence == 0) {
             cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+            break;
+        }
+        if (ogs_gtp2_f_teid_check(&req->bearer_contexts_to_be_modified[i].
+                    s1_u_enodeb_f_teid) != OGS_OK) {
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
             break;
         }
 
@@ -932,10 +953,19 @@ void sgwc_s11_handle_create_bearer_response(
     if (rsp->bearer_contexts.s1_u_enodeb_f_teid.presence == 0) {
         ogs_error("No eNB TEID");
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    } else if (ogs_gtp2_f_teid_check(
+                &rsp->bearer_contexts.s1_u_enodeb_f_teid) != OGS_OK) {
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
     if (rsp->bearer_contexts.s4_u_sgsn_f_teid.presence == 0) {
         ogs_error("No SGW TEID");
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    } else if (rsp->bearer_contexts.s4_u_sgsn_f_teid.len <
+            OGS_GTP2_F_TEID_HDR_LEN) {
+        /* Only the TEID is used to correlate the bearer */
+        ogs_error("Invalid SGW TEID length [%d]",
+                rsp->bearer_contexts.s4_u_sgsn_f_teid.len);
+        cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
     }
 
     if (rsp->cause.presence == 0) {
@@ -1698,6 +1728,11 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
         ogs_assert(sess);
 
         if (req->bearer_contexts[i].s1_u_enodeb_f_teid.presence) {
+            if (ogs_gtp2_f_teid_check(
+                    &req->bearer_contexts[i].s1_u_enodeb_f_teid) != OGS_OK) {
+                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+                goto cleanup;
+            }
             req_teid = req->bearer_contexts[i].s1_u_enodeb_f_teid.data;
             ogs_assert(req_teid);
 
@@ -1763,6 +1798,11 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
         }
 
         if (req->bearer_contexts[i].s12_rnc_f_teid.presence) {
+            if (ogs_gtp2_f_teid_check(
+                    &req->bearer_contexts[i].s12_rnc_f_teid) != OGS_OK) {
+                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+                goto cleanup;
+            }
             req_teid = req->bearer_contexts[i].s12_rnc_f_teid.data;
             ogs_assert(req_teid);
 
