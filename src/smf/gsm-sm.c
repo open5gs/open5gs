@@ -1183,6 +1183,11 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_pfcp_session_establishment_response_t *rsp = NULL;
                 ogs_pfcp_f_seid_t *up_f_seid = NULL;
 
+                /* The restoration request is a local transaction: the
+                 * response ends it. Without this commit every restored
+                 * session keeps its transaction and three timers. */
+                ogs_pfcp_xact_commit(pfcp_xact);
+
                 rsp = &pfcp_message->pfcp_session_establishment_response;
                 if (rsp->up_f_seid.presence == 0) {
                     ogs_error("No UP F-SEID");
@@ -1193,6 +1198,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sess->upf_n4_seid = be64toh(up_f_seid->seid);
             } else {
                 ogs_error("cannot handle PFCP Session Establishment Response");
+                ogs_pfcp_xact_commit(pfcp_xact);
             }
             break;
 
