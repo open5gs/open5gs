@@ -79,7 +79,7 @@ int ausf_sbi_discover_and_send(
         OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(ausf_ue_t *ausf_ue, void *data),
-        ausf_ue_t *ausf_ue, ogs_sbi_stream_t *stream, void *data)
+        ausf_ue_t *ausf_ue, ogs_sbi_stream_t *stream, int state, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
     int r;
@@ -104,6 +104,7 @@ int ausf_sbi_discover_and_send(
         return OGS_ERROR;
     }
 
+    xact->state = state;
     xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
     ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
             xact->assoc_stream_id <= OGS_MAX_POOL_ID);

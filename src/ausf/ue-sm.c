@@ -186,6 +186,9 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                         NULL, "HTTP response error", ausf_ue->suci,
                         (message->ProblemDetails) ?
                                 message->ProblemDetails->cause : NULL));
+                /* A delayed failure report may belong to a previous vector. */
+                if (e->h.sbi.state == OpenAPI_auth_result_AUTHENTICATION_FAILURE)
+                    break;
                 OGS_FSM_TRAN(s, ausf_ue_state_exception);
                 break;
             }
@@ -213,7 +216,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
                 CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
                     ausf_nudm_ueau_handle_result_confirmation_inform(
-                            ausf_ue, stream, message);
+                            ausf_ue, stream, message, e->h.sbi.state);
                     break;
 
                 DEFAULT
