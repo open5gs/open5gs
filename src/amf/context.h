@@ -504,14 +504,6 @@ struct amf_ue_s {
     bool send_ue_security_capability_in_path_switch_ack;
 #define CHECK_5G_AKA_CONFIRMATION(__aMF) \
     ((__aMF) && ((__aMF)->confirmation_for_5g_aka.resource_uri))
-#define STORE_5G_AKA_CONFIRMATION(__aMF, __rESOURCE_URI) \
-    do { \
-        ogs_assert((__aMF)); \
-        CLEAR_5G_AKA_CONFIRMATION(__aMF); \
-        (__aMF)->confirmation_for_5g_aka.resource_uri = \
-            ogs_strdup(__rESOURCE_URI); \
-        ogs_assert((__aMF)->confirmation_for_5g_aka.resource_uri); \
-    } while(0)
 #define CLEAR_5G_AKA_CONFIRMATION(__aMF) \
     do { \
         ogs_assert((__aMF)); \
@@ -519,9 +511,20 @@ struct amf_ue_s {
             ogs_free((__aMF)->confirmation_for_5g_aka.resource_uri); \
         (__aMF)->confirmation_for_5g_aka.resource_uri = NULL; \
     } while(0)
+#define CLEAR_5G_AKA_PENDING(__aMF) \
+    do { \
+        ogs_assert((__aMF)); \
+        if ((__aMF)->confirmation_for_5g_aka.pending_uri) \
+            ogs_free((__aMF)->confirmation_for_5g_aka.pending_uri); \
+        (__aMF)->confirmation_for_5g_aka.pending_uri = NULL; \
+    } while(0)
     struct {
-        char *resource_uri;
-        ogs_sbi_client_t *client;
+        char *resource_uri; /* Confirmed context for deregistration. */
+        char *pending_uri;  /* Challenge awaiting confirmation. */
+        ogs_pool_id_t xact_id;
+        uint8_t auts[OGS_AUTS_LEN]; /* Retry after the failure PUT completes. */
+        ogs_sbi_client_t *client; /* Current vector endpoint. */
+        ogs_sbi_client_t *confirmed_client; /* Keep DELETE endpoint alive. */
     } confirmation_for_5g_aka;
     /* Random challenge value */
     uint8_t         rand[OGS_RAND_LEN];

@@ -118,34 +118,25 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
 
     char xres_star_string[OGS_KEYSTRLEN(OGS_MAX_RES_LEN)];
 
-    OpenAPI_confirmation_data_t *ConfirmationData = NULL;
+    OpenAPI_confirmation_data_t ConfirmationData = {0};
 
     ogs_assert(amf_ue);
-    ogs_assert(amf_ue->confirmation_for_5g_aka.resource_uri);
+    ogs_assert(amf_ue->confirmation_for_5g_aka.pending_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.uri = amf_ue->confirmation_for_5g_aka.resource_uri;
+    message.h.uri = amf_ue->confirmation_for_5g_aka.pending_uri;
 
-    ConfirmationData = ogs_calloc(1, sizeof(*ConfirmationData));
-    if (!ConfirmationData) {
-        ogs_error("No ConfirmationData");
-        goto end;
+    /* TS 29.509: an explicit null RES* reports failure at the AMF. */
+    if (data) {
+        ogs_hex_to_ascii(data, OGS_MAX_RES_LEN,
+                xres_star_string, sizeof(xres_star_string));
+        ConfirmationData.res_star = xres_star_string;
     }
-
-    ogs_hex_to_ascii(amf_ue->xres_star, sizeof(amf_ue->xres_star),
-            xres_star_string, sizeof(xres_star_string));
-
-    ConfirmationData->res_star = xres_star_string;
-
-    message.ConfirmationData = ConfirmationData;
+    message.ConfirmationData = &ConfirmationData;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
-
-end:
-    if (ConfirmationData)
-        ogs_free(ConfirmationData);
 
     return request;
 }

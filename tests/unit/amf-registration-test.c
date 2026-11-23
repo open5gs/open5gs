@@ -32,6 +32,9 @@ static struct {
     amf_sess_t sess[2];
     ogs_sbi_xact_t xact[2];
     ogs_sbi_xact_t unrelated_xact;
+    ogs_sbi_xact_t confirmation_xact;
+    int null_confirmations, sbi_reject_status;
+    uint8_t retry_auts[OGS_AUTS_LEN];
     amf_sbi_xact_ctx_t xact_context[2];
     ogs_timer_mgr_t *timers;
     amf_m_tmsi_t m_tmsi;
@@ -77,6 +80,33 @@ static int registration_send(OpenAPI_service_name_e service,
         amf_ue_t *ue, int state, void *data)
 {
     if (service == OpenAPI_service_name_nausf_auth) {
+        if (build == amf_nausf_auth_build_authenticate_confirmation) {
+            ogs_sbi_request_t *request;
+            ogs_time_t duration = ogs_local_conf()->time.message.duration;
+            cJSON *json;
+
+            ogs_local_conf()->time.message.duration = ogs_time_from_sec(10);
+            request = build(ue, data);
+            ogs_local_conf()->time.message.duration = duration;
+            ogs_assert(request);
+            json = cJSON_Parse(request->http.content);
+            ogs_assert(json);
+            if (cJSON_IsNull(cJSON_GetObjectItemCaseSensitive(json, "resStar")))
+                f->null_confirmations++;
+            cJSON_Delete(json);
+
+            ue->confirmation_for_5g_aka.xact_id = f->confirmation_xact.id = 1;
+            f->confirmation_xact.service_name = service;
+            f->confirmation_xact.sbi_object = &ue->sbi;
+            f->confirmation_xact.sbi_object_id = ue->id;
+            f->confirmation_xact.requester_nf_type = OpenAPI_nf_type_AMF;
+            f->confirmation_xact.state = state;
+            f->confirmation_xact.request = request;
+            ogs_list_add(&ue->sbi.xact_list, &f->confirmation_xact);
+            return OGS_OK;
+        }
+        if (data)
+            memcpy(f->retry_auts, data, OGS_AUTS_LEN);
         f->auth++;
         f->auth_tsc = ue->nas.amf.tsc;
         f->auth_ksi = ue->nas.amf.ksi;
@@ -130,7 +160,7 @@ static int registration_ran_release(ran_ue_t *ran,
     return OGS_OK;
 }
 static int registration_sbi_reject(amf_ue_t *ue, int status)
-{ f->rejects++; return OGS_OK; }
+{ f->rejects++; f->sbi_reject_status = status; return OGS_OK; }
 static int registration_service_accept(amf_ue_t *ue)
 { f->service_accepts++; return OGS_OK; }
 static int registration_deregistration_accept(amf_ue_t *ue)
@@ -207,6 +237,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e);
 /* Keep cancellation and the timeout/discovery-failure decisions real. The
  * fixture owns its transaction storage; pool removal is the only substitute. */
 #define ogs_sbi_xact_remove registration_xact_remove
+#define amf_ue_cancel_auth_xact registration_cancel_auth_xact
 #define amf_sbi_open registration_sbi_open
 #define amf_sbi_close registration_sbi_close
 #define amf_sbi_send_request registration_sbi_send_request
@@ -301,6 +332,7 @@ static void fixture_init(int sessions)
     amf_self()->integrity_order[0] = OGS_NAS_SECURITY_ALGORITHMS_128_NIA2;
     amf_self()->eir.enabled = false;
     f->ue.id = 1;
+    f->ue.sbi.type = OGS_SBI_OBJ_UE_TYPE;
     f->ue.ran_ue_id = f->ran.id = 2;
     f->ran.amf_ue_id = f->ue.id;
     f->ran.ue_ctx_rel_action = NGAP_UE_CTX_REL_INVALID_ACTION;
@@ -341,6 +373,9 @@ static void fixture_init(int sessions)
 static void fixture_final(void)
 {
     CLEAR_5G_AKA_CONFIRMATION(&f->ue);
+    CLEAR_5G_AKA_PENDING(&f->ue);
+    if (f->ue.confirmation_for_5g_aka.confirmed_client)
+        registration_client_remove(f->ue.confirmation_for_5g_aka.confirmed_client);
     if (f->ue.confirmation_for_5g_aka.client)
         registration_client_remove(f->ue.confirmation_for_5g_aka.client);
 #define TIMER(name) ogs_timer_delete(f->ue.name.timer)
@@ -482,6 +517,54 @@ static void assert_restored(abts_case *tc, int sessions)
     ABTS_TRUE(tc, !f->ue.registration_session_release_after_authentication);
 }
 
+static void provide_confirmation_uri(void)
+{
+    f->ue.confirmation_for_5g_aka.pending_uri = ogs_strdup(
+            "http://127.0.0.1/ue-authentications/test/5g-aka-confirmation");
+}
+
+static void simulate_discovery_failure(ogs_sbi_xact_t *xact)
+{
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
+
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
+    registration_discovery_failure(xact);
+    ogs_log_set_domain_level(__gmm_log_domain, level);
+}
+
+static void failure_confirmation_response(int status)
+{
+    amf_event_t event = {0};
+    ogs_sbi_message_t message = {0};
+    OpenAPI_confirmation_data_response_t response = {0};
+
+    if (!status) {
+        /* Exercise the same discovery/timeout handler as a real SBI expiry. */
+        simulate_discovery_failure(&f->confirmation_xact);
+        ogs_sbi_request_free(f->confirmation_xact.request);
+        f->confirmation_xact.request = NULL;
+        return;
+    }
+    event.h.id = OGS_EVENT_SBI_CLIENT;
+    event.amf_ue_id = f->ue.id;
+    event.h.sbi.state = f->confirmation_xact.state;
+    event.h.sbi.message = &message;
+    message.h.service.name = "nausf-auth";
+    message.h.method = OGS_SBI_HTTP_METHOD_PUT;
+    message.h.resource.component[0] = OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;
+    message.h.resource.component[2] = OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION;
+    message.res_status = status;
+    response.auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE;
+    message.ConfirmationDataResponse = &response;
+
+    f->ue.confirmation_for_5g_aka.xact_id = OGS_INVALID_POOL_ID;
+    ogs_list_remove(&f->ue.sbi.xact_list, &f->confirmation_xact);
+    ogs_sbi_request_free(f->confirmation_xact.request);
+    f->confirmation_xact.request = NULL;
+    ogs_fsm_dispatch(&f->ue.sm, &event);
+}
+
 static void failures_preserve_sessions(abts_case *tc, void *data)
 {
     ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
@@ -504,11 +587,8 @@ static void failures_preserve_sessions(abts_case *tc, void *data)
         memset(f->ue.knas_int, 0x55, sizeof(f->ue.knas_int));
         f->ue.ul_count.i32 = f->ue.dl_count = 0;
         f->ue.ul_count_accepted = false;
-        /* An invalid response tests context restoration after the AUSF
-         * has supplied the confirmation URI for the challenge. */
-        if (failures[i] == OGS_NAS_5GS_AUTHENTICATION_RESPONSE)
-            STORE_5G_AKA_CONFIRMATION(&f->ue,
-                    "http://127.0.0.1/ue-authentications/test/5g-aka-confirmation");
+        if (i < 2)
+            provide_confirmation_uri();
         if (i >= 2) {
             OGS_FSM_TRAN(&f->ue.sm, gmm_state_security_mode);
             f->ue.security_context_available = 1;
@@ -517,10 +597,172 @@ static void failures_preserve_sessions(abts_case *tc, void *data)
                 level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
             ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
         dispatch(failures[i], i >= 2, true);
+        if (i < 2) {
+            ABTS_INT_EQUAL(tc, 1, f->null_confirmations);
+            ABTS_INT_EQUAL(tc, AMF_AUTH_FAILURE_REJECT,
+                    f->confirmation_xact.state);
+            ABTS_INT_EQUAL(tc, 0, f->rejects);
+            failure_confirmation_response(OGS_SBI_HTTP_STATUS_OK);
+            ABTS_INT_EQUAL(tc, 1, f->rejects);
+        }
         ogs_log_set_domain_level(__gmm_log_domain, level);
         assert_restored(tc, sessions);
         fixture_final();
     }
+}
+
+static void exhausted_challenge_reports_failure(abts_case *tc, void *data)
+{
+    amf_event_t event = {0};
+
+    fixture_init(1);
+    dispatch(OGS_NAS_5GS_REGISTRATION_REQUEST, false, false);
+    provide_confirmation_uri();
+    f->ue.t3560.pkbuf = ogs_pkbuf_alloc(NULL, 1);
+    f->ue.t3560.retry_count = amf_timer_cfg(AMF_TIMER_T3560)->max_count;
+    event.h.id = AMF_EVENT_5GMM_TIMER;
+    event.h.timer_id = AMF_TIMER_T3560;
+    event.amf_ue_id = f->ue.id;
+    ogs_fsm_dispatch(&f->ue.sm, &event);
+    ABTS_INT_EQUAL(tc, 1, f->null_confirmations);
+    ABTS_INT_EQUAL(tc, AMF_AUTH_FAILURE_REJECT, f->confirmation_xact.state);
+    ABTS_INT_EQUAL(tc, 0, f->rejects);
+
+    failure_confirmation_response(0);
+    ABTS_INT_EQUAL(tc, 1, f->rejects);
+    assert_restored(tc, 1);
+    fixture_final();
+}
+
+static void retry_after_failure_confirmation(abts_case *tc, void *data)
+{
+    const uint8_t causes[] = {
+        OGS_5GMM_CAUSE_SYNCH_FAILURE, OGS_5GMM_CAUSE_NGKSI_ALREADY_IN_USE };
+    int status = *(int *)data;
+    int i;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(causes); i++) {
+        amf_event_t event = {0};
+        ogs_nas_5gs_message_t nas = {0};
+        ogs_nas_authentication_failure_parameter_t *parameter =
+            &nas.gmm.authentication_failure.authentication_failure_parameter;
+
+        fixture_init(0);
+        dispatch(OGS_NAS_5GS_REGISTRATION_REQUEST, false, false);
+        provide_confirmation_uri();
+
+        event.h.id = AMF_EVENT_5GMM_MESSAGE;
+        event.amf_ue_id = f->ue.id;
+        event.ran_ue_id = f->ran.id;
+        event.nas.message = &nas;
+        nas.gmm.h.message_type = OGS_NAS_5GS_AUTHENTICATION_FAILURE;
+        nas.gmm.authentication_failure.gmm_cause = causes[i];
+        parameter->length = OGS_AUTS_LEN;
+        memset(parameter->auts, 0x5a, OGS_AUTS_LEN);
+        nas.gmm.authentication_failure.presencemask =
+            OGS_NAS_5GS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_PRESENT;
+        ogs_fsm_dispatch(&f->ue.sm, &event);
+
+        ABTS_INT_EQUAL(tc, 1, f->auth);
+        ABTS_INT_EQUAL(tc, 1, f->null_confirmations);
+        ABTS_INT_EQUAL(tc, i == 0 ? AMF_AUTH_FAILURE_RESYNC :
+                AMF_AUTH_FAILURE_RETRY, f->confirmation_xact.state);
+
+        /* A queued expiry cannot start another confirmation or reject. */
+        event.h.id = AMF_EVENT_5GMM_TIMER;
+        event.h.timer_id = AMF_TIMER_T3560;
+        ogs_fsm_dispatch(&f->ue.sm, &event);
+        ABTS_INT_EQUAL(tc, 1, f->null_confirmations);
+        ABTS_INT_EQUAL(tc, 0, f->rejects);
+
+        failure_confirmation_response(status);
+        ABTS_INT_EQUAL(tc, 2, f->auth);
+        ABTS_INT_EQUAL(tc, 0, f->rejects);
+        if (!i)
+            ABTS_TRUE(tc, !memcmp(f->retry_auts, parameter->auts, OGS_AUTS_LEN));
+        fixture_final();
+    }
+}
+
+static void ausf_transport_failure_rejects_with_gateway_timeout(
+        abts_case *tc, void *data)
+{
+    const int states[] = { AMF_AUTH_VECTOR, AMF_AUTH_CONFIRM };
+    int i;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(states); i++) {
+        ogs_sbi_xact_t xact = {0};
+
+        fixture_init(1);
+        dispatch(OGS_NAS_5GS_REGISTRATION_REQUEST, false, false);
+        f->ue.confirmation_for_5g_aka.xact_id = xact.id = 1;
+        xact.sbi_object = &f->ue.sbi;
+        xact.sbi_object_id = f->ue.id;
+        xact.requester_nf_type = OpenAPI_nf_type_AMF;
+        xact.service_name = OpenAPI_service_name_nausf_auth;
+        xact.state = states[i];
+        ogs_list_add(&f->ue.sbi.xact_list, &xact);
+        simulate_discovery_failure(&xact);
+        ABTS_INT_EQUAL(tc, 1, f->rejects);
+        ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
+                f->sbi_reject_status);
+        fixture_final();
+    }
+}
+
+static void namf_transfer_update_ignores_auth_tag(abts_case *tc, void *data)
+{
+    ogs_sbi_xact_t xact = {0};
+    ogs_sbi_discovery_option_t option = {0};
+
+    fixture_init(0);
+    f->ue.nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+    f->ue.amf_ue_context_transfer_state = REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE;
+    option.guami_presence = true;
+
+    /* A transfer-status update can inherit the triggering event's SBI state.
+     * Discovery must still take the old-AMF fallback for the Namf service. */
+    xact.id = 1;
+    xact.sbi_object = &f->ue.sbi;
+    xact.sbi_object_id = f->ue.id;
+    xact.requester_nf_type = OpenAPI_nf_type_AMF;
+    xact.service_name = OpenAPI_service_name_namf_comm;
+    xact.state = AMF_AUTH_FAILURE_REJECT;
+    xact.discovery_option = &option;
+    ogs_list_add(&f->ue.sbi.xact_list, &xact);
+
+    simulate_discovery_failure(&xact);
+    ABTS_INT_EQUAL(tc, UE_CONTEXT_INITIAL_STATE, f->ue.amf_ue_context_transfer_state);
+    ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, f->sbi_reject_status);
+    fixture_final();
+}
+
+static void not_transferred_response_releases_ran(abts_case *tc, void *data)
+{
+    amf_event_t event = {0};
+    ogs_sbi_message_t message = {0};
+    OpenAPI_ue_reg_status_update_rsp_data_t response = {0};
+
+    fixture_init(0);
+    OGS_FSM_TRAN(&f->ue.sm, gmm_state_exception);
+    f->ue.amf_ue_context_transfer_state = REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE;
+    event.h.id = OGS_EVENT_SBI_CLIENT;
+    event.amf_ue_id = f->ue.id;
+    event.h.sbi.state = AMF_AUTH_FAILURE_REJECT;
+    event.h.sbi.message = &message;
+    message.h.service.name = "namf-comm";
+    message.h.method = OGS_SBI_HTTP_METHOD_POST;
+    message.h.resource.component[0] = OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
+    message.h.resource.component[2] = OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE;
+    message.res_status = OGS_SBI_HTTP_STATUS_OK;
+    response.reg_status_transfer_complete = false;
+    message.UeRegStatusUpdateRspData = &response;
+
+    ogs_fsm_dispatch(&f->ue.sm, &event);
+    ABTS_INT_EQUAL(tc, UE_CONTEXT_INITIAL_STATE, f->ue.amf_ue_context_transfer_state);
+    ABTS_INT_EQUAL(tc, 1, f->ran_releases);
+    ABTS_INT_EQUAL(tc, NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, f->ran.ue_ctx_rel_action);
+    fixture_final();
 }
 
 static void unverified_nas_is_discarded(abts_case *tc, void *data)
@@ -989,7 +1231,9 @@ static void mismatched_registration_failure_restores_context(
         ABTS_INT_EQUAL(tc, 1, f->auth);
         ABTS_INT_EQUAL(tc, 1, f->auth_tsc);
         ABTS_INT_EQUAL(tc, 2, f->auth_ksi);
+        provide_confirmation_uri();
         dispatch(OGS_NAS_5GS_AUTHENTICATION_FAILURE, false, false);
+        failure_confirmation_response(OGS_SBI_HTTP_STATUS_OK);
         assert_restored(tc, sessions);
         fixture_final();
     }
@@ -1133,6 +1377,11 @@ static void aka_allocates_native_ngksi(abts_case *tc, void *data)
     OpenAPI_map_t map = {0};
     OpenAPI_lnode_t node = {0};
     OpenAPI_list_t links = {0};
+    OpenAPI_confirmation_data_response_t failure = {
+        .auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE
+    };
+    ogs_sbi_message_t response = { .ConfirmationDataResponse = &failure };
+    ogs_log_level_e level = ogs_log_get_domain_level(__gmm_log_domain);
     int i, attempt;
 
     message.http.location = "http://127.0.0.1:7777/nausf-auth/v1/ue-authentications/test";
@@ -1173,14 +1422,46 @@ static void aka_allocates_native_ngksi(abts_case *tc, void *data)
         }
         fixture_final();
     }
+    /* A failed challenge retires a reused resource. A distinct previously
+     * confirmed resource must remain available for deregistration. */
+    for (i = 0; i < 2; i++) {
+        const char *confirmed = i ? link.href : "http://127.0.0.1/previous";
+        int rv;
+
+        fixture_init(0);
+        f->ue.confirmation_for_5g_aka.resource_uri = ogs_strdup(confirmed);
+        ABTS_INT_EQUAL(tc, OGS_OK,
+                registration_ausf_authenticate(&f->ue, &message));
+        ABTS_STR_EQUAL(tc, link.href, f->ue.confirmation_for_5g_aka.pending_uri);
+        if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+            ogs_log_set_domain_level(__gmm_log_domain, OGS_LOG_FATAL);
+        rv = registration_ausf_confirmation(&f->ue, &response);
+        ogs_log_set_domain_level(__gmm_log_domain, level);
+        ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+        ABTS_TRUE(tc, !f->ue.confirmation_for_5g_aka.pending_uri);
+        if (i) {
+            ABTS_TRUE(tc, !CHECK_5G_AKA_CONFIRMATION(&f->ue));
+        } else {
+            ABTS_STR_EQUAL(tc, confirmed,
+                    f->ue.confirmation_for_5g_aka.resource_uri);
+        }
+        fixture_final();
+    }
 }
 
 abts_suite *test_amf_registration(abts_suite *suite)
 {
     int sessions[] = { 1, 2 };
+    int report_status[] = { OGS_SBI_HTTP_STATUS_OK, OGS_SBI_HTTP_STATUS_NOT_FOUND, 0 };
     int i;
     suite = ADD_SUITE(suite)
     abts_run_test(suite, aka_allocates_native_ngksi, NULL);
+    for (i = 0; i < OGS_ARRAY_SIZE(report_status); i++)
+        abts_run_test(suite, retry_after_failure_confirmation, &report_status[i]);
+    abts_run_test(suite, ausf_transport_failure_rejects_with_gateway_timeout, NULL);
+    abts_run_test(suite, namf_transfer_update_ignores_auth_tag, NULL);
+    abts_run_test(suite, not_transferred_response_releases_ran, NULL);
+    abts_run_test(suite, exhausted_challenge_reports_failure, NULL);
     for (i = 0; i < OGS_ARRAY_SIZE(sessions); i++) {
         abts_run_test(suite, mismatched_registration_failure_restores_context,
                 &sessions[i]);

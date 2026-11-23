@@ -2166,9 +2166,49 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
     }
 }
 
+/* Report the old challenge before requesting another vector. The report
+ * outcome does not change whether the original NAS procedure can retry. */
+static void finish_authentication_failure(ogs_fsm_t *s, amf_ue_t *amf_ue,
+        int state)
+{
+    int r;
+
+    if (state == AMF_AUTH_FAILURE_RESYNC || state == AMF_AUTH_FAILURE_RETRY) {
+        r = amf_ue_sbi_discover_and_send(
+                OpenAPI_service_name_nausf_auth, NULL,
+                amf_nausf_auth_build_authenticate, amf_ue, 0,
+                state == AMF_AUTH_FAILURE_RESYNC ?
+                    amf_ue->confirmation_for_5g_aka.auts : NULL);
+        if (r == OGS_OK)
+            return;
+        /* Discovery already sent the NAS error for the new POST. */
+    } else {
+        r = nas_5gs_send_authentication_reject(amf_ue);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    }
+    AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+}
+
+static void report_authentication_failure(ogs_fsm_t *s, amf_ue_t *amf_ue,
+        int state)
+{
+    int r;
+
+    CLEAR_AMF_UE_TIMER(amf_ue->t3560);
+    r = amf_ue_sbi_discover_and_send(
+            OpenAPI_service_name_nausf_auth, NULL,
+            amf_nausf_auth_build_authenticate_confirmation,
+            amf_ue, state, NULL);
+    /* The request owns its URI. The AUSF may now release this resource. */
+    CLEAR_5G_AKA_PENDING(amf_ue);
+    if (r != OGS_OK)
+        finish_authentication_failure(s, amf_ue, state);
+}
+
 void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 {
-    int r, rv;
+    int r, rv, failure_state;
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
@@ -2207,6 +2247,11 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         amf_ue->auth_ngksi_fail_count = 0;
         break;
     case OGS_FSM_EXIT_SIG:
+        amf_ue_cancel_auth_xact(amf_ue);
+        CLEAR_5G_AKA_PENDING(amf_ue);
+        break;
+    case AMF_EVENT_5GMM_AUTH_FAILURE_REPORT_TIMEOUT:
+        finish_authentication_failure(s, amf_ue, e->h.sbi.state);
         break;
     case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
@@ -2225,26 +2270,35 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
         h.type = e->nas.type;
 
+        /* While the vector POST or confirmation PUT is pending, no NAS
+         * response can confirm a challenge (Issue #5028). */
+        if ((nas_message->gmm.h.message_type == OGS_NAS_5GS_AUTHENTICATION_RESPONSE ||
+             nas_message->gmm.h.message_type == OGS_NAS_5GS_AUTHENTICATION_FAILURE) &&
+            (!amf_ue->confirmation_for_5g_aka.pending_uri ||
+             amf_ue->confirmation_for_5g_aka.xact_id)) {
+            ogs_warn("[%s] No outstanding authentication challenge", amf_ue->suci);
+            break;
+        }
+
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_AUTHENTICATION_RESPONSE:
-            /* The AUSF response may still be pending (Issue #5028) */
-            if (!CHECK_5G_AKA_CONFIRMATION(amf_ue)) {
-                ogs_error("[%s] Authentication response "
-                        "without 5G AKA confirmation URI", amf_ue->suci);
-                break;
-            }
 
             rv = gmm_handle_authentication_response(
                     amf_ue, &nas_message->gmm.authentication_response);
 
             if (rv != OGS_OK) {
                 ogs_warn("gmm_handle_authentication_response() failed");
-                r = nas_5gs_send_authentication_reject(amf_ue);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                report_authentication_failure(
+                        s, amf_ue, AMF_AUTH_FAILURE_REJECT);
                 break;
             }
+
+            r = amf_ue_sbi_discover_and_send(
+                    OpenAPI_service_name_nausf_auth, NULL,
+                    amf_nausf_auth_build_authenticate_confirmation,
+                    amf_ue, 0, amf_ue->xres_star);
+            if (r != OGS_OK)
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
             break;
 
         case OGS_NAS_5GS_AUTHENTICATION_FAILURE:
@@ -2260,7 +2314,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             amf_metrics_inst_by_cause_add(authentication_failure->gmm_cause,
                     AMF_METR_CTR_AMF_AUTH_FAIL, 1);
 
-            CLEAR_AMF_UE_TIMER(amf_ue->t3560);
+            failure_state = AMF_AUTH_FAILURE_REJECT;
 
             switch (authentication_failure->gmm_cause) {
             case OGS_5GMM_CAUSE_MAC_FAILURE:
@@ -2285,13 +2339,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                r = amf_ue_sbi_discover_and_send(
-                        OpenAPI_service_name_nausf_auth, NULL,
-                        amf_nausf_auth_build_authenticate,
-                        amf_ue, 0, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
+                failure_state = AMF_AUTH_FAILURE_RETRY;
+                break;
 
             case OGS_5GMM_CAUSE_SYNCH_FAILURE:
                 ogs_warn("[%s] Authentication failure(Synch failure[count=%d])",
@@ -2310,13 +2359,10 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                             authentication_failure_parameter->length);
                     break;
                 }
-                r = amf_ue_sbi_discover_and_send(
-                        OpenAPI_service_name_nausf_auth, NULL,
-                        amf_nausf_auth_build_authenticate,
-                        amf_ue, 0, authentication_failure_parameter->auts);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
+                memcpy(amf_ue->confirmation_for_5g_aka.auts,
+                        authentication_failure_parameter->auts, OGS_AUTS_LEN);
+                failure_state = AMF_AUTH_FAILURE_RESYNC;
+                break;
 
             default:
                 ogs_error("Unknown GMM_CAUSE{%d] in Authentication"
@@ -2325,10 +2371,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            r = nas_5gs_send_authentication_reject(amf_ue);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+            report_authentication_failure(s, amf_ue, failure_state);
             break;
 
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
@@ -2343,6 +2386,20 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                break;
+            }
+
+            /* Finish reporting the superseded challenge before requesting
+             * another vector: the AUSF can reuse the same resource URI. */
+            if (amf_ue->confirmation_for_5g_aka.xact_id) {
+                ogs_sbi_xact_t *xact = ogs_sbi_xact_find_by_id(
+                        amf_ue->confirmation_for_5g_aka.xact_id);
+                if (xact && AMF_AUTH_FAILURE_REPORT(xact->state)) {
+                    xact->state = AMF_AUTH_FAILURE_RETRY;
+                    break;
+                }
+            } else if (amf_ue->confirmation_for_5g_aka.pending_uri) {
+                report_authentication_failure(s, amf_ue, AMF_AUTH_FAILURE_RETRY);
                 break;
             }
 
@@ -2385,14 +2442,15 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     case AMF_EVENT_5GMM_TIMER:
         switch (e->h.timer_id) {
         case AMF_TIMER_T3560:
+            /* Ignore a queued expiry after the challenge was answered. */
+            if (!amf_ue->t3560.pkbuf)
+                break;
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
                 ogs_warn("[%s] Retransmission failed. Stop retransmission",
                         amf_ue->suci);
-                r = nas_5gs_send_authentication_reject(amf_ue);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                report_authentication_failure(
+                        s, amf_ue, AMF_AUTH_FAILURE_REJECT);
                 break;
             } else {
                 amf_ue->t3560.retry_count++;
@@ -2415,6 +2473,17 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 sbi_message->h.service.name);
         switch (service_name_id) {
         case OpenAPI_service_name_nausf_auth:
+            failure_state = e->h.sbi.state;
+            if (AMF_AUTH_FAILURE_REPORT(failure_state)) {
+                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK ||
+                    !sbi_message->ConfirmationDataResponse ||
+                    sbi_message->ConfirmationDataResponse->auth_result !=
+                        OpenAPI_auth_result_AUTHENTICATION_FAILURE)
+                    ogs_warn("[%s] Unexpected failure confirmation response [%d]",
+                            amf_ue->suci, sbi_message->res_status);
+                finish_authentication_failure(s, amf_ue, failure_state);
+                break;
+            }
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
 

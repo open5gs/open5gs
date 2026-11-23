@@ -455,6 +455,18 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
+            if (AMF_AUTH_XACT_STATE(service_name_id, state)) {
+                /* A later registration may already be using the same URI. */
+                if (amf_ue->confirmation_for_5g_aka.xact_id != sbi_xact_id)
+                    break;
+                amf_ue->confirmation_for_5g_aka.xact_id = OGS_INVALID_POOL_ID;
+                if (!OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication))
+                    break;
+                if (state == AMF_AUTH_CONFIRM &&
+                        sbi_message.res_status != OGS_SBI_HTTP_STATUS_OK)
+                    CLEAR_5G_AKA_PENDING(amf_ue);
+            }
+
             ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
 
             e->amf_ue_id = amf_ue->id;
