@@ -3,11 +3,18 @@
  *
  * This file is part of Open5GS.
  *
- * Threat model: air-interface and inter-NF material (RAND, AUTN, SQN, SUPI,
- * serving-network name, NAS COUNT, SUCI keys, base64) reaches the in-tree
- * AKA/NAS crypto. lib/crypt is 0-covered in the 20261114 report. The harness
- * clamps only API preconditions (keybits, non-empty SNN, "imsi-" SUPI,
- * ANSI-X9.63 length) so ogs_assert() is not a fuzzer fault.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include <stdint.h>
@@ -68,8 +75,10 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     uint32_t outlen, inlen, keybits, count, bearer, dir;
     size_t res_len, n, i;
     int nrounds;
-    u32 snow_k[4], snow_iv[4], snow_z[4], zuc_mac;
+    uint32_t snow_z[4], zuc_mac;
     uint8_t snow_data[32], zuc_out[32];
+    SNOW_CTX snow_ctx;
+    struct snow_key_st snow_key;
 
     if (Size < kMinInputLength || Size > kMaxInputLength)
         return 0;
@@ -189,20 +198,17 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         ogs_kdf_ansi_x963(z, z_len, info, info_len, ek, icb, mk);
     }
 
-    memcpy(snow_k, key, sizeof(snow_k));
-    memcpy(snow_iv, iv, sizeof(snow_iv));
-    snow_3g_initialize(snow_k, snow_iv);
-    snow_3g_generate_key_stream(4, snow_z);
+    /* SNOW 3G: public UIA2 + OpenSSL-core EEA1 path (kasumi removed upstream). */
     memset(snow_data, 0, sizeof(snow_data));
     memcpy(snow_data, plain, 16);
-    snow_3g_f8(key, count, bearer, dir, snow_data, 128);
-    snow_3g_f9(key, count, count, dir, snow_data, 128, mac);
+    snow_key = snow_array_to_key(key, iv);
+    SNOW_set_key(snow_key, &snow_ctx);
+    SNOW_gen_keystream(snow_z, 4, &snow_ctx);
+    SNOW_init(count, (uint8_t)bearer, (uint8_t)dir, (const char *)key, &snow_ctx);
+    SNOW(16, snow_data, zuc_out, &snow_ctx);
+    snow_3g_f9(key, count, (uint32_t)bearer << 27, dir, snow_data, 128, mac);
     zuc_eea3(key, count, bearer, dir, 128, snow_data, zuc_out);
     zuc_eia3(key, count, bearer, dir, 128, snow_data, &zuc_mac);
-    kasumi_key_schedule(key);
-    kasumi(snow_data);
-    kasumi_f8(key, count, bearer, dir, snow_data, 64);
-    kasumi_f9(key, count, count, dir, snow_data, 64);
 
     memcpy(secret, key, 32);
     secret[0] &= 248;
