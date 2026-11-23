@@ -63,6 +63,19 @@ bool amf_sbi_send_request(
 #define AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED    2
 #define AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED    3
 
+/* Nausf authentication procedures (deregistration DELETE is separate). */
+#define AMF_AUTH_VECTOR                                 61
+#define AMF_AUTH_CONFIRM                                62
+#define AMF_AUTH_FAILURE_REJECT                         63
+#define AMF_AUTH_FAILURE_RETRY                          64
+#define AMF_AUTH_FAILURE_RESYNC                         65
+/* Other SBI services may carry the same state value through an FSM transition. */
+#define AMF_AUTH_XACT_STATE(service, s) \
+    ((service) == OpenAPI_service_name_nausf_auth && \
+     (s) >= AMF_AUTH_VECTOR && (s) <= AMF_AUTH_FAILURE_RESYNC)
+#define AMF_AUTH_FAILURE_REPORT(s) \
+    ((s) >= AMF_AUTH_FAILURE_REJECT && (s) <= AMF_AUTH_FAILURE_RESYNC)
+
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATED                 11
 #define AMF_UPDATE_SM_CONTEXT_SETUP_FAIL                12
 #define AMF_UPDATE_SM_CONTEXT_DEACTIVATED               13
@@ -95,6 +108,7 @@ bool amf_sbi_send_request(
 #define AMF_SMF_SELECTION_IN_VPLMN_IN_HOME_ROUTED           2
 #define AMF_SMF_SELECTION_IN_HPLMN_IN_HOME_ROUTED           3
 
+void amf_ue_cancel_auth_xact(amf_ue_t *amf_ue);
 int amf_ue_sbi_discover_and_send(
         OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,

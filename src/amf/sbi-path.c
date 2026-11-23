@@ -94,6 +94,22 @@ bool amf_sbi_send_request(
     return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
+/* Only the current vector request or confirmation belongs to this AKA. */
+void amf_ue_cancel_auth_xact(amf_ue_t *amf_ue)
+{
+    ogs_sbi_xact_t *xact;
+    ogs_pool_id_t id;
+
+    ogs_assert(amf_ue);
+    id = amf_ue->confirmation_for_5g_aka.xact_id;
+    if (id != OGS_INVALID_POOL_ID) {
+        xact = ogs_sbi_xact_find_by_id(id);
+        if (xact)
+            ogs_sbi_xact_remove(xact);
+        amf_ue->confirmation_for_5g_aka.xact_id = OGS_INVALID_POOL_ID;
+    }
+}
+
 int amf_ue_sbi_discover_and_send(
         OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
@@ -131,32 +147,49 @@ int amf_ue_sbi_discover_and_send(
         }
     }
 
+    if (build == amf_nausf_auth_build_authenticate) {
+        /* A fresh vector request supersedes the previous challenge. */
+        amf_ue_cancel_auth_xact(amf_ue);
+        CLEAR_AMF_UE_TIMER(amf_ue->t3560);
+        CLEAR_5G_AKA_PENDING(amf_ue);
+        state = AMF_AUTH_VECTOR;
+    } else if (build == amf_nausf_auth_build_authenticate_confirmation && !state)
+        state = AMF_AUTH_CONFIRM;
+
     xact = ogs_sbi_xact_add(
             amf_ue->id, &amf_ue->sbi, service_name, discovery_option,
             (ogs_sbi_build_f)build, amf_ue, data);
     if (!xact) {
-        ogs_error("amf_ue_sbi_discover_and_send() failed");
-        r = nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
+        rv = OGS_ERROR;
+        goto failure;
     }
 
     xact->state = state;
-
     rv = ogs_sbi_discover_and_send(xact);
     if (rv != OGS_OK) {
-        ogs_error("amf_ue_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        r = nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return rv;
+        goto failure;
     }
 
+    if (AMF_AUTH_XACT_STATE(service_name, state))
+        amf_ue->confirmation_for_5g_aka.xact_id = xact->id;
     return OGS_OK;
+
+failure:
+    ogs_error("amf_ue_sbi_discover_and_send() failed");
+    if (AMF_AUTH_XACT_STATE(service_name, state)) {
+        amf_ue->confirmation_for_5g_aka.xact_id = OGS_INVALID_POOL_ID;
+        if (state != AMF_AUTH_VECTOR)
+            CLEAR_5G_AKA_PENDING(amf_ue);
+        /* The authentication FSM handles a failed null PUT itself. */
+        if (AMF_AUTH_FAILURE_REPORT(state))
+            return rv;
+    }
+    r = nas_5gs_send_gmm_reject_from_sbi(
+            amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+    return rv;
 }
 
 /* The UE FSM applies failure_action instead of the generic SBI reject. */

@@ -1883,6 +1883,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
         ogs_sbi_client_remove(amf_ue->data_change_subscription.client);
 
     CLEAR_5G_AKA_CONFIRMATION(amf_ue);
+    CLEAR_5G_AKA_PENDING(amf_ue);
+    if (amf_ue->confirmation_for_5g_aka.confirmed_client)
+        ogs_sbi_client_remove(amf_ue->confirmation_for_5g_aka.confirmed_client);
     if (amf_ue->confirmation_for_5g_aka.client)
         ogs_sbi_client_remove(amf_ue->confirmation_for_5g_aka.client);
 

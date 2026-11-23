@@ -184,6 +184,13 @@ void amf_nnrf_handle_nf_discover(
     if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
         amf_ue = amf_ue_find_by_id(sbi_object_id);
         ogs_assert(amf_ue);
+        if (AMF_AUTH_XACT_STATE(service_name, state) &&
+                (amf_ue->confirmation_for_5g_aka.xact_id != xact->id ||
+                 !OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication))) {
+            /* Discovery completed after this authentication was superseded. */
+            ogs_sbi_xact_remove(xact);
+            return;
+        }
     } else if (sbi_object->type == OGS_SBI_OBJ_SESS_TYPE) {
         sess = amf_sess_find_by_id(sbi_object_id);
         ogs_assert(sess);
@@ -213,6 +220,10 @@ void amf_nnrf_handle_nf_discover(
     nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                     target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
+        if (AMF_AUTH_XACT_STATE(service_name, state)) {
+            amf_nnrf_handle_failed_amf_discovery(xact);
+            return;
+        }
         ogs_sbi_xact_remove(xact);
 
         switch(sbi_object->type) {
@@ -280,6 +291,7 @@ void amf_nnrf_handle_failed_amf_discovery(
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
     ogs_pool_id_t ran_ue_id = OGS_INVALID_POOL_ID;
+    ogs_pool_id_t xact_id;
     int state = 0;
 
     amf_ue_t *amf_ue = NULL;
@@ -293,6 +305,7 @@ void amf_nnrf_handle_failed_amf_discovery(
     requester_nf_type = sbi_xact->requester_nf_type;
     ogs_assert(requester_nf_type);
     state = sbi_xact->state;
+    xact_id = sbi_xact->id;
 
     sbi_object_id = sbi_xact->sbi_object_id;
     ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
@@ -330,6 +343,25 @@ void amf_nnrf_handle_failed_amf_discovery(
                 "[type:%d,value:%d]", amf_ue->supi, amf_ue->suci,
                 amf_ue->nas.message_type,
                 amf_ue->nas.registration.value);
+
+        if (AMF_AUTH_XACT_STATE(service_name, state)) {
+            if (amf_ue->confirmation_for_5g_aka.xact_id != xact_id)
+                break;
+            amf_ue->confirmation_for_5g_aka.xact_id = OGS_INVALID_POOL_ID;
+            if (!OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication))
+                break;
+            CLEAR_5G_AKA_PENDING(amf_ue);
+            if (AMF_AUTH_FAILURE_REPORT(state)) {
+                amf_event_t e = { 0 };
+
+                e.h.id = AMF_EVENT_5GMM_AUTH_FAILURE_REPORT_TIMEOUT;
+                e.h.sbi.state = state;
+                e.amf_ue_id = amf_ue->id;
+                ogs_fsm_dispatch(&amf_ue->sm, &e);
+                break;
+            }
+            /* Vector and normal confirmation timeouts use the SBI 504 path. */
+        }
 
         if (service_name == OpenAPI_service_name_n5g_eir_eic) {
             amf_n5geir_eic_handle_discovery_failure(amf_ue);

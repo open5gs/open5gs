@@ -998,7 +998,6 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     ogs_nas_authentication_response_parameter_t
         *authentication_response_parameter = NULL;
     uint8_t hxres_star[OGS_MAX_RES_LEN];
-    int r;
 
     ogs_assert(amf_ue);
     ogs_assert(authentication_response);
@@ -1032,12 +1031,6 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
 
     memcpy(amf_ue->xres_star, authentication_response_parameter->res,
             authentication_response_parameter->length);
-
-    r = amf_ue_sbi_discover_and_send(
-            OpenAPI_service_name_nausf_auth, NULL,
-            amf_nausf_auth_build_authenticate_confirmation, amf_ue, 0, NULL);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
 
     return OGS_OK;
 }
