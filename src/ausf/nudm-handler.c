@@ -199,6 +199,8 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     ogs_hash_set(ausf_self()->supi_hash,
             ausf_ue->supi, strlen(ausf_ue->supi), ausf_ue);
 
+    /* A new vector supersedes the result of the previous challenge. */
+    ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_ONGOING;
     ausf_ue->auth_type = AuthenticationInfoResult->auth_type;
 
     memcpy(ausf_ue->rand, rand, sizeof(ausf_ue->rand));
@@ -290,7 +292,8 @@ bool ausf_nudm_ueau_handle_auth_removal_ind(ausf_ue_t *ausf_ue,
 }
 
 bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg,
+        OpenAPI_auth_result_e result)
 {
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -329,6 +332,18 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
         return false;
     }
 
+    memset(&ConfirmationDataResponse, 0, sizeof(ConfirmationDataResponse));
+    /* Use the result sent in this transaction. A retry may have already
+     * changed the UE context while the UDM response was in flight. */
+    if (result != OpenAPI_auth_result_AUTHENTICATION_SUCCESS ||
+            !AuthEvent->success ||
+            ausf_ue->auth_result != OpenAPI_auth_result_AUTHENTICATION_SUCCESS) {
+        /* A failed confirmation has no key or auth-event URI to retain. */
+        ConfirmationDataResponse.auth_result =
+            OpenAPI_auth_result_AUTHENTICATION_FAILURE;
+        goto send_response;
+    }
+
     rc = ogs_sbi_getaddr_from_uri(
             &scheme, &fqdn, &fqdn_port, &addr, &addr6, recvmsg->http.location);
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
@@ -357,31 +372,18 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
 
     AUTH_EVENT_STORE(ausf_ue, recvmsg->http.location);
 
-    memset(&ConfirmationDataResponse, 0, sizeof(ConfirmationDataResponse));
+    ConfirmationDataResponse.auth_result =
+        OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
+    /* TS 33.501 6.1.3.2.0: disclose SUPI and Kseaf only after RES*
+     * matches XRES*. */
+    ConfirmationDataResponse.supi = ausf_ue->supi;
+    ogs_kdf_kseaf(ausf_ue->serving_network_name,
+            ausf_ue->kausf, ausf_ue->kseaf);
+    ogs_hex_to_ascii(ausf_ue->kseaf, sizeof(ausf_ue->kseaf),
+            kseaf_string, sizeof(kseaf_string));
+    ConfirmationDataResponse.kseaf = kseaf_string;
 
-    if (AuthEvent->success == true)
-        ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
-    else
-        ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE;
-
-    ConfirmationDataResponse.auth_result = ausf_ue->auth_result;
-
-    /*
-     * TS 33.501 6.1.3.2.0 / TS 29.509 ConfirmationDataResponse:
-     * the SUPI and Kseaf are only given to the SEAF once RES* has
-     * matched XRES*. Otherwise a serving network could learn the SUPI
-     * behind a SUCI and obtain the anchor key without the UE.
-     */
-    if (ausf_ue->auth_result == OpenAPI_auth_result_AUTHENTICATION_SUCCESS) {
-        ConfirmationDataResponse.supi = ausf_ue->supi;
-
-        ogs_kdf_kseaf(ausf_ue->serving_network_name,
-                ausf_ue->kausf, ausf_ue->kseaf);
-        ogs_hex_to_ascii(ausf_ue->kseaf, sizeof(ausf_ue->kseaf),
-                kseaf_string, sizeof(kseaf_string));
-        ConfirmationDataResponse.kseaf = kseaf_string;
-    }
-
+send_response:
     memset(&sendmsg, 0, sizeof(sendmsg));
 
     sendmsg.ConfirmationDataResponse = &ConfirmationDataResponse;

@@ -35,7 +35,7 @@ int ausf_sbi_discover_and_send(
         OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(ausf_ue_t *ausf_ue, void *data),
-        ausf_ue_t *ausf_ue, ogs_sbi_stream_t *stream, void *data);
+        ausf_ue_t *ausf_ue, ogs_sbi_stream_t *stream, int state, void *data);
 
 #ifdef __cplusplus
 }

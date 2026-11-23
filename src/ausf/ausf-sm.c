@@ -34,6 +34,13 @@ void ausf_state_final(ogs_fsm_t *s, ausf_event_t *e)
     ausf_sm_debug(e);
 }
 
+/* A retry may already be fetching a new vector on this UE context. */
+static bool failed_authentication_is_complete(ausf_ue_t *ausf_ue)
+{
+    return ausf_ue->auth_result == OpenAPI_auth_result_AUTHENTICATION_FAILURE &&
+        ogs_list_empty(&ausf_ue->sbi.xact_list);
+}
+
 void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 {
     int rv;
@@ -331,6 +338,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
             ogs_assert(sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                     sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+            e->h.sbi.state = sbi_xact->state;
             e->h.sbi.data = OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
 
             ogs_sbi_xact_remove(sbi_xact);
@@ -348,7 +356,8 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_exception)) {
                 ogs_warn("[%s] State machine exception", ausf_ue->suci);
                 ausf_ue_remove(ausf_ue);
-            } else if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_deleted)) {
+            } else if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_deleted) ||
+                    failed_authentication_is_complete(ausf_ue)) {
                 ogs_info("[%s] AUSF-UE removed", ausf_ue->supi);
                 ausf_ue_remove(ausf_ue);
             }
@@ -470,15 +479,18 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
             ogs_assert(sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                     sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
-            stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
+            stream_id = sbi_xact->assoc_stream_id;
+            stream = ogs_sbi_stream_find_by_id(stream_id);
+            ausf_ue = ausf_ue_find_by_id(sbi_xact->sbi_object_id);
 
             ogs_sbi_xact_remove(sbi_xact);
+            if (ausf_ue && failed_authentication_is_complete(ausf_ue))
+                ausf_ue_remove(ausf_ue);
 
             ogs_error("Cannot receive SBI message");
 
             if (!stream) {
-                ogs_error("STREAM has already been removed [%d]",
-                        sbi_xact->assoc_stream_id);
+                ogs_error("STREAM has already been removed [%d]", stream_id);
                 break;
             }
             ogs_assert(true ==
