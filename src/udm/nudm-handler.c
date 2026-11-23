@@ -651,6 +651,8 @@ bool udm_nudm_uecm_handle_smf_registration(
             UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
+    if (r == OGS_OK)
+        sess->smf_registered = true;
 
     return true;
 }
@@ -673,6 +675,14 @@ bool udm_nudm_uecm_handle_smf_deregistration(
             UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
+    /*
+     * Record the DELETE when submitted. A new PUT for the same PSI may
+     * arrive before the UDR replies to this DELETE. Its registration must
+     * survive the older DELETE response. Keep the cached PUT body as well:
+     * a pending PUT response reads it from the session.
+     */
+    if (r == OGS_OK)
+        sess->smf_registered = false;
 
     return true;
 }

@@ -33,6 +33,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e);
 void udm_ue_state_initial(ogs_fsm_t *s, udm_event_t *e);
 void udm_ue_state_final(ogs_fsm_t *s, udm_event_t *e);
 void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e);
+void udm_ue_state_deregistered(ogs_fsm_t *s, udm_event_t *e);
 void udm_ue_state_exception(ogs_fsm_t *s, udm_event_t *e);
 
 void udm_sess_state_initial(ogs_fsm_t *s, udm_event_t *e);
