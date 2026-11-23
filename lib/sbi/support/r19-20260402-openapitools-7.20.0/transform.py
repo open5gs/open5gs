@@ -1681,6 +1681,15 @@ def transform_lines(lines, string_schemas=None, all_schemas=None,
 
     while i < len(lines):
 
+        # TS 29.509 requires the resStar key even when its value is null.
+        # Mark its string schema for the C model template.
+        if (current_file == "TS29509_Nausf_UEAuthentication.yaml" and
+                lines[i].rstrip() == "    ResStar:"):
+            out.append(lines[i])
+            out.append("      x-open5gs-required-nullable-string: true" + eol)
+            i += 1
+            continue
+
         # A: type:string + allOf(pattern) -> comment out pattern
         transformed = try_transform_allof_patterns(lines, i)
         if transformed is not None:
