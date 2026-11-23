@@ -60,6 +60,8 @@ typedef enum {
 
 typedef struct smf_ctf_config_s {
     smf_ctf_enabled_mode_e enabled;
+    /* ims, sos, mcptt and mcx sessions skip the CHF altogether. */
+    bool bypass_well_known_dnn;
 } smf_ctf_config_t;
 
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config);
@@ -288,6 +290,25 @@ typedef struct smf_bearer_s {
 } smf_bearer_t;
 
 #define SMF_SESS(pfcp_sess) ogs_container_of(pfcp_sess, smf_sess_t, pfcp)
+/*
+ * Why the UPF sent a usage report, in the CHF's terms.
+ *
+ * Mapped from the PFCP Usage Report Trigger (TS 29.244 §8.2.35) and sent
+ * on as a TS 32.291 Trigger, so the CHF is told what happened rather than
+ * having to infer it from the numbers.  Kept separate from Gy's Diameter
+ * reporting reasons, which mean the same things in another protocol.
+ *
+ * The values are ordered by how much they demand of the CHF: when several
+ * reasons arrive in one batch of usage reports the highest one is sent.
+ */
+#define SMF_CHF_TRIGGER_NONE            0
+#define SMF_CHF_TRIGGER_QUOTA_HOLDING   1   /* idle; grant can go back    */
+#define SMF_CHF_TRIGGER_QUOTA_THRESHOLD 2   /* volume threshold reached   */
+#define SMF_CHF_TRIGGER_QUOTA_EXHAUSTED 3   /* the grant is used up       */
+#define SMF_CHF_TRIGGER_VALIDITY_TIME   4   /* the grant's timer expired  */
+#define SMF_CHF_TRIGGER_FORCED_REAUTH   5   /* the CHF asked (ChargingNotify) */
+#define SMF_CHF_TRIGGER_FINAL           6   /* the session is ending      */
+
 typedef struct smf_sess_s {
     ogs_sbi_object_t sbi;
     ogs_pool_id_t id;
@@ -313,6 +334,14 @@ typedef struct smf_sess_s {
         uint32_t gy_cca_term_err; /* Gy CCA RXed error code */
         bool s6b_str_in_flight; /* Waiting for S6B CCA */
         uint32_t s6b_sta_err; /* S6B CCA RXed error code */
+        /* TS 29.513 §4.2.2 — Nchf_ConvergedCharging in-flight guards */
+        bool nchf_create_in_flight;  /* Waiting for CHF 201 Created    */
+        bool nchf_update_in_flight;  /* Waiting for CHF 200 OK (Update) */
+        bool nchf_release_in_flight; /* Waiting for CHF 204 No Content  */
+        bool fui_release_triggered;  /* Release queued after CHF FUI    */
+        uint8_t establishment_reject_cause; /* 5GSM cause for the reject,
+                                             * 0 = network failure        */
+        uint32_t establishment_reject_backoff; /* T3396 seconds, 0 = none */
     } sm_data;
 
     bool            epc;            /**< EPC or 5GC */
@@ -457,6 +486,41 @@ typedef struct smf_sess_s {
         char *id;
         ogs_sbi_client_t *client;
     } data_change_subscription;
+
+    /* CHF (Nchf_ConvergedCharging) association.
+     * Created on successful POST /chargingdata (201 Created).
+     * Deleted on POST /chargingdata/{ref}/release.
+     * Only used for 5GC sessions (sess->epc == false).
+     * TS 32.291 §6.1 — ChargingDataRef resource URI as session key.
+     * TS 29.513 §4.2.2 — online charging for 5GC PDU sessions. */
+#define CHF_ASSOCIATED(__sESS) \
+    ((__sESS) && ((__sESS)->chf_association.ref))
+#define CHF_CLEAR(__sESS) \
+    do { \
+        ogs_assert((__sESS)); \
+        if ((__sESS)->chf_association.resource_uri) \
+            ogs_free((__sESS)->chf_association.resource_uri); \
+        (__sESS)->chf_association.resource_uri = NULL; \
+        if ((__sESS)->chf_association.ref) \
+            ogs_free((__sESS)->chf_association.ref); \
+        (__sESS)->chf_association.ref = NULL; \
+    } while(0)
+#define CHF_STORE(__sESS, __rESOURCE_URI, __rEF) \
+    do { \
+        ogs_assert((__sESS)); \
+        ogs_assert((__rESOURCE_URI)); \
+        ogs_assert((__rEF)); \
+        CHF_CLEAR(__sESS); \
+        (__sESS)->chf_association.resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__sESS)->chf_association.resource_uri); \
+        (__sESS)->chf_association.ref = ogs_strdup(__rEF); \
+        ogs_assert((__sESS)->chf_association.ref); \
+    } while(0)
+    struct {
+        char *resource_uri; /* Full /nchf-convergedcharging/v3/chargingdata/{ref} URI */
+        char *ref;          /* ChargingDataRef UUID (last path component) */
+        ogs_sbi_client_t *client; /* Cached CHF SBI client */
+    } chf_association;
 
     OpenAPI_up_cnx_state_e up_cnx_state;
 
@@ -608,8 +672,9 @@ typedef struct smf_sess_s {
         uint64_t dl_octets;
         ogs_time_t duration;
         uint32_t reporting_reason; /* OGS_DIAM_GY_REPORTING_REASON_* */
-        /* Whether Gy Final-Unit-Indication was received.
-         * Triggers session release upon Rx of next PFCP Report Req */
+        /* Whether Gy/CHF Final-Unit-Indication was received.
+         * For 5GC/CHF: triggers immediate session teardown on Update response.
+         * For EPC/Gy: triggers session release on next PFCP Report Req. */
         bool final_unit;
         /* Snapshot of measurement when last report was sent: */
         struct {
@@ -618,6 +683,44 @@ typedef struct smf_sess_s {
             ogs_time_t duration;
         } last_report;
     } gy;
+
+    /*
+     * Nchf_ConvergedCharging accounting.
+     *
+     * Deliberately its own state rather than a share of gy above.  Gy is
+     * the EPC's Diameter interface and belongs to upstream; borrowing its
+     * counters meant every change here reached into code this work has no
+     * business touching, and an upstream change to Gy's accounting would
+     * quietly land in 5G charging.  The two now only have the PFCP usage
+     * reports in common, which is where they genuinely agree.
+     *
+     * Counters are cumulative for the session; last_report is the baseline
+     * that makes each CHF report a delta (TS 32.291 §6.3.2.2).
+     */
+    struct {
+        uint64_t ul_octets;
+        uint64_t dl_octets;
+        ogs_time_t duration;
+
+        struct {
+            uint64_t ul_octets;
+            uint64_t dl_octets;
+            ogs_time_t duration;
+        } last_report;
+
+        /* The CHF said this grant is the last one (FinalUnitIndication). */
+        bool final_unit;
+
+        /* Why the UPF reported, carried into the next Update as a
+         * TS 32.291 Trigger.  See SMF_CHF_TRIGGER_* below. */
+        uint8_t trigger;
+    } chf;
+
+    /* TS 32.291 §7.2.1.1 — per-session Nchf_ConvergedCharging sequence
+     * counter.  Incremented for each Update request so the CHF can detect
+     * missing or reordered messages within a single charging session.
+     * Starts at 0 (calloc); first Update uses ++nchf_seq == 1. */
+    uint32_t nchf_seq;
 
     struct {
         ogs_nas_extended_protocol_configuration_options_t ue_epco;
@@ -736,6 +839,19 @@ typedef struct smf_sess_s {
 
 } smf_sess_t;
 
+/* Log-safe accessors used by the Nchf_ConvergedCharging build/handle paths.
+ * Both fields are legitimately absent at some points in the session
+ * lifetime, and every CHF log line needs a printable fallback. */
+static ogs_inline const char *smf_nchf_dnn(const smf_sess_t *sess)
+{
+    return (sess && sess->session.name) ? sess->session.name : "?";
+}
+
+static ogs_inline const char *smf_nchf_ref(const smf_sess_t *sess)
+{
+    return CHF_ASSOCIATED(sess) ? sess->chf_association.ref : "(none)";
+}
+
 void smf_context_init(void);
 void smf_context_final(void);
 smf_context_t *smf_self(void);
@@ -743,6 +859,30 @@ smf_context_t *smf_self(void);
 int smf_context_parse_config(void);
 
 int smf_use_gy_iface(void);
+
+/* Online charging interface selector.
+ *
+ * smf_select_online_charging() selects the online charging interface for any
+ * PDU session (EPC or 5GC):
+ *   - Returns SMF_OC_IFACE_GY   for EPC sessions (Gy/Ro).
+ *   - Returns SMF_OC_IFACE_CHF  for 5GC sessions when CHF is reachable.
+ *   - Returns SMF_OC_IFACE_NONE when no online charging is available.
+ *
+ * smf_use_chf_iface() is the 5GC equivalent of smf_use_gy_iface():
+ *   returns non-zero when the SMF should use Nchf_ConvergedCharging.
+ *
+ * TS 29.513 §4.2.2 — Online charging selection in 5GC.
+ * TS 23.503 §6.3   — CHF selection procedure. */
+typedef enum {
+    SMF_OC_IFACE_NONE = 0,
+    SMF_OC_IFACE_CHF,       /* Nchf_ConvergedCharging (5GC) — TS 32.291 */
+    SMF_OC_IFACE_GY,        /* Gy/Ro (EPC) — kept for reference only    */
+} smf_online_charging_iface_e;
+
+smf_online_charging_iface_e smf_select_online_charging(smf_sess_t *sess);
+bool smf_sess_well_known_dnn(smf_sess_t *sess);
+bool smf_sess_chf_bypassed(smf_sess_t *sess);
+int smf_use_chf_iface(void);
 
 smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode);
 void smf_gtp_node_free(smf_gtp_node_t *smf_gnode);

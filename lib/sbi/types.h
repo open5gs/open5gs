@@ -37,6 +37,15 @@ extern "C" {
 #define OGS_SBI_SERVICE_NAME_NSMF_CALLBACK "nsmf-callback"
 #define OGS_SBI_SERVICE_NAME_NAMF_OAM "namf-oam"
 
+/*
+ * TS 32.291 — Nchf_ConvergedCharging.  The service name is present in
+ * OpenAPI_service_name_e as OpenAPI_service_name_nchf_convergedcharging;
+ * this string alias is retained for the CHF paths that build/parse the
+ * service name directly.  The TS 32.291 bodies are generated models,
+ * like every other service - see lib/sbi/support/.../generator.sh.
+ */
+#define OGS_SBI_SERVICE_NAME_NCHF_CONVERGEDCHARGING "nchf-convergedcharging"
+
 #define OGS_SBI_MAX_NUM_OF_SERVICE_NAME 128
 
 /*

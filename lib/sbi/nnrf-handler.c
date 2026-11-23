@@ -29,6 +29,8 @@ static bool handle_sepp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_sepp_info_t *SeppInfo);
 static bool handle_amf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_amf_info_t *AmfInfo);
+static void handle_chf_info(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_chf_info_t *ChfInfo);
 
 void ogs_nnrf_nfm_handle_nf_register(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_message_t *recvmsg)
@@ -339,6 +341,15 @@ bool ogs_nnrf_nfm_handle_nf_profile(
     if (NFProfile->sepp_info &&
             handle_sepp_info(nf_instance, NFProfile->sepp_info) == false)
         return false;
+
+    /* TS 29.510 §6.1.6.2.9 — ChfInfo */
+    if (NFProfile->chf_info)
+        handle_chf_info(nf_instance, NFProfile->chf_info);
+    OpenAPI_list_for_each(NFProfile->chf_info_list, node) {
+        OpenAPI_map_t *ChfInfoMap = node->data;
+        if (ChfInfoMap && ChfInfoMap->value)
+            handle_chf_info(nf_instance, ChfInfoMap->value);
+    }
 
     return true;
 }
@@ -1045,6 +1056,60 @@ static void handle_validity_time(
             (int)ogs_time_sec(patch), (int)ogs_time_usec(patch));
 
     ogs_free(validity_time_string);
+}
+
+/* TS 29.510 §6.1.6.2.9 — ChfInfo: populate ogs_sbi_chf_info_t from
+ * the OpenAPI ChfInfo object received in an NF profile. */
+static void handle_chf_info(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_chf_info_t *ChfInfo)
+{
+    ogs_sbi_nf_info_t *nf_info = NULL;
+    OpenAPI_lnode_t *node = NULL;
+    int i = 0;
+
+    ogs_assert(nf_instance);
+    if (!ChfInfo) return;
+
+    nf_info = ogs_sbi_nf_info_add(
+            &nf_instance->nf_info_list, OpenAPI_nf_type_CHF);
+    ogs_assert(nf_info);
+
+    /* supiRangeList: TS 29.510 §6.1.6.2.9 */
+    OpenAPI_list_for_each(ChfInfo->supi_range_list, node) {
+        OpenAPI_supi_range_t *range = node->data;
+        if (!range) continue;
+        if (i >= OGS_MAX_NUM_OF_SUPI_RANGE) {
+            ogs_warn("OVERFLOW supiRangeList [%d]", i);
+            break;
+        }
+        if (range->start)
+            nf_info->chf.supi_range[i].start = ogs_strdup(range->start);
+        if (range->end)
+            nf_info->chf.supi_range[i].end = ogs_strdup(range->end);
+        if (range->pattern)
+            nf_info->chf.supi_range[i].pattern = ogs_strdup(range->pattern);
+        i++;
+    }
+    nf_info->chf.num_of_supi_range = i;
+
+    /* gpsiRangeList (informational — not used for routing today) */
+    i = 0;
+    OpenAPI_list_for_each(ChfInfo->gpsi_range_list, node) {
+        OpenAPI_identity_range_t *range = node->data;
+        if (!range) continue;
+        if (i >= OGS_MAX_NUM_OF_SUPI_RANGE) {
+            ogs_warn("OVERFLOW gpsiRangeList [%d]", i);
+            break;
+        }
+        if (range->start)
+            nf_info->chf.gpsi_range[i].start = ogs_strdup(range->start);
+        if (range->end)
+            nf_info->chf.gpsi_range[i].end = ogs_strdup(range->end);
+        if (range->pattern)
+            nf_info->chf.gpsi_range[i].pattern = ogs_strdup(range->pattern);
+        i++;
+    }
+    nf_info->chf.num_of_gpsi_range = i;
 }
 
 void ogs_nnrf_nfm_handle_nf_status_subscribe(

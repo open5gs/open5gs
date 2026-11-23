@@ -222,6 +222,15 @@ components:
           $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mnc'
         tac:
           $ref: '#/components/schemas/Tac'
+    ChargingTai:
+      type: object
+      properties:
+        mcc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mcc'
+        mnc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mnc'
+        tac:
+          $ref: '#/components/schemas/Tac'
     Tac:
       type: string 
       pattern: '(^[A-Fa-f0-9]{4}$)|(^[A-Fa-f0-9]{6}$)'   

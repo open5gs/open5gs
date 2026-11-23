@@ -283,6 +283,24 @@ Description: 5G-EIR (5G Equipment Identity Register)
  .
  This package provides the 5G-EIR (5G Equipment Identity Register)
 
+Package: open5gs-chf
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         python3,
+         open5gs-common (= ${binary:Version})
+Description: CHF (Charging Function)
+ Open5GS is a C-language implementation of 5G Core and EPC
+ Packet Core, i.e. the core network of an NR/LTE network (Release-19)
+ .
+ This package provides the CHF (Charging Function), and a decoder for
+ the charging data records it writes.
+ .
+ An SMF charges its 5G sessions as soon as a CHF registers with the NRF,
+ unless smf.ctf.enabled is no, so install this package only when you
+ want charging.
+
 Package: open5gs
 Architecture: any
 Multi-Arch: same
@@ -306,7 +324,8 @@ Depends: ${misc:Depends},
          open5gs-bsf (= ${binary:Version}),
          open5gs-udr (= ${binary:Version})
 Suggests:
-         open5gs-eir (= ${binary:Version})
+         open5gs-eir (= ${binary:Version}),
+         open5gs-chf (= ${binary:Version})
 Description: 5G Core and EPC (metapackage)
  Open5GS is a C-language implementation of 5G Core and EPC
  Packet Core, i.e. the core network of an NR/LTE network (Release-19)
@@ -315,6 +334,9 @@ Description: 5G Core and EPC (metapackage)
  .
  Install open5gs-eir separately to enable optional equipment identity
  checks. The AMF consumer is disabled by default (amf.eir.enabled: false).
+ .
+ Install open5gs-chf separately to enable charging. An SMF charges its 5G
+ sessions as soon as a CHF registers with the NRF.
 
 Package: open5gs-dbg
 Architecture: any

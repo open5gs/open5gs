@@ -225,6 +225,31 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
             ogs_error("[%s:%d] HTTP response error [status:%d cause:%d]",
                 smf_ue->supi, sess->psi, recvmsg->res_status,
                 N1N2MessageTransferRspData->cause);
+
+            if (sess->sm_data.fui_release_triggered) {
+                int r;
+    /*
+     * Quota exhausted, and the AMF would not carry the Release Command -
+     * the UE is unreachable, or its context is already gone.  There is
+     * nothing left to wait for: the UPF session has been deleted and the
+     * CHF has the final usage.  Finish the teardown instead of leaving the
+     * session in smf_gsm_state_wait_5gc_n1_n2_release, which has no timer
+     * of its own.
+     */
+                ogs_error("[%s:%d] Release Command not delivered — "
+                        "releasing the session locally",
+                        smf_ue->supi, sess->psi);
+
+                r = smf_sbi_cleanup_session(
+                        sess, NULL,
+                        SMF_UECM_STATE_DEREG_BY_N1N2,
+                        SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+
+                OGS_FSM_TRAN(&sess->sm,
+                        smf_gsm_state_5gc_session_will_deregister);
+            }
         }
         break;
 

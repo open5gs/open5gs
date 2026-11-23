@@ -36,6 +36,7 @@ static ogs_thread_t *nssf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
 static ogs_thread_t *bsf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
 static ogs_thread_t *udr_threads[OGS_MAX_NF_INSTANCES] = { NULL };
 static ogs_thread_t *eir_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *chf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
 
 
 static void run_threads(const char *nf_name, int count,
@@ -130,6 +131,11 @@ int app_initialize(const char *const argv[])
         run_threads("eir", ogs_global_conf()->parameter.eir_count,
                 argv_out, i, eir_threads);
 
+    if (ogs_global_conf()->parameter.no_chf == 0 &&
+            ogs_global_conf()->parameter.chf_count > 0)
+        run_threads("chf", ogs_global_conf()->parameter.chf_count,
+                argv_out, i, chf_threads);
+
     /*
      * Wait for all sockets listening
      * 
@@ -156,6 +162,10 @@ void app_terminate(void)
         if (upf_threads[i]) {
             ogs_thread_destroy(upf_threads[i]);
             upf_threads[i] = NULL;
+        }
+        if (chf_threads[i]) {
+            ogs_thread_destroy(chf_threads[i]);
+            chf_threads[i] = NULL;
         }
         if (eir_threads[i]) {
             ogs_thread_destroy(eir_threads[i]);

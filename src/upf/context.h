@@ -75,6 +75,12 @@ typedef struct upf_sess_urr_acc_s {
     ogs_timer_t *t_validity_time; /* Quota Validity Time expiration handler */
     ogs_timer_t *t_time_quota; /* Time Quota expiration handler */
     ogs_timer_t *t_time_threshold; /* Time Threshold expiration handler */
+    /* Quota Holding Time idle handler (TS 29.244 8.2.20).  Unlike the
+     * timers above it does not run continuously: it is armed while there
+     * is traffic to report and stopped once an idle report has been sent,
+     * so an idle session reports once and then stays quiet. */
+    ogs_timer_t *t_quota_holding_time;
+    bool quota_holding_armed; /* t_quota_holding_time is running */
     uint32_t time_start; /* When t_time_* started (realtime, for NTP) */
     /* When t_time_* started (monotonic, for Duration Measurement). */
     ogs_time_t mono_time_start;

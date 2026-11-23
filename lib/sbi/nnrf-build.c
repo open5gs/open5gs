@@ -26,10 +26,12 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info);
+static OpenAPI_chf_info_t *build_chf_info(ogs_sbi_nf_info_t *nf_info);
 static void free_smf_info(OpenAPI_smf_info_t *SmfInfo);
 static void free_amf_info(OpenAPI_amf_info_t *AmfInfo);
 static void free_scp_info(OpenAPI_scp_info_t *ScpInfo);
 static void free_sepp_info(OpenAPI_sepp_info_t *SeppInfo);
+static void free_chf_info(OpenAPI_chf_info_t *ChfInfo);
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
 {
@@ -392,6 +394,10 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
             /* SEPP info will be skipped here first and dealt with below. */
 
+        } else if (nf_info->nf_type == OpenAPI_nf_type_CHF) {
+
+            /* CHF info will be skipped here first and dealt with below. */
+
         } else {
             ogs_fatal("Not implemented NF-type[%s]",
                     OpenAPI_nf_type_ToString(nf_info->nf_type));
@@ -444,6 +450,15 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     if (nf_info) {
         NFProfile->sepp_info = build_sepp_info(nf_info);
         ogs_assert(NFProfile->sepp_info);
+    }
+
+    /* There can only be one CHF info, not multiple.
+     * TS 29.510 §6.1.6.2.9 — ChfInfo (optional; only if SUPI ranges configured) */
+    nf_info = ogs_sbi_nf_info_find(
+            &nf_instance->nf_info_list, OpenAPI_nf_type_CHF);
+    if (nf_info) {
+        NFProfile->chf_info = build_chf_info(nf_info);
+        ogs_assert(NFProfile->chf_info);
     }
 
     return NFProfile;
@@ -543,6 +558,9 @@ void ogs_nnrf_nfm_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
 
     if (NFProfile->sepp_info)
         free_sepp_info(NFProfile->sepp_info);
+
+    if (NFProfile->chf_info)
+        free_chf_info(NFProfile->chf_info);
 
     ogs_free(NFProfile);
 }
@@ -1557,6 +1575,79 @@ static void free_sepp_info(OpenAPI_sepp_info_t *SeppInfo)
     OpenAPI_list_free(SeppInfo->sepp_ports);
 
     ogs_free(SeppInfo);
+}
+
+/* TS 29.510 §6.1.6.2.9 — ChfInfo
+ * Build an OpenAPI ChfInfo from the internal ogs_sbi_chf_info_t.
+ * Only called when the CHF has SUPI ranges configured. */
+static OpenAPI_chf_info_t *build_chf_info(ogs_sbi_nf_info_t *nf_info)
+{
+    OpenAPI_chf_info_t *ChfInfo = NULL;
+    OpenAPI_list_t *SupiRangeList = NULL;
+    int i;
+
+    ogs_assert(nf_info);
+
+    ChfInfo = ogs_calloc(1, sizeof(*ChfInfo));
+    if (!ChfInfo) {
+        ogs_error("No ChfInfo");
+        return NULL;
+    }
+
+    SupiRangeList = OpenAPI_list_create();
+    if (!SupiRangeList) {
+        ogs_error("No SupiRangeList");
+        free_chf_info(ChfInfo);
+        return NULL;
+    }
+
+    for (i = 0; i < nf_info->chf.num_of_supi_range; i++) {
+        OpenAPI_supi_range_t *SupiRange = NULL;
+
+        SupiRange = ogs_calloc(1, sizeof(*SupiRange));
+        if (!SupiRange) {
+            ogs_error("No SupiRange[%d]", i);
+            break;
+        }
+
+        if (nf_info->chf.supi_range[i].start)
+            SupiRange->start = ogs_strdup(nf_info->chf.supi_range[i].start);
+        if (nf_info->chf.supi_range[i].end)
+            SupiRange->end = ogs_strdup(nf_info->chf.supi_range[i].end);
+        if (nf_info->chf.supi_range[i].pattern)
+            SupiRange->pattern =
+                ogs_strdup(nf_info->chf.supi_range[i].pattern);
+
+        OpenAPI_list_add(SupiRangeList, SupiRange);
+    }
+
+    if (SupiRangeList->count)
+        ChfInfo->supi_range_list = SupiRangeList;
+    else
+        OpenAPI_list_free(SupiRangeList);
+
+    return ChfInfo;
+}
+
+static void free_chf_info(OpenAPI_chf_info_t *ChfInfo)
+{
+    OpenAPI_supi_range_t *SupiRange = NULL;
+    OpenAPI_lnode_t *node = NULL;
+
+    ogs_assert(ChfInfo);
+
+    OpenAPI_list_for_each(ChfInfo->supi_range_list, node) {
+        SupiRange = node->data;
+        if (SupiRange) {
+            if (SupiRange->start)   ogs_free(SupiRange->start);
+            if (SupiRange->end)     ogs_free(SupiRange->end);
+            if (SupiRange->pattern) ogs_free(SupiRange->pattern);
+            ogs_free(SupiRange);
+        }
+    }
+    OpenAPI_list_free(ChfInfo->supi_range_list);
+
+    ogs_free(ChfInfo);
 }
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
