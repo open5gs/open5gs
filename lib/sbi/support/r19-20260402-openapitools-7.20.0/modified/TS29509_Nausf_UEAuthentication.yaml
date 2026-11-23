@@ -865,6 +865,7 @@ components:
       pattern: '[A-Fa-f0-9]{128}'
 
     ResStar:
+      x-open5gs-required-nullable-string: true
       description: Contains the RES*.
       type: string
       pattern: '[A-Fa-f0-9]{32}'

@@ -522,6 +522,17 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
 
     item = cJSON_CreateObject();
 {{#vars}}
+    {{#vendorExtensions.x-open5gs-required-nullable-string}}
+    cJSON *{{{name}}} = {{{classname}}}->{{{name}}} ?
+        cJSON_AddStringToObject(item, "{{{baseName}}}", {{{classname}}}->{{{name}}}) :
+        cJSON_AddNullToObject(item, "{{{baseName}}}");
+    if (!{{{name}}}) {
+        ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+        cJSON_Delete(item);
+        return NULL;
+    }
+    {{/vendorExtensions.x-open5gs-required-nullable-string}}
+    {{^vendorExtensions.x-open5gs-required-nullable-string}}
     {{#required}}
         {{^isEnum}}
             {{^isNumeric}}
@@ -866,6 +877,7 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
     {{/isNullable}}
     }
     {{/required}}
+    {{/vendorExtensions.x-open5gs-required-nullable-string}}
 
 {{/vars}}
 end:
@@ -940,7 +952,12 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
             {{/isEnum}}
             {{^isEnum}}
                 {{#isString}}
+                {{#vendorExtensions.x-open5gs-required-nullable-string}}
+    if (!cJSON_IsString({{{name}}}) && !cJSON_IsNull({{{name}}})) {
+                {{/vendorExtensions.x-open5gs-required-nullable-string}}
+                {{^vendorExtensions.x-open5gs-required-nullable-string}}
     if (!cJSON_IsString({{{name}}}){{^required}} && !cJSON_IsNull({{{name}}}){{/required}}) {
+                {{/vendorExtensions.x-open5gs-required-nullable-string}}
         ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
         goto end;
     }
@@ -1313,7 +1330,12 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
         {{^required}}{{{name}}} ? {{/required}}{{{name}}}->valueint{{^required}} : 0{{/required}}{{^-last}},{{/-last}}
                 {{/isBoolean}}
                 {{#isString}}
+                {{#vendorExtensions.x-open5gs-required-nullable-string}}
+        cJSON_IsNull({{{name}}}) ? NULL : ogs_strdup({{{name}}}->valuestring){{^-last}},{{/-last}}
+                {{/vendorExtensions.x-open5gs-required-nullable-string}}
+                {{^vendorExtensions.x-open5gs-required-nullable-string}}
         {{^required}}{{{name}}} && !cJSON_IsNull({{{name}}}) ? {{/required}}ogs_strdup({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
+                {{/vendorExtensions.x-open5gs-required-nullable-string}}
                 {{/isString}}
                 {{#isByteArray}}
         {{^required}}{{{name}}} && !cJSON_IsNull({{{name}}}) ? {{/required}}ogs_strdup({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
