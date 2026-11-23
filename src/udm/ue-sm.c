@@ -286,8 +286,16 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_HTTP_METHOD_DELETE)
                 SWITCH(message->h.resource.component[1])
                 CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
-                    udm_nudm_sdm_handle_subscription_delete(
-                            udm_ue, stream, message);
+                    /*
+                     * This DELETE removes the subscription and replies 204
+                     * locally. If it was the last resource, there will be
+                     * no UDR reply to trigger cleanup. Mark the UE as
+                     * deregistered so the caller frees it after dispatch.
+                     */
+                    if (udm_nudm_sdm_handle_subscription_delete(
+                            udm_ue, stream, message) &&
+                        udm_ue_is_deregistered(udm_ue))
+                        OGS_FSM_TRAN(s, udm_ue_state_deregistered);
                     break;
 
                 DEFAULT
@@ -390,6 +398,29 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
     default:
         ogs_error("[%s] Unknown event %s", udm_ue->suci, udm_event_get_name(e));
+        break;
+    }
+}
+
+void udm_ue_state_deregistered(ogs_fsm_t *s, udm_event_t *e)
+{
+    udm_ue_t *udm_ue = NULL;
+    ogs_assert(s);
+    ogs_assert(e);
+
+    udm_sm_debug(e);
+
+    udm_ue = udm_ue_find_by_id(e->udm_ue_id);
+    ogs_assert(udm_ue);
+
+    switch (e->h.id) {
+    case OGS_FSM_ENTRY_SIG:
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    default:
+        ogs_error("[%s] Unknown event %s",
+                udm_ue->supi, udm_event_get_name(e));
         break;
     }
 }

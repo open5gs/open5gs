@@ -204,6 +204,27 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                             ue_allocation_failed = true;
                         break;
 
+                    CASE(OGS_SBI_HTTP_METHOD_PUT)
+                        /*
+                         * Re-registration can skip authentication, so this
+                         * AMF registration PUT may be the first request for
+                         * the UE after its old context was released.
+                         */
+                        if (service_name_id == OpenAPI_service_name_nudm_uecm &&
+                            message.h.resource.component[1] &&
+                            !strcmp(message.h.resource.component[1],
+                                OGS_SBI_RESOURCE_NAME_REGISTRATIONS) &&
+                            message.h.resource.component[2] &&
+                            !strcmp(message.h.resource.component[2],
+                                OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS) &&
+                            !message.h.resource.component[3]) {
+                            udm_ue = udm_ue_add(
+                                    message.h.resource.component[0]);
+                            if (!udm_ue)
+                                ue_allocation_failed = true;
+                        }
+                        break;
+
                     DEFAULT
                         ogs_error("Invalid HTTP method [%s]", message.h.method);
                     END
@@ -313,6 +334,10 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 ogs_fsm_dispatch(&udm_ue->sm, e);
                 if (OGS_FSM_CHECK(&udm_ue->sm, udm_ue_state_exception)) {
                     ogs_error("[%s] State machine exception", udm_ue->suci);
+                    udm_ue_remove(udm_ue);
+                } else if (OGS_FSM_CHECK(
+                            &udm_ue->sm, udm_ue_state_deregistered)) {
+                    ogs_info("[%s] Release UE context", udm_ue->supi);
                     udm_ue_remove(udm_ue);
                 }
             END
@@ -482,11 +507,19 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                     e->sess_id = sess->id;
                     e->h.sbi.message = &message;
 
+                    /*
+                     * An SMF deregistration can be the last operation for
+                     * a purged UE. Its xact was removed above. Let the
+                     * session FSM reply to the SMF before releasing the UE.
+                     */
                     ogs_fsm_dispatch(&sess->sm, e);
                     if (OGS_FSM_CHECK(&sess->sm, udm_sess_state_exception)) {
                         ogs_error("[%s:%d] State machine exception",
                                 udm_ue->suci, sess->psi);
                         udm_sess_remove(sess);
+                    } else if (udm_ue_is_deregistered(udm_ue)) {
+                        ogs_info("[%s] Release UE context", udm_ue->supi);
+                        udm_ue_remove(udm_ue);
                     }
                     break;
 
@@ -535,9 +568,18 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                     e->udm_ue_id = udm_ue->id;
                     e->h.sbi.message = &message;
 
+                    /*
+                     * On UDR 204 for authentication result removal, the UE
+                     * FSM clears auth_event and replies to the AUSF. Check
+                     * after dispatch so this response can release the UE
+                     * when the SMF and SDM cleanup has already finished.
+                     */
                     ogs_fsm_dispatch(&udm_ue->sm, e);
                     if (OGS_FSM_CHECK(&udm_ue->sm, udm_ue_state_exception)) {
                         ogs_warn("[%s] State machine exception", udm_ue->suci);
+                        udm_ue_remove(udm_ue);
+                    } else if (udm_ue_is_deregistered(udm_ue)) {
+                        ogs_info("[%s] Release UE context", udm_ue->supi);
                         udm_ue_remove(udm_ue);
                     }
                 END

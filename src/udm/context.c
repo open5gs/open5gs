@@ -272,6 +272,53 @@ udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id)
     return ogs_pool_find(&udm_ue_pool, atoll(ctx_id));
 }
 
+/*
+ * TS 29.503: 5.3.2.4.2 AMF deregistration for 3GPP access
+ * The AMF sets purgeFlag on its 3GPP access registration. Other NFs may
+ * still need this UE, even between requests when both xact lists are empty.
+ *
+ * In UE-initiated deregistration, the AMF can release the PDU sessions
+ * before the purge, then ask the AUSF to remove the authentication result.
+ * In network-initiated deregistration, the AMF can purge and remove the
+ * authentication result before asking the SMF to release the PDU sessions.
+ */
+bool udm_ue_is_deregistered(udm_ue_t *udm_ue)
+{
+    OpenAPI_amf3_gpp_access_registration_t *registration = NULL;
+    udm_sess_t *sess = NULL;
+
+    ogs_assert(udm_ue);
+
+    registration = udm_ue->amf_3gpp_access_registration;
+    if (!registration ||
+        !registration->is_purge_flag || !registration->purge_flag)
+        return false;
+
+    /* Each subscriber deletes its own SDM subscription. Outstanding
+     * UE transactions also need the context to route the UDR reply. */
+    if (ogs_list_count(&udm_ue->sdm_subscription_list) ||
+        ogs_list_count(&udm_ue->sbi.xact_list))
+        return false;
+
+    /*
+     * The SMF can unsubscribe from SDM before sending its UECM DELETE.
+     * smf_registered keeps the UE during that gap. Once the DELETE is
+     * submitted, its session xact keeps the UE until the UDR replies.
+     * The session object itself stays on sess_list until UE removal.
+     */
+    ogs_list_for_each(&udm_ue->sess_list, sess) {
+        if (sess->smf_registered || ogs_list_count(&sess->sbi.xact_list))
+            return false;
+    }
+
+    /* After the purge, the AUSF may still send PUT /auth-events/{id}
+     * with authRemovalInd set. Keep the UE so that PUT can find it. */
+    if (udm_ue->auth_event)
+        return false;
+
+    return true;
+}
+
 udm_sess_t *udm_sess_add(udm_ue_t *udm_ue, uint8_t psi)
 {
     udm_event_t e;

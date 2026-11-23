@@ -84,6 +84,9 @@ struct udm_sess_s {
 
     uint8_t psi; /* PDU Session Identity */
 
+    /* The last SMF registration request submitted to UDR was a PUT. */
+    bool smf_registered;
+    /* Most recent PUT body, retained for building the response to the SMF. */
     OpenAPI_smf_registration_t *smf_registration;
 
     char *smf_instance_id;
@@ -113,6 +116,7 @@ void udm_ue_remove_all(void);
 udm_ue_t *udm_ue_find_by_suci(char *suci);
 udm_ue_t *udm_ue_find_by_supi(char *supi);
 udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id);
+bool udm_ue_is_deregistered(udm_ue_t *udm_ue);
 
 udm_sess_t *udm_sess_add(udm_ue_t *udm_ue, uint8_t psi);
 void udm_sess_remove(udm_sess_t *sess);
