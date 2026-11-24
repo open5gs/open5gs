@@ -215,37 +215,38 @@ int ogs_asn_ip_to_BIT_STRING(ogs_ip_t *ip, BIT_STRING_t *bit_string)
 
 int ogs_asn_copy_ie(const asn_TYPE_descriptor_t *td, void *src, void *dst)
 {
-    asn_enc_rval_t enc_ret = {0};
-    asn_dec_rval_t dec_ret = {0};
-    uint8_t *buffer = NULL;
+    asn_enc_rval_t encoded;
+    asn_dec_rval_t decoded;
+    uint8_t *buffer;
 
     ogs_assert(td);
     ogs_assert(src);
     ogs_assert(dst);
 
-    buffer = ogs_calloc(1, OGS_MAX_SDU_LEN);
+    buffer = ogs_malloc(OGS_MAX_SDU_LEN);
     if (!buffer) {
-        ogs_error("ogs_calloc() failed");
+        ogs_error("ogs_malloc() failed");
         return OGS_ERROR;
     }
 
-    enc_ret = aper_encode_to_buffer(td, NULL, src, buffer, OGS_MAX_SDU_LEN);
-    if (enc_ret.encoded < 0) {
-        ogs_error("aper_encode_to_buffer() failed[%d]", (int)enc_ret.encoded);
+    /* The complete encoding API returns the required size in bytes. */
+    encoded = asn_encode_to_buffer(NULL, ATS_ALIGNED_BASIC_PER, td, src,
+            buffer, OGS_MAX_SDU_LEN);
+    if (encoded.encoded < 0 || encoded.encoded > OGS_MAX_SDU_LEN) {
+        ogs_error("Cannot encode ASN.1 IE [%s] within the SDU limit", td->name);
         ogs_free(buffer);
         return OGS_ERROR;
     }
 
-    dec_ret = aper_decode(NULL, td, (void **)&dst,
-            buffer, ((enc_ret.encoded + 7) / 8), 0, 0);
-
-    if (dec_ret.code != RC_OK) {
-        ogs_error("aper_decode() failed[%d]", dec_ret.code);
-        ogs_free(buffer);
-        return OGS_ERROR;
-    }
-
+    decoded = asn_decode(NULL, ATS_ALIGNED_BASIC_PER, td, &dst,
+            buffer, encoded.encoded);
     ogs_free(buffer);
+
+    if (decoded.code != RC_OK) {
+        ogs_error("Cannot decode ASN.1 IE [%s] (code %d)", td->name,
+                decoded.code);
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
