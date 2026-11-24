@@ -221,7 +221,7 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
     upf_metrics_inst_global_inc(UPF_METR_GLOB_GAUGE_UPF_SESSIONNBR);
 
     ogs_info("[Added] Number of UPF-Sessions is now %d",
-            ogs_list_count(&self.sess_list));
+            ogs_pool_size(&upf_sess_pool) - ogs_pool_avail(&upf_sess_pool));
 
     return sess;
 }
@@ -255,7 +255,7 @@ int upf_sess_remove(upf_sess_t *sess)
     upf_metrics_inst_global_dec(UPF_METR_GLOB_GAUGE_UPF_SESSIONNBR);
 
     ogs_info("[Removed] Number of UPF-sessions is now %d",
-            ogs_list_count(&self.sess_list));
+            ogs_pool_size(&upf_sess_pool) - ogs_pool_avail(&upf_sess_pool));
 
     return OGS_OK;
 }

@@ -1816,7 +1816,7 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     ogs_list_add(&self.amf_ue_list, amf_ue);
 
     ogs_info("[Added] Number of AMF-UEs is now %d",
-            ogs_list_count(&self.amf_ue_list));
+            ogs_pool_size(&amf_ue_pool) - ogs_pool_avail(&amf_ue_pool));
 
     return amf_ue;
 }
@@ -1931,7 +1931,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_pool_id_free(&amf_ue_pool, amf_ue);
 
     ogs_info("[Removed] Number of AMF-UEs is now %d",
-            ogs_list_count(&self.amf_ue_list));
+            ogs_pool_size(&amf_ue_pool) - ogs_pool_avail(&amf_ue_pool));
 }
 
 void amf_ue_remove_all(void)

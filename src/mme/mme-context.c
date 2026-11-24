@@ -4026,7 +4026,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     ogs_info("[EBI-TRACK] UE-CREATED ue_id[%d] bitmap[0x%04x]",
             mme_ue->id, mme_ue->ebi_bitmap);
     ogs_info("[Added] Number of MME-UEs is now %d",
-            ogs_list_count(&self.mme_ue_list));
+            ogs_pool_size(&mme_ue_pool) - ogs_pool_avail(&mme_ue_pool));
 
     return mme_ue;
 }
@@ -4101,7 +4101,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     ogs_pool_free(&mme_gn_teid_pool, mme_ue->gn.mme_gn_teid_node);
     ogs_pool_id_free(&mme_ue_pool, mme_ue);
     ogs_info("[Removed] Number of MME-UEs is now %d",
-            ogs_list_count(&self.mme_ue_list));
+            ogs_pool_size(&mme_ue_pool) - ogs_pool_avail(&mme_ue_pool));
 }
 
 void mme_ue_remove_all(void)
