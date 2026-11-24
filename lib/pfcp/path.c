@@ -257,6 +257,38 @@ int ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact)
     return rv;
 }
 
+void ogs_pfcp_send_heartbeat_response_to(
+        ogs_socket_t fd, ogs_sockaddr_t *to, uint32_t sqn)
+{
+    const int hlen = OGS_PFCP_HEADER_LEN - OGS_PFCP_SEID_LEN;
+    ogs_pfcp_header_t *h;
+    ogs_pkbuf_t *pkbuf;
+
+    ogs_warn("Heartbeat Request from unknown PFCP peer %s",
+            ogs_sockaddr_to_string_static(to));
+
+    pkbuf = ogs_pfcp_build_heartbeat_response(
+            OGS_PFCP_HEARTBEAT_RESPONSE_TYPE);
+    if (!pkbuf) {
+        ogs_error("ogs_pfcp_build_heartbeat_response() failed");
+        return;
+    }
+
+    ogs_pkbuf_push(pkbuf, hlen);
+    h = (ogs_pfcp_header_t *)pkbuf->data;
+    memset(h, 0, hlen);
+    h->version = OGS_PFCP_VERSION;
+    h->type = OGS_PFCP_HEARTBEAT_RESPONSE_TYPE;
+    h->length = htobe16(pkbuf->len - 4);
+    h->sqn_only = OGS_PFCP_XID_TO_SQN(OGS_PFCP_SQN_TO_XID(sqn));
+
+    if (ogs_sendto(fd, pkbuf->data, pkbuf->len, 0, to) < 0)
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_sendto() failed to %s", ogs_sockaddr_to_string_static(to));
+
+    ogs_pkbuf_free(pkbuf);
+}
+
 int ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data))
 {

@@ -65,6 +65,8 @@ ogs_pkbuf_t *ogs_pfcp_handle_echo_req(ogs_pkbuf_t *pkt);
 int ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data));
 int ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact);
+void ogs_pfcp_send_heartbeat_response_to(
+        ogs_socket_t fd, ogs_sockaddr_t *to, uint32_t sqn);
 
 int ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data));
