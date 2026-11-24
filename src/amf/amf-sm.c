@@ -568,6 +568,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
                     ogs_info("[%s:%d] Release SM context [%d]",
                             amf_ue->supi, sess->psi, sbi_message.res_status);
+                } else if (sbi_message.res_status ==
+                        OGS_SBI_HTTP_STATUS_NOT_FOUND) {
+                    /* SMF has no SM context (e.g. after SMF restart) */
+                    ogs_warn("[%s:%d] SM context already released [%d]",
+                            amf_ue->supi, sess->psi, sbi_message.res_status);
                 } else {
                     ogs_error("[%s:%d] HTTP response error [%d]",
                             amf_ue->supi, sess->psi, sbi_message.res_status);
