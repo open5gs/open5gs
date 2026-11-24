@@ -51,10 +51,22 @@ libgtp_sources = files('''
 
 libgtp_inc = include_directories('.')
 
+libgtp_c_args = ['-DOGS_GTP_COMPILATION']
+if cc.links('''
+    #define _GNU_SOURCE
+    #include <sys/socket.h>
+    int main(void) {
+        struct mmsghdr msg;
+        return recvmmsg(-1, &msg, 1, MSG_DONTWAIT, 0);
+    }
+''', name : 'recvmmsg()')
+    libgtp_c_args += ['-DHAVE_RECVMMSG']
+endif
+
 libgtp = library('ogsgtp',
     sources : libgtp_sources,
     version : libogslib_version,
-    c_args : '-DOGS_GTP_COMPILATION',
+    c_args : libgtp_c_args,
     include_directories : [libgtp_inc, libinc],
     dependencies : [libproto_dep, libipfw_dep, libapp_dep],
     install : true)
