@@ -2458,6 +2458,9 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                     sess, gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID));
         } else {
             /* 5GC */
+            /* The replacement Delete was sent before entering this state. */
+            if (e->h.sbi.state == OGS_PFCP_DELETE_TRIGGER_SESSION_REPLACEMENT)
+                break;
             stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             if (stream_id >= OGS_MIN_POOL_ID && stream_id <= OGS_MAX_POOL_ID)
                 stream = ogs_sbi_stream_find_by_id(stream_id);

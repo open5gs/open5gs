@@ -412,7 +412,7 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
                    (ogs_pfcp_self()->local_recovery +
                     ogs_time_sec(ogs_local_conf()->time.message.pfcp.
                         association_interval))) {
-                ogs_error("[%s] Send Error Indication [TEID:0x%x] to [%s]",
+                ogs_warn("[%s] Send Error Indication [TEID:0x%x] to [%s]",
                         OGS_ADDR(&sock->local_addr, buf1),
                         header_desc.teid,
                         OGS_ADDR(from, buf2));

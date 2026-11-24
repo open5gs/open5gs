@@ -38,7 +38,7 @@ typedef struct {
 void test_app_run(int argc, const char *const argv[],
         const char *name, void (*init)(const char * const argv[]));
 void test_child_terminate(void);
-void test_child_terminate_with_name(char *name, int index);
+void test_child_terminate_with_name(const char *name, int index);
 ogs_thread_t *test_child_create(const char *name, int index, const char *const argv[]);
 
 #ifdef __cplusplus

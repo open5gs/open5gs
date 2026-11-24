@@ -2058,6 +2058,35 @@ void smf_sess_set_paging_n1n2message_location(
             sess);
 }
 
+static void discard_replacement_create(ogs_event_t *e)
+{
+    ogs_sbi_stream_t *stream =
+        ogs_sbi_stream_find_by_id(OGS_POINTER_TO_UINT(e->sbi.data));
+    if (stream)
+        ogs_expect(ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE, NULL,
+                    "Could not resume PDU session creation", NULL, NULL));
+
+    ogs_sbi_message_free(e->sbi.message);
+    ogs_free(e->sbi.message);
+    ogs_event_free(e);
+}
+
+void smf_sess_finish_replacement(smf_sess_t *sess)
+{
+    ogs_event_t *e = sess->replacement_create;
+
+    if (!e)
+        return;
+
+    /* The server dispatcher will run after the old context is removed. */
+    sess->replacement_create = NULL;
+    if (ogs_queue_trypush(ogs_app()->queue, e) != OGS_OK)
+        discard_replacement_create(e);
+
+    SMF_SESS_CLEAR(sess);
+}
+
 void smf_sess_remove(smf_sess_t *sess)
 {
     int i;
@@ -2076,6 +2105,9 @@ void smf_sess_remove(smf_sess_t *sess)
             sess->session.name, sess->psi,
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+
+    if (sess->replacement_create)
+        discard_replacement_create(sess->replacement_create);
 
     ogs_list_remove(&smf_ue->sess_list, sess);
 
@@ -2307,16 +2339,24 @@ smf_sess_t *smf_sess_find_by_charging_id(uint32_t charging_id)
     return smf_sess_find(charging_id);
 }
 
+/* A replaced context is kept only to complete its outstanding N4 Delete. */
+static smf_sess_t *find_by_sbi_ref(const char *ref)
+{
+    smf_sess_t *sess;
+
+    ogs_assert(ref);
+    sess = smf_sess_find(atoll(ref));
+    return sess && sess->replacement_create ? NULL : sess;
+}
+
 smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref)
 {
-    ogs_assert(sm_context_ref);
-    return smf_sess_find(atoll(sm_context_ref));
+    return find_by_sbi_ref(sm_context_ref);
 }
 
 smf_sess_t *smf_sess_find_by_pdu_session_ref(char *pdu_session_ref)
 {
-    ogs_assert(pdu_session_ref);
-    return smf_sess_find(atoll(pdu_session_ref));
+    return find_by_sbi_ref(pdu_session_ref);
 }
 
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr)

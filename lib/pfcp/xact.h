@@ -127,6 +127,7 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED 5
 #define OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT 6
 #define OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT 7
+#define OGS_PFCP_DELETE_TRIGGER_SESSION_REPLACEMENT 8
     int             delete_trigger;
 
     ogs_list_t      pdr_to_create_list;
