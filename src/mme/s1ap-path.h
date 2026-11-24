@@ -50,8 +50,6 @@ int s1ap_send_to_esm(
 
 int s1ap_send_s1_setup_response(mme_enb_t *enb);
 int s1ap_send_s1_setup_failure(
-        mme_enb_t *enb, S1AP_Cause_PR group, long cause);
-int s1ap_send_s1_setup_failure_with_diagnostics(
         mme_enb_t *enb, S1AP_Cause_PR group, long cause,
         S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics);
 

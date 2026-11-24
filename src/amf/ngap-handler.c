@@ -22,20 +22,6 @@
 #include "sbi-path.h"
 #include "nas-path.h"
 
-static bool maximum_number_of_gnbs_is_reached(void)
-{
-    amf_gnb_t *gnb = NULL, *next_gnb = NULL;
-    int number_of_gnbs_online = 0;
-
-    ogs_list_for_each_safe(&amf_self()->gnb_list, next_gnb, gnb) {
-        if (gnb->state.ng_setup_success) {
-            number_of_gnbs_online++;
-        }
-    }
-
-    return number_of_gnbs_online >= ogs_global_conf()->max.peer;
-}
-
 static bool gnb_plmn_id_is_foreign(amf_gnb_t *gnb)
 {
     int i, j, k;
@@ -54,30 +40,27 @@ static bool gnb_plmn_id_is_foreign(amf_gnb_t *gnb)
     return true;
 }
 
-static bool served_tai_is_found(amf_gnb_t *gnb)
+static bool gnb_has_served_tai(const amf_gnb_t *gnb)
 {
     int i, j;
-    int served_tai_index;
+    ogs_5gs_tai_t tai;
 
     for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
+        tai.tac = gnb->supported_ta_list[i].tac;
         for (j = 0; j < gnb->supported_ta_list[i].num_of_bplmn_list; j++) {
-            ogs_5gs_tai_t tai;
-            memcpy(&tai.plmn_id,
-                    &gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
-                        OGS_PLMN_ID_LEN);
-            tai.tac.v = gnb->supported_ta_list[i].tac.v;
-            served_tai_index = amf_find_served_tai(&tai);
-            if (served_tai_index >= 0 &&
-                    served_tai_index < OGS_MAX_NUM_OF_SUPPORTED_TA) {
-                ogs_debug("    TAC[%d]", gnb->supported_ta_list[i].tac.v);
-                ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
-                    ogs_plmn_id_mcc(&gnb->supported_ta_list[i].
-                        bplmn_list[j].plmn_id),
-                    ogs_plmn_id_mnc(&gnb->supported_ta_list[i].
-                        bplmn_list[j].plmn_id));
-                ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
-                return true;
-            }
+            int index;
+
+            tai.plmn_id = gnb->supported_ta_list[i].bplmn_list[j].plmn_id;
+            index = amf_find_served_tai(&tai);
+            if (index < 0)
+                continue;
+
+            ogs_debug("    TAC[%d]", tai.tac.v);
+            ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
+                    ogs_plmn_id_mcc(&tai.plmn_id),
+                    ogs_plmn_id_mnc(&tai.plmn_id));
+            ogs_debug("    SERVED_TAI_INDEX[%d]", index);
+            return true;
         }
     }
 
@@ -270,8 +253,9 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     NGAP_PagingDRX_t *PagingDRX = NULL;
     NGAP_RANNodeName_t *RANNodeName_ng = NULL;
 
-    NGAP_Cause_PR group = NGAP_Cause_PR_NOTHING;
-    long cause = 0;
+    NGAP_CriticalityDiagnostics_t *diagnostics = NULL;
+    NGAP_Cause_PR failure_group = NGAP_Cause_PR_protocol;
+    long failure_cause = NGAP_CauseProtocol_semantic_error;
 
     uint32_t gnb_id;
     uint8_t gnb_id_length = 0;
@@ -322,68 +306,37 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
     if (!GlobalRANNodeID) {
         ogs_error("No GlobalRANNodeID");
-        group = NGAP_Cause_PR_protocol;
-        cause = NGAP_CauseProtocol_semantic_error;
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
+        goto respond;
     }
 
     globalGNB_ID = GlobalRANNodeID->choice.globalGNB_ID;
     if (!globalGNB_ID) {
         ogs_error("No globalGNB_ID");
-        group = NGAP_Cause_PR_protocol;
-        cause = NGAP_CauseProtocol_semantic_error;
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
+        goto respond;
     }
 
     if (!globalGNB_ID->gNB_ID) {
         ogs_error("No gNB_ID");
-        group = NGAP_Cause_PR_protocol;
-        cause = NGAP_CauseProtocol_semantic_error;
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
+        goto respond;
     }
 
     if (globalGNB_ID->pLMNIdentity.size != sizeof(gnb->plmn_id)) {
         ogs_error("Invalid PLMNIdentity size = %d (expected %d)",
                 (int)globalGNB_ID->pLMNIdentity.size,
                 (int)sizeof(gnb->plmn_id));
-        group = NGAP_Cause_PR_protocol;
-        cause = NGAP_CauseProtocol_semantic_error;
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
+        goto respond;
     }
 
     if (!SupportedTAList) {
         ogs_error("No SupportedTAList");
-        group = NGAP_Cause_PR_protocol;
-        cause = NGAP_CauseProtocol_semantic_error;
         /* TS 38.413 10.3.5: report the missing "reject" IE */
-        r = ngap_send_ng_setup_failure_with_diagnostics(gnb, group, cause,
-                ogs_ngap_build_criticality_diagnostics(
-                    NULL, NGAP_ProtocolIE_ID_id_SupportedTAList));
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
+        diagnostics = ogs_ngap_build_criticality_diagnostics(
+                NULL, NGAP_ProtocolIE_ID_id_SupportedTAList);
+        goto respond;
     }
 
-    if (!gnb_id_length_from_global_gnb_id(globalGNB_ID, &gnb_id_length)) {
-        group = NGAP_Cause_PR_protocol;
-        cause = NGAP_CauseProtocol_semantic_error;
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    if (!gnb_id_length_from_global_gnb_id(globalGNB_ID, &gnb_id_length))
+        goto respond;
 
     ogs_ngap_GNB_ID_to_uint32(globalGNB_ID->gNB_ID, &gnb_id);
     ogs_debug("    IP[%s] GNB_ID[0x%x] GNB_ID_LENGTH[%d]",
@@ -418,22 +371,12 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                 OGS_ASN_LIST_GET(SupportedTAList, i);
         if (!SupportedTAItem) {
             ogs_error("No SupportedTAItem");
-            group = NGAP_Cause_PR_protocol;
-            cause = NGAP_CauseProtocol_semantic_error;
-            r = ngap_send_ng_setup_failure(gnb, group, cause);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
+            goto respond;
         }
 
         if (!SupportedTAItem->broadcastPLMNList) {
             ogs_error("No BroadcastPLMNList");
-            group = NGAP_Cause_PR_protocol;
-            cause = NGAP_CauseProtocol_semantic_error;
-            r = ngap_send_ng_setup_failure(gnb, group, cause);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
+            goto respond;
         }
 
         ogs_asn_OCTET_STRING_to_uint24(&SupportedTAItem->tAC,
@@ -465,12 +408,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                     OGS_ASN_LIST_GET(SupportedTAItem->broadcastPLMNList, j);
             if (!BroadcastPLMNItem) {
                 ogs_error("No BroadcastPLMNItem");
-                group = NGAP_Cause_PR_protocol;
-                cause = NGAP_CauseProtocol_semantic_error;
-                r = ngap_send_ng_setup_failure(gnb, group, cause);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
+                goto respond;
             }
 
             pLMNIdentity = (NGAP_PLMNIdentity_t *)
@@ -481,22 +419,12 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                 ogs_error("Invalid PLMNIdentity size = %d (expected %d)",
                         (int)pLMNIdentity->size,
                         (int)sizeof(ogs_plmn_id_t));
-                group = NGAP_Cause_PR_protocol;
-                cause = NGAP_CauseProtocol_semantic_error;
-                r = ngap_send_ng_setup_failure(gnb, group, cause);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
+                goto respond;
             }
 
             if (!BroadcastPLMNItem->tAISliceSupportList) {
                 ogs_error("No TAISliceSupportList");
-                group = NGAP_Cause_PR_protocol;
-                cause = NGAP_CauseProtocol_semantic_error;
-                r = ngap_send_ng_setup_failure(gnb, group, cause);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
+                goto respond;
             }
 
             memcpy(&gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
@@ -533,23 +461,13 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                         OGS_ASN_LIST_GET(BroadcastPLMNItem->tAISliceSupportList, k);
                 if (!SliceSupportItem) {
                     ogs_error("No SliceSupportItem");
-                    group = NGAP_Cause_PR_protocol;
-                    cause = NGAP_CauseProtocol_semantic_error;
-                    r = ngap_send_ng_setup_failure(gnb, group, cause);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    return;
+                    goto respond;
                 }
 
                 s_NSSAI = SliceSupportItem->s_NSSAI;
                 if (!s_NSSAI) {
                     ogs_error("No S-NSSAI");
-                    group = NGAP_Cause_PR_protocol;
-                    cause = NGAP_CauseProtocol_semantic_error;
-                    r = ngap_send_ng_setup_failure(gnb, group, cause);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    return;
+                    goto respond;
                 }
 
                 ogs_asn_OCTET_STRING_to_uint8(&s_NSSAI->sST,
@@ -575,67 +493,37 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         gnb->num_of_supported_ta_list++;
     }
 
-    if (maximum_number_of_gnbs_is_reached()) {
-        ogs_warn("NG-Setup failure:");
-        ogs_warn("    Maximum number of gNBs reached");
-        group = NGAP_Cause_PR_misc;
-        cause = NGAP_CauseMisc_control_processing_overload;
-
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
+    if (amf_self()->num_of_setup_gnb >= ogs_global_conf()->max.peer) {
+        ogs_warn("NG-Setup failure: configured gNB limit reached");
+        failure_group = NGAP_Cause_PR_misc;
+        failure_cause = NGAP_CauseMisc_control_processing_overload;
+    } else if (gnb_plmn_id_is_foreign(gnb)) {
+        /* TS 38.413 8.7.1.4 */
+        ogs_warn("NG-Setup failure: no advertised PLMN is supported");
+        failure_group = NGAP_Cause_PR_misc;
+        failure_cause = NGAP_CauseMisc_unknown_PLMN_or_SNPN;
+    } else if (!gnb_has_served_tai(gnb)) {
+        ogs_warn("NG-Setup failure: no advertised TAI matches amf.tai");
+        failure_group = NGAP_Cause_PR_misc;
+        failure_cause = NGAP_CauseMisc_unknown_PLMN_or_SNPN;
+    } else if (!s_nssai_is_found(gnb)) {
+        ogs_warn("NG-Setup failure: "
+                "no advertised S-NSSAI matches amf.plmn_support");
+        failure_group = NGAP_Cause_PR_radioNetwork;
+        failure_cause = NGAP_CauseRadioNetwork_slice_not_supported;
+    } else {
+        ogs_assert(OGS_OK == amf_gnb_set_gnb_id(gnb, gnb_id, gnb_id_length));
+        failure_group = NGAP_Cause_PR_NOTHING;
     }
 
-    /*
-     * TS38.413
-     * Section 8.7.1.4 Abnormal Conditions
-     *
-     * If the AMF does not identify any of the PLMNs/SNPNs indicated
-     * in the NG SETUP REQUEST message, it shall reject the NG Setup
-     * procedure with an appropriate cause value.
-     */
-    if (gnb_plmn_id_is_foreign(gnb)) {
-        ogs_warn("NG-Setup failure:");
-        ogs_warn("    globalGNB_ID PLMN-ID is foreign");
-        group = NGAP_Cause_PR_misc;
-        cause = NGAP_CauseMisc_unknown_PLMN_or_SNPN;
-
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
+respond:
+    if (failure_group == NGAP_Cause_PR_NOTHING) {
+        amf_gnb_mark_setup_complete(gnb);
+        r = ngap_send_ng_setup_response(gnb);
+    } else {
+        r = ngap_send_ng_setup_failure(
+                gnb, failure_group, failure_cause, diagnostics);
     }
-
-    if (!served_tai_is_found(gnb)) {
-        ogs_warn("NG-Setup failure:");
-        ogs_warn("    Cannot find Served TAI. Check 'amf.tai' configuration");
-        group = NGAP_Cause_PR_misc;
-        cause = NGAP_CauseMisc_unknown_PLMN_or_SNPN;
-
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-
-    if (!s_nssai_is_found(gnb)) {
-        ogs_warn("NG-Setup failure:");
-        ogs_warn("    Cannot find S_NSSAI. "
-                    "Check 'amf.plmn_support.s_nssai' configuration");
-        group = NGAP_Cause_PR_radioNetwork;
-        cause = NGAP_CauseRadioNetwork_slice_not_supported;
-
-        r = ngap_send_ng_setup_failure(gnb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-
-    ogs_assert(OGS_OK == amf_gnb_set_gnb_id(gnb, gnb_id, gnb_id_length));
-
-    gnb->state.ng_setup_success = true;
-    r = ngap_send_ng_setup_response(gnb);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 }
@@ -5290,8 +5178,7 @@ void ngap_handle_ran_configuration_update(
         }
 
         if (gnb->num_of_supported_ta_list == 0) {
-            ogs_warn("RANConfigurationUpdate failure:");
-            ogs_warn("    No supported TA exist in request");
+            ogs_warn("RANConfigurationUpdate failure: no supported TA");
             group = NGAP_Cause_PR_protocol;
             cause =
                 NGAP_CauseProtocol_message_not_compatible_with_receiver_state;
@@ -5302,10 +5189,9 @@ void ngap_handle_ran_configuration_update(
             return;
         }
 
-        if (!served_tai_is_found(gnb)) {
-            ogs_warn("RANConfigurationUpdate failure:");
-            ogs_warn("    Cannot find Served TAI. "
-                        "Check 'amf.tai' configuration");
+        if (!gnb_has_served_tai(gnb)) {
+            ogs_warn("RANConfigurationUpdate failure: "
+                    "no advertised TAI matches amf.tai");
             group = NGAP_Cause_PR_misc;
             cause = NGAP_CauseMisc_unknown_PLMN_or_SNPN;
 
@@ -5316,9 +5202,8 @@ void ngap_handle_ran_configuration_update(
         }
 
         if (!s_nssai_is_found(gnb)) {
-            ogs_warn("RANConfigurationUpdate failure:");
-            ogs_warn("    Cannot find S_NSSAI. "
-                        "Check 'amf.plmn_support.s_nssai' configuration");
+            ogs_warn("RANConfigurationUpdate failure: "
+                    "no advertised S-NSSAI matches amf.plmn_support");
             group = NGAP_Cause_PR_radioNetwork;
             cause = NGAP_CauseRadioNetwork_slice_not_supported;
 

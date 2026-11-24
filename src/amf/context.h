@@ -111,6 +111,7 @@ typedef struct amf_context_s {
     uint64_t        amf_ue_ngap_id; /* amf_ue_ngap_id generator */
 
     ogs_list_t      gnb_list;       /* GNB NGAP Client List */
+    unsigned int    num_of_setup_gnb; /* Associations admitted by NG Setup */
     ogs_list_t      amf_ue_list;
 
     ogs_hash_t      *gnb_addr_hash; /* hash table for GNB Address */
@@ -146,6 +147,7 @@ typedef struct amf_gnb_s {
 
     ogs_fsm_t       sm;         /* A state machine */
 
+    bool            setup_complete;
     bool            gnb_id_presence;
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
     uint8_t         gnb_id_length; /* gNB-ID BIT STRING length(22..32) */
@@ -157,10 +159,6 @@ typedef struct amf_gnb_s {
     char            ran_node_name[64];
     ogs_plmn_id_t   plmn_id;    /* gNB PLMN-ID received from gNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
-
-    struct {
-        bool ng_setup_success;  /* gNB NGAP Setup complete successfuly */
-    } state;
 
     int             max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;         /* gnb_ostream_id generator */
@@ -1108,6 +1106,7 @@ int amf_context_parse_config(void);
 int amf_context_nf_info(void);
 
 amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
+void amf_gnb_mark_setup_complete(amf_gnb_t *gnb);
 void amf_gnb_remove(amf_gnb_t *gnb);
 void amf_gnb_remove_all(void);
 amf_gnb_t *amf_gnb_find_by_addr(ogs_sockaddr_t *addr);

@@ -46,8 +46,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
 
 int ngap_send_ng_setup_response(amf_gnb_t *gnb);
 int ngap_send_ng_setup_failure(
-        amf_gnb_t *gnb, NGAP_Cause_PR group, long cause);
-int ngap_send_ng_setup_failure_with_diagnostics(
         amf_gnb_t *gnb, NGAP_Cause_PR group, long cause,
         NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics);
 int ngap_send_amf_configuration_update(amf_gnb_t *gnb);

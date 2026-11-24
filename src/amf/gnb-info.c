@@ -189,7 +189,7 @@ size_t amf_dump_gnb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
 
             cJSON_AddItemToObjectCS(ng, "sctp", sctp);
 
-            if (!cJSON_AddBoolToObject(ng, "setup_success", gnb->state.ng_setup_success ? 1 : 0)) { cJSON_Delete(ng); cJSON_Delete(g); oom = true; break; }
+            if (!cJSON_AddBoolToObject(ng, "setup_success", gnb->setup_complete)) { cJSON_Delete(ng); cJSON_Delete(g); oom = true; break; }
 
             cJSON_AddItemToObjectCS(g, "ng", ng);
         }

@@ -3322,6 +3322,17 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     return enb;
 }
 
+void mme_enb_mark_setup_complete(mme_enb_t *enb)
+{
+    ogs_assert(enb);
+
+    if (enb->setup_complete)
+        return;
+
+    enb->setup_complete = true;
+    self.num_of_setup_enb++;
+}
+
 int mme_enb_remove(mme_enb_t *enb)
 {
     mme_event_t e;
@@ -3329,6 +3340,8 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
 
+    if (enb->setup_complete)
+        self.num_of_setup_enb--;
     ogs_list_remove(&self.enb_list, enb);
 
     memset(&e, 0, sizeof(e));

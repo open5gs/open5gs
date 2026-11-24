@@ -279,9 +279,7 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
 
     int i, j, k;
     int status = OGS_SBI_HTTP_STATUS_OK;
-    amf_gnb_t *gnb = NULL;
     amf_ue_t *amf_ue = NULL;
-    int total_gnbs = 0;
     int total_ues = 0;
     bool already_added[OGS_MAX_NUM_OF_PLMN];
 
@@ -345,12 +343,6 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
         cJSON_AddItemToArray(plmns_array, plmn_obj);
     }
 
-    /* Count total connected gNBs */
-    ogs_list_for_each(&amf_self()->gnb_list, gnb) {
-        if (gnb->state.ng_setup_success)
-            total_gnbs++;
-    }
-
     /* Count total registered UEs */
     ogs_list_for_each(&amf_self()->amf_ue_list, amf_ue) {
         if (AMF_UE_HAVE_SUCI(amf_ue))
@@ -359,7 +351,8 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
 
     /* Add statistics to response */
     cJSON_AddNumberToObject(root, "total_plmns", count_unique_plmns());
-    cJSON_AddNumberToObject(root, "connected_gnbs", total_gnbs);
+    cJSON_AddNumberToObject(root, "connected_gnbs",
+            amf_self()->num_of_setup_gnb);
     cJSON_AddNumberToObject(root, "registered_ues", total_ues);
 
     /* Convert to string */

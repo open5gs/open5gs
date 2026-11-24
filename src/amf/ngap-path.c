@@ -370,7 +370,7 @@ void ngap_send_amf_configuration_update_all(void)
     int count = 0;
 
     ogs_list_for_each(&amf_self()->gnb_list, gnb) {
-        if (gnb->state.ng_setup_success == true) {
+        if (gnb->setup_complete) {
             ngap_send_amf_configuration_update(gnb);
             count++;
         }
@@ -380,13 +380,6 @@ void ngap_send_amf_configuration_update_all(void)
 }
 
 int ngap_send_ng_setup_failure(
-        amf_gnb_t *gnb, NGAP_Cause_PR group, long cause)
-{
-    return ngap_send_ng_setup_failure_with_diagnostics(
-            gnb, group, cause, NULL);
-}
-
-int ngap_send_ng_setup_failure_with_diagnostics(
         amf_gnb_t *gnb, NGAP_Cause_PR group, long cause,
         NGAP_CriticalityDiagnostics_t *CriticalityDiagnostics)
 {

@@ -171,7 +171,7 @@ size_t mme_dump_enb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
             cJSON *s1 = cJSON_CreateObject();
             if (!s1) { cJSON_Delete(e); oom = true; break; }
 
-            if (!cJSON_AddBoolToObject(s1, "setup_success", enb->state.s1_setup_success ? 1 : 0)) {
+            if (!cJSON_AddBoolToObject(s1, "setup_success", enb->setup_complete)) {
                 cJSON_Delete(s1); cJSON_Delete(e); oom = true; break;
             }
 

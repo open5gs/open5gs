@@ -130,6 +130,7 @@ typedef struct mme_context_s {
     } dns;
 
     ogs_list_t      enb_list;       /* ENB S1AP Client List */
+    unsigned int    num_of_setup_enb; /* Associations admitted by S1 Setup */
 
     ogs_list_t      vlr_list;       /* VLR SGsAP Client List */
     ogs_list_t      csmap_list;     /* TAI-LAI Map List */
@@ -292,6 +293,7 @@ typedef struct mme_enb_s {
 
     ogs_fsm_t       sm;         /* A state machine */
 
+    bool            setup_complete;
     bool            enb_id_presence;
     uint32_t        enb_id;     /* eNB_ID received from eNB */
     /* Optional human-readable eNB name from the S1SetupRequest eNBname
@@ -301,10 +303,6 @@ typedef struct mme_enb_s {
     char            enb_name[64];
     ogs_plmn_id_t   plmn_id;    /* eNB PLMN-ID received from eNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
-
-    struct {
-        bool s1_setup_success;  /* eNB S1AP Setup complete successfuly */
-    } state;
 
     int             max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;         /* enb_ostream_id generator */
@@ -1263,6 +1261,7 @@ void mme_ue_set_hss_identity(mme_ue_t *mme_ue,
 void mme_ue_clear_hss_identity(mme_ue_t *mme_ue);
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
+void mme_enb_mark_setup_complete(mme_enb_t *enb);
 int mme_enb_remove(mme_enb_t *enb);
 int mme_enb_remove_all(void);
 mme_enb_t *mme_enb_find_by_addr(const ogs_sockaddr_t *addr);

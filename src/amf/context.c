@@ -1303,6 +1303,17 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     return gnb;
 }
 
+void amf_gnb_mark_setup_complete(amf_gnb_t *gnb)
+{
+    ogs_assert(gnb);
+
+    if (gnb->setup_complete)
+        return;
+
+    gnb->setup_complete = true;
+    self.num_of_setup_gnb++;
+}
+
 void amf_gnb_remove(amf_gnb_t *gnb)
 {
     amf_event_t e;
@@ -1310,6 +1321,8 @@ void amf_gnb_remove(amf_gnb_t *gnb)
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
 
+    if (gnb->setup_complete)
+        self.num_of_setup_gnb--;
     ogs_list_remove(&self.gnb_list, gnb);
 
     memset(&e, 0, sizeof(e));
