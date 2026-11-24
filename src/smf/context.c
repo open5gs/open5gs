@@ -3524,7 +3524,12 @@ int smf_pco_build(uint8_t *pco_buf, int pco_buf_len,
                 uint16_t out_len = 0;
                 int num_of_option = 0;
 
-                ogs_assert(smf_self()->dns[0] || smf_self()->dns[1]);
+                /* smf.dns may hold only IPv6 servers; then there is
+                 * no IPv4 DNS to offer, so leave IPCP unanswered. */
+                if (!smf_self()->dns[0] && !smf_self()->dns[1]) {
+                    ogs_warn("Ignoring IPCP container [No IPv4 DNS]");
+                    break;
+                }
 
                 ogs_assert(ipcp);
                 in_len = be16toh(ipcp->len);
