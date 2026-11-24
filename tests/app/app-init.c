@@ -38,9 +38,10 @@ static ogs_thread_t *bsf_thread = NULL;
 static ogs_thread_t *udr_thread = NULL;
 static ogs_thread_t *eir_thread = NULL;
 
+static const char *argv_out[OGS_ARG_MAX];
+
 int app_initialize(const char *const argv[])
 {
-    const char *argv_out[OGS_ARG_MAX];
     bool user_config = false;
     int i = 0;
 
@@ -109,6 +110,39 @@ int app_initialize(const char *const argv[])
     ogs_msleep(5000);
 
     return OGS_OK;
+}
+
+void test_restart_amf(ogs_socknode_t *ngap)
+{
+#if HAVE_USRSCTP
+    int domain = __ogs_sctp_domain;
+#else
+    int domain = __ogs_sock_domain;
+#endif
+    ogs_log_level_e level = ogs_log_get_domain_level(domain);
+    ogs_time_t deadline;
+
+    ogs_assert(amf_thread);
+    test_child_terminate_with_name("amf", 0);
+    ogs_thread_destroy(amf_thread);
+    /* Close the old gNB association before the new AMF inherits its fd. */
+    ogs_sctp_destroy(ngap->sock);
+    ngap->sock = NULL;
+    amf_thread = test_child_create("amf", 0, argv_out);
+
+    /* The new AMF may not be listening yet. Keep the last failure visible. */
+    deadline = ogs_get_monotonic_time() + ogs_time_from_sec(5);
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(domain, OGS_LOG_FATAL);
+    do {
+        ngap->sock = ogs_sctp_client(SOCK_STREAM, ngap->addr, NULL, NULL);
+        if (ngap->sock)
+            break;
+        ogs_msleep(50);
+    } while (ogs_get_monotonic_time() < deadline);
+    ogs_log_set_domain_level(domain, level);
+    if (!ngap->sock)
+        ngap->sock = ogs_sctp_client(SOCK_STREAM, ngap->addr, NULL, NULL);
 }
 
 void app_terminate(void)

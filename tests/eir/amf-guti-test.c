@@ -15,6 +15,7 @@ typedef enum {
     DEREG_DURING_SMC,
     REREGISTER,
     EIR_REJECT,
+    AMF_RESTART,
 } scenario_t;
 
 static const struct {
@@ -30,6 +31,7 @@ static const struct {
     { EIR_REJECT, 1 },
     { AUTH_FAILURE, 2 },
     { REREGISTER, 2 },
+    { AMF_RESTART, 1 },
 };
 
 static bool send_ngap(abts_case *tc, ogs_socknode_t *ngap, ogs_pkbuf_t *buf)
@@ -189,12 +191,17 @@ static bool matching_qfi(ogs_pkbuf_t *buf, int header_len, uint8_t qfi)
     return matched;
 }
 
+typedef enum {
+    BEARER_SILENT,
+    BEARER_ALIVE,
+    BEARER_UNKNOWN_TEID
+} bearer_result_t;
+
 /* Match a fresh Echo Reply on the expected N3 tunnel and QFI. In the unfixed
  * AMF, Authentication Request follows old-session deletion, so the original
  * tunnel probe at that point fails without waiting for an AKA timeout. */
-
 static bool check_bearer(abts_case *tc, ogs_socknode_t *gtpu,
-        test_bearer_t *bearer, bool alive)
+        test_bearer_t *bearer, bearer_result_t expected)
 {
     static uint16_t sequence;
     ogs_gtp2_header_desc_t desc;
@@ -205,7 +212,9 @@ static bool check_bearer(abts_case *tc, ogs_socknode_t *gtpu,
     uint16_t value, seq = ++sequence;
     uint32_t dst;
     int round;
+    bool alive = expected == BEARER_ALIVE;
     bool reply = false;
+    int attempts = alive ? 3 : 1;
 
     ogs_assert(inet_pton(AF_INET, TEST_PING_IPV4, &dst) == 1);
     packet[0] = 0x45;
@@ -228,7 +237,12 @@ static bool check_bearer(abts_case *tc, ogs_socknode_t *gtpu,
     desc.pdu_type =
         OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
     desc.qos_flow_identifier = bearer->qfi;
-    for (round = 0; round < (alive ? 3 : 1) && !reply; round++) {
+    /* A recently started UPF suppresses unknown-TEID Error Indications for
+     * one PFCP association interval. Keep probing during that interval. */
+    if (expected == BEARER_UNKNOWN_TEID)
+        attempts = ogs_time_sec(
+                ogs_local_conf()->time.message.pfcp.association_interval) + 2;
+    for (round = 0; round < attempts && !reply; round++) {
         ogs_time_t deadline = ogs_time_now() + ogs_time_from_sec(1);
 
         buf = ogs_pkbuf_alloc(NULL, 128);
@@ -270,13 +284,22 @@ static bool check_bearer(abts_case *tc, ogs_socknode_t *gtpu,
                 continue;
             }
             gtp = (ogs_gtp2_header_t *)buf->data;
+            header_len = ogs_gtpu_parse_header(&received, buf);
             if (gtp->type == OGS_GTPU_MSGTYPE_ERR_IND) {
+                /* The mandatory TEID Data I IE names the missing tunnel. */
+                uint32_t teid = htobe32(bearer->sess->upf_n3_teid);
+                bool matches = header_len >= OGS_GTPV1U_HEADER_LEN &&
+                    buf->len >= header_len + 1 + sizeof(teid) &&
+                    buf->data[header_len] ==
+                        OGS_GTP1_TUNNEL_ENDPOINT_IDENTIFIER_DATA_I_TYPE &&
+                    !memcmp(buf->data + header_len + 1, &teid, sizeof(teid));
                 ogs_pkbuf_free(buf);
+                if (expected == BEARER_UNKNOWN_TEID && matches)
+                    return true;
                 /* Another tunnel's delayed Error Indication may share this
                  * socket. Only this probe's Echo Reply proves it is alive. */
                 continue;
             }
-            header_len = ogs_gtpu_parse_header(&received, buf);
             if (gtp->version == OGS_GTP1_VERSION_1 &&
                 gtp->type == OGS_GTPU_MSGTYPE_GPDU &&
                 be32toh(gtp->teid) == bearer->sess->gnb_n3_teid &&
@@ -299,6 +322,10 @@ static bool check_bearer(abts_case *tc, ogs_socknode_t *gtpu,
                 break;
         }
     }
+    if (expected == BEARER_UNKNOWN_TEID) {
+        ABTS_FAIL(tc, "UPF did not report the old uplink TEID as unknown");
+        return false;
+    }
     if (reply != alive)
         ABTS_FAIL(tc, alive ? "No ICMP Echo Reply on the original bearer" :
                 "The deleted bearer still forwards ICMP Echo Replies");
@@ -311,7 +338,8 @@ static bool check_bearers(abts_case *tc, ogs_socknode_t *gtpu,
     unsigned int i;
 
     for (i = 0; i < count; i++) {
-        if (!check_bearer(tc, gtpu, bearers[i], alive))
+        if (!check_bearer(tc, gtpu, bearers[i],
+                    alive ? BEARER_ALIVE : BEARER_SILENT))
             return false;
     }
     return true;
@@ -517,6 +545,10 @@ static void test_amf_case(abts_case *tc, void *data)
     struct timeval timeout = { 5, 0 };
 #endif
 
+    if (scenario == AMF_RESTART && ogs_global_conf()->parameter.no_amf) {
+        ABTS_NOT_IMPL(tc, "Restart requires a test-managed AMF");
+        return;
+    }
     ogs_snprintf(msin, sizeof(msin), "00004577%02u", index);
     victim = new_ue(msin);
     if (test_db_insert_subscriber(victim, sessions == 2 ?
@@ -572,6 +604,17 @@ static void test_amf_case(abts_case *tc, void *data)
     if (!check_bearers(tc, gtpu, old_flows, sessions, true))
         goto cleanup;
 
+    /* Leave the SMF and UPF running while the AMF loses its UE contexts. */
+    if (scenario == AMF_RESTART) {
+        test_restart_amf(ngap);
+        ABTS_PTR_NOTNULL(tc, ngap->sock);
+        if (!ngap->sock ||
+            !send_ngap(tc, ngap, testngap_build_ng_setup_request(
+                    0x4577 + index, 22)) ||
+            !receive_ngap(tc, ngap, victim, NGAP_ProcedureCode_id_NGSetup, 0, 0))
+            goto cleanup;
+    }
+
     /* Copy only the assigned GUTI. The victim keeps the original NAS keys,
      * counters, PDU sessions and N3 tunnels for preservation probes. */
     peer = new_ue(msin);
@@ -581,7 +624,7 @@ static void test_amf_case(abts_case *tc, void *data)
         !equipment_record(tc, &equipment_id, "BLACKLISTED"))
         goto cleanup;
     if (!send_ngap(tc, ngap, testngap_build_initial_ue_message(peer,
-                    registration_request(peer, true, false),
+                    registration_request(peer, scenario != AMF_RESTART, false),
                     NGAP_RRCEstablishmentCause_mo_Signalling, false, true)) ||
         !receive_ngap(tc, ngap, peer, NGAP_ProcedureCode_id_DownlinkNASTransport,
                     OGS_NAS_5GS_AUTHENTICATION_REQUEST, 0) ||
@@ -612,7 +655,7 @@ static void test_amf_case(abts_case *tc, void *data)
             if (!send_nas(tc, ngap, peer, security_mode_reject()))
                 goto cleanup;
         } else {
-            container = registration_request(peer, true, true);
+            container = registration_request(peer, scenario != AMF_RESTART, true);
             if (!send_nas(tc, ngap, peer,
                         testgmm_build_security_mode_complete(peer, container))) {
                 container = NULL;
@@ -629,15 +672,21 @@ static void test_amf_case(abts_case *tc, void *data)
                     goto cleanup;
                 goto cleanup;
             }
+            /* After AMF restart the old N3 tunnel must still carry traffic
+             * until SMF receives another initial request with the same PSI. */
             if (!finish_registration(tc, ngap, peer) ||
-                !check_bearers(tc, gtpu, old_flows, sessions, false) ||
+                !check_bearers(tc, gtpu, old_flows, sessions,
+                        scenario == AMF_RESTART) ||
                 !establish_session(tc, ngap, peer, "internet", 5))
                 goto cleanup;
             new_flow = test_qos_flow_find_by_qfi(test_sess_find_by_psi(peer, 5), 1);
             ogs_assert(new_flow);
             for (i = 0; i < sessions; i++)
                 ABTS_TRUE(tc, new_flow->sess->upf_n3_teid != old_flows[i]->sess->upf_n3_teid);
-            if (!check_bearer(tc, gtpu, new_flow, true))
+            if (scenario == AMF_RESTART &&
+                !check_bearer(tc, gtpu, old_flows[0], BEARER_UNKNOWN_TEID))
+                goto cleanup;
+            if (!check_bearer(tc, gtpu, new_flow, BEARER_ALIVE))
                 goto cleanup;
         }
     }
@@ -648,14 +697,15 @@ static void test_amf_case(abts_case *tc, void *data)
                     OGS_NAS_5GS_AUTHENTICATION_REJECT, 0))
             goto cleanup;
     }
-    if (scenario != REREGISTER &&
+    if (scenario != REREGISTER && scenario != AMF_RESTART &&
         !check_bearers(tc, gtpu, old_flows, sessions, true))
         goto cleanup;
     /* A protected Deregistration with the original keys verifies rollback.
      * SMC Reject has no reply, so this follows it on the same SCTP stream.
      * This stage retains the peer's NG association after failure; use current
      * IDs here and revise cleanup when NG association restoration is added. */
-    cleanup_ue = scenario == REREGISTER ? peer : victim;
+    cleanup_ue = (scenario == REREGISTER || scenario == AMF_RESTART) ?
+        peer : victim;
     cleanup_ue->ran_ue_ngap_id = peer->ran_ue_ngap_id;
     cleanup_ue->amf_ue_ngap_id = peer->amf_ue_ngap_id;
     if (!send_nas(tc, ngap, cleanup_ue,

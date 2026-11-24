@@ -28,6 +28,7 @@ extern "C" {
 
 void test_app_init(void);
 void test_app_final(void);
+void test_restart_amf(ogs_socknode_t *ngap);
 
 void test_5gc_init(void);
 void test_5gc_final(void);

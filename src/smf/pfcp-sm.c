@@ -240,6 +240,10 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                             sess->pfcp_node->addr_list));
             sess = NULL;
         }
+        /* Replacement responses are consumed before node dispatch. Other
+         * messages for the retiring session follow the no-context path. */
+        if (sess && sess->replacement_create)
+            sess = NULL;
         if (sess)
             e->sess_id = sess->id;
 

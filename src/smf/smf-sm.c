@@ -49,6 +49,92 @@ void smf_state_final(ogs_fsm_t *s, smf_event_t *e)
     ogs_assert(s);
 }
 
+/* TS 29.502 5.2.2.2.1 and 5.2.2.7.1: release an established
+ * session's N4 resources before processing the colliding initial Create. */
+static bool defer_session_create(ogs_sbi_message_t *message,
+        ogs_sbi_stream_t *stream, bool resumed)
+{
+    OpenAPI_sm_context_create_data_t *sm = message->SmContextCreateData;
+    OpenAPI_pdu_session_create_data_t *pdu = message->PduSessionCreateData;
+    OpenAPI_request_type_e type;
+    bool ma_request;
+    char *supi;
+    int psi;
+    ogs_event_t *create;
+    smf_ue_t *ue;
+    smf_sess_t *sess;
+    smf_event_t release = { 0 };
+
+    if (message->h.resource.component[1])
+        return false;
+
+    if (sm && sm->is_pdu_session_id) {
+        supi = sm->supi;
+        psi = sm->pdu_session_id;
+        type = sm->request_type;
+        ma_request = sm->is_ma_request_ind && sm->ma_request_ind;
+    } else if (pdu && pdu->is_pdu_session_id) {
+        supi = pdu->supi;
+        psi = pdu->pdu_session_id;
+        type = pdu->request_type;
+        ma_request = pdu->is_ma_request_ind && pdu->ma_request_ind;
+    } else
+        return false;
+
+    if (!supi || !*supi || !ogs_pdu_session_id_is_valid(psi))
+        return false;
+
+    ue = smf_ue_find_by_supi(supi);
+    sess = ue ? smf_sess_find_by_psi(ue, psi) : NULL;
+    if (!sess)
+        return false;
+
+    if (sess->replacement_create || resumed) {
+        /* Another Create arrived for this SUPI/PSI while we were waiting. */
+        if (sm)
+            smf_sbi_send_sm_context_create_error(stream,
+                    OGS_SBI_HTTP_STATUS_CONFLICT, OGS_SBI_APP_ERRNO_NULL,
+                    "Overlapping PDU session creation", NULL, NULL);
+        else
+            smf_sbi_send_pdu_session_create_error(stream,
+                    OGS_SBI_HTTP_STATUS_CONFLICT, OGS_SBI_APP_ERRNO_NULL,
+                    OGS_5GSM_CAUSE_NETWORK_FAILURE,
+                    "Overlapping PDU session creation", NULL, NULL);
+        return true;
+    }
+
+    if (type != OpenAPI_request_type_INITIAL_REQUEST ||
+        (ma_request && (sm ? sm->an_type : pdu->an_type) != sess->an_type) ||
+        !OGS_FSM_CHECK(&sess->sm, smf_gsm_state_operational) ||
+        !sess->pfcp_node || !sess->upf_n4_seid ||
+        !OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
+        return false;
+
+    create = ogs_event_new(OGS_EVENT_SBI_SERVER);
+    /* Move the parsed body. Its headers are valid while the stream lives. */
+    create->sbi.message = ogs_memdup(message, sizeof(*message));
+    if (!create->sbi.message) {
+        ogs_event_free(create);
+        ogs_expect(ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE, NULL,
+                    "Cannot save PDU session creation", NULL, NULL));
+        return true;
+    }
+    create->sbi.data = OGS_UINT_TO_POINTER(ogs_sbi_id_from_stream(stream));
+    sess->replacement_create = create;
+    memset(message, 0, sizeof(*message));
+
+    release.sess_id = sess->id;
+    release.h.sbi.state = OGS_PFCP_DELETE_TRIGGER_SESSION_REPLACEMENT;
+    if (smf_5gc_pfcp_send_session_deletion_request(
+                sess, NULL, release.h.sbi.state) == OGS_OK)
+        ogs_fsm_tran(&sess->sm, smf_gsm_state_wait_pfcp_deletion, &release);
+    else
+        smf_sess_finish_replacement(sess);
+
+    return true;
+}
+
 void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 {
     int rv;
@@ -437,10 +523,29 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(OGS_FSM_STATE(&pfcp_node->sm));
 
         rv = ogs_pfcp_xact_receive(pfcp_node, &pfcp_message->h, &pfcp_xact);
-        if (rv != OGS_OK) {
-            ogs_pkbuf_free(recvbuf);
-            ogs_pfcp_message_free(pfcp_message);
-            break;
+        if (rv != OGS_OK)
+            goto n4_message_done;
+
+        /* Complete the outstanding replacement even if the node has since
+         * lost its association, or the UPF no longer knows the SEID. */
+        if (pfcp_xact->delete_trigger ==
+                OGS_PFCP_DELETE_TRIGGER_SESSION_REPLACEMENT) {
+            uint8_t cause = 0;
+            if (pfcp_message->h.type ==
+                    OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE &&
+                pfcp_message->pfcp_session_deletion_response.cause.presence)
+                cause = pfcp_message->pfcp_session_deletion_response.cause.u8;
+            if (cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED &&
+                cause != OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND)
+                ogs_warn("Unconfirmed PFCP deletion for SMF-SEID[0x%lx] "
+                        "type[%d] Cause[%d]", (long)pfcp_xact->local_seid,
+                        pfcp_message->h.type, cause);
+
+            sess = smf_sess_find_by_id(OGS_POINTER_TO_UINT(pfcp_xact->data));
+            ogs_pfcp_xact_commit(pfcp_xact);
+            if (sess)
+                smf_sess_finish_replacement(sess);
+            goto n4_message_done;
         }
 
         e->pfcp_xact_id = pfcp_xact ? pfcp_xact->id : OGS_INVALID_POOL_ID;
@@ -456,12 +561,21 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_error("PFCP state machine exception");
         }
 
+    n4_message_done:
         ogs_pkbuf_free(recvbuf);
         ogs_pfcp_message_free(pfcp_message);
         break;
     case SMF_EVT_N4_TIMER:
     case SMF_EVT_N4_NO_HEARTBEAT:
         ogs_assert(e);
+        if (e->h.timer_id == SMF_TIMER_PFCP_NO_DELETION_RESPONSE &&
+            e->release.trigger ==
+                OGS_PFCP_DELETE_TRIGGER_SESSION_REPLACEMENT) {
+            sess = smf_sess_find_by_id(e->sess_id);
+            if (sess)
+                smf_sess_finish_replacement(sess);
+            break;
+        }
         pfcp_node = e->pfcp_node;
         ogs_assert(pfcp_node);
         ogs_assert(OGS_FSM_STATE(&pfcp_node->sm));
@@ -470,20 +584,29 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case OGS_EVENT_SBI_SERVER:
-        sbi_request = e->h.sbi.request;
-        ogs_assert(sbi_request);
-
         stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
         ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
                 stream_id <= OGS_MAX_POOL_ID);
 
         stream = ogs_sbi_stream_find_by_id(stream_id);
-        if (!stream) {
-            ogs_error("STREAM has already been removed [%d]", stream_id);
-            break;
+        if (e->h.sbi.message) {
+            sbi_message = *e->h.sbi.message;
+            ogs_free(e->h.sbi.message);
+            e->h.sbi.message = NULL;
+            if (!stream) {
+                ogs_sbi_message_free(&sbi_message);
+                break;
+            }
+            rv = OGS_OK;
+        } else {
+            if (!stream) {
+                ogs_error("STREAM has already been removed [%d]", stream_id);
+                break;
+            }
+            sbi_request = e->h.sbi.request;
+            ogs_assert(sbi_request);
+            rv = ogs_sbi_parse_request(&sbi_message, sbi_request);
         }
-
-        rv = ogs_sbi_parse_request(&sbi_message, sbi_request);
         if (rv != OGS_OK) {
             /* 'sbi_message' buffer is released in ogs_sbi_parse_request() */
             ogs_error("cannot parse HTTP sbi_message");
@@ -576,6 +699,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         break;
 
                     DEFAULT
+                        if (defer_session_create(&sbi_message, stream,
+                                    e->h.sbi.request == NULL))
+                            break;
                         sess = smf_sess_add_by_sm_context(&sbi_message);
                         if (!sess) {
                             ogs_error("smf_sess_add_by_sbi_message() failed");
@@ -645,6 +771,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         break;
 
                     DEFAULT
+                        if (defer_session_create(&sbi_message, stream,
+                                    e->h.sbi.request == NULL))
+                            break;
                         sess = smf_sess_add_by_pdu_session(&sbi_message);
                         if (!sess) {
                             ogs_error("smf_sess_add_by_sbi_message() failed");
@@ -968,8 +1097,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_sbi_xact_remove(sbi_xact);
 
             sess = smf_sess_find_by_id(sbi_object_id);
-            if (!sess) {
-                ogs_error("Session has already been removed");
+            if (!sess || sess->replacement_create) {
+                ogs_error("Session has been removed or is being replaced");
                 break;
             }
             smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
@@ -1010,8 +1139,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_sbi_xact_remove(sbi_xact);
 
             sess = smf_sess_find_by_id(sbi_object_id);
-            if (!sess) {
-                ogs_error("Session has already been removed");
+            if (!sess || sess->replacement_create) {
+                ogs_error("Session has been removed or is being replaced");
                 break;
             }
             smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
@@ -1360,8 +1489,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_sbi_xact_remove(sbi_xact);
 
             sess = smf_sess_find_by_id(sbi_object_id);
-            if (!sess) {
-                ogs_error("Session has already been removed");
+            if (!sess || sess->replacement_create) {
+                ogs_error("Session has been removed or is being replaced");
                 break;
             }
             smf_ue = smf_ue_find_by_id(sess->smf_ue_id);

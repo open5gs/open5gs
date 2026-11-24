@@ -358,6 +358,7 @@ typedef struct smf_sess_s {
     uint8_t         pti; /* 5GS-NAS : Procedure transaction identity */
     uint8_t         request_type;   /* Request type */
 
+    ogs_event_t     *replacement_create; /* Create waiting for N4 deletion */
     char            *sm_context_ref; /* smContextRef */
     char            *sm_context_status_uri; /* SmContextStatusNotification */
     struct {
@@ -767,6 +768,7 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess);
 void smf_sess_set_paging_n1n2message_location(
         smf_sess_t *sess, char *n1n2message_location);
 
+void smf_sess_finish_replacement(smf_sess_t *sess);
 void smf_sess_remove(smf_sess_t *sess);
 void smf_sess_remove_all(smf_ue_t *smf_ue);
 

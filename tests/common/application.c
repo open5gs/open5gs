@@ -30,7 +30,7 @@ static void run(int argc, const char *const argv[],
     const char *argv_out[argc+5], *new_argv[argc+5];
     int argc_out;
 
-    char conf_file[OGS_MAX_FILEPATH_LEN];
+    static char conf_file[OGS_MAX_FILEPATH_LEN];
     
     user_config = false;
     for (argc_out = 0; argc_out < argc; argc_out++) {
@@ -170,7 +170,7 @@ void test_child_terminate(void)
     }
 }
 
-void test_child_terminate_with_name(char *name, int index)
+void test_child_terminate_with_name(const char *name, int index)
 {
     int i;
     ogs_proc_t *current = NULL;
