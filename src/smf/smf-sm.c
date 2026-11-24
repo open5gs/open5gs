@@ -1505,6 +1505,15 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         "Cannot receive SBI message", smf_ue->supi, NULL));
             }
 
+            if (service_name_id == OpenAPI_service_name_npcf_smpolicycontrol &&
+                !HOME_ROUTED_ROAMING_IN_HSMF(sess) &&
+                OGS_FSM_CHECK(&sess->sm,
+                    smf_gsm_state_wait_5gc_sm_policy_association)) {
+                e->sess_id = sess->id;
+                ogs_fsm_dispatch(&sess->sm, e);
+                break;
+            }
+
             /*
              * [Issue #4878]
              *

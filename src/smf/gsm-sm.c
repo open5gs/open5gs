@@ -736,6 +736,10 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
 
+    case OGS_EVENT_SBI_TIMER:
+        OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+        break;
+
     case OGS_EVENT_SBI_CLIENT:
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
