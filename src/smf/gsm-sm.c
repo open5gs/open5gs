@@ -4213,6 +4213,15 @@ void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e)
         }
         break;
 
+    case SMF_EVT_SESSION_RELEASE:
+        smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+        ogs_assert(smf_ue);
+
+        ogs_warn("[%s:%d] Session Release ignored: "
+                "establishment reject in progress",
+                smf_ue->supi, sess->psi);
+        break;
+
     default:
         ogs_error("Unknown event [%s]", smf_event_get_name(e));
         OGS_FSM_TRAN(s, smf_gsm_state_exception);
