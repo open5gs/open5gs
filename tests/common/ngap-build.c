@@ -2963,6 +2963,7 @@ static ogs_pkbuf_t *testngap_build_handover_required_transfer(
 
     memset(&message, 0, sizeof(message));
 
+    sess->handover.indirect_data_forwarding = !direct;
     if (direct == true) {
         message.directForwardingPathAvailability =
             directForwardingPathAvailability =
@@ -3019,7 +3020,7 @@ static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
     ogs_asn_ip_to_BIT_STRING(&ip, &gTPTunnel->transportLayerAddress);
     ogs_asn_uint32_to_OCTET_STRING(sess->gnb_n3_teid, &gTPTunnel->gTP_TEID);
 
-    if (sess->handover.data_forwarding_not_possible) {
+    if (sess->handover.indirect_data_forwarding) {
         NGAP_GTPTunnel_t *gTPTunnelForDLForwarding = NULL;
         message.dLForwardingUP_TNLInformation = dLForwardingUP_TNLInformation =
             CALLOC(1, sizeof(*dLForwardingUP_TNLInformation));
