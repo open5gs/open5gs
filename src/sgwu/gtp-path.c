@@ -95,8 +95,9 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
         goto cleanup;
     }
 
-    ogs_trace("[RECV] GPU-U Type [%d] from [%s] : TEID[0x%x]",
-            header_desc.type, OGS_ADDR(from, buf1), header_desc.teid);
+    if (ogs_log_get_domain_level(OGS_LOG_DOMAIN) >= OGS_LOG_TRACE)
+        ogs_trace("[RECV] GPU-U Type [%d] from [%s] : TEID[0x%x]",
+                header_desc.type, OGS_ADDR(from, buf1), header_desc.teid);
 
     /* Remove GTP header and send packets to peer NF */
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
