@@ -124,13 +124,19 @@ static bool defer_session_create(ogs_sbi_message_t *message,
     sess->replacement_create = create;
     memset(message, 0, sizeof(*message));
 
+    /*
+     * Let the session FSM release the old session, as for any other
+     * PFCP delete trigger. The operational state moves it to
+     * smf_gsm_state_wait_pfcp_deletion(), whose entry sends the Delete.
+     *
+     * Dispatch synchronously instead of smf_trigger_session_release().
+     * A queued event could find the session in another state, which
+     * would ignore it and leave the held Create waiting forever.
+     */
+    release.h.id = SMF_EVT_SESSION_RELEASE;
     release.sess_id = sess->id;
     release.h.sbi.state = OGS_PFCP_DELETE_TRIGGER_SESSION_REPLACEMENT;
-    if (smf_5gc_pfcp_send_session_deletion_request(
-                sess, NULL, release.h.sbi.state) == OGS_OK)
-        ogs_fsm_tran(&sess->sm, smf_gsm_state_wait_pfcp_deletion, &release);
-    else
-        smf_sess_finish_replacement(sess);
+    ogs_fsm_dispatch(&sess->sm, &release);
 
     return true;
 }

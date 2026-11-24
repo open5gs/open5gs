@@ -2462,9 +2462,22 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                     sess, gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID));
         } else {
             /* 5GC */
-            /* The replacement Delete was sent before entering this state. */
-            if (e->h.sbi.state == OGS_PFCP_DELETE_TRIGGER_SESSION_REPLACEMENT)
+            if (e->h.sbi.state ==
+                    OGS_PFCP_DELETE_TRIGGER_SESSION_REPLACEMENT) {
+                /*
+                 * Issue #5059: the old session is being replaced by
+                 * a new Create with the same PSI, which is held in
+                 * sess->replacement_create. There is no SBI stream.
+                 *
+                 * If the Delete cannot be sent, do not assert.
+                 * Remove the old session locally as before and
+                 * resume the held Create.
+                 */
+                if (smf_5gc_pfcp_send_session_deletion_request(
+                            sess, NULL, e->h.sbi.state) != OGS_OK)
+                    smf_sess_finish_replacement(sess);
                 break;
+            }
             stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             if (stream_id >= OGS_MIN_POOL_ID && stream_id <= OGS_MAX_POOL_ID)
                 stream = ogs_sbi_stream_find_by_id(stream_id);
