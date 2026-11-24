@@ -1729,7 +1729,8 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     }
     amf_ue->t3550.pkbuf = NULL;
     amf_ue->t3555.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_t3555_expire, amf_ue);
+            ogs_app()->timer_mgr, amf_timer_t3555_expire,
+            OGS_UINT_TO_POINTER(amf_ue->id));
     if (!amf_ue->t3555.timer) {
         ogs_error("ogs_timer_add() failed");
         ogs_pool_id_free(&amf_ue_pool, amf_ue);
