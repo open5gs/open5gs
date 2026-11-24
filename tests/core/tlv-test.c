@@ -635,24 +635,38 @@ static void test5_func(abts_case *tc, void *data)
     return;
 }
 
-typedef struct _tlv_uint32_message_t {
+typedef struct {
+    ogs_tlv_presence_t presence;
     ogs_tlv_uint32_t value;
+} tlv_uint32_group_t;
+
+typedef struct {
+    ogs_tlv_uint32_t value;
+    tlv_uint32_group_t group;
 } tlv_uint32_message_t;
 
 static ogs_tlv_desc_t tlv_desc_uint32_value = {
-    OGS_TLV_UINT32, "UInt32 Value", 1, 4, 0,
+    OGS_TLV_UINT32, "UInt32 Value", 1, 4, 3,
     sizeof(ogs_tlv_uint32_t), { NULL }
+};
+
+static ogs_tlv_desc_t tlv_desc_uint32_group = {
+    OGS_TLV_COMPOUND, "Group", 2, 0, 0, sizeof(tlv_uint32_group_t),
+    { &tlv_desc_uint32_value, NULL }
 };
 
 static ogs_tlv_desc_t tlv_desc_uint32_message = {
     OGS_TLV_MESSAGE, "UInt32 Message", 0, 0, 0, 0,
-    { &tlv_desc_uint32_value, NULL }
+    { &tlv_desc_uint32_value, &tlv_desc_uint32_group, NULL }
 };
 
 static void test_uint32_func(abts_case *tc, void *data)
 {
-    static const uint8_t encoded[] =
-        { 1, 0, 4, 0, 0x81, 0x22, 0x33, 0x44 };
+    static const uint8_t encoded[] = {
+        1, 0, 4, 3, 0x81, 0x22, 0x33, 0x44,
+        2, 0, 8, 0,
+        1, 0, 4, 3, 0x55, 0x66, 0x77, 0x88
+    };
     tlv_uint32_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
     int rv;
@@ -667,8 +681,19 @@ static void test_uint32_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, 1, message.value.presence);
     ABTS_SIZE_EQUAL(tc, 0x81223344U, message.value.u32);
-
+    ABTS_INT_EQUAL(tc, 1, message.group.value.presence);
+    ABTS_SIZE_EQUAL(tc, 0x55667788U, message.group.value.u32);
     ogs_pkbuf_free(pkbuf);
+
+    pkbuf = ogs_tlv_build_msg(&tlv_desc_uint32_message, &message,
+            OGS_TLV_MODE_T1_L2_I1);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    if (pkbuf) {
+        ABTS_SIZE_EQUAL(tc, sizeof(encoded), pkbuf->len);
+        if (pkbuf->len == sizeof(encoded))
+            ABTS_TRUE(tc, memcmp(pkbuf->data, encoded, sizeof(encoded)) == 0);
+        ogs_pkbuf_free(pkbuf);
+    }
 }
 
 /* Sample header for tlv_msg */

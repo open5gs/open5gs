@@ -96,9 +96,12 @@ static uint8_t tlv_ctype2mode(ogs_tlv_type_e ctype, uint8_t msg_mode)
 }
 
 static ogs_tlv_t *tlv_add_leaf(
-        ogs_tlv_t *parent_tlv, ogs_tlv_t *tlv, ogs_tlv_desc_t *desc, void *msg, uint8_t msg_mode)
+        ogs_tlv_t *parent_tlv, ogs_tlv_t *tlv, ogs_tlv_desc_t *desc,
+        void *msg, uint8_t msg_mode)
 {
     uint8_t tlv_mode = tlv_ctype2mode(desc->ctype, msg_mode);
+    uint32_t length;
+    void *value;
 
     switch (desc->ctype) {
     case OGS_TLV_UINT8:
@@ -107,21 +110,9 @@ static ogs_tlv_t *tlv_add_leaf(
     case OGS_TV_INT8:
     {
         ogs_tlv_uint8_t *v = (ogs_tlv_uint8_t *)msg;
-        if (parent_tlv) {
-            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
-                    desc->type, 1, desc->instance, &v->u8);
-            if (!tlv) {
-                ogs_error("ogs_tlv_embed()");
-                return NULL;
-            }
-        } else {
-            tlv = ogs_tlv_add(tlv, tlv_mode,
-                    desc->type, 1, desc->instance, &v->u8);
-            if (!tlv) {
-                ogs_error("ogs_tlv_add()");
-                return NULL;
-            }
-        }
+
+        length = 1;
+        value = &v->u8;
         break;
     }
     case OGS_TLV_UINT16:
@@ -132,22 +123,8 @@ static ogs_tlv_t *tlv_add_leaf(
         ogs_tlv_uint16_t *v = (ogs_tlv_uint16_t *)msg;
 
         v->u16 = htobe16(v->u16);
-
-        if (parent_tlv) {
-            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
-                    desc->type, 2, desc->instance, &v->u16);
-            if (!tlv) {
-                ogs_error("ogs_tlv_embed()");
-                return NULL;
-            }
-        } else {
-            tlv = ogs_tlv_add(tlv, tlv_mode,
-                    desc->type, 2, desc->instance, &v->u16);
-            if (!tlv) {
-                ogs_error("ogs_tlv_add()");
-                return NULL;
-            }
-        }
+        length = 2;
+        value = &v->u16;
         break;
     }
     case OGS_TLV_UINT24:
@@ -159,22 +136,8 @@ static ogs_tlv_t *tlv_add_leaf(
 
         v->u24 = v->u24 << 8;
         v->u24 = htobe32(v->u24);
-
-        if (parent_tlv) {
-            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
-                    desc->type, 3, desc->instance, &v->u24);
-            if (!tlv) {
-                ogs_error("ogs_tlv_embed()");
-                return NULL;
-            }
-        } else {
-            tlv = ogs_tlv_add(tlv, tlv_mode,
-                    desc->type, 3, desc->instance, &v->u24);
-            if (!tlv) {
-                ogs_error("ogs_tlv_add()");
-                return NULL;
-            }
-        }
+        length = 3;
+        value = &v->u24;
         break;
     }
     case OGS_TLV_UINT32:
@@ -185,22 +148,8 @@ static ogs_tlv_t *tlv_add_leaf(
         ogs_tlv_uint32_t *v = (ogs_tlv_uint32_t *)msg;
 
         v->u32 = htobe32(v->u32);
-
-        if (parent_tlv) {
-            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
-                    desc->type, 4, desc->instance, &v->u32);
-            if (!tlv) {
-                ogs_error("ogs_tlv_embed()");
-                return NULL;
-            }
-        } else {
-            tlv = ogs_tlv_add(tlv, tlv_mode,
-                    desc->type, 4, desc->instance, &v->u32);
-            if (!tlv) {
-                ogs_error("ogs_tlv_add()");
-                return NULL;
-            }
-        }
+        length = 4;
+        value = &v->u32;
         break;
     }
     case OGS_TLV_FIXED_STR:
@@ -208,21 +157,8 @@ static ogs_tlv_t *tlv_add_leaf(
     {
         ogs_tlv_octet_t *v = (ogs_tlv_octet_t *)msg;
 
-        if (parent_tlv) {
-            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
-                    desc->type, desc->length, desc->instance, v->data);
-            if (!tlv) {
-                ogs_error("ogs_tlv_embed()");
-                return NULL;
-            }
-        } else {
-            tlv = ogs_tlv_add(tlv, tlv_mode,
-                    desc->type, desc->length, desc->instance, v->data);
-            if (!tlv) {
-                ogs_error("ogs_tlv_add()");
-                return NULL;
-            }
-        }
+        length = desc->length;
+        value = v->data;
         break;
     }
     case OGS_TLV_VAR_STR:
@@ -235,49 +171,26 @@ static ogs_tlv_t *tlv_add_leaf(
             return NULL;
         }
 
-        if (parent_tlv) {
-            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
-                    desc->type, v->len, desc->instance, v->data);
-            if (!tlv) {
-                ogs_error("ogs_tlv_embed()");
-                return NULL;
-            }
-        } else {
-            tlv = ogs_tlv_add(tlv, tlv_mode,
-                    desc->type, v->len, desc->instance, v->data);
-            if (!tlv) {
-                ogs_error("ogs_tlv_add()");
-                return NULL;
-            }
-        }
+        length = v->len;
+        value = v->data;
         break;
     }
     case OGS_TLV_NULL:
     case OGS_TV_NULL:
-    {
-        if (parent_tlv) {
-            tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
-                    desc->type, 0, desc->instance, NULL);
-            if (!tlv) {
-                ogs_error("ogs_tlv_embed()");
-                return NULL;
-            }
-        } else {
-            tlv = ogs_tlv_add(tlv, tlv_mode,
-                    desc->type, 0, desc->instance, NULL);
-            if (!tlv) {
-                ogs_error("ogs_tlv_add()");
-                return NULL;
-            }
-        }
+        length = 0;
+        value = NULL;
         break;
-    }
     default:
         ogs_error("Unknown type [%d]", desc->ctype);
         return NULL;
     }
 
-    return tlv;
+    if (parent_tlv)
+        return ogs_tlv_embed(parent_tlv, tlv_mode,
+                desc->type, length, desc->instance, value);
+
+    return ogs_tlv_add(tlv, tlv_mode,
+            desc->type, length, desc->instance, value);
 }
 
 static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
