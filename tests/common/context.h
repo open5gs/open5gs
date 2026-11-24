@@ -453,6 +453,7 @@ typedef struct test_sess_s {
 
     struct {
         bool data_forwarding_not_possible;
+        bool indirect_data_forwarding;
 
         /* Indirect DL Forwarding */
         uint32_t upf_dl_teid;
