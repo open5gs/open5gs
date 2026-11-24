@@ -1028,6 +1028,8 @@ int ngap_handle_handover_request_ack(
                 &sess->handover.remote_dl_teid);
 
         sess->handover.indirect_data_forwarding = true;
+    } else {
+        sess->handover.indirect_data_forwarding = false;
     }
 
     sess->handover.prepared = true;
