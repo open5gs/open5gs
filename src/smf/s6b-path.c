@@ -925,6 +925,7 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     }
 
     e->sess_id = sess->id;
+    e->gtp_xact_id = sess_data->xact_id;
     e->s6b_message = s6b_message;
 
 cleanup:

@@ -3297,6 +3297,7 @@ void smf_gsm_state_wait_epc_auth_release(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_S6B_MESSAGE:
         s6b_message = e->s6b_message;
         ogs_assert(s6b_message);
+        gtp_xact = ogs_gtp_xact_find_by_id(e->gtp_xact_id);
 
         switch(s6b_message->cmd_code) {
         case OGS_DIAM_S6B_CMD_SESSION_TERMINATION:
