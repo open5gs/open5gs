@@ -2424,6 +2424,25 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     }
 }
 
+static ogs_pkbuf_t *build_ue_requested_n2_release(smf_sess_t *sess)
+{
+    ogs_pkbuf_t *n2smbuf;
+
+    /* TS 23.502 4.3.4.2 step 3a: no N2 release for a deactivated UP. */
+    if (sess->up_cnx_state == OpenAPI_up_cnx_state_DEACTIVATED) {
+        sess->ngap_state.pdu_session_resource_release =
+            SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED;
+        sess->n2_released = true;
+        return NULL;
+    }
+
+    n2smbuf = ngap_build_pdu_session_resource_release_command_transfer(
+            sess, SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED,
+            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+    ogs_assert(n2smbuf);
+    return n2smbuf;
+}
+
 void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 {
     int status;
@@ -2709,13 +2728,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             sess, OGS_5GSM_CAUSE_REACTIVATION_REQUESTED);
                         ogs_assert(param.n1smbuf);
 
-                        param.n2smbuf =
-                            ngap_build_pdu_session_resource_release_command_transfer(
-                                sess,
-                                SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED,
-                                NGAP_Cause_PR_nas,
-                                NGAP_CauseNas_normal_release);
-                        ogs_assert(param.n2smbuf);
+                        param.n2smbuf = build_ue_requested_n2_release(sess);
 
         /*
          * Skip_ind is not used when changing the PDU Session Anchor.
@@ -2814,18 +2827,13 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                                 sess, OGS_5GSM_CAUSE_REGULAR_DEACTIVATION);
                         ogs_assert(n1smbuf);
 
-                        n2smbuf =
-                            ngap_build_pdu_session_resource_release_command_transfer(
-                                    sess,
-                                    SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED,
-                                    NGAP_Cause_PR_nas,
-                                    NGAP_CauseNas_normal_release);
-                        ogs_assert(n2smbuf);
+                        n2smbuf = build_ue_requested_n2_release(sess);
 
                         ogs_assert(stream);
                         smf_sbi_send_sm_context_updated_data_n1_n2_message(
                                 sess, stream, n1smbuf,
-                                OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD,
+                                n2smbuf ? OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD :
+                                          OpenAPI_n2_sm_info_type_NULL,
                                 n2smbuf);
                     }
 

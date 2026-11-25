@@ -60,6 +60,7 @@ int nas_send_pdu_session_setup_request(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
 int nas_send_pdu_session_modification_command(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
+uint8_t nas_5gsm_message_type(const ogs_pkbuf_t *n1smbuf, uint8_t psi);
 int nas_send_pdu_session_release_command(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
 

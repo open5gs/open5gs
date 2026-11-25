@@ -843,7 +843,8 @@ typedef struct amf_sess_s {
     } sm_context;
 
     bool pdu_session_release_complete_received;
-    bool pdu_session_resource_release_response_received;
+    /* The RAN has answered, or the SMF requested only N1. */
+    bool pdu_session_resource_release_complete;
 
     /* PDUSessionResourceSetupRequest sent, its response not yet */
     bool pdu_session_resource_setup_request_pending;
@@ -1002,7 +1003,7 @@ typedef struct amf_sess_s {
         } \
         (__sESS)->gsm_message.n2buf = __n2Buf; \
         \
-        ogs_assert((__sESS)->gsm_message.n2buf); \
+        ogs_assert((__sESS)->gsm_message.n1buf || (__sESS)->gsm_message.n2buf); \
         \
         (__sESS)->gsm_message.type = __tYPE; \
     } while(0);

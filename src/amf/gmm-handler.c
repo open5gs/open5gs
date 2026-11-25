@@ -1308,15 +1308,10 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
              * when a PDU session establishment message is received
              * for an existing session.
              *
-             * It should be noted that XXX_recieved, which is initialized now,
-             * has a different initialization location than XXX_gsm_type.
-             *
-             * XXX_received is initialized in the ESTABLISHMENT phase,
-             * but XXX_gsm_type is initialized in the RELEASE phase
-             * when a PDU session release command with a Reactivation Request
-             * and a PDU session release complete are sent simultaneously.
+             * Keep the NAS message types until the previous release
+             * finishes so it can recognize the re-establishment request.
              */
-                sess->pdu_session_resource_release_response_received = false;
+                sess->pdu_session_resource_release_complete = false;
                 sess->pdu_session_release_complete_received = false;
             }
         } else {
@@ -1791,8 +1786,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 break;
             case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
                 sess->pdu_session_release_complete_received = true;
-                if (sess->pdu_session_resource_release_response_received ==
-                        true)
+                if (sess->pdu_session_resource_release_complete == true)
                     CLEAR_SESSION_CONTEXT(sess);
                 break;
             default:

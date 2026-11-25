@@ -222,6 +222,12 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         goto cleanup;
     }
 
+    /* A network-triggered Service Request can restore the user plane
+     * without an ACTIVATING update from the AMF. */
+    if (num_of_qos_flow_modified &&
+        sess->up_cnx_state == OpenAPI_up_cnx_state_DEACTIVATED)
+        sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+
     if (far_update) {
         uint64_t pfcp_flags = OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
 
@@ -363,6 +369,8 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
         ogs_error("    Cause[Group:%d Cause:%d]",
                 Cause->present, (int)Cause->choice.radioNetwork);
     }
+
+    sess->up_cnx_state = OpenAPI_up_cnx_state_DEACTIVATED;
 
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
     /*
