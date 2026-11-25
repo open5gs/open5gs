@@ -2647,7 +2647,7 @@ static void test5_func(abts_case *tc, void *data)
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     test_ue_t *test_ue = NULL;
-    test_sess_t *sess = NULL;
+    test_sess_t *sess = NULL, *internet = NULL;
     test_bearer_t *qos_flow = NULL;
 
     af_sess_t *af_sess = NULL;
@@ -3177,6 +3177,45 @@ static void test5_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Only IMS was paged. The internet session has no 5G-AN resources. */
+    internet = test_sess_find_by_psi(test_ue, 5);
+    ogs_assert(internet);
+    internet->ul_nas_transport_param.request_type = 0;
+    internet->ul_nas_transport_param.dnn = 0;
+    internet->ul_nas_transport_param.s_nssai = 0;
+
+    gsmbuf = testgsm_build_pdu_session_release_request(internet);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(internet,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, NGAP_ProcedureCode_id_DownlinkNASTransport,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND,
+            test_ue->gsm_message_type);
+
+    gsmbuf = testgsm_build_pdu_session_release_complete(internet);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(internet,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    test_sess_remove(internet);
+
+    /* SMContextStatusNotify follows Release Complete asynchronously. */
+    ogs_msleep(300);
+
     /* Send UEContextReleaseRequest */
     sendbuf = testngap_build_ue_context_release_request(test_ue,
             NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
@@ -3217,6 +3256,7 @@ static void test5_func(abts_case *tc, void *data)
      *  - Type: Mobile terminated services(2)
      *  - PDU Session Status
      */
+    /* Advertise both PSIs so this request cannot itself release PSI 5. */
     test_ue->service_request_param.pdu_session_status = 1;
     test_ue->service_request_param.
             psimask.pdu_session_status = (1 << 5 | 1 << 6);
@@ -3245,7 +3285,8 @@ static void test5_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x6000, test_ue->pdu_session_status);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_SERVICE_ACCEPT, test_ue->gmm_message_type);
+    ABTS_INT_EQUAL(tc, 0x4000, test_ue->pdu_session_status);
 
     /* Send InitialContextSetupResponse */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, false);

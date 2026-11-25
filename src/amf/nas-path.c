@@ -836,10 +836,27 @@ int nas_send_pdu_session_modification_command(amf_sess_t *sess,
     return rv;
 }
 
+uint8_t nas_5gsm_message_type(const ogs_pkbuf_t *n1smbuf, uint8_t psi)
+{
+    const ogs_nas_5gsm_header_t *h;
+
+    if (!n1smbuf || n1smbuf->len < sizeof(*h))
+        return 0;
+
+    h = (const ogs_nas_5gsm_header_t *)n1smbuf->data;
+    if (h->extended_protocol_discriminator !=
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM ||
+        h->pdu_session_identity != psi)
+        return 0;
+
+    return h->message_type;
+}
+
 int nas_send_pdu_session_release_command(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
 {
     int rv;
+    bool n2_requested = n2smbuf != NULL;
 
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
@@ -847,20 +864,20 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
     ogs_pkbuf_t *gmmbuf = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    ogs_assert(n2smbuf);
+    ogs_assert(n1smbuf || n2smbuf);
     ogs_assert(sess);
     amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     if (!amf_ue) {
         ogs_error("UE(amf-ue) context has already been removed");
         if (n1smbuf) ogs_pkbuf_free(n1smbuf);
-        ogs_pkbuf_free(n2smbuf);
+        if (n2smbuf) ogs_pkbuf_free(n2smbuf);
         return OGS_NOTFOUND;
     }
     ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     if (!ran_ue) {
         ogs_error("[%s] NG context has already been removed", amf_ue->supi);
         if (n1smbuf) ogs_pkbuf_free(n1smbuf);
-        ogs_pkbuf_free(n2smbuf);
+        if (n2smbuf) ogs_pkbuf_free(n2smbuf);
         return OGS_NOTFOUND;
     }
 
@@ -868,14 +885,11 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
         gmmbuf = gmm_build_dl_nas_transport(sess,
                 OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
         if (!gmmbuf) {
+            if (n2smbuf) ogs_pkbuf_free(n2smbuf);
             ogs_error("gmm_build_dl_nas_transport() failed");
             return OGS_ERROR;
         }
     }
-
-    /* TS 38.413 8.2.2.2, TS 24.501 6.3.3.3: wait for the answers */
-    sess->pdu_session_resource_release_response_received = false;
-    sess->pdu_session_release_complete_received = false;
 
     /*
      * Issues #1925
@@ -895,7 +909,7 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
      * - In this case, we should use the DownlinkNASTransport.
      *   instead of PDUSessionResourceReleaseCommand
      */
-    if (ran_ue->psimask.activated & (1 << sess->psi)) {
+    if (n2smbuf && (ran_ue->psimask.activated & (1 << sess->psi))) {
         ngapbuf = ngap_build_pdu_session_resource_release_command(
                 sess, gmmbuf, n2smbuf);
         if (!ngapbuf) {
@@ -903,20 +917,14 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
                     "ngap_build_pdu_session_resource_release_command() failed");
             return OGS_ERROR;
         }
-
-        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-        ogs_expect(rv == OGS_OK);
     } else if (gmmbuf) {
-        ogs_pkbuf_free(n2smbuf);
+        if (n2smbuf) ogs_pkbuf_free(n2smbuf);
         ngapbuf = ngap_build_downlink_nas_transport(
                 ran_ue, amf_ue, gmmbuf, false, false);
         if (!ngapbuf) {
             ogs_error("ngap_build_downlink_nas_transport() failed");
             return OGS_ERROR;
         }
-
-        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-        ogs_expect(rv == OGS_OK);
     } else {
         /*
          * TS23.527
@@ -936,9 +944,18 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
                 ran_ue->psimask.activated, gmmbuf, amf_ue->supi, sess->psi);
 
         ogs_pkbuf_free(n2smbuf);
-        rv = OGS_OK;
+        return OGS_OK;
     }
 
+    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+    ogs_expect(rv == OGS_OK);
+    if (rv == OGS_OK) {
+        /* No N2 request means no RAN response or SMF update for N2. */
+        sess->pdu_session_release_complete_received = false;
+        sess->pdu_session_resource_release_complete = !n2_requested;
+        if (!n2_requested)
+            sess->n2_released = true;
+    }
     return rv;
 }
 

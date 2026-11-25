@@ -2762,7 +2762,7 @@ void ngap_handle_pdu_session_resource_release_response(
 
         ogs_pkbuf_free(param.n2smbuf);
 
-        sess->pdu_session_resource_release_response_received = true;
+        sess->pdu_session_resource_release_complete = true;
         if (sess->pdu_session_release_complete_received == true)
             CLEAR_SESSION_CONTEXT(sess);
     }
