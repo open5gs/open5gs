@@ -420,12 +420,6 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Initial Context Setup Response */
-    sendbuf = test_s1ap_build_initial_context_setup_response(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* GUTI Not Present
      * SKIP Send Attach Complete + Activate default EPS bearer cotext accept
      * SKIP Receive EMM information */
