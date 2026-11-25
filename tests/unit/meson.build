@@ -78,6 +78,15 @@ testunit_ausf_exe = executable('ausf-unit',
 
 test('ausf-unit', testunit_ausf_exe, is_parallel : false, suite: 'unit')
 
+# UDM N13 request-boundary tests link libudm alone.
+testunit_udm_exe = executable('udm-unit',
+    sources : files('udm-abts-main.c', 'udm-auth-test.c'),
+    c_args : testunit_core_cc_flags,
+    include_directories : [srcinc, include_directories('../../src/udm')],
+    dependencies : [libudm_dep])
+
+test('udm-unit', testunit_udm_exe, is_parallel : false, suite: 'unit')
+
 # UPF tests link libupf, whose metrics symbols clash with libamf.
 testunit_upf_exe = executable('upf-unit',
     sources : files('upf-abts-main.c', 'upf-context-test.c'),

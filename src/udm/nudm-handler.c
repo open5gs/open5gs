@@ -21,6 +21,9 @@
 #include "nnrf-handler.h"
 #include "nudm-handler.h"
 
+/* TS 24.501 clause 9.12.1: 1,020 octets at most */
+#define OGS_MAX_SERVING_NETWORK_NAME_LEN 1020
+
 bool udm_nudm_ueau_handle_get(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -54,6 +57,15 @@ bool udm_nudm_ueau_handle_get(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 recvmsg, "Empty servingNetworkName", udm_ue->suci, NULL));
+        return false;
+    }
+    if (strlen(AuthenticationInfoRequest->serving_network_name) >
+            OGS_MAX_SERVING_NETWORK_NAME_LEN) {
+        ogs_error("[%s] Oversized servingNetworkName [%d]", udm_ue->suci,
+                (int)strlen(AuthenticationInfoRequest->serving_network_name));
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Oversized servingNetworkName", udm_ue->suci, NULL));
         return false;
     }
 
