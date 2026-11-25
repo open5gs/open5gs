@@ -63,7 +63,8 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Nokia FRGY Flexi BTS BBU with Nokia FRCG RRU Band 5 850Mhz FDD 40W. Version 16.1A to 19.0
  * Nokia FW2FA Flexi Zone Mini-Macro Outdoor BTS, 2x20w Band 39
  * Nokia FWGR Flexi Zone Mini-Macro Outdoor BTS, 2x20w Band 1
- * Nokia FWHG Flexi Zone Indoor Pico BTS, 2x250 mW Band 7
+ * Nokia FWHG Flexi Zone Indoor Pico BTS, 2x250mW Band 7
+ * Nokia FWNB Flexi Zone Indoor Pico BTS, 2x250mW Band 40 (S/W TLF18SP_ENB)
  * Nokia FW2HHD Flexi Zone Multiband Indoor Pico BTS, Band 38/41(S/W TLS18SP_ENB)
  * Nokia Airscale - ASIA + ABIA + AHIB Band 66 (SW: SBTS325R2)
  * Nokia Airscale - ASIA + ABIA + AZQC Band 48 (SW: SBTS26R2)
