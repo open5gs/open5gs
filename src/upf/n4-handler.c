@@ -317,6 +317,14 @@ void upf_n4_handle_session_modification_request(
             (unsigned long long)sess->upf_n4_seid,
             (unsigned long long)sess->smf_n4_f_seid.seid);
 
+    if (req->query_urr.presence) {
+        ogs_error("Query URR is not supported [xid:%u]", xact->xid);
+        ogs_pfcp_send_error_message(xact, sess->smf_n4_f_seid.seid,
+                OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
+                OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED, 0);
+        return;
+    }
+
     /*
      * Validate all Create IDs before mutation. A preflight rejection needs
      * no cleanup because no rule has been created, changed or removed yet.
