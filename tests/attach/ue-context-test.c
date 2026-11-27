@@ -180,12 +180,13 @@ static void test1_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-static void test2_func(abts_case *tc, void *data)
+static void imsi_reattach_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_socknode_t *s1ap;
     ogs_socknode_t *gtpu;
     ogs_pkbuf_t *emmbuf;
+    ogs_pkbuf_t *old_attach_complete;
     ogs_pkbuf_t *esmbuf;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
@@ -196,8 +197,8 @@ static void test2_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
 
-    uint32_t enb_ue_s1ap_id;
-    uint64_t mme_ue_s1ap_id;
+    uint32_t old_enb_ue_s1ap_id, old_mme_ue_s1ap_id;
+    uint32_t new_enb_ue_s1ap_id, new_mme_ue_s1ap_id;
 
     bson_t *doc = NULL;
 
@@ -335,7 +336,27 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Attach Request */
+    /* Send Initial Context Setup Response on the original S1 connection. */
+    sendbuf = test_s1ap_build_initial_context_setup_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Prepare Attach Complete on the original S1 connection. */
+    old_enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+    old_mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ABTS_PTR_NOTNULL(tc, bearer);
+    esmbuf = testesm_build_activate_default_eps_bearer_context_accept(
+            bearer, false);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    emmbuf = testemm_build_attach_complete(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    old_attach_complete = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, old_attach_complete);
+
+    /* Start a second attach with the same IMSI on a new S1 connection. */
+    sess->pti = 2;
     memset(&sess->pdn_connectivity_param,
             0, sizeof(sess->pdn_connectivity_param));
     sess->pdn_connectivity_param.eit_no_required = 1;
@@ -369,6 +390,25 @@ static void test2_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_EPS_AUTHENTICATION_REQUEST,
+            test_ue->emm_message_type);
+    new_enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+    new_mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
+    ABTS_TRUE(tc, new_enb_ue_s1ap_id != old_enb_ue_s1ap_id);
+    ABTS_TRUE(tc, new_mme_ue_s1ap_id != old_mme_ue_s1ap_id);
+
+    /* The original attach can finish while the new one waits for AKA. */
+    rv = testenb_s1ap_send(s1ap, old_attach_complete);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_EPS_EMM_INFORMATION, test_ue->emm_message_type);
+    ABTS_INT_EQUAL(tc, old_enb_ue_s1ap_id, test_ue->enb_ue_s1ap_id);
+    ABTS_INT_EQUAL(tc, old_mme_ue_s1ap_id, test_ue->mme_ue_s1ap_id);
+
+    test_ue->enb_ue_s1ap_id = new_enb_ue_s1ap_id;
+    test_ue->mme_ue_s1ap_id = new_mme_ue_s1ap_id;
 
     /* Send Authentication response */
     emmbuf = testemm_build_authentication_response(test_ue);
@@ -393,11 +433,13 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive OLD UE Context Release Command */
-    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
-
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_UEContextRelease,
+            test_ue->s1ap_procedure_code);
+    ABTS_INT_EQUAL(tc, old_enb_ue_s1ap_id, test_ue->enb_ue_s1ap_id);
+    ABTS_INT_EQUAL(tc, old_mme_ue_s1ap_id, test_ue->mme_ue_s1ap_id);
 
     /* Send OLD UE Context Release Complete */
     sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
@@ -405,7 +447,8 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+    test_ue->enb_ue_s1ap_id = new_enb_ue_s1ap_id;
+    test_ue->mme_ue_s1ap_id = new_mme_ue_s1ap_id;
 
     /* Receive Initial Context Setup Request +
      * Attach Accept +
@@ -413,6 +456,11 @@ static void test2_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, S1AP_ProcedureCode_id_InitialContextSetup,
+            test_ue->s1ap_procedure_code);
+    ABTS_INT_EQUAL(tc, OGS_NAS_EPS_ATTACH_ACCEPT, test_ue->emm_message_type);
+    ABTS_INT_EQUAL(tc, new_enb_ue_s1ap_id, test_ue->enb_ue_s1ap_id);
+    ABTS_INT_EQUAL(tc, new_mme_ue_s1ap_id, test_ue->mme_ue_s1ap_id);
 
     /* Send UE Capability Info Indication */
     sendbuf = tests1ap_build_ue_radio_capability_info_indication(test_ue);
@@ -426,11 +474,7 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* GUTI Not Present
-     * SKIP Send Attach Complete + Activate default EPS bearer cotext accept
-     * SKIP Receive EMM information */
-
-    /* Send Initial context setup failure */
+    /* Report setup failure before the second Attach Complete. */
     sendbuf = test_s1ap_build_initial_context_setup_failure(test_ue,
             S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_radio_connection_with_ue_lost);
@@ -828,7 +872,7 @@ abts_suite *test_ue_context(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, NULL);
-    abts_run_test(suite, test2_func, NULL);
+    abts_run_test(suite, imsi_reattach_func, NULL);
     abts_run_test(suite, test3_func, NULL);
 
     return suite;

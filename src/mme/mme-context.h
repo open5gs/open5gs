@@ -1316,8 +1316,16 @@ mme_ue_t *mme_ue_find_by_guti(const ogs_nas_eps_guti_t *nas_guti);
 mme_ue_t *mme_ue_find_by_s11_local_teid(uint32_t teid);
 mme_ue_t *mme_ue_find_by_gn_local_teid(uint32_t teid);
 
+typedef enum {
+    MME_UE_MATCH_NONE,
+    MME_UE_MATCH_GUTI,          /* Includes an M-TMSI match. */
+    MME_UE_MATCH_PENDING_GUTI,
+    MME_UE_MATCH_IMSI,
+} mme_ue_match_e;
+
+/* If supplied, match tells which identity matched the UE. */
 mme_ue_t *mme_ue_find_by_message(
-        const ogs_nas_eps_message_t *message, bool *pending_guti);
+        const ogs_nas_eps_message_t *message, mme_ue_match_e *match);
 
 /* Which procedure supplied the IMSI - logged at the OLD UE context
  * migration, so we can tell which callers actually reach it. */
