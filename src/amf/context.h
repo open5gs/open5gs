@@ -1142,9 +1142,16 @@ amf_ue_t *amf_ue_find_by_suci(char *suci);
 amf_ue_t *amf_ue_find_by_supi(char *supi);
 amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id);
 
-/* pending_guti is an optional output for NAS Registration Request lookup. */
+typedef enum {
+    AMF_UE_MATCH_NONE,
+    AMF_UE_MATCH_GUTI,          /* Includes a 5G-S-TMSI match. */
+    AMF_UE_MATCH_PENDING_GUTI,
+    AMF_UE_MATCH_SUCI,
+} amf_ue_match_e;
+
+/* If supplied, match tells which identity matched the UE. */
 amf_ue_t *amf_ue_find_by_message(
-        ogs_nas_5gs_message_t *message, bool *pending_guti);
+        ogs_nas_5gs_message_t *message, amf_ue_match_e *match);
 void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity);
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi);

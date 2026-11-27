@@ -4164,23 +4164,29 @@ mme_ue_t *mme_ue_find_by_imsi(const uint8_t *imsi, int imsi_len)
 }
 
 static mme_ue_t *find_ue_by_guti(
-        const ogs_nas_eps_guti_t *guti, bool allow_pending, bool *pending_guti)
+        const ogs_nas_eps_guti_t *guti, bool allow_pending, mme_ue_match_e *match)
 {
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(guti);
 
     mme_ue = ogs_hash_get(self.guti_ue_hash, guti, sizeof(*guti));
-    if (!mme_ue || (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue) &&
-            memcmp(guti, &mme_ue->current.guti, sizeof(*guti)) == 0))
+    if (!mme_ue)
+        return NULL;
+
+    if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue) &&
+            memcmp(guti, &mme_ue->current.guti, sizeof(*guti)) == 0) {
+        if (match)
+            *match = MME_UE_MATCH_GUTI;
         return mme_ue;
+    }
 
     /* Only a NAS Attach Request may look up a pending GUTI. */
     if (!allow_pending)
         return NULL;
 
-    if (pending_guti)
-        *pending_guti = true;
+    if (match)
+        *match = MME_UE_MATCH_PENDING_GUTI;
     return mme_ue;
 }
 
@@ -4200,7 +4206,7 @@ mme_ue_t *mme_ue_find_by_gn_local_teid(uint32_t teid)
 }
 
 mme_ue_t *mme_ue_find_by_message(
-        const ogs_nas_eps_message_t *message, bool *pending_guti)
+        const ogs_nas_eps_message_t *message, mme_ue_match_e *match)
 {
     mme_ue_t *mme_ue = NULL;
     const ogs_nas_eps_attach_request_t *attach_request = NULL;
@@ -4216,8 +4222,8 @@ mme_ue_t *mme_ue_find_by_message(
     const served_gummei_t *served_gummei = NULL;
     ogs_nas_eps_guti_t ogs_nas_guti;
 
-    if (pending_guti)
-        *pending_guti = false;
+    if (match)
+        *match = MME_UE_MATCH_NONE;
 
     switch (message->emm.h.message_type) {
     case OGS_NAS_EPS_ATTACH_REQUEST:
@@ -4239,6 +4245,8 @@ mme_ue_t *mme_ue_find_by_message(
 
             mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
             if (mme_ue) {
+                if (match)
+                    *match = MME_UE_MATCH_IMSI;
                 ogs_info("[%s] known UE by IMSI", imsi_bcd);
             } else {
                 ogs_info("[%s] Unknown UE by IMSI", imsi_bcd);
@@ -4252,7 +4260,7 @@ mme_ue_t *mme_ue_find_by_message(
             ogs_nas_guti.mme_code = eps_mobile_identity_guti->mme_code;
             ogs_nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
 
-            mme_ue = find_ue_by_guti(&ogs_nas_guti, true, pending_guti);
+            mme_ue = find_ue_by_guti(&ogs_nas_guti, true, match);
             if (mme_ue) {
                 ogs_info("[%s] Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                         mme_ue->imsi_bcd,
@@ -4284,7 +4292,7 @@ mme_ue_t *mme_ue_find_by_message(
             ogs_nas_guti.mme_code = eps_mobile_identity_guti->mme_code;
             ogs_nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
 
-            mme_ue = mme_ue_find_by_guti(&ogs_nas_guti);
+            mme_ue = find_ue_by_guti(&ogs_nas_guti, false, match);
             if (mme_ue) {
                 ogs_info("[%s] Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                         mme_ue->imsi_bcd,
@@ -4316,7 +4324,7 @@ mme_ue_t *mme_ue_find_by_message(
             ogs_nas_guti.mme_code = eps_mobile_identity_guti->mme_code;
             ogs_nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
 
-            mme_ue = mme_ue_find_by_guti(&ogs_nas_guti);
+            mme_ue = find_ue_by_guti(&ogs_nas_guti, false, match);
             if (mme_ue) {
                 ogs_info("[%s] Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                         mme_ue->imsi_bcd,
@@ -4351,7 +4359,7 @@ mme_ue_t *mme_ue_find_by_message(
             ogs_nas_guti.mme_code = served_gummei->mme_code[0];
             ogs_nas_guti.m_tmsi = mobile_identity_tmsi->tmsi;
 
-            mme_ue = mme_ue_find_by_guti(&ogs_nas_guti);
+            mme_ue = find_ue_by_guti(&ogs_nas_guti, false, match);
             if (mme_ue) {
                 ogs_info("[%s] Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                         mme_ue->imsi_bcd,

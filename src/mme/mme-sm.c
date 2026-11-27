@@ -37,6 +37,10 @@
 #include "mme-path.h"
 #include "mme-dns.h"
 
+static mme_ue_t *bind_ue_to_new_s1_connection(enb_ue_t *enb_ue,
+        const ogs_nas_eps_message_t *message, ogs_nas_security_header_type_t h,
+        ogs_pkbuf_t *pkbuf);
+
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
     mme_sm_debug(e);
@@ -348,109 +352,13 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         if (!mme_ue) {
-            bool pending_guti;
-
             h.type = e->nas_type;
-            mme_ue = mme_ue_find_by_message(&nas_message, &pending_guti);
-            if (pending_guti) {
-                const ogs_nas_eps_attach_type_t *type =
-                    &nas_message.emm.attach_request.eps_attach_type;
-
-                /* Verify the pending GUTI before rebinding the S1 context.
-                 * Fall back to identification if the context cannot be used. */
-                if (!h.integrity_protected ||
-                    !SECURITY_CONTEXT_IS_VALID(mme_ue) ||
-                    mme_ue->selected_int_algorithm ==
-                        OGS_NAS_SECURITY_ALGORITHMS_EIA0 ||
-                    !emm_check_ksi(mme_ue, type->tsc,
-                        type->nas_key_set_identifier))
-                    mme_ue = NULL;
-            }
-
+            mme_ue = bind_ue_to_new_s1_connection(
+                    enb_ue, &nas_message, h, pkbuf);
             if (!mme_ue) {
-                mme_ue = mme_ue_add(enb_ue);
-                if (mme_ue == NULL) {
-                    r = s1ap_send_ue_context_release_command(enb_ue,
-                            S1AP_Cause_PR_misc,
-                            S1AP_CauseMisc_control_processing_overload,
-                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    ogs_pkbuf_free(pkbuf);
-                    break;
-                }
-
-                ogs_assert(ECM_IDLE(mme_ue));
-            } else {
-                if (mme_ue->attach_session_delete_pending) {
-                    ogs_error("[%s] NAS message while deleting old Attach "
-                            "sessions", mme_ue->imsi_bcd);
-                    r = s1ap_send_ue_context_release_command(enb_ue,
-                            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    ogs_pkbuf_free(pkbuf);
-                    break;
-                }
-                /* Here, if the MME_UE Context is found,
-                 * the integrity check is not performed
-                 * For example, ATTACH_REQUEST,
-                 * TRACKING_AREA_UPDATE_REQUEST message
-                 *
-                 * Now, We will check the MAC in the NAS message*/
-                if (h.integrity_protected) {
-                    /* Decryption was performed in S1AP handler.
-                     * So, we disabled 'ciphered'
-                     * not to decrypt NAS message */
-                    h.ciphered = 0;
-                    if (nas_eps_security_decode(mme_ue, h, pkbuf) != OGS_OK ||
-                        (pending_guti && mme_ue->mac_failed)) {
-                        ogs_warn("nas_security_decode() failed");
-                        /* The message is discarded with its verdict */
-                        mme_ue->mac_failed = 0;
-                        if (pending_guti) {
-                            /* Verification did not authorize rebinding. */
-                            r = s1ap_send_ue_context_release_command(enb_ue,
-                                    S1AP_Cause_PR_nas,
-                                    S1AP_CauseNas_normal_release,
-                                    S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-                            if (r != OGS_OK)
-                                enb_ue_remove(enb_ue);
-                        }
-                        ogs_pkbuf_free(pkbuf);
-                        break;
-                    }
-                }
-
-                /* If NAS(mme_ue_t) has already been associated with
-                 * older S1(enb_ue_t) context */
-                if (ECM_CONNECTED(mme_ue)) {
-    /*
-     * Issue #2786
-     *
-     * In cases where the UE sends an Integrity Un-Protected Attach
-     * Request or Service Request, there is an issue of sending
-     * a UEContextReleaseCommand for the OLD ENB Context.
-     *
-     * For example, if the UE switchs off and power-on after
-     * the first connection, the EPC sends a UEContextReleaseCommand.
-     *
-     * However, since there is no ENB context for this on the eNB,
-     * the eNB does not send a UEContextReleaseComplete,
-     * so the deletion of the ENB Context does not function properly.
-     *
-     * To solve this problem, the EPC has been modified to implicitly
-     * delete the ENB Context instead of sending a UEContextReleaseCommand.
-     */
-                    HOLDING_S1_CONTEXT(mme_ue);
-                }
+                ogs_pkbuf_free(pkbuf);
+                break;
             }
-
-            enb_ue_associate_mme_ue(enb_ue, mme_ue);
-            ogs_debug("Mobile Reachable timer stopped for IMSI[%s]",
-                mme_ue->imsi_bcd);
-            CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
         }
 
         ogs_assert(mme_ue);
@@ -1210,4 +1118,165 @@ cleanup:
         if (mme_ue)
             mme_ue->mac_failed = 0;
     }
+}
+
+typedef enum {
+    CREATE_UE_CONTEXT,
+    REUSE_UE_CONTEXT,
+    VERIFY_BEFORE_REUSE,
+    REJECT_DURING_SESSION_RELEASE,
+} s1_binding_action_e;
+
+static bool can_verify_attach(const mme_ue_t *mme_ue,
+        ogs_nas_security_header_type_t h,
+        const ogs_nas_eps_message_t *message)
+{
+    const ogs_nas_eps_attach_type_t *type =
+        &message->emm.attach_request.eps_attach_type;
+
+    return h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue) &&
+        mme_ue->selected_int_algorithm != OGS_NAS_SECURITY_ALGORITHMS_EIA0 &&
+        emm_check_ksi(mme_ue, type->tsc, type->nas_key_set_identifier);
+}
+
+static bool has_serving_s1_context(const mme_ue_t *mme_ue)
+{
+    if (!ECM_CONNECTED(mme_ue) ||
+        OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered))
+        return false;
+
+    /*
+     * The IMSI is indexed before the first AKA. During reauthentication
+     * AIR clears the NAS keys, but a saved registration or live PDNs
+     * still belong to this UE.
+     */
+    return mme_ue->security_context_available || mme_ue->can_restore_context ||
+        !ogs_list_empty(&mme_ue->sess_list);
+}
+
+static s1_binding_action_e select_s1_binding_action(const mme_ue_t *mme_ue,
+        mme_ue_match_e match, ogs_nas_security_header_type_t h,
+        const ogs_nas_eps_message_t *message)
+{
+    if (!mme_ue)
+        return CREATE_UE_CONTEXT;
+
+    /* A pending GUTI can identify its owner only with the matching NAS keys. */
+    if (match == MME_UE_MATCH_PENDING_GUTI &&
+        !can_verify_attach(mme_ue, h, message))
+        return CREATE_UE_CONTEXT;
+
+    if (mme_ue->attach_session_delete_pending)
+        return REJECT_DURING_SESSION_RELEASE;
+
+    if (match == MME_UE_MATCH_PENDING_GUTI)
+        return VERIFY_BEFORE_REUSE;
+
+    if (match == MME_UE_MATCH_IMSI && has_serving_s1_context(mme_ue)) {
+        if (can_verify_attach(mme_ue, h, message))
+            return VERIFY_BEFORE_REUSE;
+        return CREATE_UE_CONTEXT;
+    }
+
+    return REUSE_UE_CONTEXT;
+}
+
+/*
+ * Bind the incoming S1 connection, or return NULL to discard its NAS message.
+ * The caller owns pkbuf on all paths.
+ */
+static mme_ue_t *bind_ue_to_new_s1_connection(enb_ue_t *enb_ue,
+        const ogs_nas_eps_message_t *message, ogs_nas_security_header_type_t h,
+        ogs_pkbuf_t *pkbuf)
+{
+    mme_ue_match_e match;
+    mme_ue_t *mme_ue;
+    int r;
+
+    mme_ue = mme_ue_find_by_message(message, &match);
+    /* The S1AP handler already decrypted the message. */
+    h.ciphered = 0;
+
+    switch (select_s1_binding_action(mme_ue, match, h, message)) {
+    case CREATE_UE_CONTEXT:
+        if (match == MME_UE_MATCH_IMSI) {
+            /* mme_ue_set_imsi() moves the sessions after successful AKA. */
+            ogs_info("[%s] Start fresh authentication for IMSI attach",
+                    mme_ue->imsi_bcd);
+        }
+        mme_ue = mme_ue_add(enb_ue);
+        if (!mme_ue) {
+            r = s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_misc,
+                    S1AP_CauseMisc_control_processing_overload,
+                    S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return NULL;
+        }
+        ogs_assert(ECM_IDLE(mme_ue));
+        break;
+
+    case REJECT_DURING_SESSION_RELEASE:
+        ogs_error("[%s] NAS message while deleting old Attach sessions",
+                mme_ue->imsi_bcd);
+        r = s1ap_send_ue_context_release_command(enb_ue,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return NULL;
+
+    case VERIFY_BEFORE_REUSE:
+        if (nas_eps_security_decode(mme_ue, h, pkbuf) != OGS_OK ||
+            mme_ue->mac_failed) {
+            ogs_warn("nas_security_decode() failed");
+            mme_ue->mac_failed = 0;
+            r = s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                    S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+            if (r != OGS_OK)
+                enb_ue_remove(enb_ue);
+            return NULL;
+        }
+        break;
+
+    case REUSE_UE_CONTEXT:
+        /* EMM handles a recoverable MAC failure for ordinary NAS procedures. */
+        if (h.integrity_protected &&
+            nas_eps_security_decode(mme_ue, h, pkbuf) != OGS_OK) {
+            ogs_warn("nas_security_decode() failed");
+            mme_ue->mac_failed = 0;
+            return NULL;
+        }
+        break;
+    }
+
+    /* If NAS(mme_ue_t) has already been associated with
+     * older S1(enb_ue_t) context */
+    if (ECM_CONNECTED(mme_ue)) {
+        /*
+         * Issue #2786
+         *
+         * In cases where the UE sends an Integrity Un-Protected Attach
+         * Request or Service Request, there is an issue of sending
+         * a UEContextReleaseCommand for the OLD ENB Context.
+         *
+         * For example, if the UE switchs off and power-on after
+         * the first connection, the EPC sends a UEContextReleaseCommand.
+         *
+         * However, since there is no ENB context for this on the eNB,
+         * the eNB does not send a UEContextReleaseComplete,
+         * so the deletion of the ENB Context does not function properly.
+         *
+         * To solve this problem, the EPC has been modified to implicitly
+         * delete the ENB Context instead of sending a UEContextReleaseCommand.
+         */
+        HOLDING_S1_CONTEXT(mme_ue);
+    }
+    enb_ue_associate_mme_ue(enb_ue, mme_ue);
+
+    ogs_debug("Mobile Reachable timer stopped for IMSI[%s]", mme_ue->imsi_bcd);
+    CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
+    return mme_ue;
 }

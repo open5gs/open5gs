@@ -176,12 +176,18 @@ void tests1ap_handle_ue_release_context_command(
     UEContextReleaseCommand = initiatingMessage->value.choice.UEContextReleaseCommand;
     ogs_assert(UEContextReleaseCommand);
 
+    test_ue->s1ap_release_nas_cause = -1;
     for (i = 0; i < OGS_ASN_LIST_COUNT(
                 UEContextReleaseCommand->protocolIEs); i++) {
         ie = OGS_ASN_LIST_GET(UEContextReleaseCommand->protocolIEs, i);
         switch (ie->id) {
         case S1AP_ProtocolIE_ID_id_UE_S1AP_IDs:
             UE_S1AP_IDs = ie->value.choice.UE_S1AP_IDs;
+            break;
+        case S1AP_ProtocolIE_ID_id_Cause:
+            if (ie->value.choice.Cause->present == S1AP_Cause_PR_nas)
+                test_ue->s1ap_release_nas_cause =
+                    ie->value.choice.Cause->choice.nas;
             break;
         default:
             break;

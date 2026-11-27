@@ -29,6 +29,10 @@
 #include "nas-security.h"
 #include "gmm-handler.h"
 
+static amf_ue_t *bind_ue_to_new_ng_connection(ran_ue_t *ran_ue,
+        ogs_nas_5gs_message_t *message, ogs_nas_security_header_type_t h,
+        ogs_pkbuf_t *pkbuf);
+
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_sm_debug(e);
@@ -1077,135 +1081,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         }
 
         if (!amf_ue) {
-            bool pending_guti;
-
             h.type = e->nas.type;
-            amf_ue = amf_ue_find_by_message(&nas_message, &pending_guti);
-            if (pending_guti) {
-                const ogs_nas_5gs_registration_type_t *type =
-                    &nas_message.gmm.registration_request.registration_type;
-
-                /*
-                 * Resolve the pending GUTI without moving the UE to this
-                 * NG connection until its NAS security context is verified.
-                 * If it cannot be reused, fall back to identification.
-                 */
-                if (!h.integrity_protected ||
-                    !SECURITY_CONTEXT_IS_VALID(amf_ue) ||
-                    amf_ue->selected_int_algorithm ==
-                        OGS_NAS_SECURITY_ALGORITHMS_NIA0 ||
-                    !gmm_check_ngksi(amf_ue, type->tsc, type->ksi))
-                    amf_ue = NULL;
-            }
-
+            amf_ue = bind_ue_to_new_ng_connection(
+                    ran_ue, &nas_message, h, pkbuf);
             if (!amf_ue) {
-                amf_ue = amf_ue_add(ran_ue);
-                if (amf_ue == NULL) {
-                    r = ngap_send_ran_ue_context_release_command(
-                            ran_ue,
-                            NGAP_Cause_PR_misc,
-                            NGAP_CauseMisc_control_processing_overload,
-                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    ogs_pkbuf_free(pkbuf);
-                    break;
-                }
-
-                ogs_assert(CM_IDLE(amf_ue));
-            } else {
-                if (amf_ue->registration_session_release_pending) {
-                    ogs_error("[%s] Ignore new NG context while registration "
-                            "session release is pending", amf_ue->supi);
-                    r = ngap_send_ran_ue_context_release_command(ran_ue,
-                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    ogs_pkbuf_free(pkbuf);
-                    break;
-                }
-                /* Here, if the AMF_UE Context is found,
-                 * the integrity check is not performed
-                 * For example, REGISTRATION_REQUEST, SERVICE_REQUEST message
-                 *
-                 * Now, We will check the MAC in the NAS message*/
-                if (h.integrity_protected) {
-                    /* Decryption was performed in NGAP handler.
-                     * So, we disabled 'ciphered' not to decrypt NAS message */
-                    h.ciphered = 0;
-                    if (nas_5gs_security_decode(amf_ue, h, pkbuf) != OGS_OK ||
-                        (pending_guti && amf_ue->mac_failed)) {
-                        ogs_warn("[%s] nas_security_decode() failed",
-                                amf_ue->suci);
-                        /* The message is discarded with its verdict */
-                        amf_ue->mac_failed = 0;
-                        if (pending_guti) {
-                            /* Verification did not authorize rebinding. */
-                            r = ngap_send_ran_ue_context_release_command(
-                                    ran_ue, NGAP_Cause_PR_nas,
-                                    NGAP_CauseNas_normal_release,
-                                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                            if (r != OGS_OK)
-                                ran_ue_remove(ran_ue);
-                        }
-                        ogs_pkbuf_free(pkbuf);
-                        break;
-                    }
-                }
-
-                /*
-                 * TS23.502
-                 * 4.2.3.2 UE Triggered Service Request
-                 *
-                 * 4. [Conditional]
-                 * AMF to SMF: Nsmf_PDUSession_UpdateSMContext Request
-                 *
-                 * The AMF may receive a Service Request to establish another
-                 * NAS signalling connection via a NG-RAN while it has
-                 * maintained an old NAS signalling connection for UE still
-                 * via NG-RAN. In this case, AMF shall trigger the AN release
-                 * procedure toward the old NG-RAN to release the old NAS
-                 * signalling connection as defined in clause 4.2.6
-                 * with following logic:
-                 */
-
-                /* If NAS(amf_ue_t) has already been associated with
-                 * older NG(ran_ue_t) context */
-                if (CM_CONNECTED(amf_ue)) {
-    /*
-     * Issue #2786
-     *
-     * In cases where the UE sends an Integrity Un-Protected Registration
-     * Request or Service Request, there is an issue of sending
-     * a UEContextReleaseCommand for the OLD RAN Context.
-     *
-     * For example, if the UE switchs off and power-on after
-     * the first connection, the 5G Core sends a UEContextReleaseCommand.
-     *
-     * However, since there is no RAN context for this on the gNB,
-     * the gNB does not send a UEContextReleaseComplete,
-     * so the deletion of the RAN Context does not function properly.
-     *
-     * To solve this problem, the 5G Core has been modified to implicitly
-     * delete the RAN Context instead of sending a UEContextReleaseCommand.
-     */
-                    HOLDING_NG_CONTEXT(amf_ue);
-                }
+                ogs_pkbuf_free(pkbuf);
+                break;
             }
-            amf_ue_associate_ran_ue(amf_ue, ran_ue);
-
-            /*
-             * TS 24.501
-             * 5.3.7 Handling of the periodic registration update timer
-             *
-             * The mobile reachable timer shall be stopped
-             * when a NAS signalling connection is established for the UE.
-             * The implicit de-registration timer shall be stopped
-             * when a NAS signalling connection is established for the UE.
-             */
-            CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
-            CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
         }
 
         ogs_assert(amf_ue);
@@ -1249,4 +1131,178 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         if (amf_ue)
             amf_ue->mac_failed = 0;
     }
+}
+
+typedef enum {
+    CREATE_UE_CONTEXT,
+    REUSE_UE_CONTEXT,
+    VERIFY_BEFORE_REUSE,
+    REJECT_DURING_SESSION_RELEASE,
+} ng_binding_action_e;
+
+static bool can_verify_registration(const amf_ue_t *amf_ue,
+        ogs_nas_security_header_type_t h,
+        const ogs_nas_5gs_message_t *message)
+{
+    const ogs_nas_5gs_registration_type_t *type =
+        &message->gmm.registration_request.registration_type;
+
+    return h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue) &&
+        amf_ue->selected_int_algorithm != OGS_NAS_SECURITY_ALGORITHMS_NIA0 &&
+        gmm_check_ngksi(amf_ue, type->tsc, type->ksi);
+}
+
+static ng_binding_action_e select_ng_binding_action(const amf_ue_t *amf_ue,
+        amf_ue_match_e match, ogs_nas_security_header_type_t h,
+        const ogs_nas_5gs_message_t *message)
+{
+    if (!amf_ue)
+        return CREATE_UE_CONTEXT;
+
+    /* A pending GUTI can identify its owner only with the matching NAS keys. */
+    if (match == AMF_UE_MATCH_PENDING_GUTI &&
+        !can_verify_registration(amf_ue, h, message))
+        return CREATE_UE_CONTEXT;
+
+    if (amf_ue->registration_session_release_pending)
+        return REJECT_DURING_SESSION_RELEASE;
+
+    if (match == AMF_UE_MATCH_PENDING_GUTI)
+        return VERIFY_BEFORE_REUSE;
+
+    /* A SUCI alone cannot authorize moving a serving UE to this connection. */
+    if (match == AMF_UE_MATCH_SUCI && AMF_UE_HAVE_SUPI(amf_ue) &&
+        CM_CONNECTED(amf_ue) &&
+        !OGS_FSM_CHECK(&amf_ue->sm, gmm_state_de_registered)) {
+        if (can_verify_registration(amf_ue, h, message))
+            return VERIFY_BEFORE_REUSE;
+        return CREATE_UE_CONTEXT;
+    }
+
+    return REUSE_UE_CONTEXT;
+}
+
+/*
+ * Bind the incoming NG connection, or return NULL to discard its NAS message.
+ * The caller owns pkbuf on all paths.
+ */
+static amf_ue_t *bind_ue_to_new_ng_connection(ran_ue_t *ran_ue,
+        ogs_nas_5gs_message_t *message, ogs_nas_security_header_type_t h,
+        ogs_pkbuf_t *pkbuf)
+{
+    amf_ue_match_e match;
+    amf_ue_t *amf_ue;
+    int r;
+
+    amf_ue = amf_ue_find_by_message(message, &match);
+    /* The NGAP handler already decrypted the message. */
+    h.ciphered = 0;
+
+    switch (select_ng_binding_action(amf_ue, match, h, message)) {
+    case CREATE_UE_CONTEXT:
+        if (match == AMF_UE_MATCH_SUCI) {
+            /* amf_ue_set_supi() moves the sessions after successful AKA. */
+            ogs_info("[%s] Start fresh authentication for SUCI registration",
+                    amf_ue->supi);
+        }
+        amf_ue = amf_ue_add(ran_ue);
+        if (!amf_ue) {
+            r = ngap_send_ran_ue_context_release_command(ran_ue,
+                    NGAP_Cause_PR_misc,
+                    NGAP_CauseMisc_control_processing_overload,
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return NULL;
+        }
+        ogs_assert(CM_IDLE(amf_ue));
+        break;
+
+    case REJECT_DURING_SESSION_RELEASE:
+        ogs_error("[%s] Ignore new NG context while registration "
+                "session release is pending", amf_ue->supi);
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
+                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return NULL;
+
+    case VERIFY_BEFORE_REUSE:
+        if (nas_5gs_security_decode(amf_ue, h, pkbuf) != OGS_OK ||
+            amf_ue->mac_failed) {
+            ogs_warn("[%s] nas_security_decode() failed", amf_ue->suci);
+            amf_ue->mac_failed = 0;
+            r = ngap_send_ran_ue_context_release_command(ran_ue,
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+            if (r != OGS_OK)
+                ran_ue_remove(ran_ue);
+            return NULL;
+        }
+        break;
+
+    case REUSE_UE_CONTEXT:
+        /* GMM handles a recoverable MAC failure for ordinary NAS procedures. */
+        if (h.integrity_protected &&
+            nas_5gs_security_decode(amf_ue, h, pkbuf) != OGS_OK) {
+            ogs_warn("[%s] nas_security_decode() failed", amf_ue->suci);
+            amf_ue->mac_failed = 0;
+            return NULL;
+        }
+        break;
+    }
+
+    /*
+     * TS23.502
+     * 4.2.3.2 UE Triggered Service Request
+     *
+     * 4. [Conditional]
+     * AMF to SMF: Nsmf_PDUSession_UpdateSMContext Request
+     *
+     * The AMF may receive a Service Request to establish another
+     * NAS signalling connection via a NG-RAN while it has
+     * maintained an old NAS signalling connection for UE still
+     * via NG-RAN. In this case, AMF shall trigger the AN release
+     * procedure toward the old NG-RAN to release the old NAS
+     * signalling connection as defined in clause 4.2.6
+     * with following logic:
+     */
+
+    /* If NAS(amf_ue_t) has already been associated with
+     * older NG(ran_ue_t) context */
+    if (CM_CONNECTED(amf_ue)) {
+        /*
+         * Issue #2786
+         *
+         * In cases where the UE sends an Integrity Un-Protected Registration
+         * Request or Service Request, there is an issue of sending
+         * a UEContextReleaseCommand for the OLD RAN Context.
+         *
+         * For example, if the UE switchs off and power-on after
+         * the first connection, the 5G Core sends a UEContextReleaseCommand.
+         *
+         * However, since there is no RAN context for this on the gNB,
+         * the gNB does not send a UEContextReleaseComplete,
+         * so the deletion of the RAN Context does not function properly.
+         *
+         * To solve this problem, the 5G Core has been modified to implicitly
+         * delete the RAN Context instead of sending a UEContextReleaseCommand.
+         */
+        HOLDING_NG_CONTEXT(amf_ue);
+    }
+    amf_ue_associate_ran_ue(amf_ue, ran_ue);
+
+    /*
+     * TS 24.501
+     * 5.3.7 Handling of the periodic registration update timer
+     *
+     * The mobile reachable timer shall be stopped
+     * when a NAS signalling connection is established for the UE.
+     * The implicit de-registration timer shall be stopped
+     * when a NAS signalling connection is established for the UE.
+     */
+    CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
+    CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
+    return amf_ue;
 }

@@ -175,7 +175,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-static void test2_func(abts_case *tc, void *data)
+static void suci_reregistration_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_socknode_t *ngap;
@@ -185,8 +185,9 @@ static void test2_func(abts_case *tc, void *data)
     ogs_pkbuf_t *nasbuf;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    ogs_ngap_message_t message;
-    int i;
+    ogs_pkbuf_t *old_registration_complete;
+    uint64_t old_ran_ue_ngap_id, old_amf_ue_ngap_id;
+    uint64_t new_ran_ue_ngap_id, new_amf_ue_ngap_id;
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     test_ue_t *test_ue = NULL;
@@ -296,8 +297,24 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_REGISTRATION_ACCEPT,
+            test_ue->gmm_message_type);
+    old_ran_ue_ngap_id = test_ue->ran_ue_ngap_id;
+    old_amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
 
-    /* Send Registration request */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Registration Complete is in flight when the UE reconnects (#5085). */
+    gmmbuf = testgmm_build_registration_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    old_registration_complete = testngap_build_uplink_nas_transport(
+            test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, old_registration_complete);
+
+    /* Send Registration Request with the same SUCI on a new NG connection. */
     memset(&test_ue->registration_request_param, 0,
             sizeof(test_ue->registration_request_param));
     gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
@@ -321,8 +338,28 @@ static void test2_func(abts_case *tc, void *data)
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_AUTHENTICATION_REQUEST,
+            test_ue->gmm_message_type);
+    new_ran_ue_ngap_id = test_ue->ran_ue_ngap_id;
+    new_amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
+    ABTS_TRUE(tc, old_ran_ue_ngap_id != new_ran_ue_ngap_id);
+    ABTS_TRUE(tc, old_amf_ue_ngap_id != new_amf_ue_ngap_id);
 
-    /* Send Authentication response */
+    /* Before AKA completes on the new link, the first registration can
+     * still finish on its original link. */
+    rv = testgnb_ngap_send(ngap, old_registration_complete);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND,
+            test_ue->gmm_message_type);
+    ABTS_TRUE(tc, old_ran_ue_ngap_id == test_ue->ran_ue_ngap_id);
+    ABTS_TRUE(tc, old_amf_ue_ngap_id == test_ue->amf_ue_ngap_id);
+
+    /* Send Authentication Response on the new connection. */
+    test_ue->ran_ue_ngap_id = new_ran_ue_ngap_id;
+    test_ue->amf_ue_ngap_id = new_amf_ue_ngap_id;
     gmmbuf = testgmm_build_authentication_response(test_ue);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
@@ -350,6 +387,8 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_UEContextRelease,
             test_ue->ngap_procedure_code);
+    ABTS_TRUE(tc, old_ran_ue_ngap_id == test_ue->ran_ue_ngap_id);
+    ABTS_TRUE(tc, old_amf_ue_ngap_id == test_ue->amf_ue_ngap_id);
 
     /* Send OLD UE Context Release Complete */
     sendbuf = testngap_build_ue_context_release_complete(test_ue);
@@ -365,6 +404,10 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, OGS_NAS_5GS_REGISTRATION_ACCEPT,
+            test_ue->gmm_message_type);
+    ABTS_TRUE(tc, new_ran_ue_ngap_id == test_ue->ran_ue_ngap_id);
+    ABTS_TRUE(tc, new_amf_ue_ngap_id == test_ue->amf_ue_ngap_id);
 
     /* Send InitialContextSetupResponse */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
@@ -1686,7 +1729,7 @@ abts_suite *test_ue_context(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, NULL);
-    abts_run_test(suite, test2_func, NULL);
+    abts_run_test(suite, suci_reregistration_func, NULL);
     abts_run_test(suite, test3_func, NULL);
     abts_run_test(suite, test4_func, NULL);
     abts_run_test(suite, test5_func, NULL);

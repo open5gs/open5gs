@@ -160,9 +160,8 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     /*
      * Do NOT unconditionally clear the EBI bitmap here.
      *
-     * On re-attach with the same IMSI, mme_ue_find_by_message() reuses
-     * the existing mme_ue_t whose previous sessions and bearers may
-     * still be alive.  Clearing the bitmap while those bearer contexts
+     * When an Attach reuses an existing UE context, its previous sessions
+     * and bearers may still be alive. Clearing the bitmap while those bearers
      * exist breaks the invariant "EBI bits of live bearers are set in
      * ebi_bitmap": the subsequent teardown of the old bearers then
      * frees EBIs that are no longer marked allocated, and a new

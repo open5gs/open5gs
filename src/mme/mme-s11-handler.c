@@ -662,6 +662,7 @@ void mme_s11_handle_modify_bearer_response(
     uint8_t session_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     int modify_action = 0;
 
+    ogs_pool_id_t mme_ue_id;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
@@ -676,7 +677,8 @@ void mme_s11_handle_modify_bearer_response(
     ogs_assert(xact);
     modify_action = xact->modify_action;
 
-    mme_ue = mme_ue_find_by_id(OGS_POINTER_TO_UINT(xact->data));
+    mme_ue_id = OGS_POINTER_TO_UINT(xact->data);
+    mme_ue = mme_ue_find_by_id(mme_ue_id);
     enb_ue = enb_ue_find_by_id(xact->enb_ue_id);
 
     rv = ogs_gtp_xact_commit(xact);
@@ -684,13 +686,6 @@ void mme_s11_handle_modify_bearer_response(
         ogs_error("ogs_gtp_xact_commit() failed");
         return;
     }
-
-    if (!mme_ue) {
-        ogs_error("MME-UE Context has already been removed");
-        return;
-    }
-    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
-    ogs_assert(sgw_ue);
 
     /************************
      * Getting Cause Value
@@ -704,6 +699,25 @@ void mme_s11_handle_modify_bearer_response(
     /************************
      * Check MME-UE Context
      ************************/
+    if (!mme_ue) {
+        /*
+         * A re-attach can retire the UE and its S11 TEID before the SGW
+         * acknowledges the old S1-U path. An ordinary bearer update has
+         * no S1 procedure to complete after a successful response.
+         */
+        if (!mme_ue_from_teid && modify_action == 0 &&
+            session_cause == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+            ogs_warn("Late Modify Bearer Response for removed MME-UE[%d]",
+                    mme_ue_id);
+            return;
+        }
+
+        ogs_error("MME-UE Context has already been removed");
+        return;
+    }
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
+    ogs_assert(sgw_ue);
+
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
     if (!mme_ue_from_teid) {
