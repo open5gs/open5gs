@@ -279,6 +279,76 @@ static void _gtpv1_tun_recv_eth_cb(short when, ogs_socket_t fd, void *data)
     _gtpv1_tun_recv_common_cb(when, fd, true, data);
 }
 
+/*
+ * Issue #5103
+ *
+ * Does this FAR send the packet out to the local data network (TUN/TAP)?
+ *
+ * Destination Interface "Core" means the uplink direction
+ * (TS29.244 clause 5.4.3). The 3GPP Interface Type (N6, SGi, ...) only
+ * tells which interface, and it may be omitted (TS29.244 Table 7.5.2.3-2).
+ */
+static bool is_local_data_network(ogs_pfcp_far_t *far)
+{
+    if (far->dst_if != OGS_PFCP_INTERFACE_CORE)
+        return false;
+
+    /* Outer Header Creation means another GTP-U hop, e.g. N9 */
+    if (far->outer_header_creation.gtpu4 || far->outer_header_creation.gtpu6)
+        return false;
+
+    /* No type: an ordinary uplink to the data network */
+    if (far->dst_if_type_presence == false)
+        return true;
+
+    /* 5GC */
+    if (far->dst_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N6)
+        return true;
+
+    /* EPC */
+    if (far->dst_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_SGI)
+        return true;
+
+    return false;
+}
+
+/*
+ * Should the source IP of this packet be checked against the UE IP?
+ *
+ * The check also finds the UE subnet (TUN/TAP device),
+ * so it is required whenever the packet goes to the local data network.
+ */
+static bool needs_ue_ip_check(ogs_pfcp_pdr_t *pdr, bool to_data_network)
+{
+    ogs_pfcp_far_t *far = pdr->far;
+
+    /* Only packets coming from the UE side */
+    if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
+        return false;
+
+    /* Issue #5103: EPC S5/S8-U or no type also needs the UE subnet */
+    if (to_data_network == true)
+        return true;
+
+    /*
+     * Home Routed Roaming is excluded from this check,
+     * as the V-UPF does not have the UE IP address.
+     */
+    if (far->dst_if_type_presence == true &&
+        far->dst_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING)
+        return false;
+
+    /* Existing check, e.g. N3 -> CP-function */
+    if (pdr->src_if_type_presence == true &&
+        pdr->src_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS)
+        return true;
+    if (pdr->src_if_type_presence == true &&
+        pdr->src_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING)
+        return true;
+
+    return false;
+}
+
 static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pkbuf, const ogs_sockaddr_t *from)
 {
     int len;
@@ -375,6 +445,7 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
         ogs_pfcp_sess_t *pfcp_sess = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
         ogs_pfcp_far_t *far = NULL;
+        bool to_data_network = false;
         bool teid_matched = false;
 
         ogs_pfcp_subnet_t *subnet = NULL;
@@ -619,29 +690,15 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
          */
 
         /*
-         * We first verify whether the Source Interface of the PDR is set
-         * to ACCESS and if it corresponds to N3 3GPP ACCESS.
+         * Issue #5103
          *
-         * This is because IP source spoofing checks are performed only
-         * in such cases.
+         * Local data network: N6 (5GC), SGi (EPC) or no type.
          */
-        if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS &&
-            pdr->src_if_type_presence == true &&
-            (pdr->src_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS ||
-             pdr->src_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING)) {
+        to_data_network = is_local_data_network(far);
 
-            if (far->dst_if_type_presence == true &&
-                far->dst_if_type ==
-                    OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING) {
-                /*
-                 * <SKIP>
-                 *
-                 * However, Home Routed Roaming is excluded from this check,
-                 * as the V-UPF does not have the necessary IP address
-                 * information to perform the verification.
-                 */
+        if (needs_ue_ip_check(pdr, to_data_network) == true) {
 
-            } else if (ip_h->ip_v == 4 && sess->ipv4) {
+            if (ip_h->ip_v == 4 && sess->ipv4) {
                 src_addr = (void *)&ip_h->ip_src.s_addr;
                 ogs_assert(src_addr);
 
@@ -741,9 +798,7 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
 
         }
 
-        if (far->dst_if == OGS_PFCP_INTERFACE_CORE &&
-            far->dst_if_type_presence == true &&
-            far->dst_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N6) {
+        if (to_data_network == true) {
 
             upf_sess_t *dst_sess = NULL;
             ogs_pfcp_pdr_t *dl_pdr = NULL;
