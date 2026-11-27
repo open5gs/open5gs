@@ -134,6 +134,7 @@ int ogs_gtp_send_with_teid(
         ogs_pkbuf_t *pkbuf, uint32_t teid,
         ogs_sockaddr_t *to)
 {
+    char buf[OGS_ADDRSTRLEN];
     ssize_t sent;
     ogs_gtp2_header_t *gtp_h = NULL;
 
@@ -145,12 +146,7 @@ int ogs_gtp_send_with_teid(
     ogs_assert(gtp_h);
     gtp_h->teid = htobe32(teid);
 
-    if (ogs_log_get_domain_level(OGS_LOG_DOMAIN) >= OGS_LOG_TRACE) {
-        char buf[OGS_ADDRSTRLEN];
-
-        ogs_trace("SEND GTP-U to Peer[%s] : TEID[0x%x]",
-                OGS_ADDR(to, buf), teid);
-    }
+    ogs_trace("SEND GTP-U to Peer[%s] : TEID[0x%x]", OGS_ADDR(to, buf), teid);
 
     sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, to);
     if (sent < 0 || sent != pkbuf->len) {
