@@ -2102,6 +2102,35 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
+                /*
+                 * Issue #5087
+                 *
+                 * Open5GS handles only QoS modification here, so a request
+                 * without Requested QoS rules and Requested QoS flow
+                 * descriptions (both optional IEs, TS24.501 8.3.7.1)
+                 * is rejected. A rejected modification does not release
+                 * the PDU session (TS24.501 6.4.2.4), so stay in
+                 * the operational state.
+                 */
+                if (!(nas_message->gsm.pdu_session_modification_request.
+                        presencemask &
+                        (OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_REQUESTED_QOS_RULES_PRESENT|
+                        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_REQUESTED_QOS_FLOW_DESCRIPTIONS_PRESENT))) {
+                    ogs_error("[%s:%d] No requested QoS rules or "
+                            "QoS flow descriptions",
+                            smf_ue->supi, sess->psi);
+                    pkbuf = gsm_build_pdu_session_modification_reject(sess,
+                            OGS_5GSM_CAUSE_REQUEST_REJECTED_UNSPECIFIED);
+                    ogs_assert(pkbuf);
+                    smf_sbi_send_sm_context_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                            OGS_SBI_APP_ERRNO_N1_SM_ERRNO,
+                            "No requested QoS rules or QoS flow descriptions",
+                            NULL, pkbuf, NULL, OpenAPI_n2_sm_info_type_NULL,
+                            OpenAPI_up_cnx_state_NULL);
+                    break;
+                }
+
                 rv = gsm_handle_pdu_session_modification_request(sess, stream,
                         &nas_message->gsm.pdu_session_modification_request);
                 if (rv != OGS_OK) {
