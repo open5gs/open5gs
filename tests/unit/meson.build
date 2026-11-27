@@ -40,6 +40,7 @@ testunit_unit_sources = files('''
     amf-gnb-id-test.c
     amf-supi-test.c
     eir-config-test.c
+    pcc-rule-config-test.c
     ipfw-test.c
     pfcp-rule-test.c
 '''.split())

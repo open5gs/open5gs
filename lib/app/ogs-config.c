@@ -1387,6 +1387,13 @@ int ogs_app_parse_session_conf(
 
                                 if (flow->direction && flow->description)
                                     pcc_rule->num_of_flow++;
+                                else {
+                                    /* Clear the slot so the next flow
+                                     * does not inherit this one's keys */
+                                    if (flow->description)
+                                        ogs_free(flow->description);
+                                    memset(flow, 0, sizeof(*flow));
+                                }
 
                             } while (ogs_yaml_iter_type(&flow_array) ==
                                     YAML_SEQUENCE_NODE);
@@ -1416,7 +1423,7 @@ int ogs_app_parse_session_conf(
                         pcc_rule_index++;
 
                         session_data->num_of_pcc_rule++;
-                    } else
+                    } else {
                         ogs_warn("Mandatory is MISSING - "
                                 "QCI[%d], ARP[%d:%d:%d]",
                             pcc_rule->qos.index,
@@ -1425,6 +1432,10 @@ int ogs_app_parse_session_conf(
                             pre_emption_capability,
                             pcc_rule->qos.arp.
                             pre_emption_vulnerability);
+                        /* The next rule reuses this slot: drop the flows
+                         * and QoS parsed for the skipped rule */
+                        OGS_PCC_RULE_FREE(pcc_rule);
+                    }
 
                 } while (ogs_yaml_iter_type(&pcc_rule_array) ==
                         YAML_SEQUENCE_NODE);
