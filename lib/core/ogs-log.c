@@ -239,6 +239,19 @@ void ogs_log_remove_domain(ogs_log_domain_t *domain)
     ogs_pool_free(&domain_pool, domain);
 }
 
+bool ogs_log_enabled(int id, ogs_log_level_e level)
+{
+    ogs_log_domain_t *domain;
+
+    /* With no outputs configured, ogs_log_vprintf() writes to stderr. */
+    if (ogs_list_empty(&log_list))
+        return true;
+
+    domain = ogs_pool_find(&domain_pool, id);
+    /* Let ogs_log_vprintf() report an invalid domain at the call site. */
+    return !domain || domain->level >= level;
+}
+
 void ogs_log_set_domain_level(int id, ogs_log_level_e level)
 {
     ogs_log_domain_t *domain = NULL;

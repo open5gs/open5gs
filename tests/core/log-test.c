@@ -103,11 +103,33 @@ static void test_basic(abts_case *tc, void *data)
 #endif
 }
 
+static void test_log_arguments(abts_case *tc, void *data)
+{
+    ogs_log_level_e saved_level = ogs_log_get_domain_level(OGS_LOG_DOMAIN);
+    int calls = 0;
+
+    ogs_log_set_domain_level(OGS_LOG_DOMAIN, OGS_LOG_NONE);
+    ogs_fatal("fatal %d", ++calls);
+    ogs_error("error %d", ++calls);
+    ogs_warn("warn %d", ++calls);
+    ogs_info("info %d", ++calls);
+    ogs_debug("debug %d", ++calls);
+    ogs_trace("trace %d", ++calls);
+    ABTS_INT_EQUAL(tc, 0, calls);
+
+    ogs_log_set_domain_level(OGS_LOG_DOMAIN, OGS_LOG_INFO);
+    ABTS_TRUE(tc, ogs_log_enabled(OGS_LOG_DOMAIN, OGS_LOG_INFO));
+    ABTS_INT_EQUAL(tc, 0, (ogs_debug("debug %d", ++calls), calls));
+
+    ogs_log_set_domain_level(OGS_LOG_DOMAIN, saved_level);
+}
+
 abts_suite *test_log(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test_basic, NULL);
+    abts_run_test(suite, test_log_arguments, NULL);
 
     return suite;
 }

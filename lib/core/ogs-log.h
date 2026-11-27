@@ -32,12 +32,17 @@ extern "C" {
 #define OGS_LOG_DOMAIN      1
 #endif
 
-#define ogs_fatal(...) ogs_log_message(OGS_LOG_FATAL, 0, __VA_ARGS__)
-#define ogs_error(...) ogs_log_message(OGS_LOG_ERROR, 0, __VA_ARGS__)
-#define ogs_warn(...) ogs_log_message(OGS_LOG_WARN, 0, __VA_ARGS__)
-#define ogs_info(...) ogs_log_message(OGS_LOG_INFO, 0, __VA_ARGS__)
-#define ogs_debug(...) ogs_log_message(OGS_LOG_DEBUG, 0, __VA_ARGS__)
-#define ogs_trace(...) ogs_log_message(OGS_LOG_TRACE, 0, __VA_ARGS__)
+#define ogs_fatal(...) ogs_log_at(FATAL, __VA_ARGS__)
+#define ogs_error(...) ogs_log_at(ERROR, __VA_ARGS__)
+#define ogs_warn(...) ogs_log_at(WARN, __VA_ARGS__)
+#define ogs_info(...) ogs_log_at(INFO, __VA_ARGS__)
+#define ogs_debug(...) ogs_log_at(DEBUG, __VA_ARGS__)
+#define ogs_trace(...) ogs_log_at(TRACE, __VA_ARGS__)
+
+/* A fixed severity lets us test the level before evaluating the arguments. */
+#define ogs_log_at(severity, ...) \
+    (ogs_log_enabled(OGS_LOG_DOMAIN, OGS_LOG_ ## severity) ? \
+        ogs_log_message(OGS_LOG_ ## severity, 0, __VA_ARGS__) : (void)0)
 
 #define ogs_log_message(level, err, ...) \
     ogs_log_printf(level, OGS_LOG_DOMAIN, \
@@ -85,6 +90,7 @@ ogs_log_domain_t *ogs_log_add_domain(const char *name, ogs_log_level_e level);
 ogs_log_domain_t *ogs_log_find_domain(const char *name);
 void ogs_log_remove_domain(ogs_log_domain_t *domain);
 
+bool ogs_log_enabled(int id, ogs_log_level_e level);
 void ogs_log_set_domain_level(int id, ogs_log_level_e level);
 ogs_log_level_e ogs_log_get_domain_level(int id);
 
