@@ -34,6 +34,8 @@ upf_sess_t *upf_sess_find_by_ue_ip_address(ogs_pkbuf_t *pkbuf)
 {
     upf_sess_t *sess = NULL;
 
+    char buf[OGS_ADDRSTRLEN];
+
     struct ip *ip_h = NULL;
     struct ip6_hdr *ip6_h = NULL;
 
@@ -54,9 +56,7 @@ upf_sess_t *upf_sess_find_by_ue_ip_address(ogs_pkbuf_t *pkbuf)
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
     }
 
-    if (sess && ogs_log_get_domain_level(OGS_LOG_DOMAIN) >= OGS_LOG_TRACE) {
-        char buf[OGS_ADDRSTRLEN];
-
+    if (sess) {
         if (ip_h && sess->ipv4)
             ogs_trace("PAA IPv4:%s", OGS_INET_NTOP(&sess->ipv4->addr, buf));
         if (ip6_h && sess->ipv6)
