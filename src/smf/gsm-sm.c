@@ -3240,6 +3240,44 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
         }
         break;
 
+    case OGS_EVENT_SBI_SERVER:
+        sbi_message = e->h.sbi.message;
+        ogs_assert(sbi_message);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
+
+        SWITCH(sbi_message->h.resource.component[0])
+        CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
+            if (HOME_ROUTED_ROAMING_IN_HSMF(sess) &&
+                sbi_message->h.resource.component[2] &&
+                !sbi_message->h.resource.component[3] &&
+                !strcmp(sbi_message->h.resource.component[2],
+                        OGS_SBI_RESOURCE_NAME_MODIFY)) {
+                /*
+                 * Home-Routed Roaming: the V-SMF /modify can cross
+                 * the release. Answer it and keep releasing the session.
+                 */
+                ogs_warn("[%d] HsmfUpdateData during session release [%s]",
+                        sess->psi, sbi_message->h.uri);
+                smf_sbi_send_hsmf_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                        OGS_SBI_APP_ERRNO_CONTEXT_NOT_FOUND, 0,
+                        "PDU session is being released",
+                        sbi_message->h.uri, NULL);
+                break;
+            }
+            break;
+        END
+        break;
+
     case SMF_EVT_NGAP_MESSAGE:
         smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
         ogs_assert(smf_ue);
@@ -4350,6 +4388,36 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
                             sbi_message->h.resource.component[2], NULL));
                     OGS_FSM_TRAN(s, smf_gsm_state_exception);
                 END
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
+                if (HOME_ROUTED_ROAMING_IN_HSMF(sess) &&
+                    sbi_message->h.resource.component[2] &&
+                    !sbi_message->h.resource.component[3] &&
+                    !strcmp(sbi_message->h.resource.component[2],
+                            OGS_SBI_RESOURCE_NAME_MODIFY)) {
+                    /*
+                     * Home-Routed Roaming: the V-SMF /modify can cross
+                     * the release. Answer it and keep releasing the session.
+                     */
+                    ogs_warn("[%d] HsmfUpdateData during session release [%s]",
+                            sess->psi, sbi_message->h.uri);
+                    smf_sbi_send_hsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                            OGS_SBI_APP_ERRNO_CONTEXT_NOT_FOUND, 0,
+                            "PDU session is being released",
+                            sbi_message->h.uri, NULL);
+                    break;
+                }
+
+                ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[0]);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
+                        "Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0], NULL));
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
                 break;
 
             DEFAULT
