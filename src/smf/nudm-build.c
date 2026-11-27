@@ -216,7 +216,12 @@ ogs_sbi_request_t *smf_nudm_sdm_build_subscription(
 
     SDMSubscription.monitored_resource_uris = OpenAPI_list_create();
 
-    monres = ogs_msprintf("%s/%s", smf_ue->supi, (char *)data);
+    /*
+     * TS 29.503: monitoredResourceUris shall be an absolute URI or
+     * an absolute-path reference (e.g. /nudm-sdm/v2/{supi}/sm-data)
+     */
+    monres = ogs_msprintf("/%s/%s/%s/%s", message.h.service.name,
+            message.h.api.version, smf_ue->supi, (char *)data);
     ogs_assert(monres);
 
     OpenAPI_list_add(SDMSubscription.monitored_resource_uris, monres);

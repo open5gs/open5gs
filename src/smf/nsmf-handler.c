@@ -2791,11 +2791,16 @@ bool smf_nsmf_callback_handle_sdm_data_change_notify(
     OpenAPI_modification_notification_t *ModificationNotification;
     OpenAPI_lnode_t *node;
 
+    ogs_sbi_message_t message;
+    ogs_sbi_header_t header;
+
     char *ueid = NULL;
     char *res_name = NULL;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
+
+    memset(&header, 0, sizeof(header));
 
     ModificationNotification = recvmsg->ModificationNotification;
     if (!ModificationNotification) {
@@ -2806,9 +2811,22 @@ bool smf_nsmf_callback_handle_sdm_data_change_notify(
 
     OpenAPI_list_for_each(ModificationNotification->notify_items, node) {
         OpenAPI_notify_item_t *item = node->data;
-        char *saveptr = NULL;
 
-        ueid = ogs_sbi_parse_uri(item->resource_id, "/", &saveptr);
+        header.uri = item->resource_id;
+        if (ogs_sbi_parse_header(&message, &header) != OGS_OK) {
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            ogs_error("[%s] Cannot parse resourceId", item->resource_id);
+            goto cleanup;
+        }
+
+        if (ogs_sbi_service_name_id_from_string(message.h.service.name) !=
+                OpenAPI_service_name_nudm_sdm) {
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            ogs_error("[%s] Invalid Service Name", item->resource_id);
+            goto cleanup;
+        }
+
+        ueid = message.h.resource.component[0];
         if (ogs_supi_is_valid(ueid) == false) {
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             ogs_error("[%s] Invalid SUPI", item->resource_id);
@@ -2822,7 +2840,7 @@ bool smf_nsmf_callback_handle_sdm_data_change_notify(
             goto cleanup;
         }
 
-        res_name = ogs_sbi_parse_uri(NULL, "/", &saveptr);
+        res_name = message.h.resource.component[1];
         if (!res_name) {
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             ogs_error("[%s] No Resource Name", item->resource_id);
@@ -2847,19 +2865,13 @@ bool smf_nsmf_callback_handle_sdm_data_change_notify(
             goto cleanup;
         END
 
-        ogs_free(ueid);
-        ogs_free(res_name);
-
-        ueid = NULL;
-        res_name = NULL;
+        ogs_sbi_header_free(&header);
+        memset(&header, 0, sizeof(header));
     }
 
 
 cleanup:
-    if (ueid)
-        ogs_free(ueid);
-    if (res_name)
-        ogs_free(res_name);
+    ogs_sbi_header_free(&header);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
 
