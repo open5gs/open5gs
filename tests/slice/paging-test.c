@@ -565,6 +565,167 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /*
+     * Service request without Uplink data status: the PDU session stays
+     * without user plane resources in the 5G-AN.
+     */
+    test_ue->service_request_param.pdu_session_status = 1;
+    test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
+    nasbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL, false, false);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    test_ue->service_request_param.pdu_session_status = 0;
+    gmmbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf, true, false);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive InitialContextSetupRequest + Service accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send PDU session release request */
+    sess->ul_nas_transport_param.request_type = 0;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
+
+    gsmbuf = testgsm_build_pdu_session_release_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /*
+     * Receive DownlinkNASTransport + PDU session release command.
+     * The PDU session has no user plane resources in the 5G-AN.
+     */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_DownlinkNASTransport,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc,
+            OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND,
+            test_ue->gsm_message_type);
+
+    /* Send PDU session release complete */
+    gsmbuf = testgsm_build_pdu_session_release_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
+
+    /* Send UEContextReleaseRequest */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send UEContextReleaseComplete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /*
+     * Send Service request that still lists the released PDU session.
+     * The PDU session status in the Service accept shows whether the AMF
+     * still holds it.
+     */
+    test_ue->service_request_param.pdu_session_status = 1;
+    test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
+    nasbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL, false, false);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    test_ue->service_request_param.pdu_session_status = 0;
+    gmmbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf, true, false);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive InitialContextSetupRequest + Service accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
+
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send UEContextReleaseRequest */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send UEContextReleaseComplete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */

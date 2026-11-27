@@ -83,6 +83,21 @@ static bool handle_auth_request(
             udm_ue, (ogs_sbi_stream_t *)&stream, &recvmsg);
 }
 
+static bool reject_auth_request(
+        udm_ue_t *udm_ue, char *serving_network_name)
+{
+    bool rv;
+    ogs_log_level_e level = ogs_log_get_domain_level(__udm_log_domain);
+
+    /* Suppress only the expected rejection error, keeping FATAL visible. */
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(__udm_log_domain, OGS_LOG_FATAL);
+    rv = handle_auth_request(udm_ue, serving_network_name);
+    ogs_log_set_domain_level(__udm_log_domain, level);
+
+    return rv;
+}
+
 static void ue_init(udm_ue_t *udm_ue)
 {
     memset(udm_ue, 0, sizeof(*udm_ue));
@@ -111,7 +126,7 @@ static void test_oversized_serving_network_name(abts_case *tc, void *data)
     ue_init(&udm_ue);
 
     ABTS_INT_EQUAL(tc, false,
-            handle_auth_request(&udm_ue, serving_network_name));
+            reject_auth_request(&udm_ue, serving_network_name));
     ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_BAD_REQUEST, test_status);
     ABTS_PTR_EQUAL(tc, NULL, udm_ue.serving_network_name);
 
@@ -127,7 +142,7 @@ static void test_too_long_serving_network_name(abts_case *tc, void *data)
     ue_init(&udm_ue);
 
     ABTS_INT_EQUAL(tc, false,
-            handle_auth_request(&udm_ue, serving_network_name));
+            reject_auth_request(&udm_ue, serving_network_name));
     ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_BAD_REQUEST, test_status);
     ABTS_PTR_EQUAL(tc, NULL, udm_ue.serving_network_name);
 
