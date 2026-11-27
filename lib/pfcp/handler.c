@@ -44,7 +44,12 @@ bool ogs_pfcp_handle_heartbeat_request(
         node->remote_recovery, req->recovery_time_stamp.u32);
     }
 
-    node->remote_recovery = req->recovery_time_stamp.u32;
+    /*
+     * TS 23.007 19A: an older Recovery Time Stamp may be a delayed message.
+     * Keep the newer value already stored for the peer.
+     */
+    if (node->remote_recovery < req->recovery_time_stamp.u32)
+        node->remote_recovery = req->recovery_time_stamp.u32;
 
     rv = ogs_pfcp_send_heartbeat_response(xact);
     if (rv != OGS_OK) {
@@ -81,7 +86,12 @@ bool ogs_pfcp_handle_heartbeat_response(
         node->remote_recovery, rsp->recovery_time_stamp.u32);
     }
 
-    node->remote_recovery = rsp->recovery_time_stamp.u32;
+    /*
+     * TS 23.007 19A: an older Recovery Time Stamp may be a delayed message.
+     * Keep the newer value already stored for the peer.
+     */
+    if (node->remote_recovery < rsp->recovery_time_stamp.u32)
+        node->remote_recovery = rsp->recovery_time_stamp.u32;
 
     ogs_timer_start(node->t_no_heartbeat,
             ogs_local_conf()->time.message.pfcp.no_heartbeat_duration);
