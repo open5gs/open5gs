@@ -544,8 +544,19 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 dl_pdr->precedence = pcc_rule->precedence;
                 ul_pdr->precedence = pcc_rule->precedence;
 
-                /* Set UPF-N3 TEID & ADDR to the UL PDR */
                 ogs_assert(sess->pfcp_node);
+                if (!sess->pfcp_node->up_function_features.pdiu) {
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
+                            &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
+                    dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
+
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
+                            &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
+                }
+
+                /* Set UPF-N3 TEID & ADDR to the UL PDR */
                 if (sess->pfcp_node->up_function_features.ftup) {
 
            /* TS 129 244 V16.5.0 8.2.3
