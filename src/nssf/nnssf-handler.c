@@ -76,13 +76,6 @@ bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
         goto cleanup;
     }
 
-    nsi->roaming_indication = recvmsg->param.roaming_indication;
-
-    if (recvmsg->param.tai_presence) {
-        nsi->tai_presence = true;
-        memcpy(&nsi->tai, &recvmsg->param.tai, sizeof(nsi->tai));
-    }
-
     memset(&NsiInformation, 0, sizeof(NsiInformation));
 
     if (recvmsg->param.home_plmn_id_presence &&
@@ -136,9 +129,10 @@ bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
             param.slice_info_for_pdu_session.presence = true;
             param.slice_info_for_pdu_session.snssai = &home->s_nssai;
             param.slice_info_for_pdu_session.roaming_indication =
-                nsi->roaming_indication;
+                recvmsg->param.roaming_indication;
 
-            if (nsi->tai_presence) param.tai = &nsi->tai;
+            if (recvmsg->param.tai_presence)
+                param.tai = &recvmsg->param.tai;
 
             r = nssf_sbi_discover_and_send(
                     OpenAPI_service_name_nnssf_nsselection, h_discovery_option,

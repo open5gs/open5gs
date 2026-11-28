@@ -52,10 +52,6 @@ typedef struct nssf_nsi_s {
     char *nsi_id;
 
     ogs_s_nssai_t s_nssai;
-    OpenAPI_roaming_indication_e roaming_indication;
-
-    bool tai_presence;
-    ogs_5gs_tai_t tai;
 } nssf_nsi_t;
 
 typedef struct nssf_home_s {
