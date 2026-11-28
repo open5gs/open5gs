@@ -195,6 +195,34 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_pool_id_free(&ausf_ue_pool, ausf_ue);
 }
 
+void ausf_ue_remove_stale_by_supi(ausf_ue_t *current, char *supi)
+{
+    ausf_ue_t *old = NULL;
+
+    ogs_assert(current);
+    ogs_assert(supi);
+
+    old = ausf_ue_find_by_supi(supi);
+    if (!old || old == current)
+        return;
+
+    /*
+     * Successfully confirmed: the AMF owns it and removes it with a DELETE
+     * (Authentication Result Removal) at deregistration.
+     */
+    if (old->auth_event.resource_uri &&
+        old->auth_result == OpenAPI_auth_result_AUTHENTICATION_SUCCESS)
+        return;
+
+    /* Still talking to the UDM: leave it to finish */
+    if (ogs_list_count(&old->sbi.xact_list))
+        return;
+
+    ogs_info("[%s] Remove stale authentication context [%s] "
+            "superseded by [%s]", supi, old->suci, current->suci);
+    ausf_ue_remove(old);
+}
+
 void ausf_ue_remove_all(void)
 {
     ausf_ue_t *ausf_ue = NULL, *next = NULL;;

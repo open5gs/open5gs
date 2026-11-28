@@ -18,6 +18,7 @@
  */
 
 #include "ngap-path.h"
+#include "nausf-build.h"
 
 static amf_context_t self;
 
@@ -32,6 +33,7 @@ static OGS_POOL(amf_sess_pool, amf_sess_t);
 static OGS_POOL(m_tmsi_pool, amf_m_tmsi_t);
 
 static int context_initialized = 0;
+static bool context_finalizing = false;
 
 static int num_of_ran_ue = 0;
 static int num_of_amf_sess = 0;
@@ -91,6 +93,7 @@ void amf_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
+    context_finalizing = true;
     amf_gnb_remove_all();
     amf_ue_remove_all();
 
@@ -1821,6 +1824,59 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     return amf_ue;
 }
 
+static int release_5g_aka_confirmation_cb(
+        int status, ogs_sbi_response_t *response, void *data)
+{
+    /* The amf_ue is gone by now; a 404 just means the AUSF already
+     * removed the context. Nothing to act on either way. */
+    if (response) {
+        ogs_debug("AUSF authentication context removal [%d]",
+                response->status);
+        ogs_sbi_response_free(response);
+    }
+
+    return OGS_OK;
+}
+
+/*
+ * Release the AUSF authentication context of a UE that is being removed.
+ *
+ * The deregistration procedures send this DELETE themselves and clear the
+ * URI when the response arrives, so a UE that reaches amf_ue_remove() with
+ * the URI still set left some other way: authentication rejected or
+ * abandoned, implicit deregistration, context replaced. The AUSF has no
+ * timer of its own, so without the DELETE its context stays until restart.
+ *
+ * The request is sent on the client directly rather than through
+ * amf_ue_sbi_discover_and_send(): a transaction bound to amf_ue would
+ * outlive it.
+ */
+static void release_5g_aka_confirmation(amf_ue_t *amf_ue)
+{
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(amf_ue);
+
+    if (!CHECK_5G_AKA_CONFIRMATION(amf_ue) ||
+        !amf_ue->confirmation_for_5g_aka.client)
+        return;
+
+    request = amf_nausf_auth_build_authenticate_delete(amf_ue, NULL);
+    if (!request) {
+        ogs_error("[%s] Cannot build AUSF authentication context removal",
+                amf_ue->suci);
+        return;
+    }
+
+    ogs_info("[%s] Release AUSF authentication context", amf_ue->suci);
+    if (ogs_sbi_client_send_request(amf_ue->confirmation_for_5g_aka.client,
+                release_5g_aka_confirmation_cb, request, NULL) != true)
+        ogs_error("[%s] Cannot send AUSF authentication context removal",
+                amf_ue->suci);
+
+    ogs_sbi_request_free(request);
+}
+
 void amf_ue_remove(amf_ue_t *amf_ue)
 {
     int i;
@@ -1896,6 +1952,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     if (amf_ue->data_change_subscription.client)
         ogs_sbi_client_remove(amf_ue->data_change_subscription.client);
 
+    /* No SBI at shutdown: amf_sbi_close() has already run */
+    if (!context_finalizing)
+        release_5g_aka_confirmation(amf_ue);
     CLEAR_5G_AKA_CONFIRMATION(amf_ue);
     CLEAR_5G_AKA_PENDING(amf_ue);
     if (amf_ue->confirmation_for_5g_aka.confirmed_client)

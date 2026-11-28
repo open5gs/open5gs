@@ -188,6 +188,16 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         return false;
     }
 
+    /*
+     * A new authentication for this SUPI supersedes an older one that was
+     * not successfully confirmed. Without this, every 5G-AKA that fails at
+     * the UE (e.g. MAC failure -> Authentication Reject) leaves its ausf_ue
+     * behind: the AMF never sends a confirmation or a DELETE for it, and
+     * with a concealed SUCI each attempt creates a new context, so the
+     * pool eventually fills and all authentications fail.
+     */
+    ausf_ue_remove_stale_by_supi(ausf_ue, AuthenticationInfoResult->supi);
+
     /* SUPI */
     if (ausf_ue->supi) {
         ogs_hash_unset_if_owner(ausf_self()->supi_hash,
