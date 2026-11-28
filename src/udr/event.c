@@ -50,6 +50,11 @@ const char *udr_event_get_name(udr_event_t *e)
     case OGS_EVENT_SBI_TIMER:
         return OGS_EVENT_NAME_SBI_TIMER;
 
+    case UDR_EVENT_DBI_POLL_TIMER:
+        return "UDR_EVENT_DBI_POLL_TIMER";
+    case UDR_EVENT_DBI_MESSAGE:
+        return "UDR_EVENT_DBI_MESSAGE";
+
     default:
         break;
     }
