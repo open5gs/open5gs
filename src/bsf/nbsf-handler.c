@@ -232,6 +232,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
 
                 SendPcfBinding.dnn = sess->dnn;
                 SendPcfBinding.snssai = &Snssai;
+                SendPcfBinding.supi = sess->supi;
+                SendPcfBinding.gpsi = sess->gpsi;
 
                 PcfIpEndPointList = OpenAPI_list_create();
                 ogs_assert(PcfIpEndPointList);
