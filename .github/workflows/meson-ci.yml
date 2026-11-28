@@ -87,6 +87,12 @@ jobs:
           sudo ip addr add 10.45.0.1/16 dev ogstun
           sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
           sudo ip link set ogstun up
+    - name: Create the TUN device `ogstun2` for the second UPF of pfcp-peer-failure.
+      run: |
+          sudo ip tuntap add name ogstun2 mode tun
+          sudo ip addr add 10.46.0.1/16 dev ogstun2
+          sudo ip addr add 2001:db8:babe::1/48 dev ogstun2
+          sudo ip link set ogstun2 up
     - name: Install the dependencies for building the source code.
       run: |
           sudo apt update

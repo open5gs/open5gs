@@ -57,6 +57,15 @@ typedef struct ogs_pfcp_context_s {
 
     uint32_t        local_recovery; /* UTC time */
 
+    /*
+     * pfcp.release_after_peer_failure (seconds, default 0)
+     *
+     * How long the sessions of a PFCP peer are kept after the heartbeat
+     * towards it has failed. 0 releases/deletes them at once (on the next
+     * ogs_timer_mgr_expire()).
+     */
+    ogs_time_t      release_after_peer_failure;
+
     /* CP Function Features */
     ogs_pfcp_cp_function_features_t cp_function_features;
     /* UP Function Features */
@@ -74,11 +83,27 @@ typedef struct ogs_pfcp_context_s {
     ogs_hash_t      *far_teid_hash; /* hash table for FAR(TEID) */
 } ogs_pfcp_context_t;
 
+/* Binds a session to a node, counted in node->num_of_sessions */
 #define OGS_SETUP_PFCP_NODE(__cTX, __pNODE) \
     do { \
         ogs_assert((__cTX)); \
         ogs_assert((__pNODE)); \
-        (__cTX)->pfcp_node = __pNODE; \
+        if ((__cTX)->pfcp_node != (__pNODE)) { \
+            OGS_CLEAR_PFCP_NODE(__cTX); \
+            (__cTX)->pfcp_node = __pNODE; \
+            (__cTX)->pfcp_node->num_of_sessions++; \
+        } \
+    } while(0)
+
+/* Unbinds a session from its node when the session is removed */
+#define OGS_CLEAR_PFCP_NODE(__cTX) \
+    do { \
+        ogs_assert((__cTX)); \
+        if ((__cTX)->pfcp_node) { \
+            ogs_assert((__cTX)->pfcp_node->num_of_sessions > 0); \
+            (__cTX)->pfcp_node->num_of_sessions--; \
+            (__cTX)->pfcp_node = NULL; \
+        } \
     } while(0)
 
 typedef struct ogs_pfcp_node_s {
@@ -105,6 +130,8 @@ typedef struct ogs_pfcp_node_s {
     ogs_fsm_t       sm;             /* A state machine */
     ogs_timer_t     *t_association; /* timer to retry to associate peer node */
     ogs_timer_t     *t_no_heartbeat; /* heartbeat timer to check aliveness */
+    ogs_timer_t     *t_release_after_peer_failure; /* release sessions */
+    bool            was_associated; /* will_associate entered from associated */
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
@@ -117,6 +144,37 @@ typedef struct ogs_pfcp_node_s {
 
     uint32_t        remote_recovery; /* UTC time */
     bool            restoration_required;
+    /* Incremented on each entry to associated (see the SMF reselect_upf()) */
+    uint32_t        num_of_associations;
+
+    /* Sessions bound to the node (OGS_SETUP_PFCP_NODE) */
+    uint32_t        num_of_sessions;
+
+    /*
+     * TS 29.244 6.2.6.2: PFCP Session Retention Information.
+     *
+     * CP function:
+     * - num_of_sessions_kept: num_of_sessions when the node failed and
+     *   its sessions were kept (pfcp.release_after_peer_failure), until
+     *   the CP and the UP function agree on them again; 0 otherwise.
+     *   No session is bound to the node meanwhile, so num_of_sessions
+     *   below it means that a session was removed during the failure.
+     *   Its PFCP Session Deletion may not have reached the UP function.
+     * - sessions_kept: the kept sessions are still to be restored if the
+     *   UP function does not have them (false once they are released).
+     * - assoc_xact_id, retention_requested: the last Association Setup
+     *   Request and whether it carried the IE.
+     * - psrei_requested: PSREI flag of the Association Setup Response.
+     *
+     * UP function:
+     * - psrei_requested: whether to set PSREI in the Association Setup
+     *   Response, i.e. whether it retained the sessions.
+     */
+    uint32_t        num_of_sessions_kept;
+    bool            sessions_kept;
+    ogs_pool_id_t   assoc_xact_id;
+    bool            retention_requested;
+    bool            psrei_requested;
 
     ogs_pfcp_up_function_features_t up_function_features;
     int up_function_features_len;
@@ -438,6 +496,9 @@ void ogs_pfcp_node_remove(ogs_list_t *list, ogs_pfcp_node_t *node);
 void ogs_pfcp_node_remove_all(ogs_list_t *list);
 bool ogs_pfcp_node_id_compare(
         const ogs_pfcp_node_id_t *id1, const ogs_pfcp_node_id_t *id2);
+void ogs_pfcp_node_start_release_after_peer_failure(ogs_pfcp_node_t *node);
+bool ogs_pfcp_node_retain_sessions(ogs_pfcp_node_t *node);
+bool ogs_pfcp_node_retention_pending(ogs_pfcp_node_t *node);
 
 ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,
         char *dnn, ogs_pfcp_interface_t source_interface);

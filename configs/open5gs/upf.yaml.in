@@ -38,6 +38,17 @@ upf:
 #        advertise: open5gs-upf.svc.local
 #
 ################################################################################
+# PFCP Peer Failure
+################################################################################
+#  o Keep the sessions of an SMF for 60 seconds after the heartbeat towards it
+#    has failed (default 0: delete them at once, TS 23.527 4.4.3.1). If the SMF
+#    is associated again before, the sessions are kept. This value should not
+#    be shorter than the SMF value plus the heartbeat detection skew,
+#    otherwise the UPF deletes sessions that the SMF keeps.
+#  pfcp:
+#    release_after_peer_failure: 60
+#
+################################################################################
 # GTP-U Server
 ################################################################################
 #  o Override SGW-U GTP-U address to be advertised inside S1AP messages 

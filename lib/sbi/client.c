@@ -1049,12 +1049,10 @@ static int multi_timer_cb(CURLM *multi, long timeout_ms, void *cbp)
     timer = client->t_curl;
     ogs_assert(timer);
 
-    if (timeout_ms > 0) {
+    /* A timer of 0 fires from the next loop iteration, so libcurl is not
+     * called from within this callback for timeout_ms 0. */
+    if (timeout_ms >= 0) {
         ogs_timer_start(timer, ogs_time_from_msec(timeout_ms));
-    } else if (timeout_ms == 0) {
-        /* libcurl wants us to timeout now.
-         * The closest we can do is to schedule the timer to fire in 1 us. */
-        ogs_timer_start(timer, 1);
     } else {
         ogs_timer_stop(timer);
     }

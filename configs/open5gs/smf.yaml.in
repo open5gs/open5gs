@@ -368,6 +368,19 @@ smf:
 #          nr_cell_id: [123456789, 9413]
 #
 ################################################################################
+# PFCP Peer Failure
+################################################################################
+#  o Keep the sessions of a UPF for 30 seconds after the heartbeat towards it
+#    has failed (default 0: release them at once). If the UPF is associated
+#    again before, the sessions are kept; otherwise they are released then.
+#    Sessions for which another UPF is associated are released at once in
+#    any case, so that they are set up again on that UPF.
+#    The UPF value should not be shorter than this value plus the heartbeat
+#    detection skew, otherwise the UPF deletes sessions that the SMF keeps.
+#  pfcp:
+#    release_after_peer_failure: 30
+#
+################################################################################
 # GTP-C Server
 ################################################################################
 #  o Listen on IPv4 and IPv6

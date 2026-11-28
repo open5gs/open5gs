@@ -111,7 +111,7 @@ void ogs_timer_start_debug(
 {
     ogs_timer_mgr_t *manager = NULL;
     ogs_assert(timer);
-    ogs_assert(duration);
+    ogs_assert(duration >= 0);
 
     manager = timer->manager;
     ogs_assert(manager);

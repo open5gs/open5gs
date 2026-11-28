@@ -54,6 +54,12 @@ int sgwu_initialize(void)
     rv = ogs_pfcp_context_parse_config(APP_NAME, "sgwc");
     if (rv != OGS_OK) return rv;
 
+    /* The SGW-C/SGW-U pair does not act on heartbeat failure yet */
+    if (ogs_pfcp_self()->release_after_peer_failure) {
+        ogs_warn("pfcp.release_after_peer_failure is ignored by SGW-U");
+        ogs_pfcp_self()->release_after_peer_failure = 0;
+    }
+
     rv = sgwu_context_parse_config();
     if (rv != OGS_OK) return rv;
 
