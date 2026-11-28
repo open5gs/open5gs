@@ -1235,7 +1235,7 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
                         pdr->f_teid_len) {
                         if (pdr_bearer->pgw_s5u_addr)
                             ogs_freeaddrinfo(pdr_bearer->pgw_s5u_addr);
-                        if (pdr_bearer->pgw_s5u_addr)
+                        if (pdr_bearer->pgw_s5u_addr6)
                             ogs_freeaddrinfo(pdr_bearer->pgw_s5u_addr6);
 
                         ogs_assert(OGS_OK ==
@@ -1388,7 +1388,7 @@ void smf_epc_n4_handle_session_modification_response(
                     pdr->f_teid_len) {
                     if (pdr_bearer->pgw_s5u_addr)
                         ogs_freeaddrinfo(pdr_bearer->pgw_s5u_addr);
-                    if (pdr_bearer->pgw_s5u_addr)
+                    if (pdr_bearer->pgw_s5u_addr6)
                         ogs_freeaddrinfo(pdr_bearer->pgw_s5u_addr6);
 
                     ogs_assert(OGS_OK ==
