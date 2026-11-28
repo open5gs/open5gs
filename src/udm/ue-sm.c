@@ -59,6 +59,9 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
         break;
 
     case OGS_EVENT_SBI_SERVER:
+        /* Anything that reaches this UE keeps its cached context alive. */
+        udm_ue_idle_timer_start(udm_ue);
+
         message = e->h.sbi.message;
         ogs_assert(message);
 
