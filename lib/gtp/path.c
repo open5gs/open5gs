@@ -78,6 +78,107 @@ int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode)
     return OGS_OK;
 }
 
+static ogs_pkbuf_t *gtpu_recv_buffer(ogs_pkbuf_t **slot,
+        ogs_pkbuf_pool_t *pool, int headroom)
+{
+    if (!*slot) {
+        *slot = ogs_pkbuf_alloc(pool, OGS_MAX_PKT_LEN);
+        if (*slot)
+            ogs_pkbuf_reserve(*slot, headroom);
+    }
+    return *slot;
+}
+
+void ogs_gtpu_recv(ogs_sock_t *sock, ogs_pkbuf_pool_t *pool,
+        ogs_pkbuf_t **buffers, unsigned int budget, int headroom,
+        ogs_gtpu_recv_handler_t handler)
+{
+    unsigned int i;
+#ifdef HAVE_RECVMMSG
+    struct mmsghdr msgs[budget];
+    struct iovec iov[budget];
+    ogs_sockaddr_t from[budget];
+    int received;
+#endif
+
+    ogs_assert(sock);
+    ogs_assert(sock->fd != INVALID_SOCKET);
+
+#ifdef HAVE_RECVMMSG
+    memset(msgs, 0, sizeof(msgs));
+    memset(from, 0, sizeof(from));
+    for (i = 0; i < budget; i++) {
+        ogs_pkbuf_t *pkbuf = gtpu_recv_buffer(&buffers[i], pool, headroom);
+        if (!pkbuf)
+            break;
+
+        iov[i].iov_base = pkbuf->data;
+        iov[i].iov_len = ogs_pkbuf_tailroom(pkbuf);
+        msgs[i].msg_hdr.msg_iov = &iov[i];
+        msgs[i].msg_hdr.msg_iovlen = 1;
+        msgs[i].msg_hdr.msg_name = &from[i].sa;
+        msgs[i].msg_hdr.msg_namelen = sizeof(from[i].ss);
+    }
+    if (i == 0)
+        return;
+
+    received = recvmmsg(sock->fd, msgs, i, MSG_DONTWAIT, NULL);
+    if (received < 0) {
+        ogs_err_t err = ogs_socket_errno;
+        if (err != OGS_EAGAIN && err != EINTR)
+            ogs_log_message(OGS_LOG_ERROR, err, "recvmmsg() failed");
+        return;
+    }
+
+    /* Leave unused slots ready for the next wakeup. */
+    for (i = 0; i < received; i++) {
+        ogs_pkbuf_t *pkbuf = buffers[i];
+
+        if (msgs[i].msg_len == 0)
+            continue;
+
+        ogs_pkbuf_put(pkbuf, msgs[i].msg_len);
+        buffers[i] = NULL;
+        handler(sock->fd, sock, pkbuf, &from[i]);
+    }
+#else
+    for (i = 0; i < budget; i++) {
+        ssize_t size;
+        ogs_sockaddr_t from;
+        ogs_pkbuf_t *pkbuf = gtpu_recv_buffer(&buffers[0], pool, headroom);
+        if (!pkbuf)
+            return;
+
+        size = ogs_recvfrom(sock->fd, pkbuf->data,
+                ogs_pkbuf_tailroom(pkbuf), 0, &from);
+        if (size < 0) {
+            ogs_err_t err = ogs_socket_errno;
+            if (err != OGS_EAGAIN)
+                ogs_log_message(OGS_LOG_ERROR, err, "ogs_recvfrom() failed");
+            return;
+        }
+        if (size == 0)
+            continue;
+
+        ogs_pkbuf_put(pkbuf, size);
+        buffers[0] = NULL;
+        handler(sock->fd, sock, pkbuf, &from);
+    }
+#endif
+}
+
+void ogs_gtpu_recv_clear(ogs_pkbuf_t **buffers, unsigned int budget)
+{
+    unsigned int i;
+
+    for (i = 0; i < budget; i++) {
+        if (buffers[i]) {
+            ogs_pkbuf_free(buffers[i]);
+            buffers[i] = NULL;
+        }
+    }
+}
+
 int ogs_gtp_send(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
 {
     ssize_t sent;

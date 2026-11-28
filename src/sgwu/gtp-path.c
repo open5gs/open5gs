@@ -37,8 +37,11 @@ static ogs_pkbuf_pool_t *packet_pool = NULL;
 #define SGWU_SK_DRAIN_BUDGET 32
 #endif
 
+static ogs_pkbuf_t *gtpu_recv_buffers[SGWU_SK_DRAIN_BUDGET];
+
 /* Owns pkbuf passed to it */
-static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *from)
+static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock,
+        ogs_pkbuf_t *pkbuf, const ogs_sockaddr_t *from)
 {
     int len;
     char buf1[OGS_ADDRSTRLEN];
@@ -291,33 +294,12 @@ cleanup:
 
 static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 {
-    ogs_sock_t *sock = NULL;
-    unsigned int i;
-
-    ogs_assert(fd != INVALID_SOCKET);
-    sock = data;
+    ogs_sock_t *sock = data;
     ogs_assert(sock);
+    ogs_assert(fd == sock->fd);
 
-    for (i = 0; i < SGWU_SK_DRAIN_BUDGET; i++) {
-        ssize_t size;
-        ogs_sockaddr_t from;
-        ogs_pkbuf_t *pkbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
-        ogs_assert(pkbuf);
-        ogs_pkbuf_put(pkbuf, OGS_MAX_PKT_LEN);
-
-        size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
-        if (size <= 0) {
-            /* EAGAIN on a non-blocking UDP socket means the kernel rx queue
-             * has been drained -- return to the event loop for the next
-             * wakeup.  Surface only real errors. */
-            if (ogs_socket_errno != OGS_EAGAIN)
-                ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "ogs_recv() failed");
-            ogs_pkbuf_free(pkbuf);
-            return;
-        }
-        ogs_pkbuf_trim(pkbuf, size);
-        _gtpv1_u_recv_one(fd, sock, pkbuf, &from);
-    }
+    ogs_gtpu_recv(sock, packet_pool, gtpu_recv_buffers, SGWU_SK_DRAIN_BUDGET,
+            0, _gtpv1_u_recv_one);
 }
 
 int sgwu_gtp_init(void)
@@ -341,6 +323,7 @@ int sgwu_gtp_init(void)
 
 void sgwu_gtp_final(void)
 {
+    ogs_gtpu_recv_clear(gtpu_recv_buffers, SGWU_SK_DRAIN_BUDGET);
     ogs_pkbuf_pool_destroy(packet_pool);
 }
 

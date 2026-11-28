@@ -66,6 +66,16 @@ extern "C" {
 ogs_sock_t *ogs_gtp_server(ogs_socknode_t *node);
 int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode);
 
+/* The handler owns the packet buffer. The peer address is valid during the call. */
+typedef void (*ogs_gtpu_recv_handler_t)(ogs_socket_t fd, ogs_sock_t *sock,
+        ogs_pkbuf_t *pkbuf, const ogs_sockaddr_t *from);
+
+/* Use a nonblocking socket and a zero-initialized array of budget slots. */
+void ogs_gtpu_recv(ogs_sock_t *sock, ogs_pkbuf_pool_t *pool,
+        ogs_pkbuf_t **buffers, unsigned int budget, int headroom,
+        ogs_gtpu_recv_handler_t handler);
+void ogs_gtpu_recv_clear(ogs_pkbuf_t **buffers, unsigned int budget);
+
 int ogs_gtp_send(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
 int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
 
