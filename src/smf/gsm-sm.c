@@ -188,6 +188,39 @@ static bool send_ccr_termination_req_gx_gy_s6b(
     return true;
 }
 
+static void release_epc_auth_without_gtp(ogs_fsm_t *s, smf_sess_t *sess)
+{
+    /* Terminate only sessions confirmed by an Initial answer. In
+     * particular, enabled Gy and default SUCCESS values do not imply
+     * that a Diameter session was actually created. */
+    sess->sm_data.gx_ccr_term_in_flight =
+        sess->sm_data.gx_session_created;
+    sess->sm_data.gy_ccr_term_in_flight =
+        sess->sm_data.gy_session_created;
+    sess->sm_data.s6b_str_in_flight =
+        sess->sm_data.s6b_session_created;
+
+    if (!sess->sm_data.gx_ccr_term_in_flight &&
+        !sess->sm_data.gy_ccr_term_in_flight &&
+        !sess->sm_data.s6b_str_in_flight) {
+        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+        return;
+    }
+
+    OGS_FSM_TRAN(s, smf_gsm_state_wait_epc_auth_release);
+
+    /* No further GTP response is due when Diameter termination completes. */
+    if (sess->sm_data.gx_ccr_term_in_flight)
+        smf_gx_send_ccr(sess, OGS_INVALID_POOL_ID,
+                OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+    if (sess->sm_data.gy_ccr_term_in_flight)
+        smf_gy_send_ccr(sess, OGS_INVALID_POOL_ID,
+                OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+    if (sess->sm_data.s6b_str_in_flight)
+        smf_s6b_send_str(sess, NULL,
+                OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT);
+}
+
 static bool hsmf_update_has_up_cnx_state(smf_sess_t *sess)
 {
     ogs_assert(sess);
@@ -678,36 +711,7 @@ test_can_proceed:
             send_gtp_error_msg(sess, gtp_xact, gtp_cause);
         }
 
-        /* Terminate only sessions confirmed by an Initial answer. In
-         * particular, enabled Gy and default SUCCESS values do not imply
-         * that a Diameter session was actually created. */
-        sess->sm_data.gx_ccr_term_in_flight =
-            sess->sm_data.gx_session_created;
-        sess->sm_data.gy_ccr_term_in_flight =
-            sess->sm_data.gy_session_created;
-        sess->sm_data.s6b_str_in_flight =
-            sess->sm_data.s6b_session_created;
-
-        if (!sess->sm_data.gx_ccr_term_in_flight &&
-            !sess->sm_data.gy_ccr_term_in_flight &&
-            !sess->sm_data.s6b_str_in_flight) {
-            OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
-            return;
-        }
-
-        OGS_FSM_TRAN(s, smf_gsm_state_wait_epc_auth_release);
-
-        /* No GTP association: wait_epc_auth_release must not send a Delete
-         * Session Response for this failed Create Session transaction. */
-        if (sess->sm_data.gx_ccr_term_in_flight)
-            smf_gx_send_ccr(sess, OGS_INVALID_POOL_ID,
-                    OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
-        if (sess->sm_data.gy_ccr_term_in_flight)
-            smf_gy_send_ccr(sess, OGS_INVALID_POOL_ID,
-                    OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST);
-        if (sess->sm_data.s6b_str_in_flight)
-            smf_s6b_send_str(sess, NULL,
-                    OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT);
+        release_epc_auth_without_gtp(s, sess);
     }
 }
 
@@ -950,10 +954,10 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                         sess, pfcp_xact,
                         &pfcp_message->pfcp_session_establishment_response);
                 if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
-                    /* FIXME: tear down Gy and Gx */
                     gtp_cause = gtp_cause_from_pfcp(
                                     pfcp_cause, gtp_xact->gtp_version);
                     send_gtp_error_msg(sess, gtp_xact, gtp_cause);
+                    release_epc_auth_without_gtp(s, sess);
                     return;
                 }
 
@@ -2561,21 +2565,17 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             sess, pfcp_xact,
                             &pfcp_message->pfcp_session_deletion_response);
                 if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
-                    /* FIXME: tear down Gy and Gx */
                     if (gtp_xact) {
                         gtp_cause = gtp_cause_from_pfcp(
                                 pfcp_cause, gtp_xact->gtp_version);
                         send_gtp_error_msg(sess, gtp_xact, gtp_cause);
                     } else {
-        /*
-         * No peer is waiting for a response, so the session has to be
-         * dropped here.
-         */
                         ogs_error("No GTP transaction : "
                                 "PFCP Cause [%d] cannot be reported, "
                                 "releasing the session locally", pfcp_cause);
-                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
                     }
+
+                    release_epc_auth_without_gtp(s, sess);
                     break;
                 }
                 if (send_ccr_termination_req_gx_gy_s6b(
