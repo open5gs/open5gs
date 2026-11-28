@@ -61,10 +61,31 @@ static inline void *ogs_asn_list_get(const void *list, int index)
     return sequence->array[index];
 }
 
+/*
+ * protocolIEs is a pointer to the list in newer asn1c output. The list
+ * helpers take void *, so passing its address (&msg->protocolIEs) would
+ * compile and treat the pointer itself as the list header.
+ * Reject that at compile time.
+ */
+struct S1AP_ProtocolIE_Container;
+struct NGAP_ProtocolIE_Container;
+
+#define OGS_ASN_LIST_CHECK(__list) \
+    ((void)sizeof(char[_Generic((__list), \
+        struct S1AP_ProtocolIE_Container **: -1, \
+        struct S1AP_ProtocolIE_Container *const *: -1, \
+        struct NGAP_ProtocolIE_Container **: -1, \
+        struct NGAP_ProtocolIE_Container *const *: -1, \
+        default: 1)]))
+
 #define OGS_ASN_LIST_COUNT(__list) \
-    ogs_asn_list_count(__list)
+    (OGS_ASN_LIST_CHECK(__list), ogs_asn_list_count(__list))
 #define OGS_ASN_LIST_GET(__list, __index) \
-    ogs_asn_list_get(__list, __index)
+    (OGS_ASN_LIST_CHECK(__list), ogs_asn_list_get(__list, __index))
+
+#undef ASN_SEQUENCE_ADD
+#define ASN_SEQUENCE_ADD(headptr, ptr) \
+    (OGS_ASN_LIST_CHECK(headptr), asn_sequence_add((headptr), (ptr)))
 
 #ifdef __cplusplus
 extern "C" {
