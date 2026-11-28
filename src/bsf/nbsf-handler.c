@@ -208,7 +208,9 @@ bool bsf_nbsf_management_handle_pcf_binding(
             break;
 
         CASE(OGS_SBI_HTTP_METHOD_GET)
-            if (sess->num_of_pcf_ip) {
+            bool has_pcf_fqdn = sess->pcf_fqdn && sess->pcf_fqdn[0];
+
+            if (has_pcf_fqdn || sess->num_of_pcf_ip) {
                 memset(&Snssai, 0, sizeof(Snssai));
                 Snssai.sst = sess->s_nssai.sst;
                 Snssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
@@ -221,7 +223,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 PcfIpEndPointList = OpenAPI_list_create();
                 ogs_assert(PcfIpEndPointList);
 
-                if (sess->pcf_fqdn && strlen(sess->pcf_fqdn))
+                if (has_pcf_fqdn)
                     SendPcfBinding.pcf_fqdn = ogs_strdup(sess->pcf_fqdn);
 
                 for (i = 0; i < sess->num_of_pcf_ip; i++) {
@@ -262,6 +264,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 }
                 OpenAPI_list_free(SendPcfBinding.pcf_ip_end_points);
 
+                if (Snssai.sd)
+                    ogs_free(Snssai.sd);
                 if (SendPcfBinding.pcf_fqdn)
                     ogs_free(SendPcfBinding.pcf_fqdn);
             } else {
