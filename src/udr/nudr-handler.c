@@ -86,7 +86,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
     char amf_string[OGS_KEYSTRLEN(OGS_AMF_LEN)];
     char sqn_string[OGS_KEYSTRLEN(OGS_SQN_LEN)];
 
-    char sqn[OGS_SQN_LEN];
+    uint8_t sqn[OGS_SQN_LEN];
     char *supi = NULL;
 
     OpenAPI_authentication_subscription_t AuthenticationSubscription;
@@ -159,43 +159,57 @@ bool udr_nudr_dr_handle_subscription_authentication(
             return true;
 
         CASE(OGS_SBI_HTTP_METHOD_PATCH)
-            char *sqn_string = NULL;
-            uint8_t sqn_ms[OGS_SQN_LEN];
-            uint64_t sqn = 0;
+            uint64_t next_sqn;
 
             PatchItemList = recvmsg->PatchItemList;
-            if (!PatchItemList) {
+            if (!PatchItemList || !PatchItemList->count) {
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No PatchItemList Array", NULL, NULL));
+                        recvmsg, "No PatchItem", NULL, NULL));
                 return false;
             }
 
             OpenAPI_list_for_each(PatchItemList, node) {
-                if (node->data) {
-                    OpenAPI_patch_item_t *patch_item = node->data;
-                    if (OpenAPI_IsString(patch_item->value))
-                        sqn_string = cJSON_GetStringValue(patch_item->value->json);
-                    else
-                        ogs_error("Non-string value in patch not implemented");
+                OpenAPI_patch_item_t *patch_item = node->data;
+                const char *value;
+
+                if (!patch_item ||
+                    patch_item->op != OpenAPI_patch_operation_replace ||
+                    !patch_item->path ||
+                    strcmp(patch_item->path, OGS_SBI_PATCH_PATH_SQN) != 0) {
+                        ogs_error("[%s] Unsupported patch [op:%s path:%s]",
+                                supi,
+                                patch_item ?
+                                    OpenAPI_patch_operation_ToString(
+                                        patch_item->op) : "NULL",
+                                patch_item && patch_item->path ?
+                                    patch_item->path : "NULL");
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                            "Unsupported authentication-subscription patch",
+                            NULL, NULL));
+                    return false;
+                }
+
+                value = patch_item->value ?
+                    cJSON_GetStringValue(patch_item->value->json) : NULL;
+                if (ogs_hex_from_string_checked(
+                            value, sqn, sizeof(sqn)) != OGS_OK) {
+                    ogs_error("[%s] Invalid SequenceNumber.sqn [%s]",
+                            supi, value ? value : "NULL");
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                            "Invalid SequenceNumber.sqn", NULL, NULL));
+                    return false;
                 }
             }
 
-            if (!sqn_string) {
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No PatchItemList", NULL, NULL));
-                return false;
-            }
-
-            ogs_ascii_to_hex(sqn_string, strlen(sqn_string),
-                    sqn_ms, sizeof(sqn_ms));
-            sqn = ogs_buffer_to_uint64(sqn_ms, OGS_SQN_LEN);
-
             /* The UDM supplied the next SQN in the replace operation. */
-            rv = ogs_dbi_update_sqn(supi, sqn);
+            next_sqn = ogs_buffer_to_uint64(sqn, sizeof(sqn));
+            rv = ogs_dbi_update_sqn(supi, next_sqn);
             if (rv != OGS_OK) {
                 ogs_fatal("[%s] Cannot update SQN", supi);
                 ogs_assert(true ==
