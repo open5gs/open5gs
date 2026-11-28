@@ -140,11 +140,32 @@ typedef int32_t ogs_pool_id_t;
     } \
 } while (0)
 
+/*
+ * Reuse the most recently freed object instead of cycling through the whole
+ * array.  With the previous FIFO behaviour (free at tail, alloc from head,
+ * both advancing) every alloc/free pair moved the working set one slot
+ * forward, so a long-running process eventually touched every element of the
+ * pre-allocated array and its RSS grew to the full pool size - even though
+ * the number of live objects never changed.
+ *
+ * Pools are sized as max.ue * OGS_MAX_NUM_OF_SESS * OGS_MAX_NUM_OF_BEARER
+ * (and PF pools multiply that by OGS_MAX_NUM_OF_FLOW_IN_BEARER again), so on
+ * a 3072-UE SMF the pool array alone is ~1.7 GB.  Measured on a 2200-UE
+ * registration churn: an SMF pool of 1714 MB reached 1284 MB resident in
+ * about one hour and never came back down (only a restart reclaimed it).
+ * With this change the array stays at the high-water mark of *concurrently*
+ * live objects instead.
+ *
+ * Safe because head is only ever touched by these two macros, tail is only
+ * written here, and ogs_pool_index() is plain pointer arithmetic - no caller
+ * depends on the order in which slots are handed out.
+ */
 #define ogs_pool_free(pool, node) do { \
     if ((pool)->avail < (pool)->size) { \
         (pool)->avail++; \
-        (pool)->free[(pool)->tail] = (void*)(node); \
-        (pool)->tail = ((pool)->tail + 1) % ((pool)->size); \
+        (pool)->head = ((pool)->head + (pool)->size - 1) % ((pool)->size); \
+        (pool)->free[(pool)->head] = (void*)(node); \
+        (pool)->tail = (pool)->head; \
         (pool)->index[ogs_pool_index(pool, node)-1] = NULL; \
     } \
 } while (0)
