@@ -282,7 +282,7 @@ static void test1_func(abts_case *tc, void *data)
     /* Send Extended Service Request */
     memset(&test_ue->extended_service_request_param,
             0, sizeof(test_ue->extended_service_request_param));
-    emmbuf = testemm_build_extended_service_request(test_ue, 1, false, false);
+    emmbuf = testemm_build_extended_service_request(test_ue, 1, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
     memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));

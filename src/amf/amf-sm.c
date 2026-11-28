@@ -1004,9 +1004,20 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             (AMF_UE_HAVE_SUCI(amf_ue) || AMF_UE_HAVE_SUPI(amf_ue)) &&
             nas_message.gmm.h.message_type ==
                 OGS_NAS_5GS_REGISTRATION_REQUEST) {
-            amf_ue_t *registering_ue =
-                amf_ue_find_by_message(&nas_message, NULL);
+            amf_ue_t *registering_ue = NULL;
 
+            /* TS 24.501 4.4.4.3: ignore it, as gmm-sm.c, before its identity */
+            h.type = e->nas.type;
+            if (e->ngap.code == NGAP_ProcedureCode_id_UplinkNASTransport &&
+                amf_ue->integrity_verified &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue))) {
+                ogs_warn("[%s] Ignore unverified Registration request",
+                        amf_ue->supi);
+                ogs_pkbuf_free(pkbuf);
+                break;
+            }
+
+            registering_ue = amf_ue_find_by_message(&nas_message, NULL);
             if (registering_ue != amf_ue &&
                 (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) ||
                  ogs_list_count(&amf_ue->sess_list))) {

@@ -318,8 +318,22 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          */
         if (mme_ue && MME_UE_HAVE_IMSI(mme_ue) &&
             nas_message.emm.h.message_type == OGS_NAS_EPS_ATTACH_REQUEST) {
-            mme_ue_t *attaching_ue = mme_ue_find_by_message(&nas_message, NULL);
+            mme_ue_t *attaching_ue = NULL;
 
+            /* TS 24.301 4.4.4.3: discard it, as emm-sm.c, before its identity */
+            h.type = e->nas_type;
+            if (e->s1ap_code == S1AP_ProcedureCode_id_uplinkNASTransport &&
+                mme_ue->integrity_verified &&
+                (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue))) {
+                ogs_warn("[%s] Discard unverified Attach request",
+                        mme_ue->imsi_bcd);
+                /* The verdict was this message's only */
+                mme_ue->mac_failed = 0;
+                ogs_pkbuf_free(pkbuf);
+                return;
+            }
+
+            attaching_ue = mme_ue_find_by_message(&nas_message, NULL);
             if (attaching_ue != mme_ue &&
                 (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered) ||
                  ogs_list_count(&mme_ue->sess_list))) {
