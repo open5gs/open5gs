@@ -75,26 +75,11 @@ bool bsf_nbsf_management_handle_pcf_binding(
             RecvPcfBinding = recvmsg->PcfBinding;
             ogs_assert(RecvPcfBinding);
 
-            if (!RecvPcfBinding->snssai) {
-                strerror = ogs_msprintf("No S-NSSAI");
-                status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-                goto cleanup;
-            }
-
-            if (!RecvPcfBinding->dnn) {
-                strerror = ogs_msprintf("No DNN");
-                status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-                goto cleanup;
-            }
-
-            if (!RecvPcfBinding->pcf_fqdn &&
-                !RecvPcfBinding->pcf_ip_end_points) {
-                strerror = ogs_msprintf("No PCF address information [%p:%p]",
-                            RecvPcfBinding->pcf_fqdn,
-                            RecvPcfBinding->pcf_ip_end_points);
-                status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-                goto cleanup;
-            }
+            /* Already validated in bsf_state_operational() */
+            ogs_assert(RecvPcfBinding->snssai);
+            ogs_assert(RecvPcfBinding->dnn);
+            ogs_assert(RecvPcfBinding->pcf_fqdn ||
+                    RecvPcfBinding->pcf_ip_end_points);
 
             if (RecvPcfBinding->pcf_fqdn) {
                 if (sess->pcf_fqdn)

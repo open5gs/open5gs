@@ -191,6 +191,39 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                                 }
                             }
 
+                            /*
+                             * Validate the request before a new session
+                             * is added; a rejected request must not
+                             * leave a session behind.
+                             */
+                            if (!message.PcfBinding->snssai) {
+                                ogs_error("No S-NSSAI");
+                                ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                        &message, "No S-NSSAI", NULL, NULL));
+                                goto cleanup;
+                            }
+                            if (!message.PcfBinding->dnn) {
+                                ogs_error("No DNN");
+                                ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                        &message, "No DNN", NULL, NULL));
+                                goto cleanup;
+                            }
+                            if (!message.PcfBinding->pcf_fqdn &&
+                                !message.PcfBinding->pcf_ip_end_points) {
+                                ogs_error("No PCF address information");
+                                ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                        &message,
+                                        "No PCF address information",
+                                        NULL, NULL));
+                                goto cleanup;
+                            }
+
                             if (!sess) {
                                 sess = bsf_sess_add_by_ip_address(
                                             message.PcfBinding->ipv4_addr,
