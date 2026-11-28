@@ -67,7 +67,7 @@ ogs_sbi_request_t *udm_nudr_dr_build_authentication_subscription(
 
         memset(&item, 0, sizeof(item));
         item.op = OpenAPI_patch_operation_replace;
-        item.path = (char *)"/sequenceNumber/sqn";
+        item.path = (char *)OGS_SBI_PATCH_PATH_SQN;
         item.value = OpenAPI_any_type_create_string(sqn_string);
         ogs_assert(item.value);
 
