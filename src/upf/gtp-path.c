@@ -696,6 +696,12 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
          */
         to_data_network = is_local_data_network(far);
 
+        /* Only FORW may deliver to the local data network. This path
+         * has no uplink buffer. */
+        if (to_data_network &&
+            !(far->apply_action & OGS_PFCP_APPLY_ACTION_FORW))
+            goto cleanup;
+
         if (needs_ue_ip_check(pdr, to_data_network) == true) {
 
             if (ip_h->ip_v == 4 && sess->ipv4) {
